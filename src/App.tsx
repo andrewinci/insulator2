@@ -1,6 +1,6 @@
-import { AppShell, MantineProvider, Stack } from "@mantine/core";
+import { AppShell, MantineProvider } from "@mantine/core";
 import { useState } from "react";
-import { ColorScheme, TopBar, SideBar, NotificationBar, NotificationsProvider, useNotifications } from "./components";
+import { ColorScheme, TopBar, SideBar, NotificationBar, useNotifications } from "./components";
 
 export const App = () => {
   const [colorScheme, setColorScheme] = useState<ColorScheme>("light");
@@ -25,6 +25,6 @@ const ContentExample = () => {
   const { addNotification } = useNotifications();
   return <div>
     <h1>Here there will be some content</h1>
-    <button onClick={() => addNotification({ id: "1", description: "Test", title: "Title", type: "ok" })}>Notify</button>
+    <button onClick={() => addNotification({ description: "Test", title: "Title", type: "ok" })}>Notify</button>
   </div>
 }

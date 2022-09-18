@@ -1,30 +1,35 @@
 import { createContext, ReactNode, useContext, useState } from "react";
+import { v4 as uuid } from "uuid";
 
 export type Notification = {
-    id: string;
     type: "ok" | "error";
-    title: string;
-    description: string;
+    title?: string;
+    description?: string;
 };
 
+type NotificationWithId = (Notification & { id: string })
 
 type NotificationContextType = {
-    notifications: Notification[],
-    addNotification: (n: Notification) => void,
+    notifications: NotificationWithId[],
+    addNotification: (n: Notification) => string,
     deleteNotification: (id: string) => void,
 }
 
 const NotificationContext = createContext<NotificationContextType>({
     notifications: [],
-    addNotification: (n: Notification) => { },
+    addNotification: (n: Notification) => "",
     deleteNotification: (id: string) => { }
 });
 
 export const useNotifications = () => useContext(NotificationContext);
 
 export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-    const addNotification = (n: Notification) => setNotifications([...notifications, n])
+    const [notifications, setNotifications] = useState<NotificationWithId[]>([]);
+    const addNotification = (n: Notification) => {
+        const id = uuid()
+        setNotifications([{ ...n, id }, ...notifications]);
+        return id;
+    }
     const deleteNotification = (id: string) => setNotifications(notifications.filter(n => n.id != id))
     return <NotificationContext.Provider value={{ notifications: notifications, addNotification, deleteNotification }}>
         {children}
