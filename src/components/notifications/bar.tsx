@@ -26,8 +26,8 @@ export const NotificationBar = () => {
 
 const NotificationContainer = styled(Stack)`
   position: absolute;
-  right: 3px;
-  bottom: 3px;
+  right: 6px;
+  bottom: 6px;
   z-index: 99;
   overflow-y: auto;
   height: calc(100vh - 60px);
