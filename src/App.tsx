@@ -7,18 +7,16 @@ export const App = () => {
   const toggleColorScheme = () => setColorScheme(colorScheme == "light" ? "dark" : "light");
   return (
     <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
-      <NotificationsProvider>
-        <AppShell
-          padding={"md"}
-          navbar={<SideBar clusterName="Local cluster" />}
-          header={<TopBar colorScheme={colorScheme} toggleColorScheme={toggleColorScheme} />}
-          styles={(theme) => ({
-            main: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0] },
-          })}>
-          <ContentExample />
-          <NotificationBar />
-        </AppShell>
-      </NotificationsProvider>
+      <AppShell
+        padding={"md"}
+        navbar={<SideBar clusterName="Local cluster" />}
+        header={<TopBar colorScheme={colorScheme} toggleColorScheme={toggleColorScheme} />}
+        styles={(theme) => ({
+          main: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0] },
+        })}>
+        <ContentExample />
+        <NotificationBar />
+      </AppShell>
     </MantineProvider >
   );
 }
