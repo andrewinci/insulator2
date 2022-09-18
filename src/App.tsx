@@ -1,49 +1,55 @@
+import { ActionIcon, AppShell, Box, Group, Header, MantineProvider, Navbar, ScrollArea, Title, Image } from "@mantine/core";
+import { NavBarLink } from "./components/navbar-link";
+import { IconMoonStars, IconServer, IconSun } from "@tabler/icons";
 import { useState } from "react";
-import { invoke } from "@tauri-apps/api/tauri";
+import logo from '../src-tauri/icons/128x128.png';
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+const SideBar = ({ clusterName }: { clusterName: string }) => <Navbar width={{ base: 150 }} p="xs">
+  <Navbar.Section mt="xs" >
+    <Title order={4} >{clusterName}</Title>
+  </Navbar.Section>
+  <Navbar.Section grow component={ScrollArea} mx="-xs" px="xs">
+    <Box py="md">
+      <NavBarLink icon={<IconServer size={16} />} color={"blue"} label={"Clusters"} />
+    </Box>
+  </Navbar.Section>
+</Navbar>
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
-  }
+type ColorScheme = "dark" | "light"
+type TopBarProps = {
+  colorScheme: ColorScheme;
+  toggleColorScheme: () => void
+}
 
-  const add_cluster = async () => {
-    await invoke("add_cluster", {
-      cluster: {
-        name: "example cluster",
-        endpoint: "sample endpoint",
-        authentication: {
-          Sasl: {
-            username: "Yo",
-            password: "nice one",
-            scram: false
-          }
-        }
-      }
-    })
-      .then(res => console.log(res))
-      .catch(err => console.error(err));
-  }
+const TopBar = ({ toggleColorScheme, colorScheme }: TopBarProps) => <Header height={50}>
+  <Group style={{ height: "100%" }} ml={"sm"} mr={"sm"} align={"center"} position={"apart"}>
+    <Group spacing={10}>
+      <Image width={30} height={30} src={logo} alt="insulator" />
+      <Title order={2}>Insulator</Title>
+    </Group>
+    <ActionIcon variant="default" onClick={() => toggleColorScheme()} size={30}>
+      {colorScheme === 'dark' ? <IconSun size={16} /> : <IconMoonStars size={16} />}
+    </ActionIcon>
+  </Group>
+</Header>
 
-  invoke("get_configuration").then(r => console.log(r));
-
+export const App = () => {
+  const [colorScheme, setColorScheme] = useState<ColorScheme>("light");
+  const toggleColorScheme = () => setColorScheme(colorScheme == "light" ? "dark" : "light")
   return (
-    <div>
-      <h1>Insulator 2</h1>
-      <input
-        id="greet-input"
-        onChange={(e) => setName(e.currentTarget.value)}
-        placeholder="Enter a name..."
-      />
-      <button type="button" onClick={() => add_cluster()}>
-        Greet
-      </button>
-      <p>{greetMsg}</p>
-    </div>
+    <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
+      <AppShell
+        padding={"md"}
+        navbar={<SideBar clusterName="Local cluster" />}
+        header={<TopBar colorScheme={colorScheme} toggleColorScheme={toggleColorScheme} />}
+        styles={(theme) => ({
+          main: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0] },
+        })}>
+        <div>
+          <h1>Here there will be some content</h1>
+        </div>
+      </AppShell>
+    </MantineProvider>
   );
 }
 
-export default App;
