@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "insulator2",
+    "productName": "Insulator 2",
     "version": "0.0.0"
   },
   "tauri": {
@@ -57,7 +57,7 @@
         "fullscreen": false,
         "height": 600,
         "resizable": true,
-        "title": "insulator2",
+        "title": "Insulator 2",
         "width": 800
       }
     ]
