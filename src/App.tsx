@@ -3,15 +3,32 @@ import { invoke } from "@tauri-apps/api";
 import { useEffect, useState } from "react";
 import { ColorScheme, TopBar, SideBar, NotificationBar, useNotifications } from "./components";
 
+type InsulatorConfig = {
+  // clusters: []
+  theme: "Light" | "Dark"
+}
+
 export const App = () => {
   const [colorScheme, setColorScheme] = useState<ColorScheme>("light");
-  const toggleColorScheme = () => setColorScheme(colorScheme == "light" ? "dark" : "light");
+  const toggleColorScheme = () => {
+    const newTheme = colorScheme == "light" ? "Dark" : "Light"
+    setColorScheme(newTheme.toLowerCase() as ColorScheme);
+    invoke("set_theme", { theme: newTheme }).catch((err) => addNotification({ type: "error", title: "Unable to update the user config", description: err }));
+  };
   const { addNotification } = useNotifications();
+
   useEffect(() => {
-    invoke("get_configuration")
-      .then(() => addNotification({ type: "ok", title: "Configuration loaded" }))
+    invoke<InsulatorConfig>("get_configuration")
+      .then((config) => {
+        addNotification({ type: "ok", title: "Configuration loaded" });
+        switch (config.theme) {
+          case "Dark": setColorScheme("dark"); break;
+          case "Light": setColorScheme("light"); break;
+        }
+      })
       .catch((err) => addNotification({ type: "error", title: "Unable to retrieve the user config", description: err }))
   }, []);
+
   return (
     <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
       <AppShell

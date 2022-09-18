@@ -1,7 +1,5 @@
-use std::{
-    fs::File,
-    io::{Read, Write},
-};
+use std::path::PathBuf;
+use std::{fs, path::Path};
 
 use dirs::home_dir;
 use serde::{Deserialize, Serialize};
@@ -9,6 +7,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct InsulatorConfig {
     clusters: Vec<Cluster>,
+    theme: Option<Theme>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum Theme {
+    Dark,
+    Light,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -32,34 +37,25 @@ pub enum Authentication {
 fn default_config() -> InsulatorConfig {
     InsulatorConfig {
         clusters: Vec::new(),
+        theme: Some(Theme::Light),
     }
 }
 
-fn get_config_file() -> File {
+fn config_path() -> PathBuf {
     let mut config_path = home_dir().expect("Unable to retrieve the home directory");
     config_path.push(".insulator2.config");
-    let config_file = File::options()
-        .read(true)
-        .write(true)
-        .create(true)
-        .open(&config_path)
-        .expect(
-            format!(
-                "Unable to open or create the file at {}",
-                config_path.display().to_string()
-            )
-            .as_str(),
-        );
-    config_file
+    config_path
 }
 
 pub fn get_configuration() -> Result<InsulatorConfig, String> {
-    let mut config_file = get_config_file();
-    // read file content
-    let mut raw_config = String::new();
-    config_file
-        .read_to_string(&mut raw_config)
-        .expect("Unable to read the config file");
+    let config_path = config_path();
+    let raw_config = match Path::exists(&config_path) {
+        // read file content
+        true => fs::read_to_string(config_path)
+            .map_err(|err| format!("Unable to read the configuration file. {}", err)),
+        // if the file doesn't exists return an empty string
+        false => Ok("".to_owned()),
+    }?;
 
     if raw_config == "" {
         Ok(default_config())
@@ -71,6 +67,12 @@ pub fn get_configuration() -> Result<InsulatorConfig, String> {
     }
 }
 
+pub fn set_theme(theme: Theme) -> Result<(), String> {
+    let mut config = get_configuration()?;
+    config.theme = Some(theme);
+    write_configuration(&config)
+}
+
 pub fn add_cluster(new_cluster: Cluster) -> Result<InsulatorConfig, String> {
     let mut config = get_configuration()?;
     if config.clusters.iter().any(|c| c.name == new_cluster.name) {
@@ -80,19 +82,17 @@ pub fn add_cluster(new_cluster: Cluster) -> Result<InsulatorConfig, String> {
         ))
     } else {
         config.clusters.push(new_cluster);
-        write_configuration(&config);
-        Ok(config)
+        write_configuration(&config).and_then(|_| Ok(config))
     }
 }
 
-fn write_configuration(configuration: &InsulatorConfig) {
-    let mut config_file = get_config_file();
-    match serde_json::to_string_pretty(&configuration) {
-        Ok(res) => {
-            config_file
-                .write_all(res.as_bytes())
-                .expect("Unable to write the file");
-        }
-        Err(err) => panic!("Unable to update the configuration. {}", err),
-    };
+fn write_configuration(configuration: &InsulatorConfig) -> Result<(), String> {
+    let config_path = config_path();
+    serde_json::to_string_pretty(&configuration)
+        .map_err(|err| format!("Unable to serialize the configuration. {}", err))
+        .and_then(|res| {
+            fs::write(config_path, res)
+                .map_err(|err| format!("Unable to store the new configuration. {}", err))
+        })
+        .and_then(|_| Ok(()))
 }
