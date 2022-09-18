@@ -10,6 +10,26 @@ function App() {
     setGreetMsg(await invoke("greet", { name }));
   }
 
+  const add_cluster = async () => {
+    await invoke("add_cluster", {
+      cluster: {
+        name: "example cluster",
+        endpoint: "sample endpoint",
+        authentication: {
+          Sasl: {
+            username: "Yo",
+            password: "nice one",
+            scram: false
+          }
+        }
+      }
+    })
+      .then(res => console.log(res))
+      .catch(err => console.error(err));
+  }
+
+  invoke("get_configuration").then(r => console.log(r));
+
   return (
     <div>
       <h1>Insulator 2</h1>
@@ -18,7 +38,7 @@ function App() {
         onChange={(e) => setName(e.currentTarget.value)}
         placeholder="Enter a name..."
       />
-      <button type="button" onClick={() => greet()}>
+      <button type="button" onClick={() => add_cluster()}>
         Greet
       </button>
       <p>{greetMsg}</p>
