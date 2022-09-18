@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
     "@mantine/core": "^5.3.3",
     "@mantine/hooks": "^5.3.3",
     "@tabler/icons": "^1.96.0",
