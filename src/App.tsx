@@ -1,10 +1,17 @@
 import { AppShell, MantineProvider } from "@mantine/core";
-import { useState } from "react";
+import { invoke } from "@tauri-apps/api";
+import { useEffect, useState } from "react";
 import { ColorScheme, TopBar, SideBar, NotificationBar, useNotifications } from "./components";
 
 export const App = () => {
   const [colorScheme, setColorScheme] = useState<ColorScheme>("light");
   const toggleColorScheme = () => setColorScheme(colorScheme == "light" ? "dark" : "light");
+  const { addNotification } = useNotifications();
+  useEffect(() => {
+    invoke("get_configuration")
+      .then(() => addNotification({ type: "ok", title: "Configuration loaded" }))
+      .catch((err) => addNotification({ type: "error", title: "Unable to retrieve the user config", description: err }))
+  }, []);
   return (
     <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
       <AppShell
@@ -14,17 +21,11 @@ export const App = () => {
         styles={(theme) => ({
           main: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0] },
         })}>
-        <ContentExample />
+        <div>
+          <h1>Here there will be some content</h1>
+        </div>
         <NotificationBar />
       </AppShell>
     </MantineProvider >
   );
-}
-
-const ContentExample = () => {
-  const { addNotification } = useNotifications();
-  return <div>
-    <h1>Here there will be some content</h1>
-    <button onClick={() => addNotification({ description: "Test", title: "Title", type: "ok" })}>Notify</button>
-  </div>
 }

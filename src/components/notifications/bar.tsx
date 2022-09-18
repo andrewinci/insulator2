@@ -32,5 +32,5 @@ const NotificationContainer = styled(Stack)`
   overflow-y: auto;
   height: calc(100vh - 60px);
   flex-direction: column-reverse;
-  width: 300px;
+  width: 35%;
 `;
