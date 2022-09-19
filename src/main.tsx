@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { App } from "./App";
-import { AppStateProvider, NotificationsProvider } from "./providers";
+import { AppStateProvider } from "./providers";
 
 const router = createBrowserRouter([
   {
@@ -14,10 +14,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <NotificationsProvider>
-      <AppStateProvider>
-        <RouterProvider router={router} />
-      </AppStateProvider>
-    </NotificationsProvider>
+    <AppStateProvider>
+      <RouterProvider router={router} />
+    </AppStateProvider>
   </React.StrictMode>
 );

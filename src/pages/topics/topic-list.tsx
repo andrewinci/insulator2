@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { FixedSizeList } from "react-window";
 import { getTopicList, TopicInfo } from "../../kafka";
-import { useAppState, useNotifications } from "../../providers";
+import { useAppState, notifyAlert, notifySuccess } from "../../providers";
 
 function getWindowSize() {
   const { innerWidth, innerHeight } = window;
@@ -13,7 +13,6 @@ function getWindowSize() {
 
 export const TopicList = () => {
   const { state: appState } = useAppState();
-  const { alert, success } = useNotifications();
   const [state, setState] = useState<{ topics: TopicInfo[]; search?: string }>({ topics: [] });
   const [windowSize, setWindowSize] = useState(getWindowSize());
 
@@ -32,9 +31,9 @@ export const TopicList = () => {
     if (appState.activeCluster) {
       getTopicList(appState.activeCluster)
         .then((topics) => setState({ topics }))
-        .then((_) => success("List of topics successfully retrieved"))
+        .then((_) => notifySuccess("List of topics successfully retrieved"))
         .catch((err) =>
-          alert(
+          notifyAlert(
             `Unable to retrieve the list of topics for cluster "${appState.activeCluster?.name}"`,
             err
           )
@@ -68,14 +67,6 @@ export const TopicList = () => {
         width={"100%"}>
         {({ index, style }) => <NavLink style={style} label={filteredTopics[index].name} />}
       </FixedSizeList>
-      {/* <ScrollArea mt={10} type="hover" style={{ height: "calc(100vh - 150px)" }}>
-        {Array(1000).fill(0)
-          .map((_, i) => ({ name: `random topic name ${i}` }))
-          .filter((t) => t.name.includes(state.search ?? ""))
-          .map((topic) =>
-            <NavLink key={topic.name} label={topic.name} />
-          )}
-      </ScrollArea> */}
     </Container>
   );
 };
