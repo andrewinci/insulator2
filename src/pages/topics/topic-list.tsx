@@ -1,5 +1,4 @@
 import {
-  Button,
   Container,
   Divider,
   Title,
@@ -8,18 +7,19 @@ import {
   Input,
   Loader,
   Center,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
-import { IconSearch } from "@tabler/icons";
+import { IconPlus, IconRefresh, IconSearch } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { FixedSizeList } from "react-window";
 import { getTopicList, TopicInfo } from "../../kafka";
 import { useAppState, notifyAlert, notifySuccess } from "../../providers";
 
-function getWindowSize() {
+const getWindowSize = () => {
   const { innerWidth, innerHeight } = window;
   return { innerWidth, innerHeight };
-}
+};
 
 export const TopicList = () => {
   const { state: appState } = useAppState();
@@ -40,8 +40,9 @@ export const TopicList = () => {
     [state.search, state.topics]
   );
 
-  useMemo(() => {
+  const updateTopicList = () => {
     if (appState.activeCluster) {
+      setState({ ...state, loading: true });
       getTopicList(appState.activeCluster)
         .then((topics) => setState({ topics, loading: false }))
         .then((_) => notifySuccess("List of topics successfully retrieved"))
@@ -52,16 +53,27 @@ export const TopicList = () => {
           )
         );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appState.activeCluster]);
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useMemo(() => updateTopicList(), [appState.activeCluster]);
 
   return (
     <Container>
       <Group position={"apart"}>
         <Title>Topics</Title>
-        <Button component={Link} to="new">
-          Add topic
-        </Button>
+        <Group>
+          <Tooltip label="Create a new topic">
+            <ActionIcon disabled={true}>
+              <IconPlus></IconPlus>
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Refresh list">
+            <ActionIcon onClick={updateTopicList}>
+              <IconRefresh></IconRefresh>
+            </ActionIcon>
+          </Tooltip>
+        </Group>
       </Group>
       <Divider mt={10} />
       <Input
