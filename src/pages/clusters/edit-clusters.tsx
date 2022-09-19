@@ -1,14 +1,39 @@
 import { Button, Container, Divider, Group, Stack, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Cluster, useAppState } from "../../providers";
+import { Cluster, useAppState, useNotifications } from "../../providers";
 
 export const EditCluster = () => {
   const { clusterName } = useParams();
   const navigate = useNavigate();
-  const { addCluster, editCluster, state } = useAppState();
+  const { alert } = useNotifications();
+  const { setState, state } = useAppState();
 
   const cluster = state.clusters.find((c) => c.name == clusterName);
+
+  const addCluster = (cluster: Cluster) => {
+    if (state.clusters.find((c) => c.name == cluster.name)) {
+      alert(
+        "Cluster configuration already exists",
+        `A cluster with name ${cluster.name} already exists.`
+      );
+      return Promise.reject();
+    } else {
+      return setState({ ...state, clusters: [...state.clusters, cluster] });
+    }
+  };
+
+  const editCluster = (clusterName: string, cluster: Cluster) => {
+    if (!state.clusters.find((c) => c.name == clusterName)) {
+      alert("Cluster configuration not found", `Unable to update ${cluster.name}.`);
+      return Promise.reject();
+    } else {
+      const clusters = state.clusters.filter((c) => c.name != clusterName);
+      clusters.push(cluster);
+      return setState({ ...state, clusters });
+    }
+  };
+
   const form = useForm<Cluster>({
     initialValues: cluster ?? {
       name: "",

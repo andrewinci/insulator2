@@ -21,7 +21,7 @@ export type Cluster = {
 
 type AppStateContextType = {
   state: AppState;
-  setState: (state: AppState) => void;
+  setState: (state: AppState) => Promise<void>;
 };
 
 const defaultAppState: AppStateContextType = {
