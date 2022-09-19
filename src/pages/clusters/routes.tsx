@@ -6,6 +6,6 @@ export const Clusters = () => (
   <Routes>
     <Route index element={<ClusterList />} />
     <Route path="new" element={<EditCluster />} />
-    <Route path="edit/:clusterName" element={<EditCluster />} />
+    <Route path="edit/:clusterId" element={<EditCluster />} />
   </Routes>
 );

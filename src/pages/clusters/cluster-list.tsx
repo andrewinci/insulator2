@@ -18,12 +18,12 @@ export const ClusterList = () => {
           <Paper key={c.name} shadow="md" p="md" withBorder>
             <Group position="apart">
               <Stack>
-                <Title>{c.name}</Title>
+                <Title order={3}>{c.name}</Title>
                 <Text>{c.endpoint}</Text>
               </Stack>
               <Button.Group>
                 <Button color={"red"}>Delete</Button>
-                <Button component={Link} to={`edit/${c.name}`} color={"teal"}>
+                <Button component={Link} to={`edit/${c.id}`} color={"teal"}>
                   Edit
                 </Button>
                 <Button>Use</Button>

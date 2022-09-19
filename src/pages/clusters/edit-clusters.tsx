@@ -2,14 +2,15 @@ import { Button, Container, Divider, Group, Stack, TextInput, Title } from "@man
 import { useForm } from "@mantine/form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Cluster, useAppState, useNotifications } from "../../providers";
+import { v4 as uuid } from "uuid";
 
 export const EditCluster = () => {
-  const { clusterName } = useParams();
+  const { clusterId } = useParams();
   const navigate = useNavigate();
   const { alert } = useNotifications();
   const { setState, state } = useAppState();
 
-  const cluster = state.clusters.find((c) => c.name == clusterName);
+  const cluster = state.clusters.find((c) => c.id == clusterId);
 
   const addCluster = (cluster: Cluster) => {
     if (state.clusters.find((c) => c.name == cluster.name)) {
@@ -23,12 +24,12 @@ export const EditCluster = () => {
     }
   };
 
-  const editCluster = (clusterName: string, cluster: Cluster) => {
-    if (!state.clusters.find((c) => c.name == clusterName)) {
+  const editCluster = (clusterId: string, cluster: Cluster) => {
+    if (!state.clusters.find((c) => c.id == clusterId)) {
       alert("Cluster configuration not found", `Unable to update ${cluster.name}.`);
       return Promise.reject();
     } else {
-      const clusters = state.clusters.filter((c) => c.name != clusterName);
+      const clusters = state.clusters.filter((c) => c.id != clusterId);
       clusters.push(cluster);
       return setState({ ...state, clusters });
     }
@@ -36,6 +37,7 @@ export const EditCluster = () => {
 
   const form = useForm<Cluster>({
     initialValues: cluster ?? {
+      id: uuid(),
       name: "",
       endpoint: "",
       authentication: "None",
@@ -53,7 +55,7 @@ export const EditCluster = () => {
       <form
         onSubmit={form.onSubmit(
           async (values) =>
-            await (clusterName ? editCluster(clusterName, values) : addCluster(values)).then((_) =>
+            await (clusterId ? editCluster(clusterId, values) : addCluster(values)).then((_) =>
               navigate("/clusters")
             )
         )}>

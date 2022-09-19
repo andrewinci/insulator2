@@ -14,6 +14,7 @@ export type ClusterAuthentication =
   | "None";
 
 export type Cluster = {
+  id: string;
   name: string;
   endpoint: string;
   authentication: ClusterAuthentication;

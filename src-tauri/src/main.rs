@@ -1,7 +1,7 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
 mod configuration;
-use configuration::{ Cluster, InsulatorConfig, Theme };
+use configuration::{ InsulatorConfig };
 
 #[tauri::command]
 fn get_configuration() -> Result<InsulatorConfig, String> {
