@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { useNotifications } from "./components";
+import { useNotifications } from ".";
 
 export type AppTheme = "Light" | "Dark";
 

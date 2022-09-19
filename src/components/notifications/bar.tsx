@@ -1,7 +1,7 @@
 import { Stack, Notification as NotificationComponent, DefaultProps } from "@mantine/core";
 import { IconCheck, IconX } from "@tabler/icons";
 import styled from "@emotion/styled";
-import { useNotifications } from "./provider";
+import { useNotifications } from "../../providers";
 
 export const NotificationBar = () => {
     const { notifications, deleteNotification } = useNotifications();

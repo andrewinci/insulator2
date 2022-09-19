@@ -1,9 +1,8 @@
 import { ActionIcon, ColorScheme, Container, Divider, Select, Stack, Title } from "@mantine/core"
-import { AppTheme, useAppState } from "../app-state-provider"
+import { AppTheme, useAppState } from "../providers/app-state-provider"
 
 export const Settings = () => {
     const { state, setTheme } = useAppState();
-    const toBackendTheme = (t: ColorScheme) => t == "dark" ? "Dark" : "Light";
     return <Container>
         <Title mb={10}>Settings</Title>
         <Divider mb={10}></Divider>

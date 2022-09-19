@@ -1,10 +1,7 @@
 import { AppShell, MantineProvider } from "@mantine/core";
-import { invoke } from "@tauri-apps/api";
-import { stat } from "fs";
-import { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
-import { useAppState } from "./app-state-provider";
-import { ColorScheme, SideBar, NotificationBar, useNotifications } from "./components";
+import { useAppState } from "./providers/app-state-provider";
+import { SideBar, NotificationBar } from "./components";
 import { Clusters, Settings } from "./pages";
 
 export const App = () => {

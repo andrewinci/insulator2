@@ -2,8 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { App } from "./App";
-import { AppStateProvider } from "./app-state-provider";
-import { NotificationsProvider } from "./components";
+import { AppStateProvider, NotificationsProvider } from "./providers";
 
 
 const router = createBrowserRouter([
@@ -22,6 +21,5 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           router={router} />
       </AppStateProvider>
     </NotificationsProvider>
-
   </React.StrictMode>
 );
