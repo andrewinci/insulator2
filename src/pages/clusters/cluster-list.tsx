@@ -1,9 +1,23 @@
 import { Button, Text, Container, Divider, Paper, Stack, Title, Group } from "@mantine/core";
+import { openConfirmModal } from "@mantine/modals";
 import { Link } from "react-router-dom";
-import { useAppState } from "../../providers";
+import { Cluster, useAppState } from "../../providers";
 
 export const ClusterList = () => {
-  const { state } = useAppState();
+  const { state, setState } = useAppState();
+
+  const openModal = (cluster: Cluster) =>
+    openConfirmModal({
+      title: `Are you sure to delete "${cluster.name}"`,
+      children: (
+        <Text size="sm">If confirmed, it will not be possible to retrieve this configuration.</Text>
+      ),
+      labels: { confirm: "Confirm", cancel: "Cancel" },
+      onConfirm: () => {
+        setState({ ...state, clusters: state.clusters.filter((c) => c.id != cluster.id) });
+      },
+    });
+
   return (
     <Container>
       <Group position={"apart"}>
@@ -22,7 +36,9 @@ export const ClusterList = () => {
                 <Text>{c.endpoint}</Text>
               </Stack>
               <Button.Group>
-                <Button color={"red"}>Delete</Button>
+                <Button onClick={() => openModal(c)} color={"red"}>
+                  Delete
+                </Button>
                 <Button component={Link} to={`edit/${c.id}`} color={"teal"}>
                   Edit
                 </Button>
