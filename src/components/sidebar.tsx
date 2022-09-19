@@ -4,7 +4,7 @@ import { IconCircleDashed, IconLine, IconSatellite, IconServer, IconSettings } f
 import logo from "../../src-tauri/icons/128x128.png";
 
 export const SideBar = ({ clusterName }: { clusterName?: string }) => (
-  <Navbar width={{ base: 200 }} p="xs">
+  <Navbar width={{ base: 220 }} p="xs">
     <Navbar.Section>
       <Center>
         <Group style={{ height: "45px" }} spacing={10}>

@@ -1,5 +1,5 @@
 import { AppShell, MantineProvider } from "@mantine/core";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { useAppState } from "./providers/app-state-provider";
 import { SideBar, NotificationBar } from "./components";
 import { Clusters, Settings, TopicList } from "./pages";
@@ -23,7 +23,7 @@ export const App = () => {
             },
           })}>
           <Routes>
-            <Route index element={<h1>TODO: some home page</h1>} />
+            <Route index element={<Navigate to="/clusters/" replace />} />
             <Route path="clusters/*" element={<Clusters />} />
             <Route path="settings" element={<Settings />} />
             <Route path="topics" element={<TopicList />} />

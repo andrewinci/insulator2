@@ -4,7 +4,8 @@ use serde::{ Serialize, Deserialize };
 
 use crate::configuration::Cluster;
 
-fn create_consumer(cluster: &Cluster) -> StreamConsumer {
+fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer, String> {
+    // todo: cache
     ClientConfig::new()
         .set("enable.partition.eof", "true")
         .set("bootstrap.servers", &cluster.endpoint)
@@ -12,7 +13,7 @@ fn create_consumer(cluster: &Cluster) -> StreamConsumer {
         .set("api.version.request", "true")
         .set("debug", "all")
         .create()
-        .expect("Failed to create StreamConsumer")
+        .map_err(|err| format!("Unable to build the Kafka consumer. {}", err))
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -22,10 +23,10 @@ pub struct TopicInfo {
 
 #[tauri::command]
 pub async fn list_topics(cluster: Cluster) -> Result<Vec<TopicInfo>, String> {
-    let consumer = create_consumer(&cluster);
+    let consumer = create_consumer(&cluster)?;
     let metadata = consumer
-        .fetch_metadata(None, Duration::from_secs(5))
-        .expect("Failed to fetch metadata");
+        .fetch_metadata(None, Duration::from_secs(10))
+        .map_err(|err| format!("Kafka error. {}", err))?;
 
     let topic_info: Vec<TopicInfo> = metadata
         .topics()

@@ -12,8 +12,10 @@ export type Cluster = {
   authentication: ClusterAuthentication;
 };
 
-export const getTopicList = async (cluster: Cluster) => {
-  return await invoke("list_topics", { cluster })
-    .then((res) => console.log(res))
-    .catch((err) => console.error(err));
+export type TopicInfo = {
+  name: string;
 };
+
+export function getTopicList(cluster: Cluster): Promise<TopicInfo[]> {
+  return invoke<TopicInfo[]>("list_topics", { cluster });
+}
