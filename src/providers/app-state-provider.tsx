@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { Cluster } from "../kafka";
 import { useNotifications } from "./notification-provider";
 
 export type AppTheme = "Light" | "Dark";
@@ -7,18 +8,6 @@ type AppState = {
   activeCluster?: Cluster;
   clusters: Cluster[];
   theme: AppTheme;
-};
-
-export type ClusterAuthentication =
-  | { Sasl: { username: string; password: string; scram: boolean } }
-  | { Ssl: unknown }
-  | "None";
-
-export type Cluster = {
-  id: string;
-  name: string;
-  endpoint: string;
-  authentication: ClusterAuthentication;
 };
 
 type AppStateContextType = {
@@ -48,6 +37,7 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
   const [appState, setAppState] = useState<AppState>(defaultAppState.state);
   const { success, alert } = useNotifications();
 
+  // retrieve the configurations at the first start
   useEffect(() => {
     invoke<AppState>("get_configuration")
       .then((config) => {
@@ -55,7 +45,8 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
         setAppState(config);
       })
       .catch((err) => alert("Unable to retrieve the user config", err));
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setAppState]);
 
   const context: AppStateContextType = {
     state: appState,

@@ -1,7 +1,8 @@
 import { Button, Text, Container, Divider, Paper, Stack, Title, Group } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { Link, useNavigate } from "react-router-dom";
-import { Cluster, useAppState } from "../../providers";
+import { Cluster } from "../../kafka";
+import { useAppState } from "../../providers";
 
 export const ClusterList = () => {
   const { state, setState, setActiveCluster } = useAppState();

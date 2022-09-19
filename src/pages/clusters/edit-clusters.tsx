@@ -1,8 +1,9 @@
 import { Button, Container, Divider, Group, Stack, TextInput, Title } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Cluster, useAppState, useNotifications } from "../../providers";
+import { useAppState, useNotifications } from "../../providers";
 import { v4 as uuid } from "uuid";
+import { Cluster } from "../../kafka";
 
 export const EditCluster = () => {
   const { clusterId } = useParams();
