@@ -2,7 +2,7 @@ import { AppShell, MantineProvider } from "@mantine/core";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAppState } from "./providers/app-state-provider";
 import { SideBar } from "./components";
-import { Clusters, Settings, TopicList } from "./pages";
+import { Clusters, Settings, TopicsPage } from "./pages";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
 
@@ -28,7 +28,7 @@ export const App = () => {
               <Route index element={<Navigate to="/clusters/" replace />} />
               <Route path="clusters/*" element={<Clusters />} />
               <Route path="settings" element={<Settings />} />
-              <Route path="topics" element={<TopicList />} />
+              <Route path="topics" element={<TopicsPage />} />
             </Routes>
           </AppShell>
         </ModalsProvider>

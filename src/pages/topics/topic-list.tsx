@@ -21,7 +21,7 @@ const getWindowSize = () => {
   return { innerWidth, innerHeight };
 };
 
-export const TopicList = () => {
+export const TopicList = ({ onTopicSelected }: { onTopicSelected: (topic: TopicInfo) => void }) => {
   const { state: appState } = useAppState();
   const [state, setState] = useState<{ topics: TopicInfo[]; search?: string; loading: boolean }>({
     topics: [],
@@ -59,7 +59,7 @@ export const TopicList = () => {
   useMemo(() => updateTopicList(), [appState.activeCluster]);
 
   return (
-    <Container>
+    <Container style={{ width: "100%" }}>
       <Group position={"apart"}>
         <Title>Topics</Title>
         <Group>
@@ -95,7 +95,13 @@ export const TopicList = () => {
         itemCount={filteredTopics.length}
         itemSize={38}
         width={"100%"}>
-        {({ index, style }) => <NavLink style={style} label={filteredTopics[index].name} />}
+        {({ index, style }) => (
+          <NavLink
+            onClick={() => onTopicSelected(filteredTopics[index])}
+            style={style}
+            label={filteredTopics[index].name}
+          />
+        )}
       </FixedSizeList>
     </Container>
   );
