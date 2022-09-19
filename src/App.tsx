@@ -1,37 +1,16 @@
 import { AppShell, MantineProvider } from "@mantine/core";
 import { invoke } from "@tauri-apps/api";
+import { stat } from "fs";
 import { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
+import { useAppState } from "./app-state-provider";
 import { ColorScheme, SideBar, NotificationBar, useNotifications } from "./components";
 import { Clusters, Settings } from "./pages";
 
-type InsulatorConfig = {
-  // clusters: []
-  theme: "Light" | "Dark"
-}
-
 export const App = () => {
-  const [colorScheme, setColorScheme] = useState<ColorScheme>("light");
-  const { addNotification } = useNotifications();
-
-  useEffect(() => {
-    invoke<InsulatorConfig>("get_configuration")
-      .then((config) => {
-        addNotification({ type: "ok", title: "Configuration loaded" });
-        setColorScheme(config.theme.toLowerCase() as ColorScheme);
-      })
-      .catch((err) => addNotification({ type: "error", title: "Unable to retrieve the user config", description: err }))
-  }, []);
-
-  const onThemeChange = (v: ColorScheme) => {
-    setColorScheme(v);
-    invoke("set_theme", { theme: v == "dark" ? "Dark" : "Light" })
-      .then(() => addNotification({ type: "ok", title: "Theme updated" }))
-      .catch((err) => addNotification({ type: "error", title: "Unable to update the user config", description: err }));
-  }
-
+  const { state } = useAppState();
   return (
-    <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
+    <MantineProvider theme={{ colorScheme: state.theme == "Dark" ? "dark" : "light" }} withGlobalStyles withNormalizeCSS>
       <AppShell
         padding={"md"}
         navbar={<SideBar clusterName="Local cluster" />}
@@ -42,7 +21,7 @@ export const App = () => {
         <Routes>
           <Route index element={<Clusters />} />
           <Route path="clusters" element={<Clusters />} />
-          <Route path="settings" element={<Settings theme={colorScheme} onThemeChange={onThemeChange} />} />
+          <Route path="settings" element={<Settings />} />
         </Routes>
         <NotificationBar />
       </AppShell>

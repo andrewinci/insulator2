@@ -1,12 +1,8 @@
 import { ActionIcon, ColorScheme, Container, Divider, Select, Stack, Title } from "@mantine/core"
+import { AppTheme, useAppState } from "../app-state-provider"
 
-type SettingsProps = {
-    //todo: replace with a global state
-    theme: ColorScheme,
-    onThemeChange: (theme: ColorScheme) => void
-}
-
-export const Settings = ({ theme, onThemeChange }: SettingsProps) => {
+export const Settings = () => {
+    const { state, setTheme } = useAppState();
     const toBackendTheme = (t: ColorScheme) => t == "dark" ? "Dark" : "Light";
     return <Container>
         <Title mb={10}>Settings</Title>
@@ -15,14 +11,14 @@ export const Settings = ({ theme, onThemeChange }: SettingsProps) => {
             <Select
                 label="Theme"
                 defaultValue={"Light"}
-                value={toBackendTheme(theme)}
+                value={state.theme}
                 data={[
                     { value: "Dark", label: "Dark" },
                     { value: "Light", label: "Light" }
                 ]}
                 onChange={(v) => {
                     if (v) {
-                        onThemeChange(v.toLowerCase() as ColorScheme);
+                        setTheme(v as AppTheme);
                     }
                 }}
             />
