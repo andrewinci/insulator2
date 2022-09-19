@@ -18,7 +18,9 @@ const defaultAppState: AppStateContextType = {
   state: {
     theme: "Light",
   },
-  setTheme: async () => { },
+  setTheme: async () => {
+    throw Error("Not implemented");
+  },
 };
 
 const AppStateContext = createContext<AppStateContextType>(defaultAppState);
@@ -35,7 +37,13 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
         addNotification({ type: "ok", title: "Configuration loaded" });
         setAppState(config);
       })
-      .catch((err) => addNotification({ type: "error", title: "Unable to retrieve the user config", description: err }))
+      .catch((err) =>
+        addNotification({
+          type: "error",
+          title: "Unable to retrieve the user config",
+          description: err,
+        })
+      );
   }, []);
 
   const context: AppStateContextType = {
@@ -44,11 +52,15 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
       setAppState({ ...appState, theme });
       invoke("set_theme", { theme })
         .then(() => addNotification({ type: "ok", title: "Theme updated" }))
-        .catch((err) => addNotification({ type: "error", title: "Unable to update the user config", description: err }));
+        .catch((err) =>
+          addNotification({
+            type: "error",
+            title: "Unable to update the user config",
+            description: err,
+          })
+        );
     },
   };
 
-  return <AppStateContext.Provider value={context}>
-    {children}
-  </AppStateContext.Provider>
+  return <AppStateContext.Provider value={context}>{children}</AppStateContext.Provider>;
 };

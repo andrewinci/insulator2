@@ -4,21 +4,19 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { App } from "./App";
 import { AppStateProvider, NotificationsProvider } from "./providers";
 
-
 const router = createBrowserRouter([
   {
     path: "*",
     element: <App />,
-    errorElement: <App /> //todo: handle 404/500?
-  }
+    errorElement: <App />, //todo: handle 404/500?
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <NotificationsProvider>
       <AppStateProvider>
-        <RouterProvider
-          router={router} />
+        <RouterProvider router={router} />
       </AppStateProvider>
     </NotificationsProvider>
   </React.StrictMode>

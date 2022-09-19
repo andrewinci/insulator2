@@ -7,13 +7,18 @@ import { Clusters, Settings } from "./pages";
 export const App = () => {
   const { state } = useAppState();
   return (
-    <MantineProvider theme={{ colorScheme: state.theme == "Dark" ? "dark" : "light" }} withGlobalStyles withNormalizeCSS>
+    <MantineProvider
+      theme={{ colorScheme: state.theme == "Dark" ? "dark" : "light" }}
+      withGlobalStyles
+      withNormalizeCSS>
       <AppShell
         padding={"md"}
         navbar={<SideBar clusterName="Local cluster" />}
-        // header={<TopBar colorScheme={colorScheme} toggleColorScheme={toggleColorScheme} />}
         styles={(theme) => ({
-          main: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0] },
+          main: {
+            backgroundColor:
+              theme.colorScheme === "dark" ? theme.colors.dark[8] : theme.colors.gray[0],
+          },
         })}>
         <Routes>
           <Route index element={<Clusters />} />
@@ -22,7 +27,6 @@ export const App = () => {
         </Routes>
         <NotificationBar />
       </AppShell>
-    </MantineProvider >
-
+    </MantineProvider>
   );
-}
+};

@@ -29,6 +29,8 @@
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
     "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.37.0",
+    "@typescript-eslint/parser": "^5.37.0",
     "@vitejs/plugin-react": "^2.0.0",
     "eslint": "^8.23.1",
     "eslint-plugin-react": "^7.31.8",
@@ -42,7 +44,8 @@
   },
   "prettier": {
     "bracketSameLine": true,
-    "semi": true
+    "semi": true,
+    "printWidth": 100
   },
   "lint-staged": {
     "*": [
@@ -51,5 +54,50 @@
     "*.{ts,tsx}": [
       "eslint"
     ]
+  },
+  "eslintConfig": {
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
+    "env": {
+      "browser": true,
+      "es2021": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:react-hooks/recommended",
+      "plugin:react/jsx-runtime"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaFeatures": {
+        "jsx": true
+      },
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },
+    "plugins": [
+      "react",
+      "@typescript-eslint"
+    ],
+    "rules": {
+      "require-await": "warn",
+      "@typescript-eslint/no-useless-constructor": "error",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      "react/react-in-jsx-scope": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_",
+          "caughtErrorsIgnorePattern": "^_"
+        }
+      ]
+    }
   }
 }

@@ -1,8 +1,8 @@
 use std::path::PathBuf;
-use std::{fs, path::Path};
+use std::{ fs, path::Path };
 
 use dirs::home_dir;
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct InsulatorConfig {
@@ -49,13 +49,15 @@ fn config_path() -> PathBuf {
 
 pub fn get_configuration() -> Result<InsulatorConfig, String> {
     let config_path = config_path();
-    let raw_config = match Path::exists(&config_path) {
+    let raw_config = (match Path::exists(&config_path) {
         // read file content
-        true => fs::read_to_string(config_path)
-            .map_err(|err| format!("Unable to read the configuration file. {}", err)),
+        true =>
+            fs
+                ::read_to_string(config_path)
+                .map_err(|err| format!("Unable to read the configuration file. {}", err)),
         // if the file doesn't exists return an empty string
         false => Ok("".to_owned()),
-    }?;
+    })?;
 
     if raw_config == "" {
         Ok(default_config())
@@ -76,10 +78,7 @@ pub fn set_theme(theme: Theme) -> Result<(), String> {
 pub fn add_cluster(new_cluster: Cluster) -> Result<InsulatorConfig, String> {
     let mut config = get_configuration()?;
     if config.clusters.iter().any(|c| c.name == new_cluster.name) {
-        Err(format!(
-            "Cluster \"{}\" already exists. Use another name.",
-            new_cluster.name
-        ))
+        Err(format!("Cluster \"{}\" already exists. Use another name.", new_cluster.name))
     } else {
         config.clusters.push(new_cluster);
         write_configuration(&config).and_then(|_| Ok(config))
@@ -88,11 +87,13 @@ pub fn add_cluster(new_cluster: Cluster) -> Result<InsulatorConfig, String> {
 
 fn write_configuration(configuration: &InsulatorConfig) -> Result<(), String> {
     let config_path = config_path();
-    serde_json::to_string_pretty(&configuration)
+    serde_json
+        ::to_string_pretty(&configuration)
         .map_err(|err| format!("Unable to serialize the configuration. {}", err))
         .and_then(|res| {
-            fs::write(config_path, res)
-                .map_err(|err| format!("Unable to store the new configuration. {}", err))
+            fs::write(config_path, res).map_err(|err|
+                format!("Unable to store the new configuration. {}", err)
+            )
         })
         .and_then(|_| Ok(()))
 }

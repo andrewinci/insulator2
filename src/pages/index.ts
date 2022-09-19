@@ -1,2 +1,2 @@
-export * from "./settings"
-export * from "./clusters"
+export * from "./settings";
+export * from "./clusters";

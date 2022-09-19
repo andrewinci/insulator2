@@ -1,10 +1,7 @@
-#![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
-)]
+#![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
 mod configuration;
-use configuration::{Cluster, InsulatorConfig, Theme};
+use configuration::{ Cluster, InsulatorConfig, Theme };
 
 #[tauri::command]
 fn get_configuration() -> Result<InsulatorConfig, String> {
@@ -22,12 +19,9 @@ fn set_theme(theme: Theme) -> Result<(), String> {
 }
 
 fn main() {
-    tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
-            get_configuration,
-            add_cluster,
-            set_theme
-        ])
+    tauri::Builder
+        ::default()
+        .invoke_handler(tauri::generate_handler![get_configuration, add_cluster, set_theme])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
