@@ -36,7 +36,7 @@ export const TopicList = ({ onTopicSelected }: { onTopicSelected: (topic: TopicI
   }, []);
 
   const filteredTopics = useMemo(
-    () => state.topics.filter((t) => t.name.toLowerCase().includes(state.search ?? "")),
+    () => state.topics.filter((t) => t.name.toLowerCase().includes(state.search ?? "")).sort(),
     [state.search, state.topics]
   );
 
