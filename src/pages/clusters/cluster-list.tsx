@@ -1,10 +1,11 @@
 import { Button, Text, Container, Divider, Paper, Stack, Title, Group } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Cluster, useAppState } from "../../providers";
 
 export const ClusterList = () => {
-  const { state, setState } = useAppState();
+  const { state, setState, setActiveCluster } = useAppState();
+  const navigate = useNavigate();
 
   const openModal = (cluster: Cluster) =>
     openConfirmModal({
@@ -15,6 +16,9 @@ export const ClusterList = () => {
       labels: { confirm: "Confirm", cancel: "Cancel" },
       onConfirm: () => {
         setState({ ...state, clusters: state.clusters.filter((c) => c.id != cluster.id) });
+        if (state.activeCluster?.id == cluster.id) {
+          state.activeCluster = undefined;
+        }
       },
     });
 
@@ -42,7 +46,13 @@ export const ClusterList = () => {
                 <Button component={Link} to={`edit/${c.id}`} color={"teal"}>
                   Edit
                 </Button>
-                <Button>Use</Button>
+                <Button
+                  onClick={() => {
+                    setActiveCluster(c);
+                    navigate("/topics");
+                  }}>
+                  Use
+                </Button>
               </Button.Group>
             </Group>
           </Paper>

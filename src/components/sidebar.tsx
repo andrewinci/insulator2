@@ -3,7 +3,7 @@ import { SidebarItem } from "./sidebar-item";
 import { IconCircleDashed, IconLine, IconSatellite, IconServer, IconSettings } from "@tabler/icons";
 import logo from "../../src-tauri/icons/128x128.png";
 
-export const SideBar = ({ clusterName }: { clusterName: string }) => (
+export const SideBar = ({ clusterName }: { clusterName?: string }) => (
   <Navbar width={{ base: 200 }} p="xs">
     <Navbar.Section>
       <Center>
@@ -12,14 +12,18 @@ export const SideBar = ({ clusterName }: { clusterName: string }) => (
           <Title order={2}>Insulator</Title>
         </Group>
       </Center>
-      <Divider my="sm" />
+      <Divider mt="sm" />
     </Navbar.Section>
-    <Navbar.Section mt="xs">
-      <Center>
-        <Title order={4}>{clusterName}</Title>
-      </Center>
-    </Navbar.Section>
-    <Navbar.Section grow component={ScrollArea} mx="-xs" px="xs">
+    {clusterName && (
+      <Navbar.Section mt="xs">
+        <Center>
+          <Title align="center" order={4}>
+            {clusterName}
+          </Title>
+        </Center>
+      </Navbar.Section>
+    )}
+    <Navbar.Section grow component={ScrollArea} mt="-xs" mx="-xs" px="xs">
       <Box py="md">
         <SidebarItem
           url={"clusters"}
@@ -27,24 +31,29 @@ export const SideBar = ({ clusterName }: { clusterName: string }) => (
           color={"blue"}
           label={"Clusters"}
         />
-        <SidebarItem
-          url={"topics"}
-          icon={<IconLine size={16} />}
-          color={"orange"}
-          label={"Topics"}
-        />
-        <SidebarItem
-          url={"schema-registry"}
-          icon={<IconSatellite size={16} />}
-          color={"green"}
-          label={"Schema Registry"}
-        />
-        <SidebarItem
-          url={"consumer-groups"}
-          icon={<IconCircleDashed size={16} />}
-          color={"violet"}
-          label={"Consumer groups"}
-        />
+        {/* Only show kafka operations if a cluster is selected */}
+        {clusterName && (
+          <>
+            <SidebarItem
+              url={"topics"}
+              icon={<IconLine size={16} />}
+              color={"orange"}
+              label={"Topics"}
+            />
+            <SidebarItem
+              url={"schema-registry"}
+              icon={<IconSatellite size={16} />}
+              color={"green"}
+              label={"Schema Registry"}
+            />
+            <SidebarItem
+              url={"consumer-groups"}
+              icon={<IconCircleDashed size={16} />}
+              color={"violet"}
+              label={"Consumer groups"}
+            />
+          </>
+        )}
         <SidebarItem
           url={"settings"}
           icon={<IconSettings size={16} />}

@@ -4,6 +4,7 @@ import { useNotifications } from "./notification-provider";
 
 export type AppTheme = "Light" | "Dark";
 type AppState = {
+  activeCluster?: Cluster;
   clusters: Cluster[];
   theme: AppTheme;
 };
@@ -22,6 +23,7 @@ export type Cluster = {
 
 type AppStateContextType = {
   state: AppState;
+  setActiveCluster: (cluster: Cluster) => void;
   setState: (state: AppState) => Promise<void>;
 };
 
@@ -29,6 +31,9 @@ const defaultAppState: AppStateContextType = {
   state: {
     clusters: [],
     theme: "Light",
+  },
+  setActiveCluster: () => {
+    throw new Error("Not implemented");
   },
   setState: () => {
     throw new Error("Not implemented");
@@ -54,9 +59,10 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
 
   const context: AppStateContextType = {
     state: appState,
+    setActiveCluster: (cluster: Cluster) => setAppState({ ...appState, activeCluster: cluster }),
     setState: (config: AppState) => {
       return invoke<AppState>("write_configuration", { config })
-        .then((config) => setAppState(config))
+        .then((config) => setAppState({ ...appState, ...config }))
         .catch((err) => {
           alert("Unable to update the user config", err);
           //keep the promise in a rejected state for downstream handle
