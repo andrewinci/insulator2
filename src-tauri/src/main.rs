@@ -9,19 +9,14 @@ fn get_configuration() -> Result<InsulatorConfig, String> {
 }
 
 #[tauri::command]
-fn add_cluster(cluster: Cluster) -> Result<InsulatorConfig, String> {
-    configuration::add_cluster(cluster)
-}
-
-#[tauri::command]
-fn set_theme(theme: Theme) -> Result<(), String> {
-    configuration::set_theme(theme)
+fn write_configuration(config: InsulatorConfig) -> Result<InsulatorConfig, String> {
+    configuration::write_configuration(&config).and_then(|_| Ok(config))
 }
 
 fn main() {
     tauri::Builder
         ::default()
-        .invoke_handler(tauri::generate_handler![get_configuration, add_cluster, set_theme])
+        .invoke_handler(tauri::generate_handler![get_configuration, write_configuration])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

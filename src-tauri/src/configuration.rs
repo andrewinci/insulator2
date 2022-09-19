@@ -69,23 +69,7 @@ pub fn get_configuration() -> Result<InsulatorConfig, String> {
     }
 }
 
-pub fn set_theme(theme: Theme) -> Result<(), String> {
-    let mut config = get_configuration()?;
-    config.theme = Some(theme);
-    write_configuration(&config)
-}
-
-pub fn add_cluster(new_cluster: Cluster) -> Result<InsulatorConfig, String> {
-    let mut config = get_configuration()?;
-    if config.clusters.iter().any(|c| c.name == new_cluster.name) {
-        Err(format!("Cluster \"{}\" already exists. Use another name.", new_cluster.name))
-    } else {
-        config.clusters.push(new_cluster);
-        write_configuration(&config).and_then(|_| Ok(config))
-    }
-}
-
-fn write_configuration(configuration: &InsulatorConfig) -> Result<(), String> {
+pub fn write_configuration(configuration: &InsulatorConfig) -> Result<(), String> {
     let config_path = config_path();
     serde_json
         ::to_string_pretty(&configuration)
