@@ -1,4 +1,14 @@
-import { Button, Container, Divider, Title, Group, NavLink, Input } from "@mantine/core";
+import {
+  Button,
+  Container,
+  Divider,
+  Title,
+  Group,
+  NavLink,
+  Input,
+  Loader,
+  Center,
+} from "@mantine/core";
 import { IconSearch } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -13,7 +23,10 @@ function getWindowSize() {
 
 export const TopicList = () => {
   const { state: appState } = useAppState();
-  const [state, setState] = useState<{ topics: TopicInfo[]; search?: string }>({ topics: [] });
+  const [state, setState] = useState<{ topics: TopicInfo[]; search?: string; loading: boolean }>({
+    topics: [],
+    loading: true,
+  });
   const [windowSize, setWindowSize] = useState(getWindowSize());
 
   useEffect(() => {
@@ -30,7 +43,7 @@ export const TopicList = () => {
   useMemo(() => {
     if (appState.activeCluster) {
       getTopicList(appState.activeCluster)
-        .then((topics) => setState({ topics }))
+        .then((topics) => setState({ topics, loading: false }))
         .then((_) => notifySuccess("List of topics successfully retrieved"))
         .catch((err) =>
           notifyAlert(
@@ -60,6 +73,11 @@ export const TopicList = () => {
           if (v) setState({ ...state, search: v.target.value.toLowerCase() });
         }}
       />
+      {state.loading && (
+        <Center mt={10}>
+          <Loader />
+        </Center>
+      )}
       <FixedSizeList
         height={windowSize.innerHeight - 150}
         itemCount={filteredTopics.length}
