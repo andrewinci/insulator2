@@ -2,13 +2,13 @@ import { Group, ThemeIcon, UnstyledButton, Text } from "@mantine/core";
 
 // From https://github.com/mantinedev/mantine/blob/master/src/mantine-demos/src/demos/core/AppShell/_mainLinks.tsx
 
-interface NavBarLinkProps {
+interface SidebarItemProps {
     icon: React.ReactNode;
     color: string;
     label: string;
 }
 
-export const NavBarLink = ({ icon, color, label }: NavBarLinkProps) => {
+export const SidebarItem = ({ icon, color, label }: SidebarItemProps) => {
     return (
         <UnstyledButton
             sx={(theme) => ({

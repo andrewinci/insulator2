@@ -34,7 +34,7 @@ export const App = () => {
       <AppShell
         padding={"md"}
         navbar={<SideBar clusterName="Local cluster" />}
-        header={<TopBar colorScheme={colorScheme} toggleColorScheme={toggleColorScheme} />}
+        // header={<TopBar colorScheme={colorScheme} toggleColorScheme={toggleColorScheme} />}
         styles={(theme) => ({
           main: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0] },
         })}>
