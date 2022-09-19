@@ -12,7 +12,7 @@ export const TopicList = () => {
     <Container>
       <Group position={"apart"}>
         <Title>Topics</Title>
-        <Button mt={10} component={Link} to="new">
+        <Button component={Link} to="new">
           Add topic
         </Button>
       </Group>

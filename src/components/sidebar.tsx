@@ -7,12 +7,12 @@ export const SideBar = ({ clusterName }: { clusterName?: string }) => (
   <Navbar width={{ base: 200 }} p="xs">
     <Navbar.Section>
       <Center>
-        <Group spacing={10}>
+        <Group style={{ height: "45px" }} spacing={10}>
           <Image width={30} height={30} src={logo} alt="insulator" />
           <Title order={2}>Insulator</Title>
         </Group>
       </Center>
-      <Divider mt="sm" />
+      <Divider mt="md" />
     </Navbar.Section>
     {clusterName && (
       <Navbar.Section mt="xs">

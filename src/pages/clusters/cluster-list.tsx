@@ -27,7 +27,7 @@ export const ClusterList = () => {
     <Container>
       <Group position={"apart"}>
         <Title>Clusters</Title>
-        <Button mt={10} component={Link} to="new">
+        <Button component={Link} to="new">
           Add Cluster
         </Button>
       </Group>
