@@ -2,7 +2,7 @@ import { Container, Divider, Select, Stack, Title } from "@mantine/core";
 import { AppTheme, useAppState } from "../providers/app-state-provider";
 
 export const Settings = () => {
-  const { state, setTheme } = useAppState();
+  const { state, setState } = useAppState();
   return (
     <Container>
       <Title mb={10}>Settings</Title>
@@ -18,7 +18,7 @@ export const Settings = () => {
           ]}
           onChange={(v) => {
             if (v) {
-              setTheme(v as AppTheme);
+              setState({ ...state, theme: v as AppTheme });
             }
           }}
         />

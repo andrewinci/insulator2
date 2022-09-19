@@ -1,25 +1,36 @@
 import { invoke } from "@tauri-apps/api";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { useNotifications } from ".";
+import { useNotifications } from "./notification-provider";
 
 export type AppTheme = "Light" | "Dark";
-
 type AppState = {
-  // clusters: []
+  clusters: Cluster[];
   theme: AppTheme;
+};
+
+export type ClusterAuthentication =
+  | { Sasl: { username: string; password: string; scram: boolean } }
+  | { Ssl: unknown }
+  | "None";
+
+export type Cluster = {
+  name: string;
+  endpoint: string;
+  authentication: ClusterAuthentication;
 };
 
 type AppStateContextType = {
   state: AppState;
-  setTheme: (t: AppTheme) => Promise<void>;
+  setState: (state: AppState) => void;
 };
 
 const defaultAppState: AppStateContextType = {
   state: {
+    clusters: [],
     theme: "Light",
   },
-  setTheme: async () => {
-    throw Error("Not implemented");
+  setState: () => {
+    throw new Error("Not implemented");
   },
 };
 
@@ -29,36 +40,27 @@ export const useAppState = () => useContext(AppStateContext);
 
 export const AppStateProvider = ({ children }: { children: ReactNode }) => {
   const [appState, setAppState] = useState<AppState>(defaultAppState.state);
-  const { addNotification } = useNotifications();
+  const { success, alert } = useNotifications();
 
   useEffect(() => {
     invoke<AppState>("get_configuration")
       .then((config) => {
-        addNotification({ type: "ok", title: "Configuration loaded" });
+        success("Configuration loaded");
         setAppState(config);
       })
-      .catch((err) =>
-        addNotification({
-          type: "error",
-          title: "Unable to retrieve the user config",
-          description: err,
-        })
-      );
+      .catch((err) => alert("Unable to retrieve the user config", err));
   }, []);
 
   const context: AppStateContextType = {
     state: appState,
-    setTheme: async (theme: AppTheme) => {
-      setAppState({ ...appState, theme });
-      invoke("set_theme", { theme })
-        .then(() => addNotification({ type: "ok", title: "Theme updated" }))
-        .catch((err) =>
-          addNotification({
-            type: "error",
-            title: "Unable to update the user config",
-            description: err,
-          })
-        );
+    setState: (config: AppState) => {
+      return invoke<AppState>("write_configuration", { config })
+        .then((config) => setAppState(config))
+        .catch((err) => {
+          alert("Unable to update the user config", err);
+          //keep the promise in a rejected state for downstream handle
+          throw err;
+        });
     },
   };
 
