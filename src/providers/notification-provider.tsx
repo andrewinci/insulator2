@@ -12,13 +12,23 @@ type NotificationWithId = Notification & { id: string };
 type NotificationContextType = {
   notifications: NotificationWithId[];
   addNotification: (n: Notification) => string;
+  alert: (title?: string, description?: string) => string;
+  success: (title?: string, description?: string) => string;
   deleteNotification: (id: string) => void;
 };
 
 const NotificationContext = createContext<NotificationContextType>({
   notifications: [],
-  addNotification: (_: Notification) => "",
-  deleteNotification: (_: string) => {
+  alert: () => {
+    throw Error("Not implemented");
+  },
+  success: () => {
+    throw Error("Not implemented");
+  },
+  addNotification: () => {
+    throw Error("Not implemented");
+  },
+  deleteNotification: () => {
     throw Error("Not implemented");
   },
 });
@@ -27,6 +37,7 @@ export const useNotifications = () => useContext(NotificationContext);
 
 export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<NotificationWithId[]>([]);
+
   const addNotification = (n: Notification) => {
     const id = uuid();
     setNotifications([{ ...n, id }, ...notifications]);
@@ -40,6 +51,10 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
         notifications: notifications,
         addNotification,
         deleteNotification,
+        alert: (title?: string, description?: string) =>
+          addNotification({ type: "error", title, description }),
+        success: (title?: string, description?: string) =>
+          addNotification({ type: "ok", title, description }),
       }}>
       {children}
     </NotificationContext.Provider>
