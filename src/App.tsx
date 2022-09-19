@@ -12,25 +12,23 @@ type InsulatorConfig = {
 
 export const App = () => {
   const [colorScheme, setColorScheme] = useState<ColorScheme>("light");
-  const toggleColorScheme = () => {
-    const newTheme = colorScheme == "light" ? "Dark" : "Light"
-    setColorScheme(newTheme.toLowerCase() as ColorScheme);
-    invoke("set_theme", { theme: newTheme }).catch((err) => addNotification({ type: "error", title: "Unable to update the user config", description: err }));
-  };
   const { addNotification } = useNotifications();
 
   useEffect(() => {
     invoke<InsulatorConfig>("get_configuration")
       .then((config) => {
         addNotification({ type: "ok", title: "Configuration loaded" });
-        switch (config.theme) {
-          case "Dark": setColorScheme("dark"); break;
-          case "Light": setColorScheme("light"); break;
-        }
+        setColorScheme(config.theme.toLowerCase() as ColorScheme);
       })
       .catch((err) => addNotification({ type: "error", title: "Unable to retrieve the user config", description: err }))
   }, []);
 
+  const onThemeChange = (v: ColorScheme) => {
+    setColorScheme(v);
+    invoke("set_theme", { theme: v == "dark" ? "Dark" : "Light" })
+      .then(() => addNotification({ type: "ok", title: "Theme updated" }))
+      .catch((err) => addNotification({ type: "error", title: "Unable to update the user config", description: err }));
+  }
 
   return (
     <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
@@ -44,7 +42,7 @@ export const App = () => {
         <Routes>
           <Route index element={<Clusters />} />
           <Route path="clusters" element={<Clusters />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="settings" element={<Settings theme={colorScheme} onThemeChange={onThemeChange} />} />
         </Routes>
         <NotificationBar />
       </AppShell>
