@@ -1,4 +1,5 @@
 import { Group, ThemeIcon, UnstyledButton, Text } from "@mantine/core";
+import { Link } from "react-router-dom";
 
 // From https://github.com/mantinedev/mantine/blob/master/src/mantine-demos/src/demos/core/AppShell/_mainLinks.tsx
 
@@ -6,11 +7,14 @@ interface SidebarItemProps {
     icon: React.ReactNode;
     color: string;
     label: string;
+    url: string;
 }
 
-export const SidebarItem = ({ icon, color, label }: SidebarItemProps) => {
+export const SidebarItem = ({ icon, color, label, url }: SidebarItemProps) => {
     return (
         <UnstyledButton
+            component={Link}
+            to={url}
             sx={(theme) => ({
                 display: "block",
                 width: "100%",

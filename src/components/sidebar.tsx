@@ -9,7 +9,7 @@ export const SideBar = ({ clusterName }: { clusterName: string; }) => <Navbar wi
       <Group spacing={10}>
         <Image width={30} height={30} src={logo} alt="insulator" />
         <Title order={2}>Insulator</Title>
-      </Group> 
+      </Group>
     </Center>
     <Divider my="sm" />
   </Navbar.Section>
@@ -20,11 +20,11 @@ export const SideBar = ({ clusterName }: { clusterName: string; }) => <Navbar wi
   </Navbar.Section>
   <Navbar.Section grow component={ScrollArea} mx="-xs" px="xs">
     <Box py="md">
-      <SidebarItem icon={<IconServer size={16} />} color={"blue"} label={"Clusters"} />
-      <SidebarItem icon={<IconLine size={16} />} color={"orange"} label={"Topics"} />
-      <SidebarItem icon={<IconSatellite size={16} />} color={"green"} label={"Schema Registry"} />
-      <SidebarItem icon={<IconCircleDashed size={16} />} color={"violet"} label={"Consumer groups"} />
-      <SidebarItem icon={<IconSettings size={16} />} color={"red"} label={"Settings"} />
+      <SidebarItem url={"clusters"} icon={<IconServer size={16} />} color={"blue"} label={"Clusters"} />
+      <SidebarItem url={"topics"} icon={<IconLine size={16} />} color={"orange"} label={"Topics"} />
+      <SidebarItem url={"schema-registry"} icon={<IconSatellite size={16} />} color={"green"} label={"Schema Registry"} />
+      <SidebarItem url={"consumer-groups"} icon={<IconCircleDashed size={16} />} color={"violet"} label={"Consumer groups"} />
+      <SidebarItem url={"settings"} icon={<IconSettings size={16} />} color={"red"} label={"Settings"} />
     </Box>
   </Navbar.Section>
 </Navbar>;

@@ -1,7 +1,9 @@
 import { AppShell, MantineProvider } from "@mantine/core";
 import { invoke } from "@tauri-apps/api";
 import { useEffect, useState } from "react";
-import { ColorScheme, TopBar, SideBar, NotificationBar, useNotifications } from "./components";
+import { Route, Routes } from "react-router-dom";
+import { ColorScheme, SideBar, NotificationBar, useNotifications } from "./components";
+import { Clusters, Settings } from "./pages";
 
 type InsulatorConfig = {
   // clusters: []
@@ -29,6 +31,7 @@ export const App = () => {
       .catch((err) => addNotification({ type: "error", title: "Unable to retrieve the user config", description: err }))
   }, []);
 
+
   return (
     <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
       <AppShell
@@ -38,11 +41,14 @@ export const App = () => {
         styles={(theme) => ({
           main: { backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0] },
         })}>
-        <div>
-          <h1>Here there will be some content</h1>
-        </div>
+        <Routes>
+          <Route index element={<Clusters />} />
+          <Route path="clusters" element={<Clusters />} />
+          <Route path="settings" element={<Settings />} />
+        </Routes>
         <NotificationBar />
       </AppShell>
     </MantineProvider >
+
   );
 }
