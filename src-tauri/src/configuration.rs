@@ -19,9 +19,9 @@ pub enum Theme {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Cluster {
     id: String,
-    name: String,
-    endpoint: String,
-    authentication: Authentication,
+    pub name: String,
+    pub endpoint: String,
+    pub authentication: Authentication,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -48,6 +48,7 @@ fn config_path() -> PathBuf {
     config_path
 }
 
+#[tauri::command]
 pub fn get_configuration() -> Result<InsulatorConfig, String> {
     let config_path = config_path();
     let raw_config = (match Path::exists(&config_path) {
@@ -70,7 +71,8 @@ pub fn get_configuration() -> Result<InsulatorConfig, String> {
     }
 }
 
-pub fn write_configuration(configuration: &InsulatorConfig) -> Result<(), String> {
+#[tauri::command]
+pub fn write_configuration(configuration: InsulatorConfig) -> Result<InsulatorConfig, String> {
     let config_path = config_path();
     serde_json
         ::to_string_pretty(&configuration)
@@ -81,4 +83,5 @@ pub fn write_configuration(configuration: &InsulatorConfig) -> Result<(), String
             )
         })
         .and_then(|_| Ok(()))
+        .and_then(|_| Ok(configuration))
 }

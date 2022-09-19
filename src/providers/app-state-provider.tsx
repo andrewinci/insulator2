@@ -51,8 +51,8 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
   const context: AppStateContextType = {
     state: appState,
     setActiveCluster: (cluster: Cluster) => setAppState({ ...appState, activeCluster: cluster }),
-    setState: (config: AppState) => {
-      return invoke<AppState>("write_configuration", { config })
+    setState: (configuration: AppState) => {
+      return invoke<AppState>("write_configuration", { configuration })
         .then((config) => setAppState({ ...appState, ...config }))
         .catch((err) => {
           alert("Unable to update the user config", err);

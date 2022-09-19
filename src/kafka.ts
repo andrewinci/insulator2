@@ -1,3 +1,5 @@
+import { invoke } from "@tauri-apps/api";
+
 export type ClusterAuthentication =
   | { Sasl: { username: string; password: string; scram: boolean } }
   | { Ssl: unknown }
@@ -10,6 +12,8 @@ export type Cluster = {
   authentication: ClusterAuthentication;
 };
 
-export const getTopicList = (cluster: Cluster) => {
-  return cluster;
+export const getTopicList = async (cluster: Cluster) => {
+  return await invoke("list_topics", { cluster })
+    .then((res) => console.log(res))
+    .catch((err) => console.error(err));
 };
