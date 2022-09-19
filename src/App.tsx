@@ -21,8 +21,8 @@ export const App = () => {
           },
         })}>
         <Routes>
-          <Route index element={<Clusters />} />
-          <Route path="clusters" element={<Clusters />} />
+          <Route index element={<h1>TODO: some home page</h1>} />
+          <Route path="clusters/*" element={<Clusters />} />
           <Route path="settings" element={<Settings />} />
         </Routes>
         <NotificationBar />

@@ -15,6 +15,7 @@
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@mantine/core": "^5.3.3",
+    "@mantine/form": "^5.4.0",
     "@mantine/hooks": "^5.3.3",
     "@tabler/icons": "^1.96.0",
     "@tauri-apps/api": "^1.1.0",
