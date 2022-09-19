@@ -1,3 +1,3 @@
 export * from "./sidebar-item";
 export * from "./sidebar";
-export * from "./notifications";
+export * from "./notification-bar";

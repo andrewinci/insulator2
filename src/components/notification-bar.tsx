@@ -1,7 +1,7 @@
 import { Stack, Notification as NotificationComponent } from "@mantine/core";
 import { IconCheck, IconX } from "@tabler/icons";
 import styled from "@emotion/styled";
-import { useNotifications } from "../../providers";
+import { useNotifications } from "../providers";
 
 export const NotificationBar = () => {
   const { notifications, deleteNotification } = useNotifications();
@@ -28,7 +28,7 @@ const NotificationContainer = styled(Stack)`
   bottom: 6px;
   z-index: 99;
   overflow-y: auto;
-  height: calc(100vh - 60px);
+  max-height: calc(100vh - 60px);
   flex-direction: column-reverse;
   width: 35%;
 `;
