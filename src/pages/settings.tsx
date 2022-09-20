@@ -2,7 +2,7 @@ import { Container, Divider, Select, Stack, Title } from "@mantine/core";
 import { AppTheme, useAppState } from "../providers/app-state-provider";
 
 export const Settings = () => {
-  const { state, setState } = useAppState();
+  const { appState, setAppState } = useAppState();
   return (
     <Container>
       <Title mb={10}>Settings</Title>
@@ -11,14 +11,14 @@ export const Settings = () => {
         <Select
           label="Theme"
           defaultValue={"Light"}
-          value={state.theme}
+          value={appState.theme}
           data={[
             { value: "Dark", label: "Dark" },
             { value: "Light", label: "Light" },
           ]}
           onChange={(v) => {
             if (v) {
-              setState({ ...state, theme: v as AppTheme });
+              setAppState({ ...appState, theme: v as AppTheme });
             }
           }}
         />

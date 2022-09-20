@@ -5,7 +5,7 @@ import { Cluster } from "../../kafka";
 import { useAppState } from "../../providers";
 
 export const ClusterList = () => {
-  const { state, setState, setActiveCluster } = useAppState();
+  const { appState, setAppState, setActiveCluster } = useAppState();
   const navigate = useNavigate();
 
   const openModal = (cluster: Cluster) =>
@@ -16,9 +16,9 @@ export const ClusterList = () => {
       ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
       onConfirm: () => {
-        setState({ ...state, clusters: state.clusters.filter((c) => c.id != cluster.id) });
-        if (state.activeCluster?.id == cluster.id) {
-          state.activeCluster = undefined;
+        setAppState({ ...appState, clusters: appState.clusters.filter((c) => c.id != cluster.id) });
+        if (appState.activeCluster?.id == cluster.id) {
+          appState.activeCluster = undefined;
         }
       },
     });
@@ -33,7 +33,7 @@ export const ClusterList = () => {
       </Group>
       <Divider mt={10} />
       <Stack mt={10}>
-        {state.clusters.map((c) => (
+        {appState.clusters.map((c) => (
           <Paper key={c.name} shadow="md" p="md" withBorder>
             <Group position="apart">
               <Stack>

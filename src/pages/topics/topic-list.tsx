@@ -22,7 +22,7 @@ const getWindowSize = () => {
 };
 
 export const TopicList = ({ onTopicSelected }: { onTopicSelected: (topic: TopicInfo) => void }) => {
-  const { state: appState } = useAppState();
+  const { appState } = useAppState();
   const [state, setState] = useState<{ topics: TopicInfo[]; search?: string; loading: boolean }>({
     topics: [],
     loading: true,

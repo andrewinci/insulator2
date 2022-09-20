@@ -11,20 +11,20 @@ type AppState = {
 };
 
 type AppStateContextType = {
-  state: AppState;
+  appState: AppState;
   setActiveCluster: (cluster: Cluster) => void;
-  setState: (state: AppState) => Promise<void>;
+  setAppState: (state: AppState) => Promise<void>;
 };
 
 const defaultAppState: AppStateContextType = {
-  state: {
+  appState: {
     clusters: [],
     theme: "Light",
   },
   setActiveCluster: () => {
     throw new Error("Not implemented");
   },
-  setState: () => {
+  setAppState: () => {
     throw new Error("Not implemented");
   },
 };
@@ -34,7 +34,7 @@ const AppStateContext = createContext<AppStateContextType>(defaultAppState);
 export const useAppState = () => useContext(AppStateContext);
 
 export const AppStateProvider = ({ children }: { children: ReactNode }) => {
-  const [appState, setAppState] = useState<AppState>(defaultAppState.state);
+  const [appState, setAppState] = useState<AppState>(defaultAppState.appState);
 
   // retrieve the configurations at the first start
   useEffect(() => {
@@ -48,9 +48,9 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
   }, [setAppState]);
 
   const context: AppStateContextType = {
-    state: appState,
+    appState: appState,
     setActiveCluster: (cluster: Cluster) => setAppState({ ...appState, activeCluster: cluster }),
-    setState: (configuration: AppState) => {
+    setAppState: (configuration: AppState) => {
       return invoke<AppState>("write_configuration", { configuration })
         .then((config) => setAppState({ ...appState, ...config }))
         .catch((err) => {

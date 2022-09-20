@@ -8,30 +8,30 @@ import { Cluster } from "../../kafka";
 export const EditCluster = () => {
   const { clusterId } = useParams();
   const navigate = useNavigate();
-  const { setState, state } = useAppState();
+  const { setAppState, appState } = useAppState();
 
-  const cluster = state.clusters.find((c) => c.id == clusterId);
+  const cluster = appState.clusters.find((c) => c.id == clusterId);
 
   const addCluster = (cluster: Cluster) => {
-    if (state.clusters.find((c) => c.name == cluster.name)) {
+    if (appState.clusters.find((c) => c.name == cluster.name)) {
       notifyAlert(
         "Cluster configuration already exists",
         `A cluster with name ${cluster.name} already exists.`
       );
       return Promise.reject();
     } else {
-      return setState({ ...state, clusters: [...state.clusters, cluster] });
+      return setAppState({ ...appState, clusters: [...appState.clusters, cluster] });
     }
   };
 
   const editCluster = (clusterId: string, cluster: Cluster) => {
-    if (!state.clusters.find((c) => c.id == clusterId)) {
+    if (!appState.clusters.find((c) => c.id == clusterId)) {
       notifyAlert("Cluster configuration not found", `Unable to update ${cluster.name}.`);
       return Promise.reject();
     } else {
-      const clusters = state.clusters.filter((c) => c.id != clusterId);
+      const clusters = appState.clusters.filter((c) => c.id != clusterId);
       clusters.push(cluster);
-      return setState({ ...state, clusters });
+      return setAppState({ ...appState, clusters });
     }
   };
 

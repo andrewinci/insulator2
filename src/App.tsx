@@ -7,17 +7,17 @@ import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
 
 export const App = () => {
-  const { state } = useAppState();
+  const { appState } = useAppState();
   return (
     <MantineProvider
-      theme={{ colorScheme: state.theme == "Dark" ? "dark" : "light" }}
+      theme={{ colorScheme: appState.theme == "Dark" ? "dark" : "light" }}
       withGlobalStyles
       withNormalizeCSS>
       <NotificationsProvider>
         <ModalsProvider>
           <AppShell
             padding={"md"}
-            navbar={<SideBar clusterName={state.activeCluster?.name} />}
+            navbar={<SideBar clusterName={appState.activeCluster?.name} />}
             styles={(theme) => ({
               main: {
                 backgroundColor:
