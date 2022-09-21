@@ -9,6 +9,7 @@ import {
   Center,
   ActionIcon,
   Tooltip,
+  Text,
 } from "@mantine/core";
 import { IconPlus, IconRefresh, IconSearch } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
@@ -51,7 +52,8 @@ export const TopicList = ({ onTopicSelected }: { onTopicSelected: (topic: TopicI
             `Unable to retrieve the list of topics for cluster "${appState.activeCluster?.name}"`,
             err
           )
-        );
+        )
+        .then(() => setState({ topics: [], loading: false }));
     }
   };
 
@@ -85,24 +87,30 @@ export const TopicList = ({ onTopicSelected }: { onTopicSelected: (topic: TopicI
           if (v) setState({ ...state, search: v.target.value.toLowerCase() });
         }}
       />
-      {state.loading && (
+      {/* todo: fix the below mess of nested inline ifs */}
+      {state.loading ? (
         <Center mt={10}>
           <Loader />
         </Center>
+      ) : filteredTopics.length > 0 ? (
+        <FixedSizeList
+          height={windowSize.innerHeight - 150}
+          itemCount={filteredTopics.length}
+          itemSize={38}
+          width={"100%"}>
+          {({ index, style }) => (
+            <NavLink
+              onClick={() => onTopicSelected(filteredTopics[index])}
+              style={style}
+              label={filteredTopics[index].name}
+            />
+          )}
+        </FixedSizeList>
+      ) : (
+        <Center mt={20}>
+          <Text>Empty list</Text>
+        </Center>
       )}
-      <FixedSizeList
-        height={windowSize.innerHeight - 150}
-        itemCount={filteredTopics.length}
-        itemSize={38}
-        width={"100%"}>
-        {({ index, style }) => (
-          <NavLink
-            onClick={() => onTopicSelected(filteredTopics[index])}
-            style={style}
-            label={filteredTopics[index].name}
-          />
-        )}
-      </FixedSizeList>
     </Container>
   );
 };
