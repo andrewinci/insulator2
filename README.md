@@ -8,7 +8,7 @@ Insulator on Tauri.
 
 - MacOS:
   ```bash
-  brew install cmake openssl cyrus-sasl
+  brew install cmake openssl@3 cyrus-sasl
   export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
   ```
 - (To test) Linux: `apt install cmake libssl-dev libsasl2-dev`
