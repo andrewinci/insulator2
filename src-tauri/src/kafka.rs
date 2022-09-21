@@ -6,14 +6,28 @@ use crate::configuration::Cluster;
 
 fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer, String> {
     // todo: cache
-    ClientConfig::new()
+    let mut config = ClientConfig::new();
+    config
         .set("enable.partition.eof", "true")
         .set("bootstrap.servers", &cluster.endpoint)
         .set("session.timeout.ms", "6000")
         .set("api.version.request", "true")
-        .set("debug", "all")
-        .create()
-        .map_err(|err| format!("Unable to build the Kafka consumer. {}", err))
+        .set("debug", "all");
+    match &cluster.authentication {
+        crate::configuration::Authentication::None => {
+            config.set("security.protocol", "PLAINTEXT");
+        }
+        crate::configuration::Authentication::Sasl { username, password, scram } => {
+            config
+                .set("security.protocol", "SASL_SSL")
+                .set("sasl.mechanisms", if *scram { "SCRAM-SHA-256" } else { "PLAIN" })
+                .set("ssl.endpoint.identification.algorithm", "https")
+                .set("sasl.username", username)
+                .set("sasl.password", password);
+        }
+        crate::configuration::Authentication::Ssl {} => todo!(),
+    }
+    config.create().map_err(|err| format!("Unable to build the Kafka consumer. {}", err))
 }
 
 #[derive(Serialize, Deserialize, Debug)]
