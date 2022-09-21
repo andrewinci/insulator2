@@ -1,28 +1,27 @@
-import { Button, Container, Divider, Group, Stack, TextInput, Title } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Container, Divider, Title } from "@mantine/core";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAppState, notifyAlert } from "../../providers";
 import { v4 as uuid } from "uuid";
-import { Cluster } from "../../kafka";
+import { Cluster, ClusterAuthentication } from "../../kafka";
+import {
+  AuthenticationFormType,
+  ClusterForm,
+  ClusterFormType,
+  SaslFormType,
+  SslFormType,
+} from "./form";
 
 export const EditCluster = () => {
   const { clusterId } = useParams();
-  const navigate = useNavigate();
   const { setAppState, appState } = useAppState();
+  const navigate = useNavigate();
+
+  if (!clusterId) {
+    notifyAlert("Something went wrong", "Missing clusterId in navigation.");
+    return <></>;
+  }
 
   const cluster = appState.clusters.find((c) => c.id == clusterId);
-
-  const addCluster = (cluster: Cluster) => {
-    if (appState.clusters.find((c) => c.name == cluster.name)) {
-      notifyAlert(
-        "Cluster configuration already exists",
-        `A cluster with name ${cluster.name} already exists.`
-      );
-      return Promise.reject();
-    } else {
-      return setAppState({ ...appState, clusters: [...appState.clusters, cluster] });
-    }
-  };
 
   const editCluster = (clusterId: string, cluster: Cluster) => {
     if (!appState.clusters.find((c) => c.id == clusterId)) {
@@ -35,49 +34,86 @@ export const EditCluster = () => {
     }
   };
 
-  const form = useForm<Cluster>({
-    initialValues: cluster ?? {
-      id: uuid(),
-      name: "",
-      endpoint: "",
-      authentication: "None",
-    },
-    validate: {
-      name: (v) => (v.length > 0 ? null : "Cluster name must be not empty"),
-      endpoint: (v) => (v.length > 0 ? null : "Endpoint must be not empty"), //todo: check for the port
-    },
-  });
+  const onSubmit = async (c: ClusterFormType) => {
+    const newCluster = mapFormToCluster(c);
+    await editCluster(clusterId, newCluster).then((_) => navigate("/clusters"));
+  };
 
   return (
     <Container>
-      <Title>{cluster ? "Edit cluster" : "Add new cluster"}</Title>
+      <Title>Edit cluster</Title>
       <Divider my={10} />
-      <form
-        onSubmit={form.onSubmit(
-          async (values) =>
-            await (clusterId ? editCluster(clusterId, values) : addCluster(values)).then((_) =>
-              navigate("/clusters")
-            )
-        )}>
-        <Stack>
-          <TextInput
-            label="Custer name"
-            placeholder="My cool cluster"
-            {...form.getInputProps("name")}
-          />
-          <TextInput
-            label="Endpoint"
-            placeholder="localhost:9092"
-            {...form.getInputProps("endpoint")}
-          />
-          <Group position="apart">
-            <Button component={Link} to="/clusters" color={"red"}>
-              Back
-            </Button>
-            <Button type="submit">Save</Button>
-          </Group>
-        </Stack>
-      </form>
+      <ClusterForm initialValues={mapClusterToForm(cluster)} onSubmit={onSubmit} />
     </Container>
   );
 };
+
+export const AddNewCluster = () => {
+  const { setAppState, appState } = useAppState();
+
+  const addCluster = (cluster: Cluster) => {
+    if (appState.clusters.find((c) => c.name == cluster.name)) {
+      notifyAlert(
+        "Cluster configuration already exists",
+        `A cluster with the name "${cluster.name}" already exists. Try with another name.`
+      );
+      return Promise.reject();
+    } else {
+      return setAppState({ ...appState, clusters: [...appState.clusters, cluster] });
+    }
+  };
+
+  const navigate = useNavigate();
+  const onSubmit = async (c: ClusterFormType) => {
+    const newCluster = mapFormToCluster(c);
+    await addCluster(newCluster).then((_) => navigate("/clusters"));
+  };
+
+  return (
+    <Container>
+      <Title>Add new cluster</Title>
+      <Divider my={10} />
+      <ClusterForm onSubmit={onSubmit} />
+    </Container>
+  );
+};
+
+function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
+  if (!cluster) return undefined;
+  const { name, endpoint, authentication } = cluster;
+  let type: AuthenticationFormType = "None";
+  let sasl: SaslFormType = { username: "", password: "", scram: false };
+  let ssl: SslFormType | undefined;
+  if (authentication == "None") type = "None";
+  else if ("Sasl" in authentication) {
+    type = "SASL";
+    sasl = authentication.Sasl;
+  } else if ("ssl" in authentication) {
+    type = "SSL";
+    //todo
+    ssl = { certificate: "" };
+  }
+
+  return { name, endpoint, authentication: { type, sasl, ssl } };
+}
+
+function mapFormToCluster(c: ClusterFormType): Cluster {
+  let authentication: ClusterAuthentication = "None";
+  switch (c.authentication.type) {
+    case "None":
+      authentication = "None";
+      break;
+    case "SASL":
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      authentication = { Sasl: { ...c.authentication.sasl! } };
+      break;
+    case "SSL":
+      throw "Not supported";
+  }
+  return {
+    id: uuid(),
+    name: c.name,
+    endpoint: c.endpoint,
+    authentication,
+  };
+}
