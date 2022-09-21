@@ -47,13 +47,13 @@ export const TopicList = ({ onTopicSelected }: { onTopicSelected: (topic: TopicI
       getTopicList(appState.activeCluster)
         .then((topics) => setState({ topics, loading: false }))
         .then((_) => notifySuccess("List of topics successfully retrieved"))
-        .catch((err) =>
+        .catch((err) => {
           notifyAlert(
             `Unable to retrieve the list of topics for cluster "${appState.activeCluster?.name}"`,
             err
-          )
-        )
-        .then(() => setState({ topics: [], loading: false }));
+          );
+          setState({ topics: [], loading: false });
+        });
     }
   };
 
@@ -87,7 +87,7 @@ export const TopicList = ({ onTopicSelected }: { onTopicSelected: (topic: TopicI
           if (v) setState({ ...state, search: v.target.value.toLowerCase() });
         }}
       />
-      {/* todo: fix the below mess of nested inline ifs */}
+      {/* todo: fix the below mess */}
       {state.loading ? (
         <Center mt={10}>
           <Loader />
