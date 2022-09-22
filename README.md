@@ -29,3 +29,7 @@ yarn tauri dev
 - [Tauri](https://tauri.app/)
 - [Mantine](https://mantine.dev/)
 - [rust-rdkafka](https://github.com/fede1024/rust-rdkafka)
+
+## Todo
+
+- [ ] Use semantic release version in the artifact

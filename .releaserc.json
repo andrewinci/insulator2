@@ -1,0 +1,19 @@
+{
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    "@semantic-release/git",
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          "src-tauri/target/release/bundle/deb/*.deb",
+          "src-tauri/target/release/bundle/appimage/*.AppImage",
+          "src-tauri/target/release/bundle/dmg/*.dmg"
+        ]
+      }
+    ]
+  ],
+  "branches": ["main"]
+}
