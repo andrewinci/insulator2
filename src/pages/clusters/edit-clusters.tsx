@@ -91,7 +91,7 @@ function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
   } else if ("ssl" in authentication) {
     type = "SSL";
     //todo
-    ssl = { certificate: "" };
+    ssl = { certificateLocation: "", caLocation: "", keyLocation: "", keyPassword: "" };
   }
 
   return { name, endpoint, authentication: { type, sasl, ssl } };

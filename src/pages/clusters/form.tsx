@@ -2,6 +2,7 @@ import {
   Button,
   Checkbox,
   Chip,
+  FileInput,
   Group,
   PasswordInput,
   Stack,
@@ -18,9 +19,12 @@ export type SaslFormType = {
   scram: boolean;
 };
 export type SslFormType = {
-  //todo
-  certificate: string;
+  caLocation: string;
+  certificateLocation: string;
+  keyLocation: string;
+  keyPassword?: string;
 };
+
 export type SchemaRegistryFormType = {
   endpoint: string;
   username?: string;
@@ -53,7 +57,7 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
       authentication: {
         type: "None",
         sasl: { username: "", password: "", scram: false },
-        ssl: { certificate: "" },
+        ssl: { certificateLocation: "", caLocation: "", keyLocation: "", keyPassword: "" },
       },
       schemaRegistry: { endpoint: "", username: "", password: "" },
     },
@@ -108,7 +112,7 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
         <Title order={3}>Authentication</Title>
         <Chip.Group position="left" multiple={false} {...form.getInputProps("authentication.type")}>
           <Chip value="None">None</Chip>
-          {/* <Chip value="SSL">SSL (Aiven cloud)</Chip> */}
+          <Chip value="SSL">SSL (Aiven cloud)</Chip>
           <Chip value="SASL">SASL</Chip>
         </Chip.Group>
         {form.values.authentication?.type == "SASL" && (
@@ -126,6 +130,30 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
             <Checkbox
               label="Use SCRAM"
               {...form.getInputProps("authentication.sasl.scram", { type: "checkbox" })}
+            />
+          </>
+        )}
+        {form.values.authentication?.type == "SSL" && (
+          <>
+            <FileInput
+              label="CA Certificate location"
+              placeholder="/..."
+              {...form.getInputProps("authentication.ssl.caLocation")}
+            />
+            <FileInput
+              label="Client Certificate location"
+              placeholder="/..."
+              {...form.getInputProps("authentication.ssl.certificateLocation")}
+            />
+            <FileInput
+              label="Client Key location"
+              placeholder="/..."
+              {...form.getInputProps("authentication.ssl.keyLocation")}
+            />
+            <PasswordInput
+              label="Key Password"
+              placeholder="Key password"
+              {...form.getInputProps("authentication.ssl.keyPassword")}
             />
           </>
         )}
