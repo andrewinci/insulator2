@@ -43,7 +43,11 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
           yarn install
-          vcpkg install openssl:x64-windows-static
+      
+      - name: Install openssl on Win
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: pwsh
+        run: .\scripts\install-openssl.ps1
 
       - run: yarn lint
 
