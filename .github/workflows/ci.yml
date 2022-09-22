@@ -43,7 +43,7 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
           yarn install
-          vcpkg install openssl:x64-windows-static-md
+          vcpkg install openssl:x64-windows-static
 
       - run: yarn lint
 
