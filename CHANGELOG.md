@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/andrewinci/insulator2/compare/v1.0.0...v1.0.1) (2022-09-23)
+
+### Bug Fixes
+
+- **BE:** mac os build ([#5](https://github.com/andrewinci/insulator2/issues/5)) ([f9fbd35](https://github.com/andrewinci/insulator2/commit/f9fbd35f06dc5b02b70536b79b850a8fc53463e7))
+
 # 1.0.0 (2022-09-22)
 
 ### Bug Fixes
