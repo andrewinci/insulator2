@@ -1227,6 +1227,7 @@ name = "insulator2"
 version = "0.0.0"
 dependencies = [
  "dirs",
+ "openssl-src 111.22.0+1.1.1q (git+https://github.com/vectordotdev/openssl-src-rs.git?branch=enable_engine)",
  "rdkafka",
  "serde",
  "serde_json",
@@ -1725,6 +1726,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "openssl-src"
+version = "111.22.0+1.1.1q"
+source = "git+https://github.com/vectordotdev/openssl-src-rs.git?branch=enable_engine#52be5ec9f548ea825f602d514ebf322aa828c932"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "openssl-sys"
 version = "0.9.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1733,7 +1742,7 @@ dependencies = [
  "autocfg",
  "cc",
  "libc",
- "openssl-src",
+ "openssl-src 111.22.0+1.1.1q (registry+https://github.com/rust-lang/crates.io-index)",
  "pkg-config",
  "vcpkg",
 ]
@@ -2161,9 +2170,9 @@ dependencies = [
 
 [[package]]
 name = "rdkafka"
-version = "0.26.0"
+version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af78bc431a82ef178c4ad6db537eb9cc25715a8591d27acc30455ee7227a76f4"
+checksum = "8a22ce72c78b471baba6c75bda6e03511ef2ee1bae3729902d2bb38951db1048"
 dependencies = [
  "futures",
  "libc",
