@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-2019]
     steps:
       - uses: actions/checkout@v3
 
@@ -40,12 +40,7 @@ jobs:
               build-essential curl wget libsasl2-dev libayatana-appindicator3-dev librsvg2-dev
 
       - name: Install Win dependencies
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-          yarn install
-      
-      - name: Install openssl on Win
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-2019' }}
         shell: pwsh
         run: .\scripts\install-openssl.ps1
 
@@ -116,7 +111,7 @@ jobs:
       #   uses: actions/cache@v3
       #   with:
       #     path: src-tauri/target/release/bundle/*
-      #     key: windows-latest-artifacts #todo: hash of something that changes with versions
+      #     key: windows-2019-artifacts #todo: hash of something that changes with versions
 
       - name: Semantic release
         if: github.ref == 'refs/heads/main'
