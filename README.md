@@ -33,4 +33,4 @@ yarn tauri dev
 ## Todo
 
 - [ ] Use semantic release version in the artifact
-- [ ] Fix broken linking to openssl in generated artifact
+- [ ] Windows build
