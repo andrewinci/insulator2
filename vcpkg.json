@@ -1,7 +1,0 @@
-{
-    "dependencies": [ "openssl" ],
-    "platform": "x64-windows-static",
-    "overrides": [
-        { "name": "openssl", "version": "2.8.3" }
-    ]
-}

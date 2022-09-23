@@ -8,10 +8,10 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on:  ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-2019]
+        os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v3
 
@@ -38,9 +38,9 @@ jobs:
           sudo apt update -y
           sudo apt install libwebkit2gtk-4.0-dev libdbus-1-dev pkg-config libgtk-3-dev libsoup2.4-dev \
               build-essential curl wget libsasl2-dev libayatana-appindicator3-dev librsvg2-dev
-
+      
       - name: Install Win dependencies
-        if: ${{ matrix.os == 'windows-2019' }}
+        if: ${{ matrix.os == 'windows-latest' }}
         shell: pwsh
         run: .\scripts\install-openssl.ps1
 
@@ -111,7 +111,7 @@ jobs:
       #   uses: actions/cache@v3
       #   with:
       #     path: src-tauri/target/release/bundle/*
-      #     key: windows-2019-artifacts #todo: hash of something that changes with versions
+      #     key: windows-latest-artifacts #todo: hash of something that changes with versions
 
       - name: Semantic release
         if: github.ref == 'refs/heads/main'
