@@ -35,27 +35,27 @@ export const ClusterList = () => {
       <Stack mt={10}>
         {appState.clusters.map((c) => (
           <Paper key={c.name} shadow="md" p="md" withBorder>
-            <Group position="apart">
-              <Stack>
-                <Title order={3}>{c.name}</Title>
-                <Text>{c.endpoint}</Text>
-              </Stack>
-              <Button.Group>
-                <Button onClick={() => openModal(c)} color={"red"}>
-                  Delete
-                </Button>
-                <Button component={Link} to={`edit/${c.id}`} color={"teal"}>
-                  Edit
-                </Button>
-                <Button
-                  onClick={() => {
-                    setActiveCluster(c);
-                    navigate("/topics");
-                  }}>
-                  Use
-                </Button>
-              </Button.Group>
-            </Group>
+            <Stack>
+              <Title order={3}>{c.name}</Title>
+              <Text size={13}>{c.endpoint}</Text>
+              <Group position="right">
+                <Button.Group>
+                  <Button onClick={() => openModal(c)} color={"red"}>
+                    Delete
+                  </Button>
+                  <Button component={Link} to={`edit/${c.id}`} color={"teal"}>
+                    Edit
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setActiveCluster(c);
+                      navigate("/topics");
+                    }}>
+                    Use
+                  </Button>
+                </Button.Group>
+              </Group>
+            </Stack>
           </Paper>
         ))}
       </Stack>
