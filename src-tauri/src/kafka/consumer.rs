@@ -1,11 +1,9 @@
-use std::time::Duration;
-use rdkafka::{ consumer::{ Consumer, StreamConsumer }, ClientConfig };
-use serde::{ Serialize, Deserialize };
+use rdkafka::{ consumer::{ StreamConsumer }, ClientConfig };
 
-use crate::configuration::model::{ Cluster, Authentication };
+use crate::{ configuration::model::{ Cluster, Authentication }, error::{ Result } };
 
-fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer, String> {
-    // todo: cache
+pub(super) fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
+    // todo: memoize
     let mut config = ClientConfig::new();
     config
         .set("enable.partition.eof", "true")
@@ -38,27 +36,6 @@ fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer, String> {
             }
         }
     }
-    config.create().map_err(|err| format!("Unable to build the Kafka consumer. {}", err))
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TopicInfo {
-    name: String,
-}
-
-#[tauri::command]
-pub async fn list_topics(cluster: Cluster) -> Result<Vec<TopicInfo>, String> {
-    let consumer = create_consumer(&cluster)?;
-    let metadata = consumer
-        .fetch_metadata(None, Duration::from_secs(10))
-        .map_err(|err| format!("Kafka error. {}", err))?;
-
-    let topic_info: Vec<TopicInfo> = metadata
-        .topics()
-        .iter()
-        .map(|t| TopicInfo {
-            name: t.name().to_string(),
-        })
-        .collect();
-    Ok(topic_info)
+    let client_config: StreamConsumer = config.create()?;
+    Ok(client_config)
 }

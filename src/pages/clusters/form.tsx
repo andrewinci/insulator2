@@ -52,7 +52,7 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
   const nonEmptyValidation = (fieldName: string) => (v: string) =>
     v.length > 0 ? null : `${fieldName} must be not empty.`;
   const mandatoryAuthFieldValidation =
-    (authType: AuthenticationFormType, field: string) => (v: string, values: any) => {
+    (authType: AuthenticationFormType, field: string) => (v: string, values: unknown) => {
       // the type of values is actually the entire form
       const form = values as unknown as ClusterFormType;
       if (form.authentication.type !== authType) return null;

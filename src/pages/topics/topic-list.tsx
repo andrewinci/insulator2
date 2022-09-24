@@ -3,6 +3,7 @@ import { useAppState, notifyAlert, notifySuccess } from "../../providers";
 import { ItemList } from "../common";
 import { invoke } from "@tauri-apps/api";
 import { Cluster, TopicInfo } from "../../models/kafka";
+import { format, TauriError } from "../../tauri";
 
 function getTopicNamesList(cluster: Cluster): Promise<string[]> {
   return invoke<TopicInfo[]>("list_topics", { cluster }).then((topics) =>
@@ -27,10 +28,10 @@ export const TopicList = ({
       getTopicNamesList(appState.activeCluster)
         .then((topics) => setState({ topics, loading: false }))
         .then((_) => notifySuccess("List of topics successfully retrieved"))
-        .catch((err) => {
+        .catch((err: TauriError) => {
           notifyAlert(
             `Unable to retrieve the list of topics for cluster "${appState.activeCluster?.name}"`,
-            err
+            format(err)
           );
           setState({ topics: [], loading: false });
         });
