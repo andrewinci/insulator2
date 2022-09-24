@@ -41,13 +41,13 @@ export const SideBar = ({ clusterName }: { clusterName?: string }) => (
               label={"Topics"}
             />
             <SidebarItem
-              url={"schema-registry"}
+              url={"schemas"}
               icon={<IconSatellite size={16} />}
               color={"green"}
               label={"Schema Registry"}
             />
             <SidebarItem
-              url={"consumer-groups"}
+              url={"consumers"}
               icon={<IconCircleDashed size={16} />}
               color={"violet"}
               label={"Consumer groups"}
