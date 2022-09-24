@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { Link, useNavigate } from "react-router-dom";
-import { Cluster } from "../../kafka";
+import { Cluster } from "../../models/kafka";
 import { useAppState } from "../../providers";
 
 export const ClusterList = () => {

@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { Cluster } from "../kafka";
+import { Cluster } from "../models/kafka";
 import { notifyAlert, notifySuccess } from "./notification-provider";
 
 export type AppTheme = "Light" | "Dark";

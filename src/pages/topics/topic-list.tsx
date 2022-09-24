@@ -1,7 +1,14 @@
 import { useMemo, useState } from "react";
-import { getTopicList } from "../../kafka";
 import { useAppState, notifyAlert, notifySuccess } from "../../providers";
 import { ItemList } from "../common";
+import { invoke } from "@tauri-apps/api";
+import { Cluster, TopicInfo } from "../../models/kafka";
+
+function getTopicNamesList(cluster: Cluster): Promise<string[]> {
+  return invoke<TopicInfo[]>("list_topics", { cluster }).then((topics) =>
+    topics.map((t) => t.name)
+  );
+}
 
 export const TopicList = ({
   onTopicSelected,
@@ -17,8 +24,8 @@ export const TopicList = ({
   const updateTopicList = () => {
     if (appState.activeCluster) {
       setState({ ...state, loading: true });
-      getTopicList(appState.activeCluster)
-        .then((topics) => setState({ topics: topics.map((t) => t.name), loading: false }))
+      getTopicNamesList(appState.activeCluster)
+        .then((topics) => setState({ topics, loading: false }))
         .then((_) => notifySuccess("List of topics successfully retrieved"))
         .catch((err) => {
           notifyAlert(

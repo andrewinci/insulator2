@@ -1,5 +1,3 @@
-import { invoke } from "@tauri-apps/api";
-
 export type ClusterAuthentication =
   | { Sasl: { username: string; password: string; scram: boolean } }
   | {
@@ -29,7 +27,3 @@ export type Cluster = {
 export type TopicInfo = {
   name: string;
 };
-
-export function getTopicList(cluster: Cluster): Promise<TopicInfo[]> {
-  return invoke<TopicInfo[]>("list_topics", { cluster });
-}

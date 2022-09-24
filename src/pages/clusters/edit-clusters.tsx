@@ -2,7 +2,7 @@ import { Container, Divider, Title } from "@mantine/core";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 import { useAppState, notifyAlert } from "../../providers";
-import { Cluster, ClusterAuthentication } from "../../kafka";
+import { Cluster, ClusterAuthentication } from "../../models/kafka";
 import {
   AuthenticationFormType,
   ClusterForm,
