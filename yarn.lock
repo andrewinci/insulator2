@@ -1027,10 +1027,10 @@
     lodash "^4.17.4"
     read-pkg-up "^7.0.0"
 
-"@tabler/icons@^1.97.0":
-  version "1.97.0"
-  resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-1.97.0.tgz#e727f140c07aad3d26bba374d530f816a96bafbc"
-  integrity sha512-4g6mky2cYzL/utqe8xYOg2KLA3Xf9rQyRowhi1YiekKp9BbV25CTEkn8sFqsRHHLPnl0KuewONHwODeDp46EYw==
+"@tabler/icons@^1.99.0":
+  version "1.99.0"
+  resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-1.99.0.tgz#6642a8d0948c4efbf0096428c5a73584f08b7a30"
+  integrity sha512-H0+QJ6DtAhvK+u63FTjSMHQlvKNyA3Z8a1GCYUvi2FTIOaQmAXxJWfzZrHJLaqfs0DcG/L6Qcop1GyjRz5I9sQ==
 
 "@tauri-apps/api@^1.1.0":
   version "1.1.0"
