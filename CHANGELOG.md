@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/andrewinci/insulator2/compare/v1.0.1...v1.1.0) (2022-09-24)
+
+### Bug Fixes
+
+- **FE:** Do not change clusters order ([a29366c](https://github.com/andrewinci/insulator2/commit/a29366c7f6b9f97b8721250dc30040150aa8cbd4))
+
+### Features
+
+- **BE:** support SSL ([02e0a58](https://github.com/andrewinci/insulator2/commit/02e0a58c63d8f4ee5ef4631e0e2c3178c66ef76b))
+- **FE:** Use scrollable area in cluster form and list ([a110589](https://github.com/andrewinci/insulator2/commit/a1105899d180997395769158213f18e63035cc1a))
+- store all configurations ([88eef82](https://github.com/andrewinci/insulator2/commit/88eef82a8994640835ac9a7186391ef62ee52961))
+
 ## [1.0.1](https://github.com/andrewinci/insulator2/compare/v1.0.0...v1.0.1) (2022-09-23)
 
 ### Bug Fixes
