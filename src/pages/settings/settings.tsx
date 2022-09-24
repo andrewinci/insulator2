@@ -1,5 +1,5 @@
 import { Container, Divider, Select, Stack, Title } from "@mantine/core";
-import { AppTheme, useAppState } from "../providers/app-state-provider";
+import { AppTheme, useAppState } from "../../providers/app-state-provider";
 
 export const Settings = () => {
   const { appState, setAppState } = useAppState();
