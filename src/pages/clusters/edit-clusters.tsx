@@ -28,8 +28,7 @@ export const EditCluster = () => {
       notifyAlert("Cluster configuration not found", `Unable to update ${cluster.name}.`);
       return Promise.reject();
     } else {
-      const clusters = appState.clusters.filter((c) => c.id != clusterId);
-      clusters.push(cluster);
+      const clusters = appState.clusters.map((c) => (c.id != clusterId ? c : cluster));
       return setAppState({ ...appState, clusters });
     }
   };
