@@ -1,4 +1,14 @@
-import { Button, Text, Container, Divider, Paper, Stack, Title, Group } from "@mantine/core";
+import {
+  Button,
+  Text,
+  Container,
+  Divider,
+  Paper,
+  Stack,
+  Title,
+  Group,
+  ScrollArea,
+} from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { Link, useNavigate } from "react-router-dom";
 import { Cluster } from "../../kafka";
@@ -32,33 +42,35 @@ export const ClusterList = () => {
         </Button>
       </Group>
       <Divider mt={10} />
-      <Stack mt={10}>
-        {appState.clusters.map((c) => (
-          <Paper key={c.name} shadow="md" p="md" withBorder>
-            <Stack>
-              <Title order={3}>{c.name}</Title>
-              <Text size={13}>{c.endpoint}</Text>
-              <Group position="right">
-                <Button.Group>
-                  <Button onClick={() => openModal(c)} color={"red"}>
-                    Delete
-                  </Button>
-                  <Button component={Link} to={`edit/${c.id}`} color={"teal"}>
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setActiveCluster(c);
-                      navigate("/topics");
-                    }}>
-                    Use
-                  </Button>
-                </Button.Group>
-              </Group>
-            </Stack>
-          </Paper>
-        ))}
-      </Stack>
+      <ScrollArea style={{ height: "calc(100vh - 100px)" }}>
+        <Stack mt={10}>
+          {appState.clusters.map((c) => (
+            <Paper key={c.name} shadow="md" p="md" withBorder>
+              <Stack>
+                <Title order={3}>{c.name}</Title>
+                <Text size={13}>{c.endpoint}</Text>
+                <Group position="right">
+                  <Button.Group>
+                    <Button onClick={() => openModal(c)} color={"red"}>
+                      Delete
+                    </Button>
+                    <Button component={Link} to={`edit/${c.id}`} color={"teal"}>
+                      Edit
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setActiveCluster(c);
+                        navigate("/topics");
+                      }}>
+                      Use
+                    </Button>
+                  </Button.Group>
+                </Group>
+              </Stack>
+            </Paper>
+          ))}
+        </Stack>
+      </ScrollArea>
     </Container>
   );
 };
