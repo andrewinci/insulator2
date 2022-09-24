@@ -42,7 +42,7 @@ export const ClusterList = () => {
         </Button>
       </Group>
       <Divider mt={10} />
-      <ScrollArea style={{ height: "calc(100vh - 100px)" }}>
+      <ScrollArea px={15} style={{ height: "calc(100vh - 100px)" }}>
         <Stack mt={10}>
           {appState.clusters.map((c) => (
             <Paper key={c.name} shadow="md" p="md" withBorder>
