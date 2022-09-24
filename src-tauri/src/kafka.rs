@@ -25,7 +25,12 @@ fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer, String> {
                 .set("sasl.username", username)
                 .set("sasl.password", password);
         }
-        crate::configuration::Authentication::Ssl {} => todo!(),
+        crate::configuration::Authentication::Ssl {
+            caLocation,
+            certificateLocation,
+            keyLocation,
+            keyPassword,
+        } => todo!(),
     }
     config.create().map_err(|err| format!("Unable to build the Kafka consumer. {}", err))
 }

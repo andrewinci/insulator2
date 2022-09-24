@@ -1,7 +1,7 @@
 import { Container, Divider, Title } from "@mantine/core";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAppState, notifyAlert } from "../../providers";
 import { v4 as uuid } from "uuid";
+import { useAppState, notifyAlert } from "../../providers";
 import { Cluster, ClusterAuthentication } from "../../kafka";
 import {
   AuthenticationFormType,
@@ -80,6 +80,7 @@ export const AddNewCluster = () => {
 function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
   if (!cluster) return undefined;
   const { name, endpoint, authentication } = cluster;
+  const schemaRegistry = cluster.schemaRegistry ?? { endpoint: "", password: "", username: "" };
   let type: AuthenticationFormType = "None";
   let sasl: SaslFormType = { username: "", password: "", scram: false };
   let ssl: SslFormType | undefined;
@@ -87,13 +88,12 @@ function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
   else if ("Sasl" in authentication) {
     type = "SASL";
     sasl = authentication.Sasl;
-  } else if ("ssl" in authentication) {
+  } else if ("Ssl" in authentication) {
     type = "SSL";
-    //todo
-    ssl = { certificateLocation: "", caLocation: "", keyLocation: "", keyPassword: "" };
+    ssl = authentication.Ssl;
   }
 
-  return { name, endpoint, authentication: { type, sasl, ssl } };
+  return { name, endpoint, authentication: { type, sasl, ssl }, schemaRegistry };
 }
 
 function mapFormToCluster(c: ClusterFormType): Cluster {
@@ -107,6 +107,10 @@ function mapFormToCluster(c: ClusterFormType): Cluster {
       authentication = { Sasl: { ...c.authentication.sasl! } };
       break;
     case "SSL":
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      authentication = { Ssl: { ...c.authentication.ssl! } };
+      break;
+    default:
       throw "Not supported";
   }
   return {
@@ -114,5 +118,6 @@ function mapFormToCluster(c: ClusterFormType): Cluster {
     name: c.name,
     endpoint: c.endpoint,
     authentication,
+    schemaRegistry: c.schemaRegistry,
   };
 }

@@ -52,7 +52,10 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
     setActiveCluster: (cluster: Cluster) => setAppState({ ...appState, activeCluster: cluster }),
     setAppState: (configuration: AppState) => {
       return invoke<AppState>("write_configuration", { configuration })
-        .then((config) => setAppState({ ...appState, ...config }))
+        .then((config) => {
+          notifySuccess("Configuration updated");
+          setAppState({ ...appState, ...config });
+        })
         .catch((err) => {
           notifyAlert("Unable to update the user config", err);
           //keep the promise in a rejected state for downstream handle

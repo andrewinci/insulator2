@@ -22,17 +22,30 @@ pub struct Cluster {
     pub name: String,
     pub endpoint: String,
     pub authentication: Authentication,
+    pub schemaRegistry: Option<SchemaRegistry>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Authentication {
-    Ssl {},
+    Ssl {
+        caLocation: String,
+        certificateLocation: String,
+        keyLocation: String,
+        keyPassword: Option<String>,
+    },
     Sasl {
         username: String,
         password: String,
         scram: bool,
     },
     None,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SchemaRegistry {
+    endpoint: String,
+    username: Option<String>,
+    password: Option<String>,
 }
 
 fn default_config() -> InsulatorConfig {

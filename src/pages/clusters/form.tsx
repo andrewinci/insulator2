@@ -50,7 +50,14 @@ type ClusterFormProps = {
 
 export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
   const nonEmptyValidation = (fieldName: string) => (v: string) =>
-    v.length > 0 ? null : `${fieldName} name must be not empty.`;
+    v.length > 0 ? null : `${fieldName} must be not empty.`;
+  const mandatoryAuthFieldValidation =
+    (authType: AuthenticationFormType, field: string) => (v: string, values: any) => {
+      // the type of values is actually the entire form
+      const form = values as unknown as ClusterFormType;
+      if (form.authentication.type !== authType) return null;
+      else return nonEmptyValidation(field)(v ?? "");
+    };
   const form = useForm<ClusterFormType>({
     initialValues: initialValues ?? {
       name: "",
@@ -68,21 +75,13 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
       authentication: {
         type: (v: string) => (["None", "SASL"].includes(v) ? null : "Unsupported authentication"),
         sasl: {
-          username: (v, values) => {
-            // the type of values is actually the entire form
-            const form = values as unknown as ClusterFormType;
-            if (form.authentication.type !== "SASL") return null;
-            else return nonEmptyValidation("SASL Username")(v ?? "");
-          },
-          password: (v, values) => {
-            // the type of values is actually the entire form
-            const form = values as unknown as ClusterFormType;
-            if (form.authentication.type != "SASL") return null;
-            else return nonEmptyValidation("SASL Password")(v ?? "");
-          },
+          username: mandatoryAuthFieldValidation("SASL", "SASL Username"),
+          password: mandatoryAuthFieldValidation("SASL", "SASL Password"),
         },
         ssl: {
-          //todo
+          caLocation: mandatoryAuthFieldValidation("SSL", "CA Certificate"),
+          certificateLocation: mandatoryAuthFieldValidation("SSL", "Client Certificate location"),
+          keyLocation: mandatoryAuthFieldValidation("SSL", "Client Key location"),
         },
       },
       schemaRegistry: {
