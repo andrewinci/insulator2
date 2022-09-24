@@ -2,6 +2,7 @@
 
 mod configuration;
 mod kafka;
+mod error;
 
 use crate::{ kafka::list_topics, configuration::{ get_configuration, write_configuration } };
 

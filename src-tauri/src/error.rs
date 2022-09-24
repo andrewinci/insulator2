@@ -1,0 +1,28 @@
+use serde::{ Serialize, Deserialize };
+
+pub type Result<T> = std::result::Result<T, TauriError>;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TauriError {
+    #[serde(rename = "errorType")]
+    pub error_type: String,
+    pub message: String,
+}
+
+impl From<std::io::Error> for TauriError {
+    fn from(error: std::io::Error) -> Self {
+        TauriError {
+            error_type: "IO error".to_owned(),
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<serde_json::Error> for TauriError {
+    fn from(error: serde_json::Error) -> Self {
+        TauriError {
+            error_type: "JSON Serde error".to_owned(),
+            message: error.to_string(),
+        }
+    }
+}

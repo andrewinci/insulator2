@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { Cluster } from "../models/kafka";
+import { format, TauriError } from "../tauri";
 import { notifyAlert, notifySuccess } from "./notification-provider";
 
 export type AppTheme = "Light" | "Dark";
@@ -43,7 +44,9 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
         notifySuccess("Configuration loaded");
         setAppState(config);
       })
-      .catch((err) => notifyAlert("Unable to retrieve the user config", err));
+      .catch((err: TauriError) =>
+        notifyAlert("Unable to retrieve the user config", `${format(err)}`)
+      );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setAppState]);
 

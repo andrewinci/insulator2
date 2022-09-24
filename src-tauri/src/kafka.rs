@@ -2,7 +2,7 @@ use std::time::Duration;
 use rdkafka::{ consumer::{ Consumer, StreamConsumer }, ClientConfig };
 use serde::{ Serialize, Deserialize };
 
-use crate::configuration::Cluster;
+use crate::configuration::model::{ Cluster, Authentication };
 
 fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer, String> {
     // todo: cache
@@ -14,10 +14,10 @@ fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer, String> {
         .set("api.version.request", "true")
         .set("debug", "all");
     match &cluster.authentication {
-        crate::configuration::Authentication::None => {
+        Authentication::None => {
             config.set("security.protocol", "PLAINTEXT");
         }
-        crate::configuration::Authentication::Sasl { username, password, scram } => {
+        Authentication::Sasl { username, password, scram } => {
             config
                 .set("security.protocol", "SASL_SSL")
                 .set("sasl.mechanisms", if *scram { "SCRAM-SHA-256" } else { "PLAIN" })
@@ -26,12 +26,7 @@ fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer, String> {
                 .set("sasl.password", password);
         }
 
-        crate::configuration::Authentication::Ssl {
-            ca_location,
-            certificate_location,
-            key_location,
-            key_password,
-        } => {
+        Authentication::Ssl { ca_location, certificate_location, key_location, key_password } => {
             config
                 .set("security.protocol", "ssl")
                 .set("ssl.ca.location", ca_location)
