@@ -98,7 +98,8 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
   });
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
-      <ScrollArea style={{ height: "calc(100vh - 150px)" }}>
+      {/* padding required to avoid to have the scroll bar on top of the password eye  */}
+      <ScrollArea style={{ height: "calc(100vh - 150px)", paddingRight: 20 }}>
         <Stack>
           <TextInput
             label="Custer name"

@@ -22,16 +22,21 @@ pub struct Cluster {
     pub name: String,
     pub endpoint: String,
     pub authentication: Authentication,
-    pub schemaRegistry: Option<SchemaRegistry>,
+    #[serde(rename = "schemaRegistry")]
+    pub schema_registry: Option<SchemaRegistry>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Authentication {
     Ssl {
-        caLocation: String,
-        certificateLocation: String,
-        keyLocation: String,
-        keyPassword: Option<String>,
+        #[serde(rename = "caLocation")]
+        ca_location: String,
+        #[serde(rename = "certificateLocation")]
+        certificate_location: String,
+        #[serde(rename = "keyLocation")]
+        key_location: String,
+        #[serde(rename = "keyPassword")]
+        key_password: Option<String>,
     },
     Sasl {
         username: String,
