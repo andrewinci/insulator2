@@ -522,6 +522,14 @@
     "@mantine/utils" "5.4.0"
     react-transition-group "4.4.2"
 
+"@mantine/prism@^5.4.0":
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/@mantine/prism/-/prism-5.4.0.tgz#b601293eaec06b598fb9609f2ef496726eebf8b7"
+  integrity sha512-jVJcB0P0xZeFXkVuHf8qAYa4AOLL1Yf7Abx2A89GUzj5/H7gBRZOlemU0NFDSEBIIJ/2hsXeDxEAmo6rC2pzTw==
+  dependencies:
+    "@mantine/utils" "5.4.0"
+    prism-react-renderer "^1.2.1"
+
 "@mantine/styles@5.3.3":
   version "5.3.3"
   resolved "https://registry.yarnpkg.com/@mantine/styles/-/styles-5.3.3.tgz#163f15eb2ccb6f29abdf9ebf17bc76fd816ebaae"
@@ -4446,6 +4454,11 @@ prettier@2.7.1, prettier@^2.7.1:
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.7.1.tgz#e235806850d057f97bb08368a4f7d899f7760c64"
   integrity sha512-ujppO+MkdPqoVINuDFDRLClm7D78qbDt0/NR+wp5FqEZOoTNAjPHWj17QRhu7geIHJfcNhRk1XVQmF8Bp3ye+g==
+
+prism-react-renderer@^1.2.1:
+  version "1.3.5"
+  resolved "https://registry.yarnpkg.com/prism-react-renderer/-/prism-react-renderer-1.3.5.tgz#786bb69aa6f73c32ba1ee813fbe17a0115435085"
+  integrity sha512-IJ+MSwBWKG+SM3b2SUfdrhC+gu01QkV2KmRQgREThBfSQRoufqRfxfHUxpG1WcaFjP+kojcFyO9Qqtpgt3qLCg==
 
 proc-log@^2.0.0, proc-log@^2.0.1:
   version "2.0.1"
