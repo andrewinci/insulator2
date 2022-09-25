@@ -24,14 +24,13 @@ type ItemListProps = {
   title: string;
   items: string[];
   loading: boolean;
-  width?: number;
   onItemSelected: (item: string) => void;
   onRefreshList: () => void;
 };
 
 // Common list page component
 export const ItemList = (props: ItemListProps) => {
-  const { onItemSelected, onRefreshList, items, title, loading, width } = props;
+  const { onItemSelected, onRefreshList, items, title, loading } = props;
   const [state, setState] = useState<{ search: string }>({ search: "" });
   const [windowSize, setWindowSize] = useState(getWindowSize());
 
@@ -47,7 +46,7 @@ export const ItemList = (props: ItemListProps) => {
   );
 
   return (
-    <Container style={{ width: width ?? "100%" }}>
+    <Container>
       <Group position={"apart"}>
         <Title>{title}</Title>
         <Group>

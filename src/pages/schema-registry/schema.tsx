@@ -69,7 +69,7 @@ export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
   };
 
   return (
-    <Container style={{ width: "100%" }}>
+    <Container>
       <Group position={"apart"}>
         <Title>{schemaName}</Title>
         <Group>
