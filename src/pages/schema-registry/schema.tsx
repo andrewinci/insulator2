@@ -95,11 +95,7 @@ export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
         <Center hidden={!state.loading} mt={10}>
           <Loader />
         </Center>
-        <Prism
-          hidden={state.loading}
-          style={{ height: "calc(100vh - 145px)" }}
-          withLineNumbers
-          language="json">
+        <Prism hidden={state.loading} style={{ height: "calc(100vh - 155px)" }} language="json">
           {getCurrentSchema() ?? ""}
         </Prism>
       </ScrollArea>
