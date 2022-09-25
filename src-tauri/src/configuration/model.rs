@@ -4,6 +4,8 @@ use serde::{ Deserialize, Serialize };
 pub struct InsulatorConfig {
     pub clusters: Vec<Cluster>,
     pub theme: Option<Theme>,
+    #[serde(rename = "showNotifications")]
+    pub show_notifications: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

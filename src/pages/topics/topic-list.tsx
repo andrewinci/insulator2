@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useAppState, notifyAlert, notifySuccess } from "../../providers";
+import { useAppState, useNotifications } from "../../providers";
 import { ItemList } from "../common";
 import { invoke } from "@tauri-apps/api";
 import { Cluster, TopicInfo } from "../../models/kafka";
@@ -18,6 +18,7 @@ type TopicListProps = {
 
 export const TopicList = (props: TopicListProps) => {
   const { width, onTopicSelected } = props;
+  const { alert, success } = useNotifications();
   const { appState } = useAppState();
   const [state, setState] = useState<{ topics: string[]; search?: string; loading: boolean }>({
     topics: [],
@@ -29,9 +30,9 @@ export const TopicList = (props: TopicListProps) => {
       setState({ ...state, loading: true });
       getTopicNamesList(appState.activeCluster)
         .then((topics) => setState({ topics, loading: false }))
-        .then((_) => notifySuccess("List of topics successfully retrieved"))
+        .then((_) => success("List of topics successfully retrieved"))
         .catch((err: TauriError) => {
-          notifyAlert(
+          alert(
             `Unable to retrieve the list of topics for "${appState.activeCluster?.name}"`,
             format(err)
           );

@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api";
 import { useMemo, useState } from "react";
 import { SchemaRegistry } from "../../models/kafka";
-import { notifyAlert, notifySuccess } from "../../providers";
+import { useNotifications } from "../../providers";
 import { format, TauriError } from "../../tauri";
 import { ItemList } from "../common";
 
@@ -17,6 +17,7 @@ type SchemaListProps = {
 
 export const SchemaList = (props: SchemaListProps) => {
   const { schemaRegistry, width, onTopicSelected } = props;
+  const { alert, success } = useNotifications();
   const [state, setState] = useState<{ schemas: string[]; search?: string; loading: boolean }>({
     schemas: [],
     loading: true,
@@ -26,9 +27,9 @@ export const SchemaList = (props: SchemaListProps) => {
     setState({ ...state, loading: true });
     getSchemaNamesList(schemaRegistry)
       .then((schemas) => setState({ schemas, loading: false }))
-      .then((_) => notifySuccess("List of schemas successfully retrieved"))
+      .then((_) => success("List of schemas successfully retrieved"))
       .catch((err: TauriError) => {
-        notifyAlert(`Unable to retrieve the list of schemas.`, format(err));
+        alert(`Unable to retrieve the list of schemas.`, format(err));
         setState({ schemas: [], loading: false });
       });
   };

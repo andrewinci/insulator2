@@ -14,7 +14,7 @@ import { IconVersions } from "@tabler/icons";
 import { invoke } from "@tauri-apps/api";
 import { useEffect, useState } from "react";
 import { SchemaRegistry } from "../../models/kafka";
-import { notifyAlert, notifySuccess } from "../../providers";
+import { useNotifications } from "../../providers";
 import { TauriError, format } from "../../tauri";
 
 type SchemaVersion = {
@@ -24,29 +24,30 @@ type SchemaVersion = {
   schema: string;
 };
 
-const getSchemaVersions = (subjectName: string, config: SchemaRegistry) =>
-  invoke<[SchemaVersion]>("get_schema", { subjectName, config })
-    .then((res) => {
-      notifySuccess(`${res.length} schema version found for ${subjectName}`);
-      return res;
-    })
-    .catch((err: TauriError) => notifyAlert(format(err)));
-
-export const Schema = ({
-  schemaName,
-  schemaRegistry,
-}: {
+type SchemaProps = {
   schemaName: string;
   schemaRegistry: SchemaRegistry;
-}) => {
+};
+
+export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
   const [state, setState] = useState<{
     schemas: SchemaVersion[];
     version?: number;
     loading: boolean;
   }>({ schemas: [], loading: true });
 
+  const { alert, success } = useNotifications();
+
   const lastSchemaVersion = (schemas: SchemaVersion[]) =>
     Math.max(...schemas.map((s) => s.version));
+
+  const getSchemaVersions = (subjectName: string, config: SchemaRegistry) =>
+    invoke<[SchemaVersion]>("get_schema", { subjectName, config })
+      .then((res) => {
+        success(`${res.length} schema version found for ${subjectName}`);
+        return res;
+      })
+      .catch((err: TauriError) => alert(format(err)));
 
   useEffect(() => {
     setState({ ...state, loading: true });

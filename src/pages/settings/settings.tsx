@@ -1,4 +1,4 @@
-import { Container, Divider, Select, Stack, Title } from "@mantine/core";
+import { Checkbox, Container, Divider, Select, Stack, Title } from "@mantine/core";
 import { AppTheme, useAppState } from "../../providers/app-state-provider";
 
 export const Settings = () => {
@@ -21,6 +21,11 @@ export const Settings = () => {
               setAppState({ ...appState, theme: v as AppTheme });
             }
           }}
+        />
+        <Checkbox
+          label="Hide notifications"
+          checked={!appState.showNotifications}
+          onChange={(c) => setAppState({ ...appState, showNotifications: !c.target.checked })}
         />
       </Stack>
     </Container>
