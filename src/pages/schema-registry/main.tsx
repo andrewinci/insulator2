@@ -13,6 +13,7 @@ export const SchemasPage = () => {
     return (
       <Group grow={true} align={"stretch"} position={"center"} noWrap={true}>
         <SchemaList
+          width={activeSchema ? 400 : undefined}
           schemaRegistry={schemaRegistry}
           onTopicSelected={(activeSchema) => {
             setState({ ...state, activeSchema: activeSchema });

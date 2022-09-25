@@ -10,7 +10,6 @@ import {
   ActionIcon,
   Tooltip,
   Text,
-  DefaultProps,
 } from "@mantine/core";
 import { IconPlus, IconRefresh, IconSearch } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
@@ -25,13 +24,14 @@ type ItemListProps = {
   title: string;
   items: string[];
   loading: boolean;
+  width?: number;
   onItemSelected: (item: string) => void;
   onRefreshList: () => void;
-} & DefaultProps;
+};
 
 // Common list page component
 export const ItemList = (props: ItemListProps) => {
-  const { onItemSelected, onRefreshList, items, title, loading } = props;
+  const { onItemSelected, onRefreshList, items, title, loading, width } = props;
   const [state, setState] = useState<{ search: string }>({ search: "" });
   const [windowSize, setWindowSize] = useState(getWindowSize());
 
@@ -47,7 +47,7 @@ export const ItemList = (props: ItemListProps) => {
   );
 
   return (
-    <Container style={{ width: "100%" }} {...props}>
+    <Container style={{ width: width ?? "100%" }}>
       <Group position={"apart"}>
         <Title>{title}</Title>
         <Group>

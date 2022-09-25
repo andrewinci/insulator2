@@ -1,4 +1,4 @@
-import { Container, Divider, Group, Select, Title, Tooltip } from "@mantine/core";
+import { Container, Divider, Group, ScrollArea, Select, Title, Tooltip } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { IconVersions } from "@tabler/icons";
 import { invoke } from "@tauri-apps/api";
@@ -77,7 +77,11 @@ export const Schema = ({
           />
         </Tooltip>
       </Group>
-      <Prism language="json">{getCurrentSchema() ?? ""}</Prism>
+      <ScrollArea mt={10}>
+        <Prism style={{ height: "calc(100vh - 145px)" }} withLineNumbers language="json">
+          {getCurrentSchema() ?? ""}
+        </Prism>
+      </ScrollArea>
     </Container>
   );
 };

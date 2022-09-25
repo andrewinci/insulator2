@@ -11,11 +11,12 @@ function getSchemaNamesList(config: SchemaRegistry): Promise<string[]> {
 
 type SchemaListProps = {
   schemaRegistry: SchemaRegistry;
+  width?: number;
   onTopicSelected: (topicName: string) => void;
 };
 
 export const SchemaList = (props: SchemaListProps) => {
-  const { schemaRegistry, onTopicSelected } = props;
+  const { schemaRegistry, width, onTopicSelected } = props;
   const [state, setState] = useState<{ schemas: string[]; search?: string; loading: boolean }>({
     schemas: [],
     loading: true,
@@ -38,6 +39,7 @@ export const SchemaList = (props: SchemaListProps) => {
   return (
     <ItemList
       title="Schemas"
+      width={width}
       loading={state.loading}
       items={state.schemas}
       onItemSelected={onTopicSelected}

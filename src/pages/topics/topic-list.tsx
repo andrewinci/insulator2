@@ -11,11 +11,13 @@ function getTopicNamesList(cluster: Cluster): Promise<string[]> {
   );
 }
 
-export const TopicList = ({
-  onTopicSelected,
-}: {
+type TopicListProps = {
+  width?: number;
   onTopicSelected: (topicName: string) => void;
-}) => {
+};
+
+export const TopicList = (props: TopicListProps) => {
+  const { width, onTopicSelected } = props;
   const { appState } = useAppState();
   const [state, setState] = useState<{ topics: string[]; search?: string; loading: boolean }>({
     topics: [],
@@ -44,6 +46,7 @@ export const TopicList = ({
   return (
     <ItemList
       title="Topics"
+      width={width}
       loading={state.loading}
       items={state.topics}
       onItemSelected={onTopicSelected}

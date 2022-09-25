@@ -9,6 +9,7 @@ export const TopicsPage = () => {
   return (
     <Group grow={true} align={"stretch"} position={"center"} noWrap={true}>
       <TopicList
+        width={activeTopic ? 400 : undefined}
         onTopicSelected={(activeTopic) => {
           setState({ ...state, activeTopic });
         }}
