@@ -5,6 +5,7 @@ import { SideBar } from "./components";
 import { Clusters, Settings, TopicsPage, SchemasPage } from "./pages";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
+import "allotment/dist/style.css";
 
 export const App = () => {
   const { appState } = useAppState();

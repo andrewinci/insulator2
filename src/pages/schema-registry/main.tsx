@@ -1,4 +1,5 @@
-import { Group, Text } from "@mantine/core";
+import { Text } from "@mantine/core";
+import { Allotment } from "allotment";
 import { useState } from "react";
 import { useAppState } from "../../providers";
 import { Schema } from "./schema";
@@ -11,16 +12,21 @@ export const SchemasPage = () => {
   const schemaRegistry = appState.activeCluster?.schemaRegistry;
   if (schemaRegistry && schemaRegistry.endpoint) {
     return (
-      <Group grow={true} align={"stretch"} position={"center"} noWrap={true}>
-        <SchemaList
-          width={activeSchema ? 400 : undefined}
-          schemaRegistry={schemaRegistry}
-          onTopicSelected={(activeSchema) => {
-            setState({ ...state, activeSchema: activeSchema });
-          }}
-        />
-        {activeSchema && <Schema schemaRegistry={schemaRegistry} schemaName={activeSchema} />}
-      </Group>
+      <Allotment>
+        <Allotment.Pane minSize={300} maxSize={activeSchema ? 500 : undefined}>
+          <SchemaList
+            schemaRegistry={schemaRegistry}
+            onTopicSelected={(activeSchema) => {
+              setState({ ...state, activeSchema });
+            }}
+          />
+        </Allotment.Pane>
+        {activeSchema && (
+          <Allotment.Pane minSize={300}>
+            <Schema schemaRegistry={schemaRegistry} schemaName={activeSchema} />
+          </Allotment.Pane>
+        )}
+      </Allotment>
     );
   } else return <Text>Missing schema registry configuration</Text>;
 };
