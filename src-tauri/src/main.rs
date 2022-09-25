@@ -6,7 +6,7 @@ mod schema_registry;
 mod error;
 
 use crate::{
-    kafka::list_topics,
+    kafka::{ list_topics, start_consume },
     configuration::{ get_configuration, write_configuration },
     schema_registry::{ list_subjects, get_schema },
 };
@@ -19,6 +19,7 @@ fn main() {
                 get_configuration,
                 write_configuration,
                 list_topics,
+                start_consume,
                 list_subjects,
                 get_schema
             ]

@@ -9,8 +9,11 @@ pub(super) fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
         .set("enable.partition.eof", "true")
         .set("bootstrap.servers", &cluster.endpoint)
         .set("session.timeout.ms", "6000")
+        .set("enable.auto.commit", "false")
+        .set("group.id", "test-insulator")
         .set("api.version.request", "true")
         .set("debug", "all");
+
     match &cluster.authentication {
         Authentication::None => {
             config.set("security.protocol", "PLAINTEXT");
@@ -23,7 +26,6 @@ pub(super) fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
                 .set("sasl.username", username)
                 .set("sasl.password", password);
         }
-
         Authentication::Ssl { ca_location, certificate_location, key_location, key_password } => {
             config
                 .set("security.protocol", "ssl")
@@ -36,6 +38,7 @@ pub(super) fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
             }
         }
     }
+
     let client_config: StreamConsumer = config.create()?;
     Ok(client_config)
 }

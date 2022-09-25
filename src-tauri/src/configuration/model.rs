@@ -16,7 +16,7 @@ pub enum Theme {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Cluster {
-    id: String,
+    pub id: String,
     pub name: String,
     pub endpoint: String,
     pub authentication: Authentication,
