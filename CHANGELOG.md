@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/andrewinci/insulator2/compare/v1.2.0...v1.2.1) (2022-09-25)
+
+### Bug Fixes
+
+- **FE:** scroll the schema ([e95e013](https://github.com/andrewinci/insulator2/commit/e95e01333b8d92ae9ecc184b40cd74b0daac568e))
+
 # [1.2.0](https://github.com/andrewinci/insulator2/compare/v1.1.0...v1.2.0) (2022-09-25)
 
 ### Bug Fixes
