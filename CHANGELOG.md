@@ -1,3 +1,18 @@
+# [1.2.0](https://github.com/andrewinci/insulator2/compare/v1.1.0...v1.2.0) (2022-09-25)
+
+### Bug Fixes
+
+- **FE:** padding to avoid scroll bar overlap with content ([7ce0a36](https://github.com/andrewinci/insulator2/commit/7ce0a36b86d5147b18216c792a137803fd5c7162))
+- **FE:** warning switching from undefined to string in the search input ([1b711f5](https://github.com/andrewinci/insulator2/commit/1b711f520347b286facf1033cc82fe556a184682))
+
+### Features
+
+- **BE:** Get all schema versions for a given subject ([287a50d](https://github.com/andrewinci/insulator2/commit/287a50db9d3a1d68773f2cd965c0fb6a95c3685a))
+- **BE:** Get latest schema for a given subject ([6b026e2](https://github.com/andrewinci/insulator2/commit/6b026e28d747b1036fb035645208e76eb0e677a6))
+- **BE:** Get list of schemas ([549102e](https://github.com/andrewinci/insulator2/commit/549102ee08d161dd9b6dfda74680a3c61b19521b))
+- **FE:** Add schema registry page ([0d078e5](https://github.com/andrewinci/insulator2/commit/0d078e5a68d59f3d556e9a56b6f7b2a3abffc7e9))
+- **FE:** Show schema ([a04e702](https://github.com/andrewinci/insulator2/commit/a04e702326a1fcefac046182aaf05b3bea17a7d2))
+
 # [1.1.0](https://github.com/andrewinci/insulator2/compare/v1.0.1...v1.1.0) (2022-09-24)
 
 ### Bug Fixes
