@@ -8,7 +8,7 @@ mod error;
 use crate::{
     kafka::list_topics,
     configuration::{ get_configuration, write_configuration },
-    schema_registry::{ list_subjects },
+    schema_registry::{ list_subjects, get_schema },
 };
 
 fn main() {
@@ -19,7 +19,8 @@ fn main() {
                 get_configuration,
                 write_configuration,
                 list_topics,
-                list_subjects
+                list_subjects,
+                get_schema
             ]
         )
         .run(tauri::generate_context!())

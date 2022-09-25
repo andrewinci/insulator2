@@ -45,3 +45,12 @@ impl From<reqwest::Error> for TauriError {
         }
     }
 }
+
+impl From<url::ParseError> for TauriError {
+    fn from(error: url::ParseError) -> Self {
+        TauriError {
+            error_type: "Url parsing".to_owned(),
+            message: error.to_string(),
+        }
+    }
+}
