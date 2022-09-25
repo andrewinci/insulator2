@@ -30,7 +30,7 @@ export const TopicList = ({
         .then((_) => notifySuccess("List of topics successfully retrieved"))
         .catch((err: TauriError) => {
           notifyAlert(
-            `Unable to retrieve the list of topics for cluster "${appState.activeCluster?.name}"`,
+            `Unable to retrieve the list of topics for "${appState.activeCluster?.name}"`,
             format(err)
           );
           setState({ topics: [], loading: false });

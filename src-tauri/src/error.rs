@@ -36,3 +36,12 @@ impl From<KafkaError> for TauriError {
         }
     }
 }
+
+impl From<reqwest::Error> for TauriError {
+    fn from(error: reqwest::Error) -> Self {
+        TauriError {
+            error_type: "HTTP client error".to_owned(),
+            message: error.to_string(),
+        }
+    }
+}

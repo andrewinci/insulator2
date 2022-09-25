@@ -2,15 +2,25 @@
 
 mod configuration;
 mod kafka;
+mod schema_registry;
 mod error;
 
-use crate::{ kafka::list_topics, configuration::{ get_configuration, write_configuration } };
+use crate::{
+    kafka::list_topics,
+    configuration::{ get_configuration, write_configuration },
+    schema_registry::{ list_subjects },
+};
 
 fn main() {
     tauri::Builder
         ::default()
         .invoke_handler(
-            tauri::generate_handler![get_configuration, write_configuration, list_topics]
+            tauri::generate_handler![
+                get_configuration,
+                write_configuration,
+                list_topics,
+                list_subjects
+            ]
         )
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

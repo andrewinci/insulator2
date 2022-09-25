@@ -4,3 +4,5 @@ target
 yarn.lock
 .husky
 .prettierignore
+Cargo.lock
+Cargo.toml

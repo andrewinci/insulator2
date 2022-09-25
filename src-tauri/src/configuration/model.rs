@@ -44,7 +44,7 @@ pub enum Authentication {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SchemaRegistry {
-    endpoint: String,
-    username: Option<String>,
-    password: Option<String>,
+    pub endpoint: String,
+    pub username: Option<String>,
+    pub password: Option<String>,
 }

@@ -1,11 +1,12 @@
+import { invoke } from "@tauri-apps/api";
 import { useMemo, useState } from "react";
 import { Cluster } from "../../models/kafka";
 import { useAppState, notifyAlert, notifySuccess } from "../../providers";
+import { format, TauriError } from "../../tauri";
 import { ItemList } from "../common";
 
-function getSchemaNamesList(_: Cluster): Promise<string[]> {
-  return Promise.resolve([]);
-  //todo: return invoke<TopicInfo[]>("list_schemas", { cluster });
+function getSchemaNamesList(cluster: Cluster): Promise<string[]> {
+  return invoke<string[]>("list_subjects", { config: cluster.schemaRegistry });
 }
 
 export const SchemaList = ({
@@ -25,10 +26,10 @@ export const SchemaList = ({
       getSchemaNamesList(appState.activeCluster)
         .then((schemas) => setState({ schemas, loading: false }))
         .then((_) => notifySuccess("List of schemas successfully retrieved"))
-        .catch((err) => {
+        .catch((err: TauriError) => {
           notifyAlert(
-            `Unable to retrieve the list of schemas for cluster "${appState.activeCluster?.name}"`,
-            err
+            `Unable to retrieve the list of schemas for "${appState.activeCluster?.name}"`,
+            format(err)
           );
           setState({ schemas: [], loading: false });
         });
