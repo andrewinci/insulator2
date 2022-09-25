@@ -10,6 +10,7 @@ fn default_config() -> InsulatorConfig {
     InsulatorConfig {
         clusters: Vec::new(),
         theme: Some(Theme::Light),
+        show_notifications: Some(true),
     }
 }
 

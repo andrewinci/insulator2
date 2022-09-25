@@ -1,7 +1,7 @@
 import { Container, Divider, Title } from "@mantine/core";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
-import { useAppState, notifyAlert } from "../../providers";
+import { useAppState, useNotifications } from "../../providers";
 import { Cluster, ClusterAuthentication } from "../../models/kafka";
 import {
   AuthenticationFormType,
@@ -13,11 +13,12 @@ import {
 
 export const EditCluster = () => {
   const { clusterId } = useParams();
+  const { alert } = useNotifications();
   const { setAppState, appState } = useAppState();
   const navigate = useNavigate();
 
   if (!clusterId) {
-    notifyAlert("Something went wrong", "Missing clusterId in navigation.");
+    alert("Something went wrong", "Missing clusterId in navigation.");
     return <></>;
   }
 
@@ -25,7 +26,7 @@ export const EditCluster = () => {
 
   const editCluster = (clusterId: string, cluster: Cluster) => {
     if (!appState.clusters.find((c) => c.id == clusterId)) {
-      notifyAlert("Cluster configuration not found", `Unable to update ${cluster.name}.`);
+      alert("Cluster configuration not found", `Unable to update ${cluster.name}.`);
       return Promise.reject();
     } else {
       const clusters = appState.clusters.map((c) => (c.id != clusterId ? c : cluster));
@@ -48,11 +49,12 @@ export const EditCluster = () => {
 };
 
 export const AddNewCluster = () => {
+  const { alert } = useNotifications();
   const { setAppState, appState } = useAppState();
 
   const addCluster = (cluster: Cluster) => {
     if (appState.clusters.find((c) => c.name == cluster.name)) {
-      notifyAlert(
+      alert(
         "Cluster configuration already exists",
         `A cluster with the name "${cluster.name}" already exists. Try with another name.`
       );

@@ -2,13 +2,14 @@ import { invoke } from "@tauri-apps/api";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { Cluster } from "../models/kafka";
 import { format, TauriError } from "../tauri";
-import { notifyAlert, notifySuccess } from "./notification-provider";
+import { useNotifications } from "./notification-provider";
 
 export type AppTheme = "Light" | "Dark";
 type AppState = {
   activeCluster?: Cluster;
   clusters: Cluster[];
   theme: AppTheme;
+  showNotifications?: boolean;
 };
 
 type AppStateContextType = {
@@ -36,17 +37,16 @@ export const useAppState = () => useContext(AppStateContext);
 
 export const AppStateProvider = ({ children }: { children: ReactNode }) => {
   const [appState, setAppState] = useState<AppState>(defaultAppState.appState);
+  const { alert, success } = useNotifications();
 
   // retrieve the configurations at the first start
   useEffect(() => {
     invoke<AppState>("get_configuration")
       .then((config) => {
-        notifySuccess("Configuration loaded");
+        success("Configuration loaded");
         setAppState(config);
       })
-      .catch((err: TauriError) =>
-        notifyAlert("Unable to retrieve the user config", `${format(err)}`)
-      );
+      .catch((err: TauriError) => alert("Unable to retrieve the user config", `${format(err)}`));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setAppState]);
 
@@ -56,11 +56,11 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
     setAppState: (configuration: AppState) => {
       return invoke<AppState>("write_configuration", { configuration })
         .then((config) => {
-          notifySuccess("Configuration updated");
+          success("Configuration updated");
           setAppState({ ...appState, ...config });
         })
         .catch((err) => {
-          notifyAlert("Unable to update the user config", err);
+          alert("Unable to update the user config", err);
           //keep the promise in a rejected state for downstream handle
           throw err;
         });

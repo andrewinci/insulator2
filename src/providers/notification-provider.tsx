@@ -1,5 +1,6 @@
 import { IconCheck, IconX } from "@tabler/icons";
 import { showNotification } from "@mantine/notifications";
+import { useAppState } from "./app-state-provider";
 
 export type Notification = {
   type: "ok" | "error";
@@ -18,7 +19,15 @@ const addNotification = (n: Notification) => {
   });
 };
 
-export const notifyAlert = (title?: string, description?: string) =>
-  addNotification({ type: "error", title, description });
-export const notifySuccess = (title?: string, description?: string) =>
-  addNotification({ type: "ok", title, description });
+export const useNotifications = () => {
+  const { appState } = useAppState();
+  const { showNotifications } = appState;
+  return {
+    alert: (title?: string, description?: string) =>
+      addNotification({ type: "error", title, description }),
+    success: (title?: string, description?: string) =>
+      showNotifications
+        ? addNotification({ type: "ok", title, description })
+        : console.log((title ?? "") + (description ?? "")),
+  };
+};
