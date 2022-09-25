@@ -1,4 +1,14 @@
-import { Container, Divider, Group, ScrollArea, Select, Title, Tooltip } from "@mantine/core";
+import {
+  Center,
+  Container,
+  Divider,
+  Group,
+  Loader,
+  ScrollArea,
+  Select,
+  Title,
+  Tooltip,
+} from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { IconVersions } from "@tabler/icons";
 import { invoke } from "@tauri-apps/api";
@@ -32,17 +42,20 @@ export const Schema = ({
   const [state, setState] = useState<{
     schemas: SchemaVersion[];
     version?: number;
-  }>({ schemas: [] });
+    loading: boolean;
+  }>({ schemas: [], loading: true });
 
   const lastSchemaVersion = (schemas: SchemaVersion[]) =>
     Math.max(...schemas.map((s) => s.version));
 
   useEffect(() => {
+    setState({ ...state, loading: true });
     const update = async () => {
       const schemas = (await getSchemaVersions(schemaName, schemaRegistry)) ?? [];
-      setState({ schemas, version: lastSchemaVersion(schemas) });
+      setState({ schemas, version: lastSchemaVersion(schemas), loading: false });
     };
     update();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schemaName, schemaRegistry]);
 
   const getCurrentSchema = () => {
@@ -78,7 +91,14 @@ export const Schema = ({
         </Tooltip>
       </Group>
       <ScrollArea mt={10}>
-        <Prism style={{ height: "calc(100vh - 145px)" }} withLineNumbers language="json">
+        <Center hidden={!state.loading} mt={10}>
+          <Loader />
+        </Center>
+        <Prism
+          hidden={state.loading}
+          style={{ height: "calc(100vh - 145px)" }}
+          withLineNumbers
+          language="json">
           {getCurrentSchema() ?? ""}
         </Prism>
       </ScrollArea>
