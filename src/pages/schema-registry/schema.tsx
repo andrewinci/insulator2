@@ -81,7 +81,7 @@ export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
         </Group>
       </Group>
       <Divider my={10} />
-      <Group>
+      <Group hidden={state.loading}>
         <Tooltip position="right" label="Schema version">
           <Select
             icon={<IconVersions />}
@@ -91,7 +91,7 @@ export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
           />
         </Tooltip>
       </Group>
-      <ScrollArea mt={10}>
+      <ScrollArea mt={20}>
         <Center hidden={!state.loading} mt={10}>
           <Loader />
         </Center>
