@@ -61,6 +61,9 @@ jobs:
       - name: Build artifact
         run: yarn tauri build
 
+      - name: Lint rust
+        run: yarn lint:rust
+
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}-artifacts

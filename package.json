@@ -6,7 +6,8 @@
   "scripts": {
     "postinstall": "husky install",
     "release": "semantic-release --repositoryUrl=\"https://github.com/andrewinci/insulator2.git\"",
-    "lint": "prettier --write . && yarn eslint src/ --fix && yarn tsc --noemit && cd src-tauri && cargo clippy",
+    "lint": "prettier --write . && yarn eslint src/ --fix && yarn tsc --noemit",
+    "lint:rust": "cd src-tauri && cargo clippy",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
