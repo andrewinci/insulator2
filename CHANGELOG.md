@@ -1,3 +1,16 @@
+# [1.3.0](https://github.com/andrewinci/insulator2/compare/v1.2.1...v1.3.0) (2022-09-25)
+
+### Bug Fixes
+
+- **FE:** Hide versions selector while loading ([5300e67](https://github.com/andrewinci/insulator2/commit/5300e67a66f5e787de676882e6b1a0ffe25c0ff8))
+- **FE:** Remove line numbers in schema cause they appears when copy pasting ([2f504d9](https://github.com/andrewinci/insulator2/commit/2f504d94fedc8dc273f75f8bfd4c98ce58632451))
+
+### Features
+
+- add setting to disable notifications ([a0b0e0b](https://github.com/andrewinci/insulator2/commit/a0b0e0b61d83b6b6dc2ac89bd5e8ff5c779d15b7))
+- **FE:** Show spinner loading the schemas ([48b0fa4](https://github.com/andrewinci/insulator2/commit/48b0fa4d0a84d02cda8dd21ce5fd37a8ccff6438))
+- **FE:** Use allotment to split the panes ([ce1f9ed](https://github.com/andrewinci/insulator2/commit/ce1f9edcafe6a749da56804094059b483a0ce90a))
+
 ## [1.2.1](https://github.com/andrewinci/insulator2/compare/v1.2.0...v1.2.1) (2022-09-25)
 
 ### Bug Fixes
