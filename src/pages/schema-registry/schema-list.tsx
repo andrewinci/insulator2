@@ -9,13 +9,13 @@ function getSchemaNamesList(config: SchemaRegistry): Promise<string[]> {
   return invoke<string[]>("list_subjects", { config });
 }
 
-export const SchemaList = ({
-  schemaRegistry,
-  onTopicSelected,
-}: {
+type SchemaListProps = {
   schemaRegistry: SchemaRegistry;
   onTopicSelected: (topicName: string) => void;
-}) => {
+};
+
+export const SchemaList = (props: SchemaListProps) => {
+  const { schemaRegistry, onTopicSelected } = props;
   const [state, setState] = useState<{ schemas: string[]; search?: string; loading: boolean }>({
     schemas: [],
     loading: true,
