@@ -22,7 +22,7 @@
     "@mantine/modals": "^5.4.0",
     "@mantine/notifications": "^5.4.0",
     "@mantine/prism": "^5.4.1",
-    "@tabler/icons": "^1.99.0",
+    "@tabler/icons": "^1.100.0",
     "@tauri-apps/api": "^1.1.0",
     "@types/react-window": "^1.8.5",
     "allotment": "^1.17.0",
