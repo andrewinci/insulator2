@@ -3,17 +3,20 @@
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
-    "@semantic-release/git",
     [
-      "@semantic-release/github",
+      "@semantic-release/exec",
       {
-        "assets": [
-          "src-tauri/target/release/bundle/deb/*.deb",
-          "src-tauri/target/release/bundle/appimage/*.AppImage",
-          "src-tauri/target/release/bundle/dmg/*.dmg"
-        ]
+        "prepareCmd": "./scripts/publish.sh ${nextRelease.version}"
       }
-    ]
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["src-tauri/tauri.conf.json", "CHANGELOG.md", "package.json"],
+        "message": "chore(release): ${nextRelease.version} \n\n${nextRelease.notes}"
+      }
+    ],
+    "@semantic-release/github"
   ],
   "branches": ["main"]
 }

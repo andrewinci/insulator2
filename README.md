@@ -20,6 +20,10 @@ yarn
 yarn tauri dev
 ```
 
+### Release
+
+Once happy with the latest main branch artifact, release running `yarn release`. (need the GH_TOKEN)
+
 ### Recommended IDE Setup
 
 - [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
@@ -32,5 +36,5 @@ yarn tauri dev
 
 ## Todo
 
-- [ ] Use semantic release version in the artifact
+- [x] Use semantic release version in the artifact
 - [ ] Windows build
