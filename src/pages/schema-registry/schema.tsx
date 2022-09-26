@@ -1,4 +1,5 @@
 import {
+  ActionIcon,
   Center,
   Container,
   Divider,
@@ -10,7 +11,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { Prism } from "@mantine/prism";
-import { IconVersions } from "@tabler/icons";
+import { IconInfoCircle, IconVersions } from "@tabler/icons";
 import { invoke } from "@tauri-apps/api";
 import { useEffect, useState } from "react";
 import { SchemaRegistry } from "../../models/kafka";
@@ -70,15 +71,20 @@ export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
 
   return (
     <Container>
-      <Group position={"apart"}>
-        <Title>{schemaName}</Title>
-        <Group>
-          {/* todo: <Tooltip position="left" label="Schema info">
-            <ActionIcon>
-              <IconInfoCircle />
-            </ActionIcon>
-          </Tooltip> */}
-        </Group>
+      <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
+        <Title
+          style={{
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}>
+          {schemaName}
+        </Title>
+        <Tooltip position="bottom" label="Schema info">
+          <ActionIcon>
+            <IconInfoCircle />
+          </ActionIcon>
+        </Tooltip>
       </Group>
       <Divider my={10} />
       <Group hidden={state.loading}>

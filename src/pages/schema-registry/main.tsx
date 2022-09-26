@@ -13,7 +13,7 @@ export const SchemasPage = () => {
   if (schemaRegistry && schemaRegistry.endpoint) {
     return (
       <Allotment>
-        <Allotment.Pane minSize={300} maxSize={activeSchema ? 500 : undefined}>
+        <Allotment.Pane minSize={300} maxSize={activeSchema ? 1000 : undefined}>
           <SchemaList
             schemaRegistry={schemaRegistry}
             onTopicSelected={(activeSchema) => {

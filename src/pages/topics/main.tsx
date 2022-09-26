@@ -8,7 +8,7 @@ export const TopicsPage = () => {
   const { activeTopic } = state;
   return (
     <Allotment>
-      <Allotment.Pane minSize={300} maxSize={activeTopic ? 500 : undefined}>
+      <Allotment.Pane minSize={300} maxSize={activeTopic ? 1000 : undefined}>
         <TopicList
           onTopicSelected={(activeTopic) => {
             setState({ ...state, activeTopic });

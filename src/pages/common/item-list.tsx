@@ -88,6 +88,7 @@ export const ItemList = (props: ItemListProps) => {
             <NavLink
               onClick={() => onItemSelected(filteredItems[index])}
               style={style}
+              noWrap
               label={filteredItems[index]}
             />
           )}
