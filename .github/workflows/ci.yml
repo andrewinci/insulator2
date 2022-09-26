@@ -75,6 +75,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            "src-tauri/target/release/bundle/deb/*.deb",
-            "src-tauri/target/release/bundle/appimage/*.AppImage",
-            "src-tauri/target/release/bundle/dmg/*.dmg"
+            src-tauri/target/release/bundle/deb/insulator-*_amd64.deb
+            src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage
+            src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz
+            src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz.sig
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/macos/Insulator*.app.tar.gz
+            src-tauri/target/release/bundle/macos/Insulator*.app.tar.gz.sig
