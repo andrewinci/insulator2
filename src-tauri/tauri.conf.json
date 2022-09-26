@@ -44,7 +44,11 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": true,
+      "endpoints": [
+        "https://github.com/andrewinci/insulator2/releases/latest/download/update.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyOURCOTAxOUExRDcwQTUKUldTbGNCMmFBYm1kY2lvd3Rvc0Z2ZitiVTZSWkZGMWJHZ2FoUkxVOVJHL3hTVFlaeUJKNU92bTEK"
     },
     "windows": [
       {
