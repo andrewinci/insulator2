@@ -58,8 +58,17 @@ jobs:
             src-tauri/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Build artifact
-        run: yarn tauri build
+      - name: (MacOS) Build artifact
+        if: matrix.os == 'macos-latest'
+        run: yarn tauri build -b dmg
+
+      - name: (Linux) Build artifact
+        if: matrix.os == 'ubuntu-latest'
+        run: yarn tauri build -b deb appimage
+
+      - name: Build updaters
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: yarn tauri build -b updater
         env:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
@@ -69,16 +78,16 @@ jobs:
           name: ${{ matrix.os }}-artifacts
           path: src-tauri/target/release/bundle/*
           retention-days: 1
-      
-      - name: Update darwin manifest
-        if: matrix.os == 'macos-latest'
+
+      - name: (MacOS) Update manifest
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'macos-latest'
         run: |
           ./scripts/update-signatures.sh darwin
           # remove unused manifest
           rm -rf manifests/update-linux.json
-      
-      - name: Update linux manifest
-        if: matrix.os == 'ubuntu-latest'
+
+      - name: (Linux) Update manifest
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'ubuntu-latest'
         run: |
           ./scripts/update-signatures.sh linux
           # remove unused manifest
