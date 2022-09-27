@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/andrewinci/insulator2/compare/v1.3.0...v1.4.0) (2022-09-27)
+
+### Bug Fixes
+
+- deal with long schemas and topic names ([86e1d1d](https://github.com/andrewinci/insulator2/commit/86e1d1d77882111a1230da820960db1a6527623c))
+- set timeout for schema registry requests ([89add9e](https://github.com/andrewinci/insulator2/commit/89add9e388e878c300e4dc9449f49c0344d5bc79))
+
+### Features
+
+- generate update manifests ([f937c03](https://github.com/andrewinci/insulator2/commit/f937c030038a4de5d84b496265ba8abd3c8dd370))
+- New version example ([f7063f7](https://github.com/andrewinci/insulator2/commit/f7063f7ea54b91ee2bdd1720e66bb028bef30ab7))
+
 # [1.3.0](https://github.com/andrewinci/insulator2/compare/v1.2.1...v1.3.0) (2022-09-25)
 
 ### Bug Fixes
