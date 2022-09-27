@@ -6,13 +6,19 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "./scripts/publish.sh ${nextRelease.version}"
+        "prepareCmd": "./scripts/publish.sh ${nextRelease.version} \"${nextRelease.notes}\""
       }
     ],
     [
       "@semantic-release/git",
       {
-        "assets": ["src-tauri/tauri.conf.json", "CHANGELOG.md", "package.json"],
+        "assets": [
+          "src-tauri/tauri.conf.json",
+          "CHANGELOG.md",
+          "package.json",
+          "manifests/update-darwin.json",
+          "manifests/update-linux.json"
+        ],
         "message": "chore(release): ${nextRelease.version} \n\n${nextRelease.notes}"
       }
     ],

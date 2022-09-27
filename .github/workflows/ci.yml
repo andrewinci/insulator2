@@ -68,17 +68,31 @@ jobs:
         with:
           name: ${{ matrix.os }}-artifacts
           path: src-tauri/target/release/bundle/*
-          retention-days: 5
+          retention-days: 1
+      
+      - name: Update darwin manifest
+        if: matrix.os == 'macos-latest'
+        run: |
+          ./scripts/update-signatures.sh darwin
+          # remove unused manifest
+          rm -rf manifests/update-linux.json
+      
+      - name: Update linux manifest
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          ./scripts/update-signatures.sh linux
+          # remove unused manifest
+          rm -rf manifests/update-darwin.json
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
+            manifests/update-linux.json
             src-tauri/target/release/bundle/deb/insulator-*_amd64.deb
             src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage
             src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz
-            src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz.sig
+            manifests/update-darwin.json
             src-tauri/target/release/bundle/dmg/*.dmg
             src-tauri/target/release/bundle/macos/Insulator*.app.tar.gz
-            src-tauri/target/release/bundle/macos/Insulator*.app.tar.gz.sig

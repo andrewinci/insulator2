@@ -1,0 +1,15 @@
+{
+  "version": "v0.0.1",
+  "notes": "Release notes example 2",
+  "pub_date": "2022-09-27T05:00:54Z",
+  "platforms": {
+    "darwin-x86_64": {
+      "signature": "----",
+      "url": "template"
+    },
+    "darwin-aarch64": {
+      "signature": "-----",
+      "url": "template"
+    }
+  }
+}

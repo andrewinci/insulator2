@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "Insulator 2",
-    "version": "1.4.0"
+    "version": "0.0.1"
   },
   "tauri": {
     "allowlist": {
@@ -21,7 +21,12 @@
         "depends": []
       },
       "externalBin": [],
-      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.icns", "icons/icon.ico"],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
       "identifier": "com.insulator",
       "longDescription": "",
       "macOS": {
@@ -46,7 +51,7 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://github.com/andrewinci/insulator2/releases/latest/download/update.json"
+        "https://github.com/andrewinci/insulator2/releases/latest/download/update-{{target}}.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyOURCOTAxOUExRDcwQTUKUldTbGNCMmFBYm1kY2lvd3Rvc0Z2ZitiVTZSWkZGMWJHZ2FoUkxVOVJHL3hTVFlaeUJKNU92bTEK"
     },
