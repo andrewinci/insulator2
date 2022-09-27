@@ -17,7 +17,7 @@
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@mantine/core": "^5.3.3",
-    "@mantine/form": "^5.4.0",
+    "@mantine/form": "^5.4.1",
     "@mantine/hooks": "^5.3.3",
     "@mantine/modals": "^5.4.0",
     "@mantine/notifications": "^5.4.1",
