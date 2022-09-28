@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
-import { useAppState, useNotifications } from "../../providers";
+import { useCurrentCluster, useNotifications } from "../../providers";
 import { ItemList } from "../common";
 import { invoke } from "@tauri-apps/api";
 import { Cluster, TopicInfo } from "../../models/kafka";
 import { format, TauriError } from "../../tauri";
-import { useParams } from "react-router-dom";
 
 function getTopicNamesList(cluster: Cluster): Promise<string[]> {
   return invoke<TopicInfo[]>("list_topics", { cluster }).then((topics) =>
@@ -17,15 +16,13 @@ type TopicListProps = {
 };
 
 export const TopicList = (props: TopicListProps) => {
-  const { clusterId } = useParams();
   const { onTopicSelected } = props;
   const { alert, success } = useNotifications();
-  const { appState } = useAppState();
   const [state, setState] = useState<{ topics: string[]; search?: string; loading: boolean }>({
     topics: [],
     loading: true,
   });
-  const activeCluster = clusterId ? appState.clusters.find((c) => c.id == clusterId) : undefined;
+  const activeCluster = useCurrentCluster();
   const updateTopicList = () => {
     if (activeCluster) {
       setState({ ...state, loading: true });

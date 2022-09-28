@@ -1,10 +1,10 @@
 import { invoke } from "@tauri-apps/api";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { Cluster } from "../models/kafka";
 import { format, TauriError } from "../tauri";
 import { useNotifications } from "./notification-provider";
 
-export type AppTheme = "Light" | "Dark";
 type AppState = {
   clusters: Cluster[];
   theme: AppTheme;
@@ -26,9 +26,16 @@ const defaultAppState: AppStateContextType = {
   },
 };
 
+export type AppTheme = "Light" | "Dark";
+
 const AppStateContext = createContext<AppStateContextType>(defaultAppState);
 
 export const useAppState = () => useContext(AppStateContext);
+export const useCurrentCluster = () => {
+  const { appState } = useAppState();
+  const { clusterId } = useParams();
+  return appState.clusters.find((c) => c.id == clusterId);
+};
 
 export const AppStateProvider = ({ children }: { children: ReactNode }) => {
   const [appState, setAppState] = useState<AppState>(defaultAppState.appState);

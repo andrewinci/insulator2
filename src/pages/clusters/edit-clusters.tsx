@@ -1,7 +1,7 @@
 import { Container, Divider, Title } from "@mantine/core";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { v4 as uuid } from "uuid";
-import { useAppState, useNotifications } from "../../providers";
+import { useAppState, useCurrentCluster, useNotifications } from "../../providers";
 import { Cluster, ClusterAuthentication } from "../../models/kafka";
 import {
   AuthenticationFormType,
@@ -12,17 +12,14 @@ import {
 } from "./form";
 
 export const EditCluster = () => {
-  const { clusterId } = useParams();
   const { alert } = useNotifications();
   const { setAppState, appState } = useAppState();
   const navigate = useNavigate();
-
-  if (!clusterId) {
+  const cluster = useCurrentCluster();
+  if (!cluster) {
     alert("Something went wrong", "Missing clusterId in navigation.");
     return <></>;
   }
-
-  const cluster = appState.clusters.find((c) => c.id == clusterId);
 
   const editCluster = (clusterId: string, cluster: Cluster) => {
     if (!appState.clusters.find((c) => c.id == clusterId)) {
@@ -36,7 +33,7 @@ export const EditCluster = () => {
 
   const onSubmit = async (c: ClusterFormType) => {
     const newCluster = mapFormToCluster(c);
-    await editCluster(clusterId, newCluster).then((_) => navigate("/clusters"));
+    await editCluster(cluster.id, newCluster).then((_) => navigate("/clusters"));
   };
 
   return (
