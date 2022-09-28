@@ -1,29 +1,33 @@
 import { Text } from "@mantine/core";
 import { Allotment } from "allotment";
-import { useState } from "react";
+import { useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAppState } from "../../providers";
 import { Schema } from "./schema";
 import { SchemaList } from "./schema-list";
 
 export const SchemasPage = () => {
   const { appState } = useAppState();
-  const [state, setState] = useState<{ activeSchema?: string }>({});
-  const { activeSchema } = state;
-  const schemaRegistry = appState.activeCluster?.schemaRegistry;
+  const { clusterId, schemaName } = useParams();
+  const navigate = useNavigate();
+  const schemaRegistry = useMemo(
+    () => appState.clusters.find((c) => c.id == clusterId)?.schemaRegistry,
+    [appState, clusterId]
+  );
   if (schemaRegistry && schemaRegistry.endpoint) {
     return (
       <Allotment>
-        <Allotment.Pane minSize={300} maxSize={activeSchema ? 1000 : undefined}>
+        <Allotment.Pane minSize={300} maxSize={schemaName ? 1000 : undefined}>
           <SchemaList
             schemaRegistry={schemaRegistry}
-            onTopicSelected={(activeSchema) => {
-              setState({ ...state, activeSchema });
-            }}
+            onTopicSelected={(activeSchema) =>
+              navigate(`/cluster/${clusterId}/schema/${activeSchema}`)
+            }
           />
         </Allotment.Pane>
-        {activeSchema && (
+        {schemaName && (
           <Allotment.Pane minSize={300}>
-            <Schema schemaRegistry={schemaRegistry} schemaName={activeSchema} />
+            <Schema schemaRegistry={schemaRegistry} schemaName={schemaName} />
           </Allotment.Pane>
         )}
       </Allotment>

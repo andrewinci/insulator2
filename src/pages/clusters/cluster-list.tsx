@@ -15,7 +15,7 @@ import { Cluster } from "../../models/kafka";
 import { useAppState } from "../../providers";
 
 export const ClusterList = () => {
-  const { appState, setAppState, setActiveCluster } = useAppState();
+  const { appState, setAppState } = useAppState();
   const navigate = useNavigate();
 
   const openModal = (cluster: Cluster) =>
@@ -27,9 +27,6 @@ export const ClusterList = () => {
       labels: { confirm: "Confirm", cancel: "Cancel" },
       onConfirm: () => {
         setAppState({ ...appState, clusters: appState.clusters.filter((c) => c.id != cluster.id) });
-        if (appState.activeCluster?.id == cluster.id) {
-          appState.activeCluster = undefined;
-        }
       },
     });
 
@@ -37,7 +34,7 @@ export const ClusterList = () => {
     <Container>
       <Group position={"apart"}>
         <Title>Clusters</Title>
-        <Button component={Link} to="new">
+        <Button component={Link} to="/cluster/new">
           Add Cluster
         </Button>
       </Group>
@@ -54,13 +51,12 @@ export const ClusterList = () => {
                     <Button onClick={() => openModal(c)} color={"red"}>
                       Delete
                     </Button>
-                    <Button component={Link} to={`edit/${c.id}`} color={"teal"}>
+                    <Button component={Link} to={`/cluster/edit/${c.id}`} color={"teal"}>
                       Edit
                     </Button>
                     <Button
                       onClick={() => {
-                        setActiveCluster(c);
-                        navigate("/topics");
+                        navigate(`/cluster/${c.id}/topics`);
                       }}>
                       Use
                     </Button>

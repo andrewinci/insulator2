@@ -6,7 +6,6 @@ import { useNotifications } from "./notification-provider";
 
 export type AppTheme = "Light" | "Dark";
 type AppState = {
-  activeCluster?: Cluster;
   clusters: Cluster[];
   theme: AppTheme;
   showNotifications?: boolean;
@@ -14,7 +13,6 @@ type AppState = {
 
 type AppStateContextType = {
   appState: AppState;
-  setActiveCluster: (cluster: Cluster) => void;
   setAppState: (state: AppState) => Promise<void>;
 };
 
@@ -22,9 +20,6 @@ const defaultAppState: AppStateContextType = {
   appState: {
     clusters: [],
     theme: "Light",
-  },
-  setActiveCluster: () => {
-    throw new Error("Not implemented");
   },
   setAppState: () => {
     throw new Error("Not implemented");
@@ -52,7 +47,6 @@ export const AppStateProvider = ({ children }: { children: ReactNode }) => {
 
   const context: AppStateContextType = {
     appState: appState,
-    setActiveCluster: (cluster: Cluster) => setAppState({ ...appState, activeCluster: cluster }),
     setAppState: (configuration: AppState) => {
       return invoke<AppState>("write_configuration", { configuration })
         .then((config) => {
