@@ -2,7 +2,7 @@ use std::time::Duration;
 use rdkafka::consumer::Consumer;
 use serde::{ Serialize, Deserialize };
 
-use crate::configuration::model::{ Cluster };
+use crate::configuration::{ Cluster };
 mod consumer;
 
 use consumer::create_consumer;

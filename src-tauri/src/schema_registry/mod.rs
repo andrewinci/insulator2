@@ -2,7 +2,7 @@ use url::Url;
 use std::time::Duration;
 use serde::{ de::DeserializeOwned, Deserialize, Serialize };
 
-use crate::{ configuration::model::SchemaRegistry, error::{ Result } };
+use crate::{ configuration::SchemaRegistry, error::{ Result } };
 
 async fn get<T: DeserializeOwned>(url: String, config: &SchemaRegistry) -> Result<T> {
     let client = reqwest::Client::new();

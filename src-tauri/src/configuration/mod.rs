@@ -2,23 +2,9 @@ use std::path::PathBuf;
 use std::{ fs, path::Path };
 
 use dirs::home_dir;
-use self::model::{ InsulatorConfig, Theme };
-pub mod model;
+pub mod insulator_config;
 use crate::error::{ Result };
-
-fn default_config() -> InsulatorConfig {
-    InsulatorConfig {
-        clusters: Vec::new(),
-        theme: Some(Theme::Light),
-        show_notifications: Some(true),
-    }
-}
-
-fn config_path() -> PathBuf {
-    let mut config_path = home_dir().expect("Unable to retrieve the home directory");
-    config_path.push(".insulator2.config");
-    config_path
-}
+pub use self::insulator_config::{ InsulatorConfig, Authentication, Cluster, SchemaRegistry };
 
 #[tauri::command]
 pub fn get_configuration() -> Result<InsulatorConfig> {
@@ -30,7 +16,7 @@ pub fn get_configuration() -> Result<InsulatorConfig> {
         false => Ok("".to_owned()),
     })?;
     match raw_config.as_str() {
-        "" => Ok(default_config()),
+        "" => Ok(InsulatorConfig::default()),
         _ => Ok(serde_json::from_str::<InsulatorConfig>(&raw_config)?),
     }
 }
@@ -41,4 +27,10 @@ pub fn write_configuration(configuration: InsulatorConfig) -> Result<InsulatorCo
     let raw_config = serde_json::to_string_pretty(&configuration)?;
     fs::write(config_path, raw_config)?;
     Ok(configuration)
+}
+
+fn config_path() -> PathBuf {
+    let mut config_path = home_dir().expect("Unable to retrieve the home directory");
+    config_path.push(".insulator2.config");
+    config_path
 }

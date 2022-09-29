@@ -1,6 +1,6 @@
 use serde::{ Deserialize, Serialize };
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct InsulatorConfig {
     pub clusters: Vec<Cluster>,
     pub theme: Option<Theme>,

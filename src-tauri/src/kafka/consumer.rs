@@ -1,6 +1,6 @@
 use rdkafka::{ consumer::{ StreamConsumer }, ClientConfig };
 
-use crate::{ configuration::model::{ Cluster, Authentication }, error::{ Result } };
+use crate::{ configuration::{ Authentication, Cluster }, error::{ Result } };
 
 pub(super) fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
     // todo: memoize
