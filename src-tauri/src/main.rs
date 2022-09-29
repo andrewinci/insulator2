@@ -6,7 +6,7 @@ mod schema_registry;
 mod error;
 
 use crate::{
-    kafka::list_topics,
+    kafka::{ admin::{ list_topics } },
     configuration::{ get_configuration, write_configuration },
     schema_registry::{ list_subjects, get_schema },
 };
