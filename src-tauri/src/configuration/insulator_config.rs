@@ -14,9 +14,9 @@ pub enum Theme {
     Light,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Cluster {
-    id: String,
+    pub id: String,
     pub name: String,
     pub endpoint: String,
     pub authentication: Authentication,
@@ -24,7 +24,7 @@ pub struct Cluster {
     pub schema_registry: Option<SchemaRegistry>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub enum Authentication {
     Ssl {
         #[serde(rename = "caLocation")]
@@ -41,7 +41,7 @@ pub enum Authentication {
         password: String,
         scram: bool,
     },
-    None,
+    #[default] None,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

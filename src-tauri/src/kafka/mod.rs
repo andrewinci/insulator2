@@ -1,2 +1,6 @@
 mod consumer_client;
-pub mod admin;
+mod consumer_state;
+
+pub(crate) mod consumer;
+pub(crate) mod admin;
+pub(crate) use consumer_state::ConsumerState;
