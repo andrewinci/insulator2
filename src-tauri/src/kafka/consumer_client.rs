@@ -9,6 +9,8 @@ pub(super) fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
         .set("enable.partition.eof", "true")
         .set("bootstrap.servers", &cluster.endpoint)
         .set("session.timeout.ms", "6000")
+        .set("enable.auto.commit", "false")
+        .set("group.id", "insulator-2")
         .set("api.version.request", "true")
         .set("debug", "all");
     match &cluster.authentication {
