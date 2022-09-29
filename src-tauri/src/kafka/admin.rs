@@ -5,7 +5,7 @@ use serde::{ Serialize, Deserialize };
 use crate::configuration::{ Cluster };
 use crate::error::Result;
 
-use super::consumer_client::create_consumer;
+use super::consumer::create_consumer;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TopicInfo {

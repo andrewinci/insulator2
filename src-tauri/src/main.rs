@@ -5,10 +5,11 @@ mod kafka;
 mod schema_registry;
 mod error;
 
-use kafka::ConsumerState;
-
 use crate::{
-    kafka::{ admin::{ list_topics }, consumer::{ start_consumer, stop_consumer, get_record } },
+    kafka::{
+        admin::{ list_topics },
+        consumer::{ ConsumerState, start_consumer, stop_consumer, get_record },
+    },
     configuration::{ get_configuration, write_configuration },
     schema_registry::{ list_subjects, get_schema },
 };

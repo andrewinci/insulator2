@@ -2,7 +2,7 @@ use rdkafka::{ consumer::{ StreamConsumer }, ClientConfig };
 
 use crate::{ configuration::{ Authentication, Cluster }, error::{ Result } };
 
-pub(super) fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
+pub fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
     // todo: memoize
     let mut config = ClientConfig::new();
     config
