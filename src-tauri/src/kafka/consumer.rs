@@ -1,9 +1,9 @@
 use std::time::Duration;
 
 use serde::{ Serialize, Deserialize };
-use tauri::async_runtime::spawn;
+use tauri::{ async_runtime::spawn, Manager };
 
-use crate::{ configuration::Cluster, error::Result };
+use crate::{ configuration::Cluster, error::{ Result, TauriError } };
 use super::consumer_state::{ ConsumerState, ConsumerInfo, KafkaRecord };
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -12,32 +12,60 @@ pub struct ConsumerConfig {
     topic: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Event {
+    consumer: ConsumerInfo,
+    records_count: usize,
+}
+
 #[tauri::command]
 pub fn start_consumer(
     config: ConsumerConfig,
-    state: tauri::State<'_, ConsumerState>
+    state: tauri::State<'_, ConsumerState>,
+    app: tauri::AppHandle
 ) -> Result<()> {
-    let consumer_info = ConsumerInfo { cluster_id: config.cluster.id, topic: config.topic };
-    let consumer_info2 = consumer_info.clone();
+    let topic = config.topic;
+    let consumer_info = ConsumerInfo { cluster_id: config.cluster.id, topic: topic.clone() };
     let records_state = state.records_state.clone();
-    let consumer = spawn(async move {
-        records_state
-            .lock()
-            .unwrap()
-            .insert(consumer_info.clone(), Vec::<_>::new());
-        let mut i = 1;
-        loop {
-            tokio::time::sleep(Duration::from_secs(1)).await; //replace with the actual consumer
-            records_state
-                .lock()
-                .unwrap()
-                .get_mut(&consumer_info)
-                .expect("Expected records")
-                .push(KafkaRecord { key: "sample key".into(), value: i.clone().to_string() });
-            i += 1;
-        }
-    });
-    state.consumer_handles.lock().unwrap().insert(consumer_info2, consumer);
+    if state.consumer_handles.lock().unwrap().contains_key(&consumer_info) {
+        return Err(TauriError {
+            error_type: "Kafka consumer".into(),
+            message: format!("Consumer for topic \"{}\" is already running", &topic),
+        }); //consumer already running
+    }
+    // spawn the container
+    state.consumer_handles
+        .lock()
+        .unwrap()
+        .insert(
+            consumer_info.clone(),
+            spawn(async move {
+                records_state
+                    .lock()
+                    .unwrap()
+                    .insert(consumer_info.clone(), Vec::<_>::new());
+                let mut i = 1;
+                // consumer loop
+                loop {
+                    tokio::time::sleep(Duration::from_secs(1)).await; //replace with the actual consumer
+                    let mut records_map = records_state.lock().unwrap();
+                    let records = records_map
+                        .get_mut(&consumer_info)
+                        .expect("The map record was created above");
+                    records.push(KafkaRecord {
+                        key: "sample key".into(),
+                        value: i.clone().to_string(),
+                    });
+                    i += 1;
+                    app.app_handle()
+                        .emit_all(format!("consumer_{}", topic.clone()).as_str(), Event {
+                            consumer: consumer_info.clone(),
+                            records_count: records.len(),
+                        })
+                        .expect("unable to send a notification to the frontend");
+                }
+            })
+        );
     Ok(())
 }
 
