@@ -1,34 +1,27 @@
 mod client;
 mod state;
+mod setup_consumer;
+mod helpers;
+
+use setup_consumer::setup_consumer;
 pub use client::create_consumer;
 use futures::StreamExt;
-use rdkafka::{
-    TopicPartitionList,
-    consumer::{ Consumer, StreamConsumer },
-    Message,
-    message::OwnedMessage,
-};
 pub use state::ConsumerState;
 
-use std::{ sync::{ Arc, Mutex }, collections::HashMap };
-
 use serde::{ Serialize, Deserialize };
-use tauri::{ async_runtime::spawn, Manager, AppHandle };
+use tauri::{ async_runtime::spawn };
 
 use crate::{ configuration::Cluster, error::{ Result, TauriError } };
 
-use self::state::{ ConsumerInfo, KafkaRecord };
+use self::{
+    state::{ ConsumerInfo, KafkaRecord, push_record },
+    helpers::{ parse_record, notify_client },
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ConsumerConfig {
     cluster: Cluster,
     topic: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Event {
-    consumer: ConsumerInfo,
-    records_count: usize,
 }
 
 #[tauri::command]
@@ -86,7 +79,8 @@ pub async fn stop_consumer(
     state: tauri::State<'_, ConsumerState>
 ) -> Result<()> {
     if let Some(consumer_handle) = state.consumer_handles.lock().unwrap().get(&consumer) {
-        // maybe there is a cleaner way
+        // todo: maybe there is a cleaner way
+        // todo: check double abort
         consumer_handle.abort();
     }
     Ok(())
@@ -103,69 +97,4 @@ pub async fn get_record(
     } else {
         Ok(None)
     }
-}
-
-fn setup_consumer(config: &ConsumerConfig) -> Result<StreamConsumer> {
-    // build the kafka consumer
-    let consumer = create_consumer(&config.cluster)?;
-    let mut assignment = TopicPartitionList::new();
-    assignment.add_partition_offset(&config.topic, 0, rdkafka::Offset::Offset(0))?;
-    consumer.assign(&assignment)?;
-    Ok(consumer)
-}
-
-async fn push_record(
-    record: KafkaRecord,
-    records_state: Arc<Mutex<HashMap<ConsumerInfo, Vec<KafkaRecord>>>>,
-    consumer_info: &ConsumerInfo
-) -> usize {
-    let mut records_map = records_state.lock().unwrap();
-    let records = records_map.get_mut(consumer_info).expect("The map record was created above");
-    records.push(record);
-    records.len()
-}
-
-async fn notify_client(records_count: usize, app: &AppHandle, consumer_info: &ConsumerInfo) {
-    app.app_handle()
-        .emit_all(format!("consumer_{}", consumer_info.topic.clone()).as_str(), Event {
-            consumer: consumer_info.clone(),
-            records_count,
-        })
-        .expect("unable to send a notification to the frontend");
-}
-
-fn parse_string(v: Option<&[u8]>) -> std::result::Result<Option<String>, String> {
-    match v {
-        Some(v) =>
-            String::from_utf8(Vec::from(v))
-                .map(Some)
-                .map_err(|_| "unable to parse the string to utf8".into()),
-        None => Ok(None),
-    }
-}
-
-fn parse_record(msg: OwnedMessage) -> std::result::Result<KafkaRecord, String> {
-    Ok(KafkaRecord {
-        key: parse_string(msg.key()).map_err(|_| "Unable to map the key")?,
-        value: parse_string(msg.payload()).map_err(|_| "Unable to map the value")?,
-    })
-}
-
-#[test]
-fn parse_empty_array_to_string() {
-    let vec = vec![];
-    let res = parse_string(Some(&vec));
-    assert_eq!(res, Ok(Some("".into())))
-}
-#[test]
-fn parse_none_to_string() {
-    let res = parse_string(None);
-    assert_eq!(res, Ok(None))
-}
-
-#[test]
-fn parse_invalid_to_string() {
-    let vec: Vec<u8> = vec![0x00, 0xff];
-    let res = parse_string(Some(&vec));
-    assert_eq!(res, Err("unable to parse the string to utf8".into()))
 }
