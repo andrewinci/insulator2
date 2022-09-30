@@ -87,10 +87,8 @@ pub fn start_consumer(
 
 #[tauri::command]
 pub async fn stop_consumer(consumer: ConsumerInfo, state: tauri::State<'_, ConsumerState>) -> Result<()> {
-    if let Some(consumer_handle) = state.consumer_handles.lock().unwrap().get(&consumer) {
-        // todo: maybe there is a cleaner way
-        // todo: check double abort
-        consumer_handle.abort();
+    if let Some(handle) = state.consumer_handles.lock().unwrap().remove(&consumer) {
+        handle.abort();
     }
     Ok(())
 }
