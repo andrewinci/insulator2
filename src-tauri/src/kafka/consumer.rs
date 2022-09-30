@@ -1,9 +1,16 @@
 mod client;
 mod state;
 pub use client::create_consumer;
+use futures::StreamExt;
+use rdkafka::{
+    TopicPartitionList,
+    consumer::{ Consumer, StreamConsumer },
+    Message,
+    message::OwnedMessage,
+};
 pub use state::ConsumerState;
 
-use std::{ time::Duration, sync::{ Arc, Mutex }, collections::HashMap };
+use std::{ sync::{ Arc, Mutex }, collections::HashMap };
 
 use serde::{ Serialize, Deserialize };
 use tauri::{ async_runtime::spawn, Manager, AppHandle };
@@ -30,8 +37,11 @@ pub fn start_consumer(
     state: tauri::State<'_, ConsumerState>,
     app: tauri::AppHandle
 ) -> Result<()> {
-    let topic = config.topic;
-    let consumer_info = ConsumerInfo { cluster_id: config.cluster.id, topic: topic.clone() };
+    let topic = config.topic.clone();
+    let consumer_info = ConsumerInfo {
+        cluster_id: config.cluster.id.clone(),
+        topic: topic.clone(),
+    };
     let records_state = state.records_state.clone();
 
     // check if the consumer is already running
@@ -55,18 +65,15 @@ pub fn start_consumer(
         .insert(
             consumer_info.clone(),
             spawn(async move {
-                let mut i = 1;
+                let consumer = setup_consumer(&config).expect("msg");
                 // consumer loop
                 loop {
-                    tokio::time::sleep(Duration::from_secs(1)).await; //replace with the actual consumer
-                    let record = KafkaRecord {
-                        key: "sample key".into(),
-                        value: i.clone().to_string(),
-                    };
-                    i += 1;
-
-                    let len = push_record(record, records_state.clone(), &consumer_info).await;
-                    notify_client(len, &app, &consumer_info).await;
+                    // todo: handle the Err result
+                    if let Some(Ok(raw_msg)) = consumer.stream().next().await {
+                        let record = parse_record(raw_msg.detach()).expect("msg");
+                        let len = push_record(record, records_state.clone(), &consumer_info).await;
+                        notify_client(len, &app, &consumer_info).await;
+                    }
                 }
             })
         );
@@ -98,6 +105,15 @@ pub async fn get_record(
     }
 }
 
+fn setup_consumer(config: &ConsumerConfig) -> Result<StreamConsumer> {
+    // build the kafka consumer
+    let consumer = create_consumer(&config.cluster)?;
+    let mut assignment = TopicPartitionList::new();
+    assignment.add_partition_offset(&config.topic, 0, rdkafka::Offset::Offset(0))?;
+    consumer.assign(&assignment)?;
+    Ok(consumer)
+}
+
 async fn push_record(
     record: KafkaRecord,
     records_state: Arc<Mutex<HashMap<ConsumerInfo, Vec<KafkaRecord>>>>,
@@ -113,7 +129,43 @@ async fn notify_client(records_count: usize, app: &AppHandle, consumer_info: &Co
     app.app_handle()
         .emit_all(format!("consumer_{}", consumer_info.topic.clone()).as_str(), Event {
             consumer: consumer_info.clone(),
-            records_count: records_count,
+            records_count,
         })
         .expect("unable to send a notification to the frontend");
+}
+
+fn parse_string(v: Option<&[u8]>) -> std::result::Result<Option<String>, String> {
+    match v {
+        Some(v) =>
+            String::from_utf8(Vec::from(v))
+                .map(Some)
+                .map_err(|_| "unable to parse the string to utf8".into()),
+        None => Ok(None),
+    }
+}
+
+fn parse_record(msg: OwnedMessage) -> std::result::Result<KafkaRecord, String> {
+    Ok(KafkaRecord {
+        key: parse_string(msg.key()).map_err(|_| "Unable to map the key")?,
+        value: parse_string(msg.payload()).map_err(|_| "Unable to map the value")?,
+    })
+}
+
+#[test]
+fn parse_empty_array_to_string() {
+    let vec = vec![];
+    let res = parse_string(Some(&vec));
+    assert_eq!(res, Ok(Some("".into())))
+}
+#[test]
+fn parse_none_to_string() {
+    let res = parse_string(None);
+    assert_eq!(res, Ok(None))
+}
+
+#[test]
+fn parse_invalid_to_string() {
+    let vec: Vec<u8> = vec![0x00, 0xff];
+    let res = parse_string(Some(&vec));
+    assert_eq!(res, Err("unable to parse the string to utf8".into()))
 }

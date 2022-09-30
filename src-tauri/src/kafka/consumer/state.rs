@@ -17,6 +17,6 @@ pub struct ConsumerInfo {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct KafkaRecord {
-    pub key: String,
-    pub value: String,
+    pub key: Option<String>,
+    pub value: Option<String>,
 }

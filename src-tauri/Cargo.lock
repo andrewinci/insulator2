@@ -1306,6 +1306,7 @@ name = "insulator2"
 version = "0.0.0"
 dependencies = [
  "dirs",
+ "futures",
  "rdkafka",
  "reqwest",
  "serde",

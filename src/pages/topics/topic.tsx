@@ -63,7 +63,7 @@ export const Topic = ({ topicName }: { topicName: string }) => {
         onClick={async () =>
           await invoke("get_record", {
             consumer: { cluster_id: cluster?.id, topic: topicName },
-            index: 100,
+            index: 10,
           })
             .then((r) => console.log(r))
             .catch((err) => console.error(err))
