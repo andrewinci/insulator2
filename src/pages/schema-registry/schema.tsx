@@ -39,8 +39,7 @@ export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
 
   const { alert, success } = useNotifications();
 
-  const lastSchemaVersion = (schemas: SchemaVersion[]) =>
-    Math.max(...schemas.map((s) => s.version));
+  const lastSchemaVersion = (schemas: SchemaVersion[]) => Math.max(...schemas.map((s) => s.version));
 
   const getSchemaVersions = (subjectName: string, config: SchemaRegistry) =>
     invoke<[SchemaVersion]>("get_schema", { subjectName, config })

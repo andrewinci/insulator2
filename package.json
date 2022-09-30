@@ -61,7 +61,7 @@
   "prettier": {
     "bracketSameLine": true,
     "semi": true,
-    "printWidth": 100
+    "printWidth": 120
   },
   "lint-staged": {
     "*": [

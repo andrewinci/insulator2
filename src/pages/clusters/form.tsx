@@ -101,21 +101,10 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
       {/* padding required to avoid to have the scroll bar on top of the password eye  */}
       <ScrollArea px={15} style={{ height: "calc(100vh - 150px)" }}>
         <Stack>
-          <TextInput
-            label="Custer name"
-            placeholder="My cool cluster"
-            {...form.getInputProps("name")}
-          />
-          <TextInput
-            label="Endpoint"
-            placeholder="localhost:9092"
-            {...form.getInputProps("endpoint")}
-          />
+          <TextInput label="Custer name" placeholder="My cool cluster" {...form.getInputProps("name")} />
+          <TextInput label="Endpoint" placeholder="localhost:9092" {...form.getInputProps("endpoint")} />
           <Title order={3}>Authentication</Title>
-          <Chip.Group
-            position="left"
-            multiple={false}
-            {...form.getInputProps("authentication.type")}>
+          <Chip.Group position="left" multiple={false} {...form.getInputProps("authentication.type")}>
             <Chip value="None">None</Chip>
             <Chip value="SSL">SSL (Aiven cloud)</Chip>
             <Chip value="SASL">SASL</Chip>
@@ -132,10 +121,7 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
                 placeholder="password"
                 {...form.getInputProps("authentication.sasl.password")}
               />
-              <Checkbox
-                label="Use SCRAM"
-                {...form.getInputProps("authentication.sasl.scram", { type: "checkbox" })}
-              />
+              <Checkbox label="Use SCRAM" {...form.getInputProps("authentication.sasl.scram", { type: "checkbox" })} />
             </>
           )}
           {form.values.authentication?.type == "SSL" && (
@@ -163,21 +149,9 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
             </>
           )}
           <Title order={3}>Schema registry</Title>
-          <TextInput
-            label="Endpoint"
-            placeholder="localhost:9092"
-            {...form.getInputProps("schemaRegistry.endpoint")}
-          />
-          <TextInput
-            label="Username"
-            placeholder="username"
-            {...form.getInputProps("schemaRegistry.username")}
-          />
-          <PasswordInput
-            label="Password"
-            placeholder="password"
-            {...form.getInputProps("schemaRegistry.password")}
-          />
+          <TextInput label="Endpoint" placeholder="localhost:9092" {...form.getInputProps("schemaRegistry.endpoint")} />
+          <TextInput label="Username" placeholder="username" {...form.getInputProps("schemaRegistry.username")} />
+          <PasswordInput label="Password" placeholder="password" {...form.getInputProps("schemaRegistry.password")} />
         </Stack>
       </ScrollArea>
       <Group mt={10} position="apart">

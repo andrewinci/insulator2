@@ -15,9 +15,7 @@ export const SchemasPage = () => {
         <Allotment.Pane minSize={300} maxSize={schemaName ? 1000 : undefined}>
           <SchemaList
             schemaRegistry={schemaRegistry}
-            onTopicSelected={(activeSchema) =>
-              navigate(`/cluster/${clusterId}/schema/${activeSchema}`)
-            }
+            onTopicSelected={(activeSchema) => navigate(`/cluster/${clusterId}/schema/${activeSchema}`)}
           />
         </Allotment.Pane>
         {schemaName && (

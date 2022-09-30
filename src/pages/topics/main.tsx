@@ -9,9 +9,7 @@ export const TopicsPage = () => {
   return (
     <Allotment>
       <Allotment.Pane minSize={300} maxSize={topicName ? 1000 : undefined}>
-        <TopicList
-          onTopicSelected={(activeTopic) => navigate(`/cluster/${clusterId}/topic/${activeTopic}`)}
-        />
+        <TopicList onTopicSelected={(activeTopic) => navigate(`/cluster/${clusterId}/topic/${activeTopic}`)} />
       </Allotment.Pane>
       {topicName && (
         <Allotment.Pane minSize={300}>

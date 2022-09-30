@@ -3,13 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 import { useAppState, useCurrentCluster, useNotifications } from "../../providers";
 import { Cluster, ClusterAuthentication } from "../../models/kafka";
-import {
-  AuthenticationFormType,
-  ClusterForm,
-  ClusterFormType,
-  SaslFormType,
-  SslFormType,
-} from "./form";
+import { AuthenticationFormType, ClusterForm, ClusterFormType, SaslFormType, SslFormType } from "./form";
 
 export const EditCluster = () => {
   const { alert } = useNotifications();

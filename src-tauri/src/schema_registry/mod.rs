@@ -25,9 +25,7 @@ pub async fn list_subjects(config: SchemaRegistry) -> Result<Vec<String>> {
 
 #[tauri::command]
 pub async fn get_schema(subject_name: String, config: SchemaRegistry) -> Result<Vec<Schema>> {
-    let url = Url::parse(&config.endpoint)?.join(
-        format!("/subjects/{}/versions/", subject_name).as_str()
-    )?;
+    let url = Url::parse(&config.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
     let versions: Vec<i32> = get(url.to_string(), &config).await?;
     let mut schemas = Vec::<Schema>::new();
     for v in versions {

@@ -1,14 +1,4 @@
-import {
-  Button,
-  Text,
-  Container,
-  Divider,
-  Paper,
-  Stack,
-  Title,
-  Group,
-  ScrollArea,
-} from "@mantine/core";
+import { Button, Text, Container, Divider, Paper, Stack, Title, Group, ScrollArea } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { Link, useNavigate } from "react-router-dom";
 import { Cluster } from "../../models/kafka";
@@ -21,9 +11,7 @@ export const ClusterList = () => {
   const openModal = (cluster: Cluster) =>
     openConfirmModal({
       title: `Are you sure to delete "${cluster.name}"`,
-      children: (
-        <Text size="sm">If confirmed, it will not be possible to retrieve this configuration.</Text>
-      ),
+      children: <Text size="sm">If confirmed, it will not be possible to retrieve this configuration.</Text>,
       labels: { confirm: "Confirm", cancel: "Cancel" },
       onConfirm: () => {
         setAppState({ ...appState, clusters: appState.clusters.filter((c) => c.id != cluster.id) });
