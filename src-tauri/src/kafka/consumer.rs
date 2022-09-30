@@ -7,7 +7,7 @@ mod notification;
 use setup_consumer::setup_consumer;
 pub use client::create_consumer;
 use futures::StreamExt;
-pub use state::{ AppConsumers, get_records_count };
+pub use state::{ AppConsumers, get_consumer_state };
 
 use tauri::{ async_runtime::spawn };
 
@@ -59,14 +59,14 @@ pub fn start_consumer(
                 match consumer {
                     Err(err) => notify_error(err, &app),
                     // consumer loop
-                    Ok(consumer) =>
+                    Ok(consumer) => {
                         loop {
                             match consumer.stream().next().await {
                                 Some(Ok(msg)) =>
                                     match parse_record(msg.detach()) {
                                         Ok(record) => {
-                                            let len = push_record(record, records_state.clone(), &consumer_info).await;
-                                            notification::notify_records_count(len, &app, &consumer_info);
+                                            push_record(record, records_state.clone(), &consumer_info);
+                                            //notification::notify_records_count(len, &app, &consumer_info);
                                         }
                                         Err(err) => {
                                             notify_error(err, &app);
@@ -77,6 +77,7 @@ pub fn start_consumer(
                                 None => (),
                             }
                         }
+                    }
                 }
             })
         );

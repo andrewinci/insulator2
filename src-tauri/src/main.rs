@@ -8,7 +8,7 @@ mod error;
 use crate::{
     kafka::{
         admin::{ list_topics },
-        consumer::{ AppConsumers, start_consumer, stop_consumer, get_record, get_records_count },
+        consumer::{ AppConsumers, start_consumer, stop_consumer, get_record, get_consumer_state },
     },
     configuration::{ get_configuration, write_configuration },
     schema_registry::{ list_subjects, get_schema },
@@ -28,7 +28,7 @@ fn main() {
                 start_consumer,
                 stop_consumer,
                 get_record,
-                get_records_count
+                get_consumer_state
             ]
         )
         .run(tauri::generate_context!())

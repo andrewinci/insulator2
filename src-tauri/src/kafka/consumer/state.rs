@@ -3,7 +3,7 @@ use std::{ collections::HashMap, sync::{ Mutex, Arc } };
 use serde::{ Serialize, Deserialize };
 use tauri::async_runtime::JoinHandle;
 
-use crate::error::{ TauriError, Result };
+use crate::error::{ Result };
 
 #[derive(Debug, Default)]
 pub struct AppConsumers {
@@ -23,7 +23,7 @@ pub struct KafkaRecord {
     pub value: Option<String>,
 }
 
-pub(super) async fn push_record(
+pub(super) fn push_record(
     record: KafkaRecord,
     records_state: Arc<Mutex<HashMap<ConsumerInfo, Vec<KafkaRecord>>>>,
     consumer_info: &ConsumerInfo
@@ -34,14 +34,28 @@ pub(super) async fn push_record(
     records.len()
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ConsumerState {
+    #[serde(rename = "isRunning")]
+    is_running: bool,
+    #[serde(rename = "recordCount")]
+    record_count: usize,
+}
+
 #[tauri::command]
-pub fn get_records_count(consumer: ConsumerInfo, state: tauri::State<'_, AppConsumers>) -> Result<usize> {
-    if let Some(records) = state.records_state.lock().unwrap().get(&consumer) {
-        Ok(records.len())
-    } else {
-        Err(TauriError {
-            error_type: "Get record count".into(),
-            message: format!("Consumer {:?} not found", consumer),
-        })
-    }
+pub async fn get_consumer_state(
+    consumer: ConsumerInfo,
+    state: tauri::State<'_, AppConsumers>
+) -> Result<ConsumerState> {
+    let is_running = state.consumer_handles.lock().unwrap().get(&consumer).is_some();
+    let record_count = state.records_state
+        .lock()
+        .unwrap()
+        .get(&consumer)
+        .map(|r| r.len())
+        .unwrap_or(0);
+    Ok(ConsumerState {
+        is_running,
+        record_count,
+    })
 }
