@@ -7,25 +7,23 @@ mod notification;
 use setup_consumer::setup_consumer;
 pub use client::create_consumer;
 use futures::StreamExt;
-pub use state::{ ConsumerState, get_records_count };
+pub use state::{ AppConsumers, get_records_count };
 
-use serde::{ Serialize, Deserialize };
 use tauri::{ async_runtime::spawn };
 
-use crate::{ configuration::Cluster, error::{ Result, TauriError } };
+use crate::{ error::{ Result, TauriError } };
 
-use self::{ state::{ ConsumerInfo, KafkaRecord, push_record }, parser::{ parse_record }, notification::notify_error };
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ConsumerConfig {
-    cluster: Cluster,
-    topic: String,
-}
+use self::{
+    state::{ ConsumerInfo, KafkaRecord, push_record },
+    parser::{ parse_record },
+    notification::notify_error,
+    setup_consumer::ConsumerConfig,
+};
 
 #[tauri::command]
 pub fn start_consumer(
     config: ConsumerConfig,
-    state: tauri::State<'_, ConsumerState>,
+    state: tauri::State<'_, AppConsumers>,
     app: tauri::AppHandle
 ) -> Result<()> {
     let topic = config.topic.clone();
@@ -59,7 +57,7 @@ pub fn start_consumer(
             spawn(async move {
                 let consumer = setup_consumer(&config);
                 match consumer {
-                    Err(err) => notify_error(err.to_owned(), &app),
+                    Err(err) => notify_error(err, &app),
                     // consumer loop
                     Ok(consumer) =>
                         loop {
@@ -86,7 +84,7 @@ pub fn start_consumer(
 }
 
 #[tauri::command]
-pub async fn stop_consumer(consumer: ConsumerInfo, state: tauri::State<'_, ConsumerState>) -> Result<()> {
+pub async fn stop_consumer(consumer: ConsumerInfo, state: tauri::State<'_, AppConsumers>) -> Result<()> {
     if let Some(handle) = state.consumer_handles.lock().unwrap().remove(&consumer) {
         handle.abort();
     }
@@ -97,7 +95,7 @@ pub async fn stop_consumer(consumer: ConsumerInfo, state: tauri::State<'_, Consu
 pub async fn get_record(
     consumer: ConsumerInfo,
     index: usize,
-    state: tauri::State<'_, ConsumerState>
+    state: tauri::State<'_, AppConsumers>
 ) -> Result<Option<KafkaRecord>> {
     if let Some(records) = state.records_state.lock().unwrap().get(&consumer) {
         if records.len() <= index { Ok(None) } else { Ok(Some(records[index].clone())) }

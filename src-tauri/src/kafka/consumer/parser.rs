@@ -1,6 +1,6 @@
 use rdkafka::{ message::OwnedMessage, Message };
 use super::state::{ KafkaRecord };
-use crate::error::{ Result, TauriError };
+use crate::error::{ Result };
 
 pub(super) fn parse_record(msg: OwnedMessage) -> Result<KafkaRecord> {
     Ok(KafkaRecord {

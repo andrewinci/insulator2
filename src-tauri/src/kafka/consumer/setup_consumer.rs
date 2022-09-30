@@ -1,7 +1,14 @@
 use rdkafka::{ TopicPartitionList, consumer::{ Consumer, StreamConsumer } };
+use serde::{ Serialize, Deserialize };
 
-use super::{ ConsumerConfig, create_consumer };
-use crate::error::Result;
+use super::{ create_consumer };
+use crate::{ error::Result, configuration::Cluster };
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ConsumerConfig {
+    pub cluster: Cluster,
+    pub topic: String,
+}
 
 pub(super) fn setup_consumer(config: &ConsumerConfig) -> Result<StreamConsumer> {
     // build the kafka consumer

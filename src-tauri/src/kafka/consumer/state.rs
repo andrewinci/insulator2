@@ -1,4 +1,4 @@
-use std::{ collections::HashMap, sync::{ Mutex, Arc }, fmt::format };
+use std::{ collections::HashMap, sync::{ Mutex, Arc } };
 
 use serde::{ Serialize, Deserialize };
 use tauri::async_runtime::JoinHandle;
@@ -6,7 +6,7 @@ use tauri::async_runtime::JoinHandle;
 use crate::error::{ TauriError, Result };
 
 #[derive(Debug, Default)]
-pub struct ConsumerState {
+pub struct AppConsumers {
     pub consumer_handles: Mutex<HashMap<ConsumerInfo, JoinHandle<()>>>,
     pub records_state: Arc<Mutex<HashMap<ConsumerInfo, Vec<KafkaRecord>>>>,
 }
@@ -35,7 +35,7 @@ pub(super) async fn push_record(
 }
 
 #[tauri::command]
-pub fn get_records_count(consumer: ConsumerInfo, state: tauri::State<'_, ConsumerState>) -> Result<usize> {
+pub fn get_records_count(consumer: ConsumerInfo, state: tauri::State<'_, AppConsumers>) -> Result<usize> {
     if let Some(records) = state.records_state.lock().unwrap().get(&consumer) {
         Ok(records.len())
     } else {
