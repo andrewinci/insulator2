@@ -3,7 +3,7 @@ use serde::{ Serialize, Deserialize };
 
 pub type Result<T> = std::result::Result<T, TauriError>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TauriError {
     #[serde(rename = "errorType")]
     pub error_type: String,
