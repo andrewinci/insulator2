@@ -1,7 +1,9 @@
-use std::{ collections::HashMap, sync::{ Mutex, Arc } };
+use std::{ collections::HashMap, sync::{ Mutex, Arc }, fmt::format };
 
 use serde::{ Serialize, Deserialize };
 use tauri::async_runtime::JoinHandle;
+
+use crate::error::{ TauriError, Result };
 
 #[derive(Debug, Default)]
 pub struct ConsumerState {
@@ -30,4 +32,16 @@ pub(super) async fn push_record(
     let records = records_map.get_mut(consumer_info).expect("The map record was created above");
     records.push(record);
     records.len()
+}
+
+#[tauri::command]
+pub fn get_records_count(consumer: ConsumerInfo, state: tauri::State<'_, ConsumerState>) -> Result<usize> {
+    if let Some(records) = state.records_state.lock().unwrap().get(&consumer) {
+        Ok(records.len())
+    } else {
+        Err(TauriError {
+            error_type: "Get record count".into(),
+            message: format!("Consumer {:?} not found", consumer),
+        })
+    }
 }

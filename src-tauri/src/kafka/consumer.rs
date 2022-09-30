@@ -7,7 +7,7 @@ mod notification;
 use setup_consumer::setup_consumer;
 pub use client::create_consumer;
 use futures::StreamExt;
-pub use state::ConsumerState;
+pub use state::{ ConsumerState, get_records_count };
 
 use serde::{ Serialize, Deserialize };
 use tauri::{ async_runtime::spawn };

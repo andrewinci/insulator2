@@ -6,7 +6,10 @@ mod schema_registry;
 mod error;
 
 use crate::{
-    kafka::{ admin::{ list_topics }, consumer::{ ConsumerState, start_consumer, stop_consumer, get_record } },
+    kafka::{
+        admin::{ list_topics },
+        consumer::{ ConsumerState, start_consumer, stop_consumer, get_record, get_records_count },
+    },
     configuration::{ get_configuration, write_configuration },
     schema_registry::{ list_subjects, get_schema },
 };
@@ -24,7 +27,8 @@ fn main() {
                 get_schema,
                 start_consumer,
                 stop_consumer,
-                get_record
+                get_record,
+                get_records_count
             ]
         )
         .run(tauri::generate_context!())
