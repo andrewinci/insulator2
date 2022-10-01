@@ -16,7 +16,7 @@ import { IconInfoCircle } from "@tabler/icons";
 import { invoke } from "@tauri-apps/api";
 import React from "react";
 import { Async } from "react-async";
-import { FixedSizeList } from "react-window";
+import { InfiniteTable } from "../../components";
 import { Cluster } from "../../models/kafka";
 import { useCurrentCluster } from "../../providers";
 
@@ -35,9 +35,7 @@ type TopicPageProps = {
   cluster: Cluster;
 };
 
-type TopicPageState = {
-  windowHeight: number;
-} & ConsumerState;
+type TopicPageState = ConsumerState;
 
 class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
   interval!: NodeJS.Timer;
@@ -47,7 +45,6 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
     this.state = {
       isRunning: false,
       recordCount: 0,
-      windowHeight: window.innerHeight,
     };
   }
 
@@ -59,8 +56,6 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
         this.setState((current) => ({ ...current, ...s }))
       );
     }, 500);
-    // resize list on window resize
-    window.addEventListener("resize", () => this.setState((s) => ({ ...s, windowHeight: window.innerHeight })));
   }
 
   componentWillUnmount(): void {
@@ -69,7 +64,6 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
 
   //only update the record count if the it changed in the backend
   shouldComponentUpdate(nextProps: Readonly<TopicPageProps>, nextState: Readonly<TopicPageState>): boolean {
-    if (nextState.windowHeight != this.state.windowHeight) return true;
     if (nextState.isRunning != this.state.isRunning) return true;
     const res =
       nextProps.topicName === this.props.topicName &&
@@ -120,12 +114,11 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
           <Button mb={10} size="xs" onClick={this.toggleConsumerRunning}>
             {this.state.isRunning ? "Stop" : "Consume"}
           </Button>
-          <FixedSizeList
-            height={this.state.windowHeight - 170}
+          <InfiniteTable
+            heightOffset={170}
             itemCount={this.state.recordCount}
             itemSize={38}
-            width={"100%"}>
-            {({ index, style }) => (
+            renderRow={(index, style) => (
               <Async
                 promise={this.getRecord(
                   this.state.recordCount - (index + 1),
@@ -142,7 +135,7 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
                 </Async.Fulfilled>
               </Async>
             )}
-          </FixedSizeList>
+          />
         </Async.Resolved>
       </Async>
     </Container>
