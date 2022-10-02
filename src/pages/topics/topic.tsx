@@ -1,4 +1,19 @@
-import { ActionIcon, Button, Center, Container, Divider, Group, Loader, Title, Tooltip, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  Button,
+  Center,
+  Container,
+  Divider,
+  Group,
+  Loader,
+  Title,
+  Tooltip,
+  Text,
+  Stack,
+  Chip,
+} from "@mantine/core";
+import { openConfirmModal } from "@mantine/modals";
+import { DateRangePicker } from "@mantine/dates";
 import { IconInfoCircle } from "@tabler/icons";
 import { invoke } from "@tauri-apps/api";
 import React from "react";
@@ -67,6 +82,31 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
           consumer: { cluster_id: this.props.cluster.id, topic: this.props.topicName },
         })
       : await invoke<void>("start_consumer", { config: { cluster: this.props.cluster, topic: this.props.topicName } });
+
+  openModal = () =>
+    openConfirmModal({
+      title: <Title order={3}>Consumer settings</Title>,
+      children: (
+        <Stack>
+          <Title weight={"normal"} size={15}>
+            Consume the topic{" "}
+            <Text color="red" inherit component="span">
+              {this.props.topicName}
+            </Text>{" "}
+            from
+          </Title>
+          <Chip.Group position="left" multiple={false}>
+            <Chip value="beginning">Beginning</Chip>
+            <Chip value="earliest">Earliest</Chip>
+            <Chip value="interval">Interval</Chip>
+          </Chip.Group>
+          <DateRangePicker label="Consume within the time range" placeholder="Pick dates range" />
+        </Stack>
+      ),
+      labels: { confirm: "Confirm", cancel: "Cancel" },
+      onCancel: () => console.log("Cancel"),
+      onConfirm: () => console.log("Confirmed"),
+    });
 
   render = () => (
     <Container>
