@@ -18,9 +18,9 @@ import { IconInfoCircle } from "@tabler/icons";
 import { invoke } from "@tauri-apps/api";
 import React from "react";
 import { Async } from "react-async";
-import { Cluster } from "../../models/kafka";
+import { Cluster, KafkaRecord } from "../../models/kafka";
 import { useCurrentCluster } from "../../providers";
-import { KafkaRecord, RecordsTable } from "./records-table";
+import { RecordsList } from "./records-list";
 
 type ConsumerState = {
   isRunning: boolean;
@@ -136,7 +136,7 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
           <Button mb={10} size="xs" onClick={this.toggleConsumerRunning}>
             {this.state.isRunning ? "Stop" : "Consume"}
           </Button>
-          <RecordsTable
+          <RecordsList
             heightOffset={170}
             itemCount={this.state.recordCount}
             fetchRecord={(index) => this.getRecord(index, this.props.cluster, this.props.topicName)}

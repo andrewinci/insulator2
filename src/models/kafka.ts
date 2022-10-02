@@ -27,3 +27,11 @@ export type Cluster = {
 export type TopicInfo = {
   name: string;
 };
+
+export type KafkaRecord = {
+  key: string;
+  value: string;
+  partition: number;
+  offset: number;
+  timestamp?: number;
+};

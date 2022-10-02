@@ -3,29 +3,18 @@ import { Paper, Text, Group } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { formatISO } from "date-fns";
 import React, { useEffect, useState } from "react";
-import { VariableSizeList } from "react-window";
+import { FixedSizeList } from "react-window";
+import { KafkaRecord } from "../../models/kafka";
 
-export type KafkaRecord = {
-  key: string;
-  value: string;
-  partition: number;
-  offset: number;
-  timestamp?: number;
-};
-
-type RecordsTableProps = {
+type RecordsListProps = {
   itemCount: number;
   heightOffset?: number;
   fetchRecord: (rowIndex: number) => Promise<KafkaRecord>;
 };
 
-type InfiniteTableState = {
-  windowHeight: number;
-};
-
-export const RecordsTable = (props: RecordsTableProps) => {
+export const RecordsList = (props: RecordsListProps) => {
   const { itemCount, heightOffset, fetchRecord } = props;
-  const [state, setState] = useState<InfiniteTableState>({ windowHeight: window.innerHeight });
+  const [state, setState] = useState<{ windowHeight: number }>({ windowHeight: window.innerHeight });
 
   useEffect(() => {
     const handleWindowResize = () => setState((s) => ({ ...s, windowHeight: window.innerHeight }));
@@ -34,13 +23,13 @@ export const RecordsTable = (props: RecordsTableProps) => {
   }, []);
 
   return (
-    <VariableSizeList
+    <FixedSizeList
       height={state.windowHeight - (heightOffset ?? 0)}
       itemCount={itemCount}
-      itemSize={(_) => 125}
+      itemSize={125}
       width={"100%"}>
       {({ index, style }) => <KafkaRecordCard index={index} style={style} fetchRecord={fetchRecord} />}
-    </VariableSizeList>
+    </FixedSizeList>
   );
 };
 
