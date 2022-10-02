@@ -2,7 +2,7 @@ use rdkafka::{ TopicPartitionList, consumer::{ Consumer, StreamConsumer } };
 use serde::{ Serialize, Deserialize };
 
 use super::{ create_consumer };
-use crate::{ error::{ Result, TauriError }, configuration::Cluster, kafka::admin::{ list_topic, list_topic_internal } };
+use crate::{ error::{ Result, TauriError }, configuration::Cluster, kafka::admin::{ list_topic_internal } };
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ConsumerConfig {

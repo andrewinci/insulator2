@@ -1,6 +1,5 @@
 use std::time::Duration;
 use rdkafka::consumer::Consumer;
-use rdkafka::statistics::Partition;
 use serde::{ Serialize, Deserialize };
 
 use crate::configuration::{ Cluster };
