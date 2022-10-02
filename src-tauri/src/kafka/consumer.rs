@@ -17,7 +17,7 @@ use self::{
     state::{ ConsumerInfo, KafkaRecord, push_record },
     parser::{ parse_record },
     notification::notify_error,
-    setup_consumer::ConsumerConfig,
+    setup_consumer::{ ConsumerConfig, ConsumeFrom },
 };
 
 #[tauri::command]
@@ -65,8 +65,21 @@ pub fn start_consumer(
                                 Some(Ok(msg)) =>
                                     match parse_record(msg.detach()) {
                                         Ok(record) => {
+                                            if
+                                                let ConsumeFrom::Custom {
+                                                    start_timestamp: _,
+                                                    stop_timestamp: Some(stop_timestamp),
+                                                } = config.from
+                                            {
+                                                if let Some(current_timestamp) = record.timestamp {
+                                                    if stop_timestamp < current_timestamp {
+                                                        // skip push_record into the consumer record_state
+                                                        //todo: disable consumption for the current partition
+                                                        continue;
+                                                    }
+                                                }
+                                            }
                                             push_record(record, records_state.clone(), &consumer_info);
-                                            //notification::notify_records_count(len, &app, &consumer_info);
                                         }
                                         Err(err) => {
                                             notify_error(err, &app);

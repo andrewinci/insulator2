@@ -75,6 +75,8 @@ export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
   );
 
 export const startConsumer = (cluster: Cluster, topic: string): Promise<void> =>
-  invoke<void>("start_consumer", { config: { cluster, topic } }).catch((err: TauriError) =>
+  invoke<void>("start_consumer", {
+    config: { cluster, topic, from: { Custom: { start_timestamp: 0 } } },
+  }).catch((err: TauriError) =>
     addNotification({ type: "error", title: "Start Kafka record", description: format(err) })
   );
