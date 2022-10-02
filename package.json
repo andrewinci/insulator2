@@ -26,6 +26,7 @@
     "@tauri-apps/api": "^1.1.0",
     "@types/react-window": "^1.8.5",
     "allotment": "^1.17.0",
+    "date-fns": "^2.29.3",
     "react": "^18.2.0",
     "react-async": "^10.0.1",
     "react-dom": "^18.2.0",

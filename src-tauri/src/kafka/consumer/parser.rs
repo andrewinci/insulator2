@@ -6,6 +6,13 @@ pub(super) fn parse_record(msg: OwnedMessage) -> Result<KafkaRecord> {
     Ok(KafkaRecord {
         key: parse_string(msg.key()),
         value: parse_string(msg.payload()),
+        offset: msg.offset(),
+        partition: msg.partition(),
+        timestamp: match msg.timestamp() {
+            rdkafka::Timestamp::NotAvailable => None,
+            rdkafka::Timestamp::CreateTime(t) => Some(t),
+            rdkafka::Timestamp::LogAppendTime(t) => Some(t),
+        },
     })
 }
 

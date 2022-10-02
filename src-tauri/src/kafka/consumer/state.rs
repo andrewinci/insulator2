@@ -21,6 +21,9 @@ pub struct ConsumerInfo {
 pub struct KafkaRecord {
     pub key: Option<String>,
     pub value: Option<String>,
+    pub offset: i64,
+    pub partition: i32,
+    pub timestamp: Option<i64>,
 }
 
 pub(super) fn push_record(
