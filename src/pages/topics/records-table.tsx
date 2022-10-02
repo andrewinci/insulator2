@@ -75,20 +75,20 @@ const KafkaRecordCard = ({
   useEffect(() => {
     fetchRecord(index).then((r) => setRecord(r));
   }, [fetchRecord, index]);
-  const timestamp = record.timestamp ? formatISO(new Date(record.timestamp)) : "N/A";
+  const timestamp = record?.timestamp ? formatISO(new Date(record.timestamp)) : "N/A";
   return (
     <Paper shadow="xs" p={5} withBorder style={{ ...style, maxHeight: 120, width: "calc(100% - 20px)" }}>
       <Group spacing={0} noWrap={true} style={{ height: 20 }}>
         <Text size={13} italic>
           {index}
         </Text>
-        <LabelValue label="key: " value={record.key} />
-        <LabelValue label="partition: " value={record.partition} />
-        <LabelValue label="offset: " value={record.offset} />
+        <LabelValue label="key: " value={record?.key} />
+        <LabelValue label="partition: " value={record?.partition} />
+        <LabelValue label="offset: " value={record?.offset} />
         <LabelValue label="timestamp: " value={timestamp} />
       </Group>
       <CustomPrism mt={2} copyLabel="Copy" language={"json"}>
-        {record.value}
+        {record?.value}
       </CustomPrism>
     </Paper>
   );
