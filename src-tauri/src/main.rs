@@ -7,7 +7,7 @@ mod error;
 
 use crate::{
     kafka::{
-        admin::{ list_topics },
+        admin::{ list_topic },
         consumer::{ AppConsumers, start_consumer, stop_consumer, get_record, get_consumer_state },
     },
     configuration::{ get_configuration, write_configuration },
@@ -22,7 +22,7 @@ fn main() {
             tauri::generate_handler![
                 get_configuration,
                 write_configuration,
-                list_topics,
+                list_topic,
                 list_subjects,
                 get_schema,
                 start_consumer,

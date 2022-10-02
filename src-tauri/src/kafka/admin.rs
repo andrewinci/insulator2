@@ -22,9 +22,9 @@ pub struct TopicInfo {
 }
 
 #[tauri::command]
-pub async fn list_topics(cluster: Cluster) -> Result<Vec<TopicInfo>> {
+pub async fn list_topic(cluster: Cluster, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
     let topics: Vec<TopicInfo> = create_consumer(&cluster)?
-        .fetch_metadata(None, Duration::from_secs(10))?
+        .fetch_metadata(topic, Duration::from_secs(10))?
         .topics()
         .iter()
         .map(|t| TopicInfo {

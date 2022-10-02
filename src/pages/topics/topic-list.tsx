@@ -6,7 +6,7 @@ import { Cluster, TopicInfo } from "../../models/kafka";
 import { format, TauriError } from "../../tauri";
 
 function getTopicNamesList(cluster: Cluster): Promise<string[]> {
-  return invoke<TopicInfo[]>("list_topics", { cluster }).then((topics) => topics.map((t) => t.name));
+  return invoke<TopicInfo[]>("list_topic", { cluster }).then((topics) => topics.map((t) => t.name));
 }
 
 type TopicListProps = {
