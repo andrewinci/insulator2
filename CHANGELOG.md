@@ -1,3 +1,26 @@
+# [1.5.0](https://github.com/andrewinci/insulator2/compare/v1.4.0...v1.5.0) (2022-10-02)
+
+### Bug Fixes
+
+- **BE:** Delete the handle after stopping the consumer ([b236c16](https://github.com/andrewinci/insulator2/commit/b236c16c9b9b5997ddd1d85cbeb159a461bd5687))
+- **FE:** navigation ([82eaaa3](https://github.com/andrewinci/insulator2/commit/82eaaa359cb69396a1c9ff6b88f79d44e4094cf6))
+
+### Features
+
+- **BE:** add get records count api ([12c889c](https://github.com/andrewinci/insulator2/commit/12c889c3f515a9d81b69acdb6569092e3f4f1a98))
+- **BE:** add get_consumer_state function and disable tauri notifications ([4c7eb7c](https://github.com/andrewinci/insulator2/commit/4c7eb7cf3da81b0439bf96289ec4a92d40900c2e))
+- **BE:** add partitions to topic info ([2ac5ee8](https://github.com/andrewinci/insulator2/commit/2ac5ee81a125c6e9e2440484a726319315480b65))
+- **BE:** Add POC API to handle multiple consumers ([b148f33](https://github.com/andrewinci/insulator2/commit/b148f33d2e7440ae1e80443b6173518756607a36))
+- **BE:** disable offset autocommit by default ([36f12aa](https://github.com/andrewinci/insulator2/commit/36f12aaa056ef2fcebd03aee4d33b862d2f0b0c1))
+- **BE:** return partition info in list_topic api ([be853ea](https://github.com/andrewinci/insulator2/commit/be853ea3499ce6b92d0ec1a31616f0fc26debb77))
+- **BE:** Stop consumer and notify client on error in the loop ([8e30455](https://github.com/andrewinci/insulator2/commit/8e30455fc918c01f83854f4e7ac0de89225fd0cf))
+- **BE:** Use lossy parsing for utf8 strings ([6ed9325](https://github.com/andrewinci/insulator2/commit/6ed932545adfd1cd9b585c32dd8f1c4ede51e5ee))
+- Consume from all partitions ([6a091bf](https://github.com/andrewinci/insulator2/commit/6a091bf85eca1eb54b497b4dd1509a681c354c21))
+- **FE:** Consumer view ([81cacee](https://github.com/andrewinci/insulator2/commit/81cacee5edbd52860a081ac12598452e6ecd6208))
+- **FE:** Show records as cards ([3aeb70d](https://github.com/andrewinci/insulator2/commit/3aeb70deacdf1b37448b08dcad494f56e904b523))
+- **FE:** Use mantine style in the records table ([9a91af2](https://github.com/andrewinci/insulator2/commit/9a91af2e359b84eee824f9d85c7cfd4d09b887f0))
+- Show record offset, partition and timestamp ([ca23f8a](https://github.com/andrewinci/insulator2/commit/ca23f8ade99981f7ff980cd352237c9dfc1748c5))
+
 # [1.4.0](https://github.com/andrewinci/insulator2/compare/v1.3.0...v1.4.0) (2022-09-27)
 
 ### Bug Fixes
