@@ -10,20 +10,24 @@ use super::consumer::create_consumer;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PartitionInfo {
-    id: i32,
-    isr: usize,
-    replicas: usize,
+    pub id: i32,
+    pub isr: usize,
+    pub replicas: usize,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TopicInfo {
-    name: String,
-    partitions: Vec<PartitionInfo>,
+    pub name: String,
+    pub partitions: Vec<PartitionInfo>,
 }
 
 #[tauri::command]
 pub async fn list_topic(cluster: Cluster, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
-    let topics: Vec<TopicInfo> = create_consumer(&cluster)?
+    list_topic_internal(&cluster, topic)
+}
+
+pub fn list_topic_internal(cluster: &Cluster, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
+    let topics: Vec<TopicInfo> = create_consumer(cluster)?
         .fetch_metadata(topic, Duration::from_secs(10))?
         .topics()
         .iter()

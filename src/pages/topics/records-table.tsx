@@ -64,7 +64,13 @@ const KafkaRecordCard = ({
   style: React.CSSProperties;
   fetchRecord: (rowIndex: number) => Promise<KafkaRecord>;
 }) => {
-  const [record, setRecord] = useState<KafkaRecord>({ key: "N/A", value: "N/A", partition: -1, offset: -1 });
+  const [record, setRecord] = useState<KafkaRecord>({
+    key: "N/A",
+    value: "N/A",
+    partition: -1,
+    offset: -1,
+    timestamp: undefined,
+  });
 
   useEffect(() => {
     fetchRecord(index).then((r) => setRecord(r));
@@ -72,7 +78,7 @@ const KafkaRecordCard = ({
   const timestamp = record.timestamp ? formatISO(new Date(record.timestamp)) : "N/A";
   return (
     <Paper shadow="xs" p={5} withBorder style={{ ...style, maxHeight: 120, width: "calc(100% - 20px)" }}>
-      <Group spacing={0}>
+      <Group spacing={0} noWrap={true} style={{ height: 20 }}>
         <Text size={13} italic>
           {index}
         </Text>
