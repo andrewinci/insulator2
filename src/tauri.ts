@@ -10,6 +10,7 @@ export type TauriError = {
 export const format = ({ errorType, message }: TauriError) => `${errorType}: ${message}`;
 
 /** Configurations **/
+
 export const getConfiguration = (): Promise<AppState> =>
   invoke<AppState>("get_configuration").catch((err: TauriError) => {
     addNotification({ type: "error", title: "Unable to retrieve the user config", description: format(err) });

@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import { ActionIcon, Center, Container, Divider, Group, Loader, ScrollArea, Select, Tooltip } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { IconInfoCircle, IconVersions } from "@tabler/icons";
@@ -64,10 +65,18 @@ export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
         <Center hidden={!state.loading} mt={10}>
           <Loader />
         </Center>
-        <Prism hidden={state.loading} style={{ height: "calc(100vh - 155px)" }} language="json">
+        <CustomPrism hidden={state.loading} style={{ height: "calc(100vh - 155px)" }} language="json">
           {getCurrentSchema() ?? ""}
-        </Prism>
+        </CustomPrism>
       </ScrollArea>
     </Container>
   );
 };
+
+const CustomPrism = styled(Prism)`
+  code[class*="language-"],
+  pre[class*="language-"] {
+    white-space: pre-wrap !important;
+    word-break: normal !important;
+  }
+`;
