@@ -1,33 +1,15 @@
-import {
-  ActionIcon,
-  Button,
-  Center,
-  Container,
-  Divider,
-  Group,
-  Loader,
-  NavLink,
-  Skeleton,
-  Title,
-  Tooltip,
-  Text,
-} from "@mantine/core";
+import { ActionIcon, Button, Center, Container, Divider, Group, Loader, Title, Tooltip, Text } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons";
 import { invoke } from "@tauri-apps/api";
 import React from "react";
 import { Async } from "react-async";
-import { InfiniteTable } from "../../components";
 import { Cluster } from "../../models/kafka";
 import { useCurrentCluster } from "../../providers";
+import { KafkaRecord, RecordsTable } from "./records-table";
 
 type ConsumerState = {
   isRunning: boolean;
   recordCount: number;
-};
-
-type KafkaRecord = {
-  key: string;
-  value: string;
 };
 
 type TopicPageProps = {
@@ -114,27 +96,12 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
           <Button mb={10} size="xs" onClick={this.toggleConsumerRunning}>
             {this.state.isRunning ? "Stop" : "Consume"}
           </Button>
-          <InfiniteTable
+          <RecordsTable
             heightOffset={170}
             itemCount={this.state.recordCount}
-            itemSize={38}
-            renderRow={(index, style) => (
-              <Async
-                promise={this.getRecord(
-                  this.state.recordCount - (index + 1),
-                  this.props.cluster,
-                  this.props.topicName
-                )}>
-                <Async.Loading>
-                  <Skeleton />
-                </Async.Loading>
-                <Async.Fulfilled>
-                  {(data) => (
-                    <NavLink style={style} noWrap label={this.state.recordCount - index + JSON.stringify(data)} />
-                  )}
-                </Async.Fulfilled>
-              </Async>
-            )}
+            renderRow={(index) =>
+              this.getRecord(this.state.recordCount - (index + 1), this.props.cluster, this.props.topicName)
+            }
           />
         </Async.Resolved>
       </Async>
