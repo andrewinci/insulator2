@@ -1,29 +1,10 @@
-import {
-  ActionIcon,
-  Center,
-  Container,
-  Divider,
-  Group,
-  Loader,
-  ScrollArea,
-  Select,
-  Title,
-  Tooltip,
-} from "@mantine/core";
+import { ActionIcon, Center, Container, Divider, Group, Loader, ScrollArea, Select, Tooltip } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { IconInfoCircle, IconVersions } from "@tabler/icons";
-import { invoke } from "@tauri-apps/api";
 import { useEffect, useState } from "react";
-import { SchemaRegistry } from "../../models/kafka";
-import { useNotifications } from "../../providers";
-import { TauriError, format } from "../../tauri";
-
-type SchemaVersion = {
-  subject: string;
-  id: number;
-  version: number;
-  schema: string;
-};
+import { SingleLineTitle } from "../../components";
+import { SchemaRegistry, SchemaVersion } from "../../models/kafka";
+import { getSchemaVersions } from "../../tauri";
 
 type SchemaProps = {
   schemaName: string;
@@ -37,17 +18,7 @@ export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
     loading: boolean;
   }>({ schemas: [], loading: true });
 
-  const { alert, success } = useNotifications();
-
   const lastSchemaVersion = (schemas: SchemaVersion[]) => Math.max(...schemas.map((s) => s.version));
-
-  const getSchemaVersions = (subjectName: string, config: SchemaRegistry) =>
-    invoke<[SchemaVersion]>("get_schema", { subjectName, config })
-      .then((res) => {
-        success(`${res.length} schema version found for ${subjectName}`);
-        return res;
-      })
-      .catch((err: TauriError) => alert(format(err)));
 
   useEffect(() => {
     setState({ ...state, loading: true });
@@ -71,14 +42,7 @@ export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
   return (
     <Container>
       <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
-        <Title
-          style={{
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-          }}>
-          {schemaName}
-        </Title>
+        <SingleLineTitle>{schemaName}</SingleLineTitle>
         <Tooltip position="bottom" label="Schema info">
           <ActionIcon>
             <IconInfoCircle />

@@ -1,11 +1,9 @@
-import { invoke } from "@tauri-apps/api";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Cluster } from "../models/kafka";
-import { format, TauriError } from "../tauri";
-import { useNotifications } from "./notification-provider";
+import { getConfiguration, setConfiguration } from "../tauri";
 
-type AppState = {
+export type AppState = {
   clusters: Cluster[];
   theme: AppTheme;
   showNotifications?: boolean;
@@ -39,32 +37,19 @@ export const useCurrentCluster = () => {
 
 export const AppStateProvider = ({ children }: { children: ReactNode }) => {
   const [appState, setAppState] = useState<AppState>(defaultAppState.appState);
-  const { alert, success } = useNotifications();
 
   // retrieve the configurations at the first start
   useEffect(() => {
-    invoke<AppState>("get_configuration")
-      .then((config) => {
-        success("Configuration loaded");
-        setAppState(config);
-      })
-      .catch((err: TauriError) => alert("Unable to retrieve the user config", `${format(err)}`));
+    getConfiguration().then((s) => setAppState(s));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setAppState]);
 
   const context: AppStateContextType = {
     appState: appState,
     setAppState: (configuration: AppState) => {
-      return invoke<AppState>("write_configuration", { configuration })
-        .then((config) => {
-          success("Configuration updated");
-          setAppState({ ...appState, ...config });
-        })
-        .catch((err) => {
-          alert("Unable to update the user config", err);
-          //keep the promise in a rejected state for downstream handle
-          throw err;
-        });
+      return setConfiguration(configuration).then((config) => {
+        setAppState({ ...appState, ...config });
+      });
     },
   };
 

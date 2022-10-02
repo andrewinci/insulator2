@@ -15,17 +15,13 @@ import {
 import { openConfirmModal } from "@mantine/modals";
 import { DateRangePicker } from "@mantine/dates";
 import { IconInfoCircle } from "@tabler/icons";
-import { invoke } from "@tauri-apps/api";
 import React from "react";
 import { Async } from "react-async";
-import { Cluster, KafkaRecord } from "../../models/kafka";
+import { Cluster, ConsumerState } from "../../models/kafka";
 import { useCurrentCluster } from "../../providers";
 import { RecordsList } from "./records-list";
-
-type ConsumerState = {
-  isRunning: boolean;
-  recordCount: number;
-};
+import { getConsumerState, getRecord, startConsumer, stopConsumer } from "../../tauri";
+import { SingleLineTitle } from "../../components";
 
 type TopicPageProps = {
   topicName: string;
@@ -48,11 +44,7 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
   componentDidMount(): void {
     // poll the backend for updates
     clearInterval(this.interval);
-    this.interval = setInterval(async () => {
-      await this.getConsumerState(this.props.cluster, this.props.topicName).then((s) =>
-        this.setState((current) => ({ ...current, ...s }))
-      );
-    }, 500);
+    this.interval = setInterval(async () => await this.updateState(), 500);
   }
 
   componentWillUnmount(): void {
@@ -64,24 +56,21 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
     if (nextState.isRunning != this.state.isRunning) return true;
     const res =
       nextProps.topicName === this.props.topicName &&
-      nextProps.cluster.id == this.props.cluster.id &&
+      nextProps.cluster.id === this.props.cluster.id &&
       this.state.isRunning === nextState.isRunning &&
       this.state.recordCount === nextState.recordCount;
     return !res;
   }
 
-  getConsumerState = async (cluster: Cluster, topic: string) =>
-    await invoke<ConsumerState>("get_consumer_state", { consumer: { cluster_id: cluster.id, topic } });
-  getRecord = async (index: number, cluster: Cluster, topic: string) =>
-    await invoke<KafkaRecord>("get_record", { consumer: { cluster_id: cluster.id, topic }, index });
+  updateState = () =>
+    getConsumerState(this.props.cluster, this.props.topicName).then((s) =>
+      this.setState((current) => ({ ...current, ...s }))
+    );
 
-  updateState = () => this.getConsumerState(this.props.cluster, this.props.topicName).then((s) => this.setState(s));
   toggleConsumerRunning = async () =>
     this.state.isRunning
-      ? await invoke<void>("stop_consumer", {
-          consumer: { cluster_id: this.props.cluster.id, topic: this.props.topicName },
-        })
-      : await invoke<void>("start_consumer", { config: { cluster: this.props.cluster, topic: this.props.topicName } });
+      ? await stopConsumer(this.props.cluster.id, this.props.topicName)
+      : await startConsumer(this.props.cluster, this.props.topicName);
 
   openModal = () =>
     openConfirmModal({
@@ -111,14 +100,7 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
   render = () => (
     <Container>
       <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
-        <Title
-          style={{
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-          }}>
-          {this.props.topicName}
-        </Title>
+        <SingleLineTitle>{this.props.topicName}</SingleLineTitle>
         <Tooltip position="bottom" label="Topic info">
           <ActionIcon>
             <IconInfoCircle />
@@ -137,9 +119,9 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
             {this.state.isRunning ? "Stop" : "Consume"}
           </Button>
           <RecordsList
-            heightOffset={170}
+            heightOffset={140}
             itemCount={this.state.recordCount}
-            fetchRecord={(index) => this.getRecord(index, this.props.cluster, this.props.topicName)}
+            fetchRecord={(index) => getRecord(index, this.props.cluster, this.props.topicName)}
           />
         </Async.Resolved>
       </Async>

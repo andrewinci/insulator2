@@ -92,4 +92,8 @@ const CustomPrism = styled(Prism)`
     word-break: break-word !important;
     height: 85px;
   }
+  pre {
+    height: 80px;
+    overflow-y: auto;
+  }
 `;

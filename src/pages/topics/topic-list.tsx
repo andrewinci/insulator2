@@ -1,13 +1,7 @@
 import { useMemo, useState } from "react";
 import { useCurrentCluster, useNotifications } from "../../providers";
 import { ItemList } from "../common";
-import { invoke } from "@tauri-apps/api";
-import { Cluster, TopicInfo } from "../../models/kafka";
-import { format, TauriError } from "../../tauri";
-
-function getTopicNamesList(cluster: Cluster): Promise<string[]> {
-  return invoke<TopicInfo[]>("list_topic", { cluster }).then((topics) => topics.map((t) => t.name));
-}
+import { getTopicNamesList } from "../../tauri";
 
 type TopicListProps = {
   onTopicSelected: (topicName: string) => void;
@@ -15,7 +9,7 @@ type TopicListProps = {
 
 export const TopicList = (props: TopicListProps) => {
   const { onTopicSelected } = props;
-  const { alert, success } = useNotifications();
+  const { success } = useNotifications();
   const [state, setState] = useState<{ topics: string[]; search?: string; loading: boolean }>({
     topics: [],
     loading: true,
@@ -27,8 +21,7 @@ export const TopicList = (props: TopicListProps) => {
       getTopicNamesList(activeCluster)
         .then((topics) => setState({ topics, loading: false }))
         .then((_) => success("List of topics successfully retrieved"))
-        .catch((err: TauriError) => {
-          alert(`Unable to retrieve the list of topics for "${activeCluster?.name}"`, format(err));
+        .catch(() => {
           setState({ topics: [], loading: false });
         });
     }

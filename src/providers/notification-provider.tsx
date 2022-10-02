@@ -8,7 +8,7 @@ export type Notification = {
   description?: string;
 };
 
-const addNotification = (n: Notification) => {
+export const addNotification = (n: Notification) => {
   showNotification({
     id: n.title,
     autoClose: n.type == "ok" ? 5000 : false,

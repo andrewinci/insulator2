@@ -10,12 +10,6 @@ export type ClusterAuthentication =
     }
   | "None";
 
-export type SchemaRegistry = {
-  endpoint: string;
-  username?: string;
-  password?: string;
-};
-
 export type Cluster = {
   id: string;
   name: string;
@@ -34,4 +28,22 @@ export type KafkaRecord = {
   partition: number;
   offset: number;
   timestamp?: number;
+};
+
+export type ConsumerState = {
+  isRunning: boolean;
+  recordCount: number;
+};
+
+export type SchemaRegistry = {
+  endpoint: string;
+  username?: string;
+  password?: string;
+};
+
+export type SchemaVersion = {
+  subject: string;
+  id: number;
+  version: number;
+  schema: string;
 };

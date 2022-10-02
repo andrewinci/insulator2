@@ -1,13 +1,8 @@
-import { invoke } from "@tauri-apps/api";
 import { useMemo, useState } from "react";
 import { SchemaRegistry } from "../../models/kafka";
 import { useNotifications } from "../../providers";
-import { format, TauriError } from "../../tauri";
+import { format, getSchemaNamesList, TauriError } from "../../tauri";
 import { ItemList } from "../common";
-
-function getSchemaNamesList(config: SchemaRegistry): Promise<string[]> {
-  return invoke<string[]>("list_subjects", { config });
-}
 
 type SchemaListProps = {
   schemaRegistry: SchemaRegistry;
