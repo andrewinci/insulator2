@@ -38,3 +38,5 @@ Once happy with the latest main branch artifact, release running `yarn release`.
 
 - [x] Use semantic release version in the artifact
 - [ ] Windows build
+- [ ] Make font size configurable in record list
+- [ ] Use a single encrypted file for all the configurations

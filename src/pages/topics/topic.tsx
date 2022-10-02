@@ -99,9 +99,7 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
           <RecordsTable
             heightOffset={170}
             itemCount={this.state.recordCount}
-            renderRow={(index) =>
-              this.getRecord(this.state.recordCount - (index + 1), this.props.cluster, this.props.topicName)
-            }
+            fetchRecord={(index) => this.getRecord(index, this.props.cluster, this.props.topicName)}
           />
         </Async.Resolved>
       </Async>
