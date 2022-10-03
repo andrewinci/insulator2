@@ -1,7 +1,7 @@
 mod client;
 mod state;
 mod setup_consumer;
-mod parser;
+mod string_parser;
 mod notification;
 
 use setup_consumer::setup_consumer;
@@ -15,7 +15,7 @@ use crate::{ error::{ Result, TauriError } };
 
 use self::{
     state::{ ConsumerInfo, KafkaRecord, push_record },
-    parser::{ parse_record },
+    string_parser::{ parse_record },
     notification::notify_error,
     setup_consumer::{ ConsumerConfig, ConsumeFrom },
 };
