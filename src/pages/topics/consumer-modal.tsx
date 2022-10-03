@@ -1,9 +1,9 @@
 import { Chip, Stack, Title, Text, Group, Checkbox, Button } from "@mantine/core";
 import { openModal, useModals } from "@mantine/modals";
-import { DateRangePicker, DatePicker } from "@mantine/dates";
+import { DateRangePicker, DatePicker, TimeRangeInput, TimeInput } from "@mantine/dates";
 import { Cluster, ConsumerSettingsFrom } from "../../models/kafka";
 import { useForm } from "@mantine/form";
-import { getUnixTime } from "date-fns";
+import { addMinutes, getUnixTime } from "date-fns";
 import { startConsumer } from "../../tauri";
 
 type ConsumerModalProps = {
@@ -21,13 +21,15 @@ export const openConsumerModal = (props: ConsumerModalProps) => {
 
 const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
   const { closeAll } = useModals();
+  const nowUTC = addMinutes(new Date(), new Date().getTimezoneOffset());
+  const zeroUTC = addMinutes(new Date(0), new Date(0).getTimezoneOffset());
   const form = useForm<ConsumerForm>({
     initialValues: {
       from: "End",
-      dateInterval: [new Date(), new Date()],
+      dateInterval: [nowUTC, nowUTC],
       onlyBeginning: false,
-      timeInterval: [new Date(0), new Date(0)],
-      dateFrom: new Date(),
+      timeInterval: [zeroUTC, zeroUTC],
+      dateFrom: nowUTC,
       timeFrom: new Date(0),
     },
     validate: {}, //todo
@@ -40,12 +42,13 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
       let stop_timestamp: number | undefined = undefined;
       let start_timestamp = 0;
       if (f.onlyBeginning) {
-        //todo: use the time
-        start_timestamp = getUnixTime(f.dateFrom) * 1000;
+        const { dateFrom, timeFrom } = f;
+        start_timestamp = dateTimeToUnixTimeMs(dateFrom, timeFrom);
       } else {
-        //todo: use the time
-        start_timestamp = getUnixTime(f.dateInterval[0]) * 1000;
-        stop_timestamp = getUnixTime(f.dateInterval[1]) * 1000;
+        const [dateFrom, dateTo] = f.dateInterval;
+        const [timeFrom, timeTo] = f.timeInterval;
+        start_timestamp = dateTimeToUnixTimeMs(dateFrom, timeFrom);
+        stop_timestamp = dateTimeToUnixTimeMs(dateTo, timeTo);
       }
       return {
         Custom: {
@@ -55,7 +58,6 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
       };
     }
   };
-
   const onSubmit = async (f: ConsumerForm) => {
     console.log(getConsumerSettingFrom(f));
     await startConsumer(cluster, topicName, getConsumerSettingFrom(f));
@@ -83,15 +85,15 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
           <Checkbox label="Define only beginning" {...form.getInputProps("onlyBeginning", { type: "checkbox" })} />
           <Stack hidden={form.values.onlyBeginning}>
             <DateRangePicker allowSingleDateInRange label="Date interval" {...form.getInputProps("dateInterval")} />
-            {/* <TimeRangeInput
+            <TimeRangeInput
               withSeconds
-              label="Time interval (from time - to time)"
+              label="Time interval UTC (from time - to time)"
               {...form.getInputProps("timeInterval")}
-            /> */}
+            />
           </Stack>
           <Stack hidden={!form.values.onlyBeginning}>
             <DatePicker allowSingleDateInRange label="From date" {...form.getInputProps("dateFrom")} />
-            {/* <TimeInput withSeconds label="From time" {...form.getInputProps("timeFrom")} /> */}
+            <TimeInput withSeconds label="From time (UTC)" {...form.getInputProps("timeFrom")} />
           </Stack>
         </Stack>
         <Group mt={10} position="right">
@@ -100,6 +102,14 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
       </Stack>
     </form>
   );
+};
+
+export const dateTimeToUnixTimeMs = (dateUTC: Date, timeUTC: Date): number => {
+  // convert to UTC
+  timeUTC = addMinutes(timeUTC, -1 * new Date().getTimezoneOffset());
+  dateUTC = addMinutes(dateUTC, -1 * new Date().getTimezoneOffset());
+  const dateTime = dateUTC.toISOString().substring(0, 10) + timeUTC.toISOString().substring(10);
+  return getUnixTime(new Date(dateTime)) * 1000;
 };
 
 type ConsumerForm = {

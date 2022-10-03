@@ -72,7 +72,7 @@ pub fn start_consumer(
                                                 } = config.from
                                             {
                                                 if let Some(current_timestamp) = record.timestamp {
-                                                    if stop_timestamp < current_timestamp {
+                                                    if stop_timestamp <= current_timestamp {
                                                         // skip push_record into the consumer record_state
                                                         //todo: disable consumption for the current partition
                                                         continue;
