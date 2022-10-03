@@ -1,15 +1,15 @@
 {
-  "version": "v1.5.0",
-  "notes": "# [1.5.0](https://github.com/andrewinci/insulator2/compare/v1.4.0...v1.5.0) (2022-10-02)\n\n\n### Bug Fixes\n\n* **BE:** Delete the handle after stopping the consumer ([b236c16](https://github.com/andrewinci/insulator2/commit/b236c16c9b9b5997ddd1d85cbeb159a461bd5687))\n* **FE:** navigation ([82eaaa3](https://github.com/andrewinci/insulator2/commit/82eaaa359cb69396a1c9ff6b88f79d44e4094cf6))\n\n\n### Features\n\n* **BE:** add get records count api ([12c889c](https://github.com/andrewinci/insulator2/commit/12c889c3f515a9d81b69acdb6569092e3f4f1a98))\n* **BE:** add get_consumer_state function and disable tauri notifications ([4c7eb7c](https://github.com/andrewinci/insulator2/commit/4c7eb7cf3da81b0439bf96289ec4a92d40900c2e))\n* **BE:** add partitions to topic info ([2ac5ee8](https://github.com/andrewinci/insulator2/commit/2ac5ee81a125c6e9e2440484a726319315480b65))\n* **BE:** Add POC API to handle multiple consumers ([b148f33](https://github.com/andrewinci/insulator2/commit/b148f33d2e7440ae1e80443b6173518756607a36))\n* **BE:** disable offset autocommit by default ([36f12aa](https://github.com/andrewinci/insulator2/commit/36f12aaa056ef2fcebd03aee4d33b862d2f0b0c1))\n* **BE:** return partition info in list_topic api ([be853ea](https://github.com/andrewinci/insulator2/commit/be853ea3499ce6b92d0ec1a31616f0fc26debb77))\n* **BE:** Stop consumer and notify client on error in the loop ([8e30455](https://github.com/andrewinci/insulator2/commit/8e30455fc918c01f83854f4e7ac0de89225fd0cf))\n* **BE:** Use lossy parsing for utf8 strings ([6ed9325](https://github.com/andrewinci/insulator2/commit/6ed932545adfd1cd9b585c32dd8f1c4ede51e5ee))\n* Consume from all partitions ([6a091bf](https://github.com/andrewinci/insulator2/commit/6a091bf85eca1eb54b497b4dd1509a681c354c21))\n* **FE:** Consumer view ([81cacee](https://github.com/andrewinci/insulator2/commit/81cacee5edbd52860a081ac12598452e6ecd6208))\n* **FE:** Show records as cards ([3aeb70d](https://github.com/andrewinci/insulator2/commit/3aeb70deacdf1b37448b08dcad494f56e904b523))\n* **FE:** Use mantine style in the records table ([9a91af2](https://github.com/andrewinci/insulator2/commit/9a91af2e359b84eee824f9d85c7cfd4d09b887f0))\n* Show record offset, partition and timestamp ([ca23f8a](https://github.com/andrewinci/insulator2/commit/ca23f8ade99981f7ff980cd352237c9dfc1748c5))\n\n\n\n",
-  "pub_date": "2022-10-02T12:38:14Z",
+  "version": "v1.6.0",
+  "notes": "# [1.6.0](https://github.com/andrewinci/insulator2/compare/v1.5.0...v1.6.0) (2022-10-03)\n\n\n### Bug Fixes\n\n* **FE:** Null record in records-table ([113e9bd](https://github.com/andrewinci/insulator2/commit/113e9bd5889934b153d9a11d39a13db382ddcbaf))\n\n\n### Features\n\n* Add consumer settings ([5ff9431](https://github.com/andrewinci/insulator2/commit/5ff94315caf6106581bf397e10e8366ae5d60ee2))\n* **BE:** allow to start consuming from different points ([dac0dbd](https://github.com/andrewinci/insulator2/commit/dac0dbdf3e4fd3b2dce26bd2c6eff16ea41b9499))\n* Consumer filter by date time ([b301467](https://github.com/andrewinci/insulator2/commit/b30146752874470cfcb0d0f55d752f84bfa840d3))\n* **FE:** Wrap long lines in shema view ([6651878](https://github.com/andrewinci/insulator2/commit/66518785915a8f71afb04bc1cfe7d6c4096841eb))\n\n\n\n",
+  "pub_date": "2022-10-03T18:43:59Z",
   "platforms": {
     "darwin-x86_64": {
       "signature": "----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.5.0/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.6.0/Insulator.2.app.tar.gz"
     },
     "darwin-aarch64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.5.0/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.6.0/Insulator.2.app.tar.gz"
     }
   }
 }

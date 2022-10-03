@@ -1,3 +1,16 @@
+# [1.6.0](https://github.com/andrewinci/insulator2/compare/v1.5.0...v1.6.0) (2022-10-03)
+
+### Bug Fixes
+
+- **FE:** Null record in records-table ([113e9bd](https://github.com/andrewinci/insulator2/commit/113e9bd5889934b153d9a11d39a13db382ddcbaf))
+
+### Features
+
+- Add consumer settings ([5ff9431](https://github.com/andrewinci/insulator2/commit/5ff94315caf6106581bf397e10e8366ae5d60ee2))
+- **BE:** allow to start consuming from different points ([dac0dbd](https://github.com/andrewinci/insulator2/commit/dac0dbdf3e4fd3b2dce26bd2c6eff16ea41b9499))
+- Consumer filter by date time ([b301467](https://github.com/andrewinci/insulator2/commit/b30146752874470cfcb0d0f55d752f84bfa840d3))
+- **FE:** Wrap long lines in shema view ([6651878](https://github.com/andrewinci/insulator2/commit/66518785915a8f71afb04bc1cfe7d6c4096841eb))
+
 # [1.5.0](https://github.com/andrewinci/insulator2/compare/v1.4.0...v1.5.0) (2022-10-02)
 
 ### Bug Fixes
