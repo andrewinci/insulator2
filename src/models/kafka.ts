@@ -47,3 +47,19 @@ export type SchemaVersion = {
   version: number;
   schema: string;
 };
+
+export type ConsumerSettingsFrom =
+  | "Beginning"
+  | "End"
+  | {
+      Custom: {
+        start_timestamp: number; //time in ms
+        stop_timestamp?: number; //time in ms
+      };
+    };
+
+export type ConsumerSettings = {
+  cluster: Cluster;
+  topic: string;
+  from: ConsumerSettingsFrom;
+};

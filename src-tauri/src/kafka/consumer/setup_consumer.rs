@@ -36,7 +36,7 @@ pub(super) fn setup_consumer(config: &ConsumerConfig) -> Result<StreamConsumer> 
     topic_info.partitions.iter().for_each(|p| {
         assignment.add_partition(&config.topic, p.id);
     });
-    println!("Assigning");
+
     match config.from {
         ConsumeFrom::Beginning => {
             topic_info.partitions.iter().for_each(|p| {

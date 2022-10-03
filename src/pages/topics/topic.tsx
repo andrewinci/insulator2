@@ -1,27 +1,13 @@
-import {
-  ActionIcon,
-  Button,
-  Center,
-  Container,
-  Divider,
-  Group,
-  Loader,
-  Title,
-  Tooltip,
-  Text,
-  Stack,
-  Chip,
-} from "@mantine/core";
-import { openConfirmModal } from "@mantine/modals";
-import { DateRangePicker } from "@mantine/dates";
+import { ActionIcon, Button, Center, Container, Divider, Group, Loader, Tooltip, Text } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons";
 import React from "react";
 import { Async } from "react-async";
 import { Cluster, ConsumerState } from "../../models/kafka";
 import { useCurrentCluster } from "../../providers";
 import { RecordsList } from "./records-list";
-import { getConsumerState, getRecord, startConsumer, stopConsumer } from "../../tauri";
+import { getConsumerState, getRecord, stopConsumer } from "../../tauri";
 import { SingleLineTitle } from "../../components";
+import { openConsumerModal } from "./consumer-modal";
 
 type TopicPageProps = {
   topicName: string;
@@ -70,32 +56,7 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
   toggleConsumerRunning = async () =>
     this.state.isRunning
       ? await stopConsumer(this.props.cluster.id, this.props.topicName)
-      : await startConsumer(this.props.cluster, this.props.topicName);
-
-  openModal = () =>
-    openConfirmModal({
-      title: <Title order={3}>Consumer settings</Title>,
-      children: (
-        <Stack>
-          <Title weight={"normal"} size={15}>
-            Consume the topic{" "}
-            <Text color="red" inherit component="span">
-              {this.props.topicName}
-            </Text>{" "}
-            from
-          </Title>
-          <Chip.Group position="left" multiple={false}>
-            <Chip value="beginning">Beginning</Chip>
-            <Chip value="earliest">Earliest</Chip>
-            <Chip value="interval">Interval</Chip>
-          </Chip.Group>
-          <DateRangePicker label="Consume within the time range" placeholder="Pick dates range" />
-        </Stack>
-      ),
-      labels: { confirm: "Confirm", cancel: "Cancel" },
-      onCancel: () => console.log("Cancel"),
-      onConfirm: () => console.log("Confirmed"),
-    });
+      : openConsumerModal({ cluster: this.props.cluster, topicName: this.props.topicName });
 
   render = () => (
     <Container>
