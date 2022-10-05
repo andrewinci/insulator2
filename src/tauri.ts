@@ -83,9 +83,14 @@ export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
     addNotification({ type: "error", title: "Stop Kafka record", description: format(err) })
   );
 
-export const startConsumer = (cluster: Cluster, topic: string, from: ConsumerSettingsFrom): Promise<void> =>
+export const startConsumer = (
+  cluster: Cluster,
+  topic: string,
+  from: ConsumerSettingsFrom,
+  useAvro: boolean
+): Promise<void> =>
   invoke<void>("start_consumer", {
-    config: { cluster, topic, from },
+    config: { cluster, topic, from, useAvro },
   }).catch((err: TauriError) =>
     addNotification({ type: "error", title: "Start Kafka record", description: format(err) })
   );

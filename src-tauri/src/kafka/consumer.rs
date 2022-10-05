@@ -1,23 +1,28 @@
+mod avro_parser;
 mod client;
-mod state;
-mod setup_consumer;
-mod string_parser;
 mod notification;
+mod setup_consumer;
+mod state;
+mod string_parser;
 
-use setup_consumer::setup_consumer;
+use std::{ collections::HashMap, sync::{ Arc, Mutex } };
+
 pub use client::create_consumer;
 use futures::StreamExt;
-pub use state::{ AppConsumers, get_consumer_state };
+use rdkafka::message::OwnedMessage;
+use setup_consumer::setup_consumer;
+pub use state::{ get_consumer_state, AppConsumers };
 
-use tauri::{ async_runtime::spawn };
+use tauri::async_runtime::spawn;
 
-use crate::{ error::{ Result, TauriError } };
+use crate::error::{ Result, TauriError };
 
 use self::{
-    state::{ ConsumerInfo, KafkaRecord, push_record },
-    string_parser::{ parse_record },
+    avro_parser::parse_record as parse_avro_record,
     notification::notify_error,
-    setup_consumer::{ ConsumerConfig, ConsumeFrom },
+    setup_consumer::{ ConsumeFrom, ConsumerConfig },
+    state::{ push_record, ConsumerInfo, KafkaRecord },
+    string_parser::parse_record as parse_string_record,
 };
 
 #[tauri::command]
@@ -53,47 +58,66 @@ pub fn start_consumer(
         .lock()
         .unwrap()
         .insert(
-            consumer_info.clone(),
+            consumer_info,
             spawn(async move {
                 let consumer = setup_consumer(&config);
                 match consumer {
                     Err(err) => notify_error(err, &app),
                     // consumer loop
-                    Ok(consumer) => {
+                    Ok(consumer) =>
                         loop {
                             match consumer.stream().next().await {
-                                Some(Ok(msg)) =>
-                                    match parse_record(msg.detach()) {
-                                        Ok(record) => {
-                                            if
-                                                let ConsumeFrom::Custom {
-                                                    start_timestamp: _,
-                                                    stop_timestamp: Some(stop_timestamp),
-                                                } = config.from
-                                            {
-                                                if let Some(current_timestamp) = record.timestamp {
-                                                    if stop_timestamp <= current_timestamp {
-                                                        // skip push_record into the consumer record_state
-                                                        //todo: disable consumption for the current partition
-                                                        continue;
-                                                    }
-                                                }
-                                            }
-                                            push_record(record, records_state.clone(), &consumer_info);
+                                Some(Ok(msg)) => {
+                                    match handle_consumed_message(msg.detach(), &config, records_state.clone()).await {
+                                        Ok(_) => {
+                                            continue;
                                         }
                                         Err(err) => {
                                             notify_error(err, &app);
-                                            break;
+                                            break; //todo: delete the consumer from the state
                                         }
                                     }
+                                }
                                 Some(Err(err)) => notify_error(err.into(), &app),
                                 None => (),
                             }
                         }
-                    }
                 }
             })
         );
+    Ok(())
+}
+
+async fn handle_consumed_message(
+    msg: OwnedMessage,
+    config: &ConsumerConfig,
+    records_state: Arc<Mutex<HashMap<ConsumerInfo, Vec<KafkaRecord>>>>
+) -> Result<()> {
+    let consumer_info = ConsumerInfo {
+        cluster_id: config.cluster.id.clone(),
+        topic: config.topic.clone(),
+    };
+    let schema_registry = config.cluster.schema_registry.as_ref().ok_or_else(|| TauriError {
+        error_type: "Missing schema registry configuration".into(),
+        message: " Unable to use avro without a valid schema registry configuration".into(),
+    })?;
+    let record = if config.use_avro {
+        parse_avro_record(msg, schema_registry).await?
+    } else {
+        parse_string_record(msg)?
+    };
+    // check if the record is beyond the consuming window
+    // and skip if it is so
+    if let ConsumeFrom::Custom { start_timestamp: _, stop_timestamp: Some(stop_timestamp) } = config.from {
+        if let Some(current_timestamp) = record.timestamp {
+            if stop_timestamp <= current_timestamp {
+                // skip push_record into the consumer record_state
+                //todo: disable consumption for the current partition
+                return Ok(());
+            }
+        }
+    }
+    push_record(record, records_state.clone(), &consumer_info);
     Ok(())
 }
 

@@ -1,4 +1,4 @@
-import { Chip, Stack, Title, Text, Group, Checkbox, Button } from "@mantine/core";
+import { Chip, Stack, Title, Text, Group, Checkbox, Button, Divider } from "@mantine/core";
 import { openModal, useModals } from "@mantine/modals";
 import { DateRangePicker, DatePicker, TimeRangeInput, TimeInput } from "@mantine/dates";
 import { Cluster, ConsumerSettingsFrom } from "../../models/kafka";
@@ -26,6 +26,7 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
   const form = useForm<ConsumerForm>({
     initialValues: {
       from: "End",
+      useAvro: cluster.schemaRegistry ? true : false,
       dateInterval: [nowUTC, nowUTC],
       onlyBeginning: false,
       timeInterval: [zeroUTC, zeroUTC],
@@ -59,8 +60,7 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
     }
   };
   const onSubmit = async (f: ConsumerForm) => {
-    console.log(getConsumerSettingFrom(f));
-    await startConsumer(cluster, topicName, getConsumerSettingFrom(f));
+    await startConsumer(cluster, topicName, getConsumerSettingFrom(f), f.useAvro);
     closeAll();
   };
 
@@ -69,12 +69,19 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
       <Stack>
         <Stack spacing={0}>
           <Text weight={"normal"} size={15}>
-            Topic:
+            Topic
           </Text>
           <Text color="red" weight={"bold"} component="span">
             {topicName}
           </Text>
         </Stack>
+        <Divider />
+        <Checkbox
+          disabled={cluster.schemaRegistry === undefined}
+          label="Use Avro (with schema registry)"
+          {...form.getInputProps("useAvro", { type: "checkbox" })}
+        />
+        <Divider />
         <Title size={15}>Start consuming from</Title>
         <Chip.Group position="left" multiple={false} {...form.getInputProps("from")}>
           <Chip value="End">End</Chip>
@@ -114,6 +121,7 @@ export const dateTimeToUnixTimeMs = (dateUTC: Date, timeUTC: Date): number => {
 
 type ConsumerForm = {
   from: "Beginning" | "End" | "Custom";
+  useAvro: boolean;
   dateInterval: [Date, Date];
   timeInterval: [Date, Date];
   onlyBeginning: boolean;

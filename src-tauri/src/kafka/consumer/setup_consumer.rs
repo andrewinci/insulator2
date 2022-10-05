@@ -21,6 +21,8 @@ pub struct ConsumerConfig {
     pub cluster: Cluster,
     pub topic: String,
     pub from: ConsumeFrom,
+    #[serde(rename = "useAvro")]
+    pub use_avro: bool,
 }
 
 pub(super) fn setup_consumer(config: &ConsumerConfig) -> Result<StreamConsumer> {

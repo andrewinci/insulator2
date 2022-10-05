@@ -77,7 +77,7 @@ const KafkaRecordCard = ({
         <LabelValue label="timestamp: " value={timestamp} />
       </Group>
       <CustomPrism mt={2} copyLabel="Copy" language={"json"}>
-        {record?.value}
+        {record?.value ?? ""}
       </CustomPrism>
     </Paper>
   );

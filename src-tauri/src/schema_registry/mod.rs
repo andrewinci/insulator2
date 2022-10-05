@@ -1,8 +1,8 @@
-use url::Url;
-use std::time::Duration;
 use serde::{ de::DeserializeOwned, Deserialize, Serialize };
+use std::time::Duration;
+use url::Url;
 
-use crate::{ configuration::SchemaRegistry, error::{ Result } };
+use crate::{ configuration::SchemaRegistry, error::Result };
 
 async fn get<T: DeserializeOwned>(url: String, config: &SchemaRegistry) -> Result<T> {
     let client = reqwest::Client::new();
@@ -25,12 +25,16 @@ pub async fn list_subjects(config: SchemaRegistry) -> Result<Vec<String>> {
 
 #[tauri::command]
 pub async fn get_schema(subject_name: String, config: SchemaRegistry) -> Result<Vec<Schema>> {
+    get_schema_internal(subject_name, &config).await
+}
+
+pub async fn get_schema_internal(subject_name: String, config: &SchemaRegistry) -> Result<Vec<Schema>> {
     let url = Url::parse(&config.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
-    let versions: Vec<i32> = get(url.to_string(), &config).await?;
+    let versions: Vec<i32> = get(url.to_string(), config).await?;
     let mut schemas = Vec::<Schema>::new();
     for v in versions {
         let schema_url = url.join(&v.to_string())?;
-        let schema: Schema = get(schema_url.to_string(), &config).await?;
+        let schema: Schema = get(schema_url.to_string(), config).await?;
         schemas.push(schema);
     }
     Ok(schemas)
@@ -38,8 +42,8 @@ pub async fn get_schema(subject_name: String, config: SchemaRegistry) -> Result<
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Schema {
-    subject: String,
-    id: i32,
-    version: i32,
-    schema: String,
+    pub subject: String,
+    pub id: i32,
+    pub version: i32,
+    pub schema: String,
 }

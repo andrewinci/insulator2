@@ -23,6 +23,7 @@ reqwest = { version = "0.11", features = ["json"] }
 url = { version = "2", features = ["serde"] }
 tokio = { version = "1", features = ["full"] }
 futures = { version = "0.3", default-features = false }
+apache-avro = { version = "0.14.0" }
 
 [features]
 # by default Tauri runs in production mode

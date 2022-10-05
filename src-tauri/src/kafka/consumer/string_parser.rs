@@ -16,7 +16,7 @@ pub(super) fn parse_record(msg: OwnedMessage) -> Result<KafkaRecord> {
     })
 }
 
-fn parse_string(v: Option<&[u8]>) -> Option<String> {
+pub(super) fn parse_string(v: Option<&[u8]>) -> Option<String> {
     v.map(|v| String::from_utf8_lossy(v).into_owned())
 }
 
