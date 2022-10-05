@@ -30,7 +30,7 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
       onlyBeginning: false,
       timeInterval: [zeroUTC, zeroUTC],
       dateFrom: nowUTC,
-      timeFrom: new Date(0),
+      timeFrom: zeroUTC,
     },
     validate: {}, //todo
   });
