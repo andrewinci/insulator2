@@ -2,11 +2,11 @@ import {
   Button,
   Checkbox,
   Chip,
-  FileInput,
   Group,
   PasswordInput,
   ScrollArea,
   Stack,
+  Textarea,
   TextInput,
   Title,
 } from "@mantine/core";
@@ -20,9 +20,9 @@ export type SaslFormType = {
   scram: boolean;
 };
 export type SslFormType = {
-  caLocation: string;
-  certificateLocation: string;
-  keyLocation: string;
+  ca: string;
+  certificate: string;
+  key: string;
   keyPassword?: string;
 };
 
@@ -65,7 +65,7 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
       authentication: {
         type: "None",
         sasl: { username: "", password: "", scram: false },
-        ssl: { certificateLocation: "", caLocation: "", keyLocation: "", keyPassword: "" },
+        ssl: { certificate: "", ca: "", key: "", keyPassword: "" },
       },
       schemaRegistry: { endpoint: "", username: "", password: "" },
     },
@@ -73,15 +73,15 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
       name: (v) => nonEmptyValidation("Cluster")(v ?? ""),
       endpoint: (v) => nonEmptyValidation("Endpoint")(v ?? ""),
       authentication: {
-        type: (v: string) => (["None", "SASL"].includes(v) ? null : "Unsupported authentication"),
+        type: (v: string) => (["None", "SASL", "SSL"].includes(v) ? null : "Unsupported authentication"),
         sasl: {
           username: mandatoryAuthFieldValidation("SASL", "SASL Username"),
           password: mandatoryAuthFieldValidation("SASL", "SASL Password"),
         },
         ssl: {
-          caLocation: mandatoryAuthFieldValidation("SSL", "CA Certificate"),
-          certificateLocation: mandatoryAuthFieldValidation("SSL", "Client Certificate location"),
-          keyLocation: mandatoryAuthFieldValidation("SSL", "Client Key location"),
+          ca: mandatoryAuthFieldValidation("SSL", "CA Certificate"),
+          certificate: mandatoryAuthFieldValidation("SSL", "Client Certificate location"),
+          key: mandatoryAuthFieldValidation("SSL", "Client Key location"),
         },
       },
       schemaRegistry: {
@@ -126,20 +126,20 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
           )}
           {form.values.authentication?.type == "SSL" && (
             <>
-              <FileInput
-                label="CA Certificate location"
-                placeholder="/..."
-                {...form.getInputProps("authentication.ssl.caLocation")}
+              <Textarea
+                label="CA Certificate"
+                placeholder="-----BEGIN CERTIFICATE-----...."
+                {...form.getInputProps("authentication.ssl.ca")}
               />
-              <FileInput
-                label="Client Certificate location"
-                placeholder="/..."
-                {...form.getInputProps("authentication.ssl.certificateLocation")}
+              <Textarea
+                label="Client Certificate"
+                placeholder="-----BEGIN CERTIFICATE-----...."
+                {...form.getInputProps("authentication.ssl.certificate")}
               />
-              <FileInput
-                label="Client Key location"
-                placeholder="/..."
-                {...form.getInputProps("authentication.ssl.keyLocation")}
+              <Textarea
+                label="Client Key"
+                placeholder="-----BEGIN PRIVATE KEY-----...."
+                {...form.getInputProps("authentication.ssl.key")}
               />
               <PasswordInput
                 label="Key Password"

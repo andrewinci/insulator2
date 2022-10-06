@@ -26,12 +26,12 @@ pub fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
                 .set("sasl.password", password);
         }
 
-        Authentication::Ssl { ca_location, certificate_location, key_location, key_password } => {
+        Authentication::Ssl { ca, certificate, key, key_password } => {
             config
                 .set("security.protocol", "ssl")
-                .set("ssl.ca.location", ca_location)
-                .set("ssl.certificate.location", certificate_location)
-                .set("ssl.key.location", key_location);
+                .set("ssl.ca.pem", ca)
+                .set("ssl.certificate.pem", certificate)
+                .set("ssl.key.pem", key);
 
             if let Some(password) = key_password {
                 config.set("ssl.key.password", password);

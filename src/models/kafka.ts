@@ -2,9 +2,9 @@ export type ClusterAuthentication =
   | { Sasl: { username: string; password: string; scram: boolean } }
   | {
       Ssl: {
-        caLocation: string;
-        certificateLocation: string;
-        keyLocation: string;
+        ca: string;
+        certificate: string;
+        key: string;
         keyPassword?: string;
       };
     }

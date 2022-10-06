@@ -27,12 +27,9 @@ pub struct Cluster {
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub enum Authentication {
     Ssl {
-        #[serde(rename = "caLocation")]
-        ca_location: String,
-        #[serde(rename = "certificateLocation")]
-        certificate_location: String,
-        #[serde(rename = "keyLocation")]
-        key_location: String,
+        ca: String,
+        certificate: String,
+        key: String,
         #[serde(rename = "keyPassword")]
         key_password: Option<String>,
     },

@@ -27,7 +27,7 @@ pub async fn list_topic(cluster: Cluster, topic: Option<&str>) -> Result<Vec<Top
 
 pub fn list_topic_internal(cluster: &Cluster, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
     let topics: Vec<TopicInfo> = create_consumer(cluster)?
-        .fetch_metadata(topic, Duration::from_secs(10))?
+        .fetch_metadata(topic, Duration::from_secs(30))?
         .topics()
         .iter()
         .map(|t| TopicInfo {
