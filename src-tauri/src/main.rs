@@ -1,17 +1,18 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
+mod api;
 mod configuration;
+mod error;
 mod kafka;
 mod schema_registry;
-mod error;
 
 use crate::{
-    kafka::{
-        admin::{ list_topic },
-        consumer::{ AppConsumers, start_consumer, stop_consumer, get_record, get_consumer_state },
-    },
+    api::schema_registry::{ get_schema, list_subjects },
     configuration::{ get_configuration, write_configuration },
-    schema_registry::{ list_subjects, get_schema },
+    kafka::{
+        admin::list_topic,
+        consumer::{ get_consumer_state, get_record, start_consumer, stop_consumer, AppConsumers },
+    },
 };
 
 fn main() {

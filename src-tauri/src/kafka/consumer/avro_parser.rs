@@ -8,7 +8,7 @@ use crate::{
     configuration::SchemaRegistry,
     error::{ Result, TauriError },
     kafka::consumer::KafkaRecord,
-    schema_registry::get_schema_by_id,
+    schema_registry::{ BasicAuth, CachedSchemaRegistry, ReqwestClient, SchemaRegistryClient },
 };
 
 use super::string_parser::parse_string;
@@ -41,7 +41,18 @@ pub async fn parse_avro(raw: &[u8], config: &SchemaRegistry) -> Result<String> {
     }
 
     let id = get_schema_id(raw)?;
-    let raw_schema = get_schema_by_id(id, config).await?;
+
+    //todo: inject the schema registry client
+    let http_client = ReqwestClient::new(None);
+    let client = CachedSchemaRegistry::new(
+        config.endpoint.clone(),
+        Some(BasicAuth {
+            username: config.clone().username.unwrap(),
+            password: Some(config.clone().password.unwrap()),
+        }),
+        http_client
+    );
+    let raw_schema = client.get_schema_by_id(id).await?;
     let schema = Schema::parse_str(raw_schema.as_str()).map_err(|err| TauriError {
         error_type: "Unable to parse the schema from schema registry".into(),
         message: err.to_string(),
