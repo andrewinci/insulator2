@@ -7,8 +7,7 @@ mod kafka;
 mod schema_registry;
 
 use crate::{
-    api::schema_registry::{ get_schema, list_subjects },
-    configuration::{ get_configuration, write_configuration },
+    api::{ configuration::{ get_configuration, write_configuration }, schema_registry::{ get_schema, list_subjects } },
     kafka::{
         admin::list_topic,
         consumer::{ get_consumer_state, get_record, start_consumer, stop_consumer, AppConsumers },
