@@ -1,7 +1,9 @@
-use std::sync::Arc;
-
 use futures::future::BoxFuture;
+use futures::lock::Mutex;
 use futures::FutureExt;
+use log::{ debug, info, warn };
+use std::collections::HashMap;
+use std::sync::Arc;
 use url::Url;
 
 use super::types::{ BasicAuth, GetSchemaByIdResult, Schema };
@@ -17,6 +19,7 @@ pub struct CachedSchemaRegistry<T: HttpClient> {
     http_client: Arc<T>,
     endpoint: String,
     auth: Option<BasicAuth>,
+    schema_cache: Arc<Mutex<HashMap<i32, String>>>,
 }
 
 impl<T: HttpClient> CachedSchemaRegistry<T> {
@@ -25,6 +28,7 @@ impl<T: HttpClient> CachedSchemaRegistry<T> {
             endpoint,
             auth,
             http_client: Arc::new(http_client),
+            schema_cache: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 }
@@ -60,9 +64,21 @@ impl<T: HttpClient + std::marker::Sync + std::marker::Send> SchemaRegistryClient
     fn get_schema_by_id(&self, id: i32) -> BoxFuture<Result<String>> {
         (
             async move {
-                let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
-                let schema: GetSchemaByIdResult = self.http_client.get(url.to_string(), self.auth.clone()).await?;
-                Ok(schema.schema)
+                let mut cache = self.schema_cache.lock().await;
+                debug!("Getting schema {} by id.", id);
+
+                if let Some(cached) = cache.get(&id) {
+                    debug!("Schema found in cache");
+                    Ok(cached.clone())
+                } else {
+                    debug!("Schema not found in cache, retrieving");
+                    let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
+                    let schema: GetSchemaByIdResult = self.http_client.get(url.to_string(), self.auth.clone()).await?;
+                    debug!("Updating cache");
+                    cache.insert(id, schema.schema.clone());
+                    debug!("Cache updated");
+                    Ok(schema.schema)
+                }
             }
         ).boxed()
     }
