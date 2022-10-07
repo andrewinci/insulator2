@@ -1,7 +1,7 @@
 use futures::future::BoxFuture;
 use futures::lock::Mutex;
 use futures::FutureExt;
-use log::{ debug, info, warn };
+use log::debug;
 use std::collections::HashMap;
 use std::sync::Arc;
 use url::Url;
@@ -15,14 +15,14 @@ pub trait SchemaRegistryClient {
     fn get_schema_by_id(&self, id: i32) -> BoxFuture<Result<String>>;
 }
 
-pub struct CachedSchemaRegistry<T: HttpClient> {
+pub struct CachedSchemaRegistry<T: HttpClient + Send> {
     http_client: Arc<T>,
     endpoint: String,
     auth: Option<BasicAuth>,
     schema_cache: Arc<Mutex<HashMap<i32, String>>>,
 }
 
-impl<T: HttpClient> CachedSchemaRegistry<T> {
+impl<T: HttpClient + Send> CachedSchemaRegistry<T> {
     pub fn new(endpoint: String, auth: Option<BasicAuth>, http_client: T) -> CachedSchemaRegistry<T> {
         CachedSchemaRegistry {
             endpoint,
@@ -76,7 +76,6 @@ impl<T: HttpClient + std::marker::Sync + std::marker::Send> SchemaRegistryClient
                     let schema: GetSchemaByIdResult = self.http_client.get(url.to_string(), self.auth.clone()).await?;
                     debug!("Updating cache");
                     cache.insert(id, schema.schema.clone());
-                    debug!("Cache updated");
                     Ok(schema.schema)
                 }
             }
