@@ -2,16 +2,16 @@
 
 mod api;
 mod configuration;
-mod error;
 mod kafka;
 mod schema_registry;
 
-use crate::{
-    api::{ configuration::{ get_configuration, write_configuration }, schema_registry::{ get_schema, list_subjects } },
-    kafka::{
-        admin::list_topic,
-        consumer::{ get_consumer_state, get_record, start_consumer, stop_consumer, AppConsumers },
-    },
+use kafka::consumer::types::AppConsumers;
+
+use crate::api::{
+    admin::list_topic,
+    configuration::{ get_configuration, write_configuration },
+    consumer::{ get_consumer_state, get_record, start_consumer, stop_consumer },
+    schema_registry::{ get_schema, list_subjects },
 };
 
 fn main() {

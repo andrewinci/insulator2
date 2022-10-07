@@ -6,14 +6,13 @@ use serde_json::{ Map, Value as JsonValue };
 
 use crate::{
     configuration::SchemaRegistry,
-    error::{ Result, TauriError },
-    kafka::consumer::KafkaRecord,
+    kafka::{ consumer::types::KafkaRecord, error::{ Error, Result } },
     schema_registry::{ BasicAuth, CachedSchemaRegistry, ReqwestClient, SchemaRegistryClient },
 };
 
 use super::string_parser::parse_string;
 
-pub(super) async fn parse_record(msg: OwnedMessage, config: &SchemaRegistry) -> Result<KafkaRecord> {
+pub async fn parse_record(msg: OwnedMessage, config: &SchemaRegistry) -> Result<KafkaRecord> {
     let value = match msg.payload() {
         Some(x) => Some(parse_avro(x, config).await?),
         None => None,
@@ -34,9 +33,8 @@ pub(super) async fn parse_record(msg: OwnedMessage, config: &SchemaRegistry) -> 
 
 pub async fn parse_avro(raw: &[u8], config: &SchemaRegistry) -> Result<String> {
     if raw.len() <= 5 || raw[0] != 0x00 {
-        return Err(TauriError {
-            error_type: "Invalid AVRO byte array received".into(),
-            message: "Supported avro messages should start with 0x00 follow by the schema id (4 bytes)".into(),
+        return Err(Error::AvroParse {
+            msg: "Supported avro messages should start with 0x00 follow by the schema id (4 bytes)".into(),
         });
     }
 
@@ -52,25 +50,26 @@ pub async fn parse_avro(raw: &[u8], config: &SchemaRegistry) -> Result<String> {
         }),
         http_client
     );
-    let raw_schema = client.get_schema_by_id(id).await?;
-    let schema = Schema::parse_str(raw_schema.as_str()).map_err(|err| TauriError {
-        error_type: "Unable to parse the schema from schema registry".into(),
-        message: err.to_string(),
+    let raw_schema = client.get_schema_by_id(id).await.map_err(|err| Error::AvroParse {
+        msg: format!("{}\n{}", "Unable to retrieve the schema from schema registry", err.to_string()),
+    })?;
+    let schema = Schema::parse_str(raw_schema.as_str()).map_err(|err| Error::AvroParse {
+        msg: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
     })?;
     let mut data = Cursor::new(&raw[5..]);
-    let record = from_avro_datum(&schema, &mut data, None).map_err(|err| TauriError {
-        error_type: "Unable to parse the avro record".into(),
-        message: err.to_string(),
+    let record = from_avro_datum(&schema, &mut data, None).map_err(|err| Error::AvroParse {
+        msg: format!("{}\n{}", "Unable to parse the avro record", err),
     })?;
     let json = map(&record)?;
-    let res = serde_json::to_string(&json)?; // todo: maybe pretty_print
+    let res = serde_json::to_string(&json).map_err(|err| Error::AvroParse {
+        msg: format!("{}\n{}", "Unable to map the avro record to json", err),
+    })?; // todo: maybe pretty_print
     Ok(res)
 }
 
 fn get_schema_id(raw: &[u8]) -> Result<i32> {
-    let arr = <[u8; 4]>::try_from(&raw[1..5]).map_err(|_| TauriError {
-        error_type: "Invalid schema received".into(),
-        message: "".into(),
+    let arr = <[u8; 4]>::try_from(&raw[1..5]).map_err(|_| Error::AvroParse {
+        msg: "Invalid record. Unable to extract the schema id.".into(),
     })?;
     Ok(i32::from_be_bytes(arr))
 }
@@ -119,7 +118,7 @@ fn map(a: &AvroValue) -> Result<JsonValue> {
 mod tests {
     use apache_avro::{ to_avro_datum, types::Record, Schema, Writer };
 
-    use super::{ get_schema_id, parse_avro };
+    use super::get_schema_id;
 
     #[test]
     fn poc_avro() {

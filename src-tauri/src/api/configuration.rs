@@ -1,5 +1,5 @@
 use crate::configuration::{ ConfigStore, Error, InsulatorConfig };
-use crate::error::{ Result, TauriError };
+use super::error::{ Result, TauriError };
 
 #[tauri::command]
 pub fn get_configuration() -> Result<InsulatorConfig> {

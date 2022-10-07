@@ -1,37 +1,16 @@
 use std::time::Duration;
 
-use rdkafka::{ TopicPartitionList, consumer::{ Consumer, StreamConsumer }, Offset };
-use serde::{ Serialize, Deserialize };
+use rdkafka::{ consumer::{ Consumer, StreamConsumer }, Offset, TopicPartitionList };
 
-use super::{ create_consumer };
-use crate::{ error::{ Result, TauriError }, configuration::Cluster, kafka::admin::{ list_topic_internal } };
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum ConsumeFrom {
-    Beginning,
-    End,
-    Custom {
-        start_timestamp: i64, //time in ms
-        stop_timestamp: Option<i64>, //time in ms
-    },
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ConsumerConfig {
-    pub cluster: Cluster,
-    pub topic: String,
-    pub from: ConsumeFrom,
-    #[serde(rename = "useAvro")]
-    pub use_avro: bool,
-}
+use super::{ create_consumer, types::{ ConsumeFrom, ConsumerConfig } };
+use crate::{ kafka::{ admin::list_topics, error::{ Error, Result } } };
 
 pub(super) fn setup_consumer(config: &ConsumerConfig) -> Result<StreamConsumer> {
     // build the kafka consumer
     let consumer = create_consumer(&config.cluster)?;
-    let topic_info_lst = list_topic_internal(&config.cluster, Some(config.topic.as_str()))?;
-    let topic_info = topic_info_lst.get(0).ok_or(TauriError {
-        error_type: "Kafka consumer".into(),
-        message: format!("Topic {} not found", config.topic),
+    let topic_info_lst = list_topics(&config.cluster, Some(config.topic.as_str()))?;
+    let topic_info = topic_info_lst.get(0).ok_or(Error::GenericKafka {
+        msg: format!("Topic {} not found", config.topic),
     })?;
     let mut assignment = TopicPartitionList::new();
 

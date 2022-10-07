@@ -21,3 +21,12 @@ impl From<url::ParseError> for SchemaRegistryError {
         Self::UrlError
     }
 }
+
+impl ToString for SchemaRegistryError {
+    fn to_string(&self) -> String {
+        match self {
+            SchemaRegistryError::HttpClientError { msg } => msg.into(),
+            SchemaRegistryError::UrlError => "Invalid URL".into(),
+        }
+    }
+}

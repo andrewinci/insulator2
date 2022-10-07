@@ -1,5 +1,5 @@
 use crate::configuration::SchemaRegistry as SchemaRegistryConfiguration;
-use crate::error::{ Result, TauriError };
+use super::error::{ Result, TauriError };
 use crate::schema_registry::{ self, BasicAuth, CachedSchemaRegistry, ReqwestClient, Schema, SchemaRegistryClient };
 
 #[tauri::command]

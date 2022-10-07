@@ -1,8 +1,7 @@
 use rdkafka::{ message::OwnedMessage, Message };
-use super::state::{ KafkaRecord };
-use crate::error::{ Result };
+use crate::kafka::{ error::Result, consumer::types::KafkaRecord };
 
-pub(super) fn parse_record(msg: OwnedMessage) -> Result<KafkaRecord> {
+pub fn parse_record(msg: OwnedMessage) -> Result<KafkaRecord> {
     Ok(KafkaRecord {
         key: parse_string(msg.key()),
         value: parse_string(msg.payload()),
