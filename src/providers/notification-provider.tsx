@@ -10,7 +10,7 @@ export type Notification = {
 
 export const addNotification = (n: Notification) => {
   showNotification({
-    id: n.title,
+    id: n.description,
     autoClose: n.type == "ok" ? 5000 : false,
     title: n.title,
     message: n.description,
