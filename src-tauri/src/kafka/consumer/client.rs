@@ -3,12 +3,7 @@ use super::{
     setup_consumer::setup_consumer,
     types::{ AppConsumers, ConsumeFrom, ConsumerConfig, ConsumerInfo, KafkaRecord },
 };
-use crate::{
-    api::notify_error,
-    configuration::Cluster,
-    kafka::error::{ Error, Result },
-    schema_registry::{ BasicAuth, CachedSchemaRegistry, ReqwestClient },
-};
+use crate::{ api::notify_error, kafka::error::{ Error, Result }, schema_registry::CachedSchemaRegistry };
 use futures::StreamExt;
 use rdkafka::message::OwnedMessage;
 use std::{ collections::HashMap, sync::{ Arc, Mutex } };
@@ -39,6 +34,8 @@ pub fn start_consumer(
         .unwrap()
         .insert(consumer_info.clone(), Vec::<_>::new());
 
+    let schema_registry_client = CachedSchemaRegistry::new(&config.cluster.schema_registry.clone().unwrap());
+    let avro_parser = AvroParser::new(schema_registry_client);
     // spawn the consumer loop
     // add the consumer handle to the list of handles
     state.consumer_handles
@@ -48,7 +45,6 @@ pub fn start_consumer(
             consumer_info,
             spawn(async move {
                 let consumer = setup_consumer(&config);
-                let avro_parser = build_avro_parser(&config.cluster).unwrap();
                 match consumer {
                     Err(err) => { notify_error("Unable to setup the consumer".into(), err.to_string(), &app) }
                     // consumer loop
@@ -85,26 +81,10 @@ pub fn start_consumer(
     Ok(())
 }
 
-fn build_avro_parser(cluster: &Cluster) -> Result<AvroParser<CachedSchemaRegistry<ReqwestClient>>> {
-    let schema_registry = cluster.schema_registry.as_ref().ok_or_else(|| Error::AvroParse {
-        msg: "Unable to use avro parsing without a schema registry configuration".into(),
-    })?;
-    let http_client = ReqwestClient::new(Some(10));
-    let client = CachedSchemaRegistry::new(
-        schema_registry.endpoint.clone(),
-        Some(BasicAuth {
-            username: schema_registry.clone().username.unwrap(),
-            password: Some(schema_registry.clone().password.unwrap()),
-        }),
-        http_client
-    );
-    Ok(AvroParser::new(client))
-}
-
 async fn handle_consumed_message(
     msg: OwnedMessage,
     config: &ConsumerConfig,
-    avro_parser: &AvroParser<CachedSchemaRegistry<ReqwestClient>>,
+    avro_parser: &AvroParser,
     records_state: Arc<Mutex<HashMap<ConsumerInfo, Vec<KafkaRecord>>>>
 ) -> Result<()> {
     let consumer_info = ConsumerInfo {

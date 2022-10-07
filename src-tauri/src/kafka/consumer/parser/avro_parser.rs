@@ -4,24 +4,21 @@ use apache_avro::{ from_avro_datum, types::Value as AvroValue, Schema };
 use rdkafka::{ message::OwnedMessage, Message };
 use serde_json::{ Map, Value as JsonValue };
 
-use crate::{
-    configuration::SchemaRegistry,
-    kafka::{ consumer::types::KafkaRecord, error::{ Error, Result } },
-    schema_registry::SchemaRegistryClient,
-};
+use crate::{ kafka::{ consumer::types::KafkaRecord, error::{ Error, Result } }, schema_registry::SchemaRegistryClient };
 
 use super::string_parser::parse_string;
 
-pub struct AvroParser<T: SchemaRegistryClient> {
-    schema_registry_client: T,
+pub struct AvroParser {
+    schema_registry_client: Box<dyn SchemaRegistryClient + Send + Sync>,
 }
 
-impl<T: SchemaRegistryClient> AvroParser<T> {
-    pub fn new(client: T) -> AvroParser<T> {
+impl AvroParser {
+    pub fn new(client: Box<dyn SchemaRegistryClient + Send + Sync>) -> AvroParser {
         AvroParser {
             schema_registry_client: client,
         }
     }
+
     pub async fn parse_record(&self, msg: OwnedMessage) -> Result<KafkaRecord> {
         let value = match msg.payload() {
             Some(x) => Some(Self::parse_avro(self, x).await?),
