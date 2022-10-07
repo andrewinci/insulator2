@@ -1,5 +1,6 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
-
+#[macro_use]
+extern crate log;
 mod api;
 mod configuration;
 mod kafka;
@@ -15,6 +16,7 @@ use crate::api::{
 };
 
 fn main() {
+    env_logger::init();
     tauri::Builder
         ::default()
         .manage(AppConsumers::default())

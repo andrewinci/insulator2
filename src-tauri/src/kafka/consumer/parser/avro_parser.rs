@@ -7,64 +7,65 @@ use serde_json::{ Map, Value as JsonValue };
 use crate::{
     configuration::SchemaRegistry,
     kafka::{ consumer::types::KafkaRecord, error::{ Error, Result } },
-    schema_registry::{ BasicAuth, CachedSchemaRegistry, ReqwestClient, SchemaRegistryClient },
+    schema_registry::SchemaRegistryClient,
 };
 
 use super::string_parser::parse_string;
 
-pub async fn parse_record(msg: OwnedMessage, config: &SchemaRegistry) -> Result<KafkaRecord> {
-    let value = match msg.payload() {
-        Some(x) => Some(parse_avro(x, config).await?),
-        None => None,
-    };
-
-    Ok(KafkaRecord {
-        key: parse_string(msg.key()), //todo: support avro key
-        value,
-        offset: msg.offset(),
-        partition: msg.partition(),
-        timestamp: match msg.timestamp() {
-            rdkafka::Timestamp::NotAvailable => None,
-            rdkafka::Timestamp::CreateTime(t) => Some(t),
-            rdkafka::Timestamp::LogAppendTime(t) => Some(t),
-        },
-    })
+pub struct AvroParser<T: SchemaRegistryClient> {
+    schema_registry_client: T,
 }
 
-pub async fn parse_avro(raw: &[u8], config: &SchemaRegistry) -> Result<String> {
-    if raw.len() <= 5 || raw[0] != 0x00 {
-        return Err(Error::AvroParse {
-            msg: "Supported avro messages should start with 0x00 follow by the schema id (4 bytes)".into(),
-        });
+impl<T: SchemaRegistryClient> AvroParser<T> {
+    pub fn new(client: T) -> AvroParser<T> {
+        AvroParser {
+            schema_registry_client: client,
+        }
+    }
+    pub async fn parse_record(&self, msg: OwnedMessage) -> Result<KafkaRecord> {
+        let value = match msg.payload() {
+            Some(x) => Some(Self::parse_avro(self, x).await?),
+            None => None,
+        };
+
+        Ok(KafkaRecord {
+            key: parse_string(msg.key()), //todo: support avro key
+            value,
+            offset: msg.offset(),
+            partition: msg.partition(),
+            timestamp: match msg.timestamp() {
+                rdkafka::Timestamp::NotAvailable => None,
+                rdkafka::Timestamp::CreateTime(t) => Some(t),
+                rdkafka::Timestamp::LogAppendTime(t) => Some(t),
+            },
+        })
     }
 
-    let id = get_schema_id(raw)?;
+    async fn parse_avro(&self, raw: &[u8]) -> Result<String> {
+        if raw.len() <= 5 || raw[0] != 0x00 {
+            return Err(Error::AvroParse {
+                msg: "Supported avro messages should start with 0x00 follow by the schema id (4 bytes)".into(),
+            });
+        }
 
-    //todo: inject the schema registry client
-    let http_client = ReqwestClient::new(None);
-    let client = CachedSchemaRegistry::new(
-        config.endpoint.clone(),
-        Some(BasicAuth {
-            username: config.clone().username.unwrap(),
-            password: Some(config.clone().password.unwrap()),
-        }),
-        http_client
-    );
-    let raw_schema = client.get_schema_by_id(id).await.map_err(|err| Error::AvroParse {
-        msg: format!("{}\n{}", "Unable to retrieve the schema from schema registry", err.to_string()),
-    })?;
-    let schema = Schema::parse_str(raw_schema.as_str()).map_err(|err| Error::AvroParse {
-        msg: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
-    })?;
-    let mut data = Cursor::new(&raw[5..]);
-    let record = from_avro_datum(&schema, &mut data, None).map_err(|err| Error::AvroParse {
-        msg: format!("{}\n{}", "Unable to parse the avro record", err),
-    })?;
-    let json = map(&record)?;
-    let res = serde_json::to_string(&json).map_err(|err| Error::AvroParse {
-        msg: format!("{}\n{}", "Unable to map the avro record to json", err),
-    })?; // todo: maybe pretty_print
-    Ok(res)
+        let id = get_schema_id(raw)?;
+
+        let raw_schema = self.schema_registry_client.get_schema_by_id(id).await.map_err(|err| Error::AvroParse {
+            msg: format!("{}\n{}", "Unable to retrieve the schema from schema registry", err.to_string()),
+        })?;
+        let schema = Schema::parse_str(raw_schema.as_str()).map_err(|err| Error::AvroParse {
+            msg: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
+        })?;
+        let mut data = Cursor::new(&raw[5..]);
+        let record = from_avro_datum(&schema, &mut data, None).map_err(|err| Error::AvroParse {
+            msg: format!("{}\n{}", "Unable to parse the avro record", err),
+        })?;
+        let json = map(&record)?;
+        let res = serde_json::to_string(&json).map_err(|err| Error::AvroParse {
+            msg: format!("{}\n{}", "Unable to map the avro record to json", err),
+        })?; // todo: maybe pretty_print
+        Ok(res)
+    }
 }
 
 fn get_schema_id(raw: &[u8]) -> Result<i32> {
@@ -114,49 +115,48 @@ fn map(a: &AvroValue) -> Result<JsonValue> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use apache_avro::{ to_avro_datum, types::Record, Schema, Writer };
+// #[cfg(test)]
+// mod tests {
+//     use apache_avro::{to_avro_datum, types::Record, Schema, Writer};
 
-    use super::get_schema_id;
+//     use super::get_schema_id;
 
-    #[test]
-    fn poc_avro() {
-        let raw_schema =
-            r#"
-    {
-        "doc": "Sample schema to help you get started.",
-        "fields": [
-          {
-            "doc": "The int type is a 32-bit signed integer.",
-            "name": "my_field1",
-            "type": "int"
-          }
-        ],
-        "name": "sampleRecord",
-        "namespace": "com.mycorp.mynamespace",
-        "type": "record"
-      }
-"#;
-        let schema = Schema::parse_str(raw_schema).unwrap();
-        let writer = Writer::new(&schema, Vec::new());
-        let mut record = Record::new(writer.schema()).unwrap();
-        record.put("my_field1", 123);
-        let mut encoded = to_avro_datum(&schema, record).unwrap();
-        // add 1 magic byte + 4 id bytes
-        let mut with_header: Vec<u8> = vec![0x00, 0x00, 0x00, 0x00, 0x00];
-        with_header.append(&mut encoded);
-        //let res = parse_avro(&with_header[..], &schema).unwrap();
-        // [0, 0, 1, 134, 197, 246, 1]
-        // [0, 1, 134, 197] -> 0x01, 0x86, 0xC5 -> 100037
-        // [0, 0, 0, 0, 246, 1]
-        //assert_eq!(res, r#"{"my_field1":123}"#)
-    }
+//     #[test]
+//     fn poc_avro() {
+//         let raw_schema = r#"
+//     {
+//         "doc": "Sample schema to help you get started.",
+//         "fields": [
+//           {
+//             "doc": "The int type is a 32-bit signed integer.",
+//             "name": "my_field1",
+//             "type": "int"
+//           }
+//         ],
+//         "name": "sampleRecord",
+//         "namespace": "com.mycorp.mynamespace",
+//         "type": "record"
+//       }
+// "#;
+//         let schema = Schema::parse_str(raw_schema).unwrap();
+//         let writer = Writer::new(&schema, Vec::new());
+//         let mut record = Record::new(writer.schema()).unwrap();
+//         record.put("my_field1", 123);
+//         let mut encoded = to_avro_datum(&schema, record).unwrap();
+//         // add 1 magic byte + 4 id bytes
+//         let mut with_header: Vec<u8> = vec![0x00, 0x00, 0x00, 0x00, 0x00];
+//         with_header.append(&mut encoded);
+//         //let res = parse_avro(&with_header[..], &schema).unwrap();
+//         // [0, 0, 1, 134, 197, 246, 1]
+//         // [0, 1, 134, 197] -> 0x01, 0x86, 0xC5 -> 100037
+//         // [0, 0, 0, 0, 246, 1]
+//         //assert_eq!(res, r#"{"my_field1":123}"#)
+//     }
 
-    #[test]
-    fn u8_array_to_i32() {
-        let raw: Vec<u8> = vec![0x00, 0x00, 0x01, 0x86, 0xc5, 0x00, 0x00, 0x00];
-        let id = get_schema_id(&raw).unwrap();
-        assert_eq!(id, 100037)
-    }
-}
+//     #[test]
+//     fn u8_array_to_i32() {
+//         let raw: Vec<u8> = vec![0x00, 0x00, 0x01, 0x86, 0xc5, 0x00, 0x00, 0x00];
+//         let id = get_schema_id(&raw).unwrap();
+//         assert_eq!(id, 100037)
+//     }
+// }
