@@ -27,6 +27,9 @@ apache-avro = { version = "0.14.0" }
 log = { version = "0.4" }
 env_logger = { version = "0.9.0" }
 
+[dev-dependencies]
+httpmock = "0.6"
+
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL

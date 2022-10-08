@@ -1,17 +1,19 @@
-use crate::configuration::SchemaRegistry as SchemaRegistryConfiguration;
+use crate::{ configuration::SchemaRegistry, schema_registry::SchemaRegistryClient };
 use super::error::{ Result, TauriError };
 use crate::schema_registry::{ self, CachedSchemaRegistry, Schema };
 
 #[tauri::command]
-pub async fn list_subjects(config: SchemaRegistryConfiguration) -> Result<Vec<String>> {
-    let client = CachedSchemaRegistry::new(&config);
+pub async fn list_subjects(config: SchemaRegistry) -> Result<Vec<String>> {
+    let SchemaRegistry { username, endpoint, password } = config;
+    let client = CachedSchemaRegistry::new(endpoint, &username, &password);
     let res = client.list_subjects().await?;
     Ok(res)
 }
 
 #[tauri::command]
-pub async fn get_schema(subject_name: String, config: SchemaRegistryConfiguration) -> Result<Vec<Schema>> {
-    let client = CachedSchemaRegistry::new(&config);
+pub async fn get_schema(subject_name: String, config: SchemaRegistry) -> Result<Vec<Schema>> {
+    let SchemaRegistry { username, endpoint, password } = config;
+    let client = CachedSchemaRegistry::new(endpoint, &username, &password);
     let res = client.get_schema(subject_name).await?;
     Ok(res)
 }
