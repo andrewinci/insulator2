@@ -3,7 +3,12 @@ use super::{
     setup_consumer::setup_consumer,
     types::{ AppConsumers, ConsumeFrom, ConsumerConfig, ConsumerInfo, KafkaRecord },
 };
-use crate::{ api::notify_error, kafka::error::{ Error, Result }, schema_registry::CachedSchemaRegistry };
+use crate::{
+    api::notify_error,
+    kafka::error::{ Error, Result },
+    schema_registry::CachedSchemaRegistry,
+    configuration::SchemaRegistry,
+};
 use futures::StreamExt;
 use rdkafka::message::OwnedMessage;
 use std::{ collections::HashMap, sync::{ Arc, Mutex } };
@@ -33,9 +38,9 @@ pub fn start_consumer(
         .lock()
         .unwrap()
         .insert(consumer_info.clone(), Vec::<_>::new());
-
-    let schema_registry_client = CachedSchemaRegistry::new(&config.cluster.schema_registry.clone().unwrap());
-    let avro_parser = AvroParser::new(schema_registry_client);
+    let SchemaRegistry { username, endpoint, password } = &config.cluster.schema_registry.clone().unwrap();
+    let schema_registry_client = CachedSchemaRegistry::new(endpoint.into(), username, password);
+    let avro_parser = AvroParser::new(Box::new(schema_registry_client));
     // spawn the consumer loop
     // add the consumer handle to the list of handles
     state.consumer_handles
