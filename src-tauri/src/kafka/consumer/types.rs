@@ -1,9 +1,7 @@
 use crate::configuration::Cluster;
 use serde::{ Deserialize, Serialize };
-use std::{ collections::HashMap, sync::{ Arc, Mutex } };
-use tauri::async_runtime::JoinHandle;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ConsumeFrom {
     Beginning,
     End,
@@ -13,19 +11,13 @@ pub enum ConsumeFrom {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ConsumerConfig {
     pub cluster: Cluster,
     pub topic: String,
     pub from: ConsumeFrom,
     #[serde(rename = "useAvro")]
     pub use_avro: bool,
-}
-
-#[derive(Debug, Default)]
-pub struct AppConsumers {
-    pub consumer_handles: Mutex<HashMap<ConsumerInfo, JoinHandle<()>>>,
-    pub records_state: Arc<Mutex<HashMap<ConsumerInfo, Vec<KafkaRecord>>>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Hash, Eq, PartialEq, Clone)]

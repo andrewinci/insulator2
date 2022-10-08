@@ -1,15 +1,41 @@
 use std::io::Cursor;
 
 use apache_avro::{ from_avro_datum, types::Value as AvroValue, Schema };
+use futures::FutureExt;
 use rdkafka::{ message::OwnedMessage, Message };
 use serde_json::{ Map, Value as JsonValue };
 
 use crate::{ kafka::{ consumer::types::KafkaRecord, error::{ Error, Result } }, schema_registry::SchemaRegistryClient };
 
-use super::string_parser::parse_string;
+use super::{ string_parser::parse_string, RecordParser };
 
 pub struct AvroParser {
     schema_registry_client: Box<dyn SchemaRegistryClient + Send + Sync>,
+}
+
+impl RecordParser for AvroParser {
+    fn parse_record(&self, msg: OwnedMessage) -> futures::future::BoxFuture<Result<KafkaRecord>> {
+        (
+            async move {
+                let value = match msg.payload() {
+                    Some(x) => Some(self.parse_avro(x).await?),
+                    None => None,
+                };
+
+                Ok(KafkaRecord {
+                    key: parse_string(msg.key()), //todo: support avro key
+                    value,
+                    offset: msg.offset(),
+                    partition: msg.partition(),
+                    timestamp: match msg.timestamp() {
+                        rdkafka::Timestamp::NotAvailable => None,
+                        rdkafka::Timestamp::CreateTime(t) => Some(t),
+                        rdkafka::Timestamp::LogAppendTime(t) => Some(t),
+                    },
+                })
+            }
+        ).boxed()
+    }
 }
 
 impl AvroParser {
@@ -17,25 +43,6 @@ impl AvroParser {
         AvroParser {
             schema_registry_client: client,
         }
-    }
-
-    pub async fn parse_record(&self, msg: OwnedMessage) -> Result<KafkaRecord> {
-        let value = match msg.payload() {
-            Some(x) => Some(Self::parse_avro(self, x).await?),
-            None => None,
-        };
-
-        Ok(KafkaRecord {
-            key: parse_string(msg.key()), //todo: support avro key
-            value,
-            offset: msg.offset(),
-            partition: msg.partition(),
-            timestamp: match msg.timestamp() {
-                rdkafka::Timestamp::NotAvailable => None,
-                rdkafka::Timestamp::CreateTime(t) => Some(t),
-                rdkafka::Timestamp::LogAppendTime(t) => Some(t),
-            },
-        })
     }
 
     async fn parse_avro(&self, raw: &[u8]) -> Result<String> {

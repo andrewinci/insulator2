@@ -5,8 +5,7 @@ mod configuration;
 mod kafka;
 mod schema_registry;
 
-use kafka::consumer::types::AppConsumers;
-
+use api::consumer::AppConsumers;
 use crate::api::{
     admin::list_topic,
     configuration::{ get_configuration, write_configuration },
