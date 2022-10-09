@@ -3,6 +3,7 @@ use rdkafka::{ consumer::StreamConsumer, ClientConfig };
 use crate::lib::{ configuration::{ ClusterConfig, AuthenticationConfig }, error::Result };
 
 pub fn create_consumer(cluster: &ClusterConfig) -> Result<StreamConsumer> {
+    //todo: try to use as less threads as possible for each consumer created
     let mut config = ClientConfig::new();
     config
         .set("enable.partition.eof", "true")
