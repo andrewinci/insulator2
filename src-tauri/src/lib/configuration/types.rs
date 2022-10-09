@@ -1,5 +1,19 @@
 use serde::{ Serialize, Deserialize };
 
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct InsulatorConfig {
+    pub clusters: Vec<ClusterConfig>,
+    pub theme: Option<Theme>,
+    #[serde(rename = "showNotifications")]
+    pub show_notifications: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum Theme {
+    Dark,
+    Light,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ClusterConfig {
     pub id: String,
