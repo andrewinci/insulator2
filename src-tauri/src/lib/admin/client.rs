@@ -1,45 +1,65 @@
-use async_trait::async_trait;
+use log::warn;
 use std::time::Duration;
 
-use rdkafka::consumer::Consumer;
+use super::types::{ PartitionInfo, TopicInfo };
+use crate::lib::{ configuration::ClusterConfig, consumer::create_consumer, error::{ Error, Result } };
+use rdkafka::consumer::{ Consumer, StreamConsumer };
 
-use crate::kafka::error::Result;
-use crate::{ configuration::Cluster, kafka::consumer::create_consumer };
+pub trait Admin {
+    fn list_topics(&self) -> Result<Vec<TopicInfo>>;
+    fn get_topic_info(&self, topic_name: &String) -> Result<TopicInfo>;
+}
 
-#[async_trait]
-pub trait Admin {}
-
-pub struct KafkaAdmin {}
-
-#[async_trait]
-impl Admin for KafkaAdmin {}
+pub struct KafkaAdmin {
+    consumer: StreamConsumer,
+}
 
 impl KafkaAdmin {
-    pub fn new() -> KafkaAdmin {
-        KafkaAdmin {}
+    pub fn new(cluster_config: &ClusterConfig) -> KafkaAdmin {
+        KafkaAdmin {
+            consumer: create_consumer(cluster_config).expect("Unable to create a consumer for the admin client."),
+        }
     }
 }
 
-use super::types::{ PartitionInfo, TopicInfo };
+impl Admin for KafkaAdmin {
+    fn list_topics(&self) -> Result<Vec<TopicInfo>> {
+        self.list_topics(None)
+    }
 
-pub fn list_topics(cluster: &Cluster, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
-    //todo: use cache
-    let topics: Vec<TopicInfo> = create_consumer(cluster)?
-        .fetch_metadata(topic, Duration::from_secs(30))?
-        .topics()
-        .iter()
-        .map(|t| TopicInfo {
-            name: t.name().to_string(),
-            partitions: t
-                .partitions()
-                .iter()
-                .map(|m| PartitionInfo {
-                    id: m.id(),
-                    isr: m.isr().len(),
-                    replicas: m.replicas().len(),
-                })
-                .collect(),
-        })
-        .collect();
-    Ok(topics)
+    fn get_topic_info(&self, topic_name: &String) -> Result<TopicInfo> {
+        let info = self.list_topics(Some(topic_name))?;
+        if info.len() == 1 {
+            Ok(info.get(0).unwrap().clone())
+        } else {
+            warn!("Topic not found or more than one topic with the same name {}", topic_name);
+            Err(Error::KafkaError {
+                message: "Topic not found".into(),
+            })
+        }
+    }
+}
+
+impl KafkaAdmin {
+    pub fn list_topics(&self, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
+        //todo: use cache
+        let topics: Vec<TopicInfo> = self.consumer
+            .fetch_metadata(topic, Duration::from_secs(30))?
+            .topics()
+            .iter()
+            .map(|t| TopicInfo {
+                name: t.name().to_string(),
+                partitions: t
+                    .partitions()
+                    .iter()
+                    .map(|m| PartitionInfo {
+                        id: m.id(),
+                        isr: m.isr().len(),
+                        replicas: m.replicas().len(),
+                    })
+                    .collect(),
+            })
+            .collect();
+        Ok(topics)
+    }
 }
