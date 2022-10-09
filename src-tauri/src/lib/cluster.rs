@@ -5,7 +5,7 @@ use futures::lock::Mutex;
 use crate::{
     lib::{
         schema_registry::{ SchemaRegistryClient, CachedSchemaRegistry },
-        consumer::{ Consumer, KafkaConsumer },
+        consumer::{ Consumer },
         admin::{ Admin, KafkaAdmin },
         parser::{ Parser, RecordParser },
         configuration::{ ClusterConfig, SchemaRegistryConfig },
@@ -13,33 +13,27 @@ use crate::{
 };
 
 type TopicName = String;
+#[derive(Clone)]
 pub struct Cluster {
-    config: ClusterConfig,
-    schema_registry_client: Option<Box<dyn SchemaRegistryClient>>,
-    consumers: Arc<Mutex<HashMap<TopicName, Box<dyn Consumer>>>>,
-    admin_client: Box<dyn Admin>,
-    parser: Box<dyn Parser>,
+    pub config: ClusterConfig,
+    pub schema_registry_client: Option<Arc<dyn SchemaRegistryClient + Send + Sync>>,
+    pub consumers: Arc<Mutex<HashMap<TopicName, Box<dyn Consumer + Send + Sync>>>>,
+    pub admin_client: Arc<dyn Admin + Send + Sync>,
+    pub parser: Arc<dyn Parser + Send + Sync>,
 }
 
 impl Cluster {
-    fn new(config: ClusterConfig) -> Cluster {
-        let cluster_config = config.clone();
+    pub fn new(config: ClusterConfig) -> Cluster {
         //todo: share schema registry client
-        // build the admin client
-        let admin_client: Box<dyn Admin> = Box::new(KafkaAdmin::new(&cluster_config));
-        // build the parser
-        let parser: Box<dyn Parser> = Box::new(
-            RecordParser::new(build_schema_registry_client(config.schema_registry.clone()))
-        );
         Cluster {
-            config: cluster_config,
+            config: config.clone(),
             schema_registry_client: match build_schema_registry_client(config.schema_registry.clone()) {
-                Some(client) => Some(Box::new(client)),
+                Some(client) => Some(Arc::new(client)),
                 None => None,
             },
             consumers: Arc::new(Mutex::new(HashMap::new())),
-            admin_client,
-            parser,
+            admin_client: Arc::new(KafkaAdmin::new(&config)),
+            parser: Arc::new(RecordParser::new(build_schema_registry_client(config.schema_registry.clone()))),
         }
     }
 }

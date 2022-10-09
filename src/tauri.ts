@@ -51,9 +51,10 @@ export const getSchemaVersions = (subjectName: string, config: SchemaRegistry): 
 /** Kafka API **/
 
 export const getTopicNamesList = (cluster: Cluster): Promise<string[]> =>
-  invoke<TopicInfo[]>("list_topic", { cluster })
+  invoke<TopicInfo[]>("list_topics", { clusterId: cluster.id })
     .then((topics) => topics.map((t) => t.name))
     .catch((err: TauriError) => {
+      console.error(err);
       addNotification({
         type: "error",
         title: `Unable to retrieve the list of topics for "${cluster?.name}"`,
