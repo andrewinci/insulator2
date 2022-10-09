@@ -4,10 +4,15 @@ use dirs::home_dir;
 use std::path::PathBuf;
 use std::{ fs, path::Path };
 
+#[derive(Default)]
 pub struct ConfigStore {}
 
 impl ConfigStore {
-    pub fn get_configuration() -> Result<InsulatorConfig> {
+    //todo: cache?
+    pub fn new() -> ConfigStore {
+        ConfigStore {}
+    }
+    pub fn get_configuration(&self) -> Result<InsulatorConfig> {
         let config_path = config_path();
         let raw_config = (match Path::exists(&config_path) {
             // read file content
@@ -21,7 +26,7 @@ impl ConfigStore {
         }
     }
 
-    pub fn write_configuration(configuration: &InsulatorConfig) -> Result<()> {
+    pub fn write_configuration(&self, configuration: &InsulatorConfig) -> Result<()> {
         let config_path = config_path();
         let raw_config = serde_json::to_string_pretty(&configuration)?;
         fs::write(config_path, raw_config)?;
