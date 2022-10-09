@@ -1,13 +1,5 @@
 import { invoke } from "@tauri-apps/api";
-import {
-  Cluster,
-  ConsumerSettingsFrom,
-  ConsumerState,
-  KafkaRecord,
-  SchemaRegistry,
-  SchemaVersion,
-  TopicInfo,
-} from "./models/kafka";
+import { Cluster, ConsumerSettingsFrom, ConsumerState, KafkaRecord, SchemaVersion, TopicInfo } from "./models/kafka";
 import { addNotification, AppState } from "./providers";
 
 export type TauriError = {
@@ -33,12 +25,12 @@ export const setConfiguration = (configuration: AppState): Promise<AppState> =>
 
 /** Schema Registry API **/
 
-export const getSchemaNamesList = (config: SchemaRegistry): Promise<string[]> => {
-  return invoke<string[]>("list_subjects", { config });
+export const getSchemaNamesList = (clusterId: string): Promise<string[]> => {
+  return invoke<string[]>("list_subjects", { clusterId });
 };
 
-export const getSchemaVersions = (subjectName: string, config: SchemaRegistry): Promise<SchemaVersion[]> =>
-  invoke<SchemaVersion[]>("get_schema", { subjectName, config })
+export const getSchemaVersions = (clusterId: string, subjectName: string): Promise<SchemaVersion[]> =>
+  invoke<SchemaVersion[]>("get_schema", { clusterId, subjectName })
     .then((res) => {
       //success(`${res.length} schema version found for ${subjectName}`);
       return res;

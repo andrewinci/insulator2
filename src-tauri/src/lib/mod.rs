@@ -1,11 +1,12 @@
 mod types;
-mod schema_registry;
 mod consumer;
 mod admin;
 mod parser;
 mod configuration;
 mod cluster;
 mod error;
+
+pub mod schema_registry;
 
 pub use cluster::Cluster;
 pub use admin::{ TopicInfo, PartitionInfo };

@@ -1,4 +1,4 @@
-use crate::{ kafka::error::Error as KafkaError, lib::Error };
+use crate::{ kafka::error::Error as KafkaError, lib::{ Error, schema_registry::SchemaRegistryError } };
 use serde::{ Deserialize, Serialize };
 pub type Result<T> = std::result::Result<T, TauriError>;
 
@@ -22,17 +22,24 @@ impl From<Error> for TauriError {
     }
 }
 
+impl From<SchemaRegistryError> for TauriError {
+    fn from(err: SchemaRegistryError) -> Self {
+        TauriError {
+            error_type: "Schema registry error".into(),
+            message: match err {
+                SchemaRegistryError::HttpClientError { msg } => msg,
+                SchemaRegistryError::UrlError => "Invalid url".into(),
+            },
+        }
+    }
+}
+
 impl From<KafkaError> for TauriError {
     fn from(error: KafkaError) -> Self {
         match error {
             KafkaError::GenericKafka { msg } =>
                 TauriError {
                     error_type: "Generic Kafka Error".into(),
-                    message: msg,
-                },
-            KafkaError::KafkaConsumer { msg } =>
-                TauriError {
-                    error_type: "Kafka Consumer Error".into(),
                     message: msg,
                 },
             KafkaError::AvroParse { msg } =>
