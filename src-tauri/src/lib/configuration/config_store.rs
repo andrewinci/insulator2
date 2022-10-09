@@ -1,4 +1,4 @@
-use super::error::Result;
+use crate::lib::error::Result;
 use super::InsulatorConfig;
 use dirs::home_dir;
 use std::path::PathBuf;

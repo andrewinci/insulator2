@@ -1,3 +1,5 @@
+use rdkafka::error::KafkaError;
+
 pub enum Error {
     AvroParse {
         message: String,
@@ -6,6 +8,9 @@ pub enum Error {
         message: String,
     },
     JSONSerdeError {
+        message: String,
+    },
+    KafkaError {
         message: String,
     },
 }
@@ -24,6 +29,14 @@ impl From<serde_json::Error> for Error {
     fn from(error: serde_json::Error) -> Self {
         Error::JSONSerdeError {
             message: error.to_string(),
+        }
+    }
+}
+
+impl From<KafkaError> for Error {
+    fn from(error: KafkaError) -> Self {
+        Error::KafkaError {
+            message: format!("{}", error),
         }
     }
 }
