@@ -11,3 +11,4 @@ pub use cluster::Cluster;
 pub use admin::{ TopicInfo, PartitionInfo };
 pub use configuration::ConfigStore;
 pub use error::Error;
+pub use configuration::InsulatorConfig;
