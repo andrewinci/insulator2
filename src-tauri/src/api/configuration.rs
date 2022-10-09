@@ -1,29 +1,20 @@
-use crate::configuration::{ ConfigStore, Error, InsulatorConfig };
-use super::error::{ Result, TauriError };
+use log::debug;
+
+use crate::lib::{ ConfigStore, InsulatorConfig };
+use super::error::Result;
 
 #[tauri::command]
 pub fn get_configuration() -> Result<InsulatorConfig> {
-    Ok(ConfigStore::get_configuration()?)
+    debug!("Retrieve configuration");
+    Ok(ConfigStore::new().get_configuration()?)
 }
 
 #[tauri::command]
 pub fn write_configuration(configuration: InsulatorConfig) -> Result<InsulatorConfig> {
-    Ok(ConfigStore::write_configuration(&configuration).map(|_| configuration)?)
-}
-
-impl From<Error> for TauriError {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::IOError { message } =>
-                TauriError {
-                    error_type: "IO error".into(),
-                    message,
-                },
-            Error::JSONSerdeError { message } =>
-                TauriError {
-                    error_type: "JSON serialization error".into(),
-                    message,
-                },
-        }
-    }
+    debug!("Write configuration");
+    Ok(
+        ConfigStore::new()
+            .write_configuration(&configuration)
+            .map(|_| configuration)?
+    )
 }
