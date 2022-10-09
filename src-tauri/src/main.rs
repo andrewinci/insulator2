@@ -4,6 +4,7 @@ mod api;
 mod configuration;
 mod kafka;
 mod schema_registry;
+mod lib;
 
 use api::consumer::AppConsumers;
 use crate::api::{
