@@ -1,5 +1,6 @@
 use rdkafka::error::KafkaError;
 
+#[derive(Debug)]
 pub enum Error {
     AvroParse {
         message: String,
@@ -8,6 +9,9 @@ pub enum Error {
         message: String,
     },
     JSONSerdeError {
+        message: String,
+    },
+    ConsumerError {
         message: String,
     },
     KafkaError {

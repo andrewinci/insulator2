@@ -26,7 +26,7 @@ impl Cluster {
         let cluster_config = config.clone();
         //todo: share schema registry client
         // build the admin client
-        let admin_client: Box<dyn Admin> = Box::new(KafkaAdmin::new());
+        let admin_client: Box<dyn Admin> = Box::new(KafkaAdmin::new(&cluster_config));
         // build the parser
         let parser: Box<dyn Parser> = Box::new(
             RecordParser::new(build_schema_registry_client(config.schema_registry.clone()))
