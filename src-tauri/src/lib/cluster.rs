@@ -1,3 +1,7 @@
+use std::{ sync::Arc, collections::HashMap };
+
+use futures::lock::Mutex;
+
 use crate::{
     lib::{
         schema_registry::{ SchemaRegistryClient, CachedSchemaRegistry },
@@ -8,10 +12,11 @@ use crate::{
     },
 };
 
+type TopicName = String;
 pub struct Cluster {
     config: ClusterConfig,
     schema_registry_client: Option<Box<dyn SchemaRegistryClient>>,
-    consumer_client: Box<dyn Consumer>,
+    consumers: Arc<Mutex<HashMap<TopicName, Box<dyn Consumer>>>>,
     admin_client: Box<dyn Admin>,
     parser: Box<dyn Parser>,
 }
@@ -20,8 +25,6 @@ impl Cluster {
     fn new(config: ClusterConfig) -> Cluster {
         let cluster_config = config.clone();
         //todo: share schema registry client
-        // build kafka consumer client
-        let consumer_client: Box<dyn Consumer> = Box::new(KafkaConsumer::new());
         // build the admin client
         let admin_client: Box<dyn Admin> = Box::new(KafkaAdmin::new());
         // build the parser
@@ -34,7 +37,7 @@ impl Cluster {
                 Some(client) => Some(Box::new(client)),
                 None => None,
             },
-            consumer_client,
+            consumers: Arc::new(Mutex::new(HashMap::new())),
             admin_client,
             parser,
         }
