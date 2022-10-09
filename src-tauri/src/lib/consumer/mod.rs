@@ -1,2 +1,2 @@
 mod client;
-pub use client::Consumer;
+pub use client::{ Consumer, KafkaConsumer };
