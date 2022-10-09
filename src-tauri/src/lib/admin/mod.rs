@@ -1,3 +1,3 @@
 mod client;
 
-pub use client::Admin;
+pub use client::{ Admin, KafkaAdmin };
