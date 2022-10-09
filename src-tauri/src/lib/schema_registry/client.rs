@@ -1,8 +1,6 @@
 use async_trait::async_trait;
-use futures::future::BoxFuture;
 use futures::lock::Mutex;
-use futures::FutureExt;
-use log::debug;
+use log::{ debug, trace };
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -23,7 +21,8 @@ pub struct CachedSchemaRegistry {
     endpoint: String,
     auth: Option<BasicAuth>,
     timeout_seconds: u64,
-    schema_cache: Arc<Mutex<HashMap<i32, String>>>,
+    schema_cache_by_id: Arc<Mutex<HashMap<i32, String>>>,
+    schema_cache_by_subject: Arc<Mutex<HashMap<String, Vec<Schema>>>>,
 }
 
 impl CachedSchemaRegistry {
@@ -41,7 +40,8 @@ impl CachedSchemaRegistry {
             auth,
             timeout_seconds: 10,
             client,
-            schema_cache: Arc::new(Mutex::new(HashMap::new())),
+            schema_cache_by_id: Arc::new(Mutex::new(HashMap::new())),
+            schema_cache_by_subject: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 }
@@ -55,23 +55,31 @@ impl SchemaRegistryClient for CachedSchemaRegistry {
     }
 
     async fn get_schema(&self, subject_name: String) -> Result<Vec<Schema>> {
-        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
-        let versions: Vec<i32> = self.get(url.as_ref(), &self.auth).await?;
-        let mut schemas = Vec::<Schema>::new();
-        for v in versions {
-            let url = url.join(&v.to_string())?;
-            let schema: Schema = self.get(url.as_ref(), &self.auth).await?;
-            schemas.push(schema);
+        let mut cache = self.schema_cache_by_subject.lock().await;
+        debug!("Get schema for {}", subject_name);
+        if let Some(cached) = cache.get(&subject_name) {
+            trace!("Schema found in cache");
+            Ok(cached.clone())
+        } else {
+            let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
+            let versions: Vec<i32> = self.get(url.as_ref(), &self.auth).await?;
+            let mut schemas = Vec::<Schema>::new();
+            for v in versions {
+                let url = url.join(&v.to_string())?;
+                let schema: Schema = self.get(url.as_ref(), &self.auth).await?;
+                schemas.push(schema);
+            }
+            cache.insert(subject_name, schemas.clone());
+            Ok(schemas)
         }
-        Ok(schemas)
     }
 
     async fn get_schema_by_id(&self, id: i32) -> Result<String> {
-        let mut cache = self.schema_cache.lock().await;
+        let mut cache = self.schema_cache_by_id.lock().await;
         debug!("Getting schema {} by id.", id);
 
         if let Some(cached) = cache.get(&id) {
-            debug!("Schema found in cache");
+            trace!("Schema found in cache");
             Ok(cached.clone())
         } else {
             debug!("Schema not found in cache, retrieving");
@@ -85,21 +93,18 @@ impl SchemaRegistryClient for CachedSchemaRegistry {
 }
 
 impl CachedSchemaRegistry {
-    fn get<T: DeserializeOwned>(&self, url: &str, auth: &Option<BasicAuth>) -> BoxFuture<Result<T>> {
+    async fn get<T: DeserializeOwned>(&self, url: &str, auth: &Option<BasicAuth>) -> Result<T> {
         let url = url.to_string();
         let auth = auth.clone();
-        (
-            async move {
-                let mut request = self.client.get(url);
-                request = request.timeout(core::time::Duration::from_secs(self.timeout_seconds));
-                if let Some(auth) = auth {
-                    request = request.basic_auth(auth.username, auth.password);
-                }
-                let response = request.send().await?;
-                let res = response.json().await?;
-                Ok(res)
-            }
-        ).boxed()
+
+        let mut request = self.client.get(url);
+        request = request.timeout(core::time::Duration::from_secs(self.timeout_seconds));
+        if let Some(auth) = auth {
+            request = request.basic_auth(auth.username, auth.password);
+        }
+        let response = request.send().await?;
+        let res = response.json().await?;
+        Ok(res)
     }
 }
 
