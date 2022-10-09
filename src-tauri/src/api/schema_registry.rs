@@ -1,31 +1,36 @@
-use crate::{ configuration::SchemaRegistry, schema_registry::SchemaRegistryClient };
-use super::error::{ Result, TauriError };
-use crate::schema_registry::{ self, CachedSchemaRegistry, Schema };
+use log::debug;
+use crate::lib::schema_registry::Schema;
+
+use super::{ error::{ Result, TauriError }, AppState };
 
 #[tauri::command]
-pub async fn list_subjects(config: SchemaRegistry) -> Result<Vec<String>> {
-    let SchemaRegistry { username, endpoint, password } = config;
-    let client = CachedSchemaRegistry::new(endpoint, &username, &password);
-    let res = client.list_subjects().await?;
-    Ok(res)
+pub async fn list_subjects(cluster_id: String, state: tauri::State<'_, AppState>) -> Result<Vec<String>> {
+    debug!("List schema schema registry subjects");
+    Ok(
+        state
+            .get_by_cluster_id(&cluster_id).await
+            .schema_registry_client.ok_or(TauriError {
+                error_type: "Configuration error".into(),
+                message: "Missing schema registry configuration".into(),
+            })?
+            .list_subjects().await?
+    )
 }
 
 #[tauri::command]
-pub async fn get_schema(subject_name: String, config: SchemaRegistry) -> Result<Vec<Schema>> {
-    let SchemaRegistry { username, endpoint, password } = config;
-    let client = CachedSchemaRegistry::new(endpoint, &username, &password);
-    let res = client.get_schema(subject_name).await?;
-    Ok(res)
-}
-
-impl From<schema_registry::SchemaRegistryError> for TauriError {
-    fn from(err: schema_registry::SchemaRegistryError) -> Self {
-        TauriError {
-            error_type: "Schema registry error".into(),
-            message: match err {
-                schema_registry::SchemaRegistryError::HttpClientError { msg } => msg,
-                schema_registry::SchemaRegistryError::UrlError => "Invalid url".into(),
-            },
-        }
-    }
+pub async fn get_schema(
+    subject_name: String,
+    cluster_id: String,
+    state: tauri::State<'_, AppState>
+) -> Result<Vec<Schema>> {
+    debug!("Retrieve all schema version for subject {}", subject_name);
+    Ok(
+        state
+            .get_by_cluster_id(&cluster_id).await
+            .schema_registry_client.ok_or(TauriError {
+                error_type: "Configuration error".into(),
+                message: "Missing schema registry configuration".into(),
+            })?
+            .get_schema(subject_name).await?
+    )
 }

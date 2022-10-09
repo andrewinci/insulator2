@@ -5,9 +5,6 @@ pub enum Error {
     GenericKafka {
         msg: String,
     },
-    KafkaConsumer {
-        msg: String,
-    },
     AvroParse {
         msg: String,
     },
@@ -27,7 +24,6 @@ impl ToString for Error {
     fn to_string(&self) -> String {
         match self {
             Error::GenericKafka { msg } => msg.into(),
-            Error::KafkaConsumer { msg } => msg.into(),
             Error::AvroParse { msg } => msg.into(),
         }
     }

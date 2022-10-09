@@ -14,13 +14,13 @@ export const SchemasPage = () => {
       <Allotment>
         <Allotment.Pane minSize={300} maxSize={schemaName ? 1000 : undefined}>
           <SchemaList
-            schemaRegistry={schemaRegistry}
-            onTopicSelected={(activeSchema) => navigate(`/cluster/${clusterId}/schema/${activeSchema}`)}
+            clusterId={clusterId!}
+            onSubjectSelected={(activeSchema) => navigate(`/cluster/${clusterId}/schema/${activeSchema}`)}
           />
         </Allotment.Pane>
         {schemaName && (
           <Allotment.Pane minSize={300}>
-            <Schema schemaRegistry={schemaRegistry} schemaName={schemaName} />
+            <Schema clusterId={clusterId!} schemaName={schemaName} />
           </Allotment.Pane>
         )}
       </Allotment>
