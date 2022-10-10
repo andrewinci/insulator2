@@ -60,7 +60,7 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
     }
   };
   const onSubmit = async (f: ConsumerForm) => {
-    await startConsumer(cluster, topicName, getConsumerSettingFrom(f), f.useAvro);
+    await startConsumer(cluster, topicName, getConsumerSettingFrom(f));
     closeAll();
   };
 
