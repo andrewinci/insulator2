@@ -13,11 +13,11 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub async fn get_by_cluster_id(&self, cluster_id: &str) -> Cluster {
+    pub async fn get_cluster_by_id(&self, cluster_id: &str) -> Cluster {
         let clusters = self.clusters.clone();
         let mut map = clusters.lock().await;
         if map.get(cluster_id).is_none() {
-            debug!("Initialise cluster {}", cluster_id);
+            debug!("Init cluster {}", cluster_id);
             let configurations = ConfigStore::new().get_configuration().expect("Unable to get the configuration");
             let cluster_config = configurations.clusters
                 .iter()

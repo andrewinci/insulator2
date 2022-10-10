@@ -1,17 +1,18 @@
-use std::{ collections::HashMap, sync::{ Arc } };
 use futures::lock::Mutex;
-use log::{ warn, debug };
+use log::{ debug, warn };
+use std::{ collections::HashMap, sync::Arc };
 
-use super::error::Result;
+use super::{ error::Result, AppState };
 use crate::{
+    api::error::TauriError,
     kafka::consumer::{
-        parser::{ StringParser, AvroParser, RecordParser },
-        types::{ ConsumerConfig, ConsumerInfo, ConsumerState, KafkaRecord },
+        parser::{ AvroParser, RecordParser, StringParser },
+        types::{ ConsumerConfig, ConsumerInfo, KafkaRecord },
         Consumer,
         GenericConsumer,
     },
+    lib::{ ConsumerOffsetConfiguration, ConsumerState },
     schema_registry::CachedSchemaRegistry,
-    api::error::TauriError,
 };
 
 #[derive(Default)]
@@ -21,76 +22,30 @@ pub struct AppConsumers {
 
 #[tauri::command]
 pub async fn start_consumer(
-    config: ConsumerConfig,
-    state: tauri::State<'_, AppConsumers>,
-    _app: tauri::AppHandle
+    cluster_id: String,
+    topic: String,
+    offset_config: ConsumerOffsetConfiguration,
+    state: tauri::State<'_, AppState>
 ) -> Result<()> {
-    let consumer_info = ConsumerInfo {
-        cluster_id: config.cluster.id.clone(),
-        topic: config.topic.clone(),
-    };
-
-    if state.consumer_handles.clone().lock().await.contains_key(&consumer_info) {
-        warn!("Start consumer invoked twice for the same cluster/topic tuple. Ignoring.");
-        return Ok(());
-    }
-
-    let avro_parser = (if config.use_avro {
-        if let Some(ref schema_registry_config) = config.cluster.schema_registry {
-            let schema_registry = CachedSchemaRegistry::new(
-                schema_registry_config.endpoint.clone(),
-                &schema_registry_config.username,
-                &schema_registry_config.password
-            );
-            Ok(Some(AvroParser::new(Box::new(schema_registry))))
-        } else {
-            Err(TauriError {
-                error_type: "Unable to use avro".into(),
-                message: "Missing schema registry configuration".into(),
-            })
-        }
-    } else {
-        Ok(None)
-    })?;
-
-    let parser: Box<dyn RecordParser + Send + Sync> = match avro_parser {
-        Some(parser) => Box::new(parser),
-        None => Box::new(StringParser::new()),
-    };
-    //todo: notifications
-    let consumer = Consumer::new(&config, parser, None);
-    consumer.start().await?;
-    // add consumer to the list of running consumers
-    state.consumer_handles.lock().await.insert(consumer_info, consumer);
-    debug!("New consumer started");
-    Ok(())
+    let consumer = state.get_cluster_by_id(&cluster_id).await.get_consumer(&topic).await;
+    Ok(consumer.start(offset_config).await?)
 }
 
 #[tauri::command]
 pub async fn get_consumer_state(
-    consumer: ConsumerInfo,
-    state: tauri::State<'_, AppConsumers>
+    cluster_id: String,
+    topic: String,
+    state: tauri::State<'_, AppState>
 ) -> Result<ConsumerState> {
-    if let Some(consumer) = state.consumer_handles.lock().await.get(&consumer) {
-        Ok(consumer.get_state().await)
-    } else {
-        Ok(ConsumerState { is_running: false, record_count: 0 })
-    }
+    let consumer = state.get_cluster_by_id(&cluster_id).await.get_consumer(&topic).await;
+    Ok(consumer.get_consumer_state().await)
 }
 
 #[tauri::command]
-pub async fn stop_consumer(consumer: ConsumerInfo, state: tauri::State<'_, AppConsumers>) -> Result<()> {
-    let consumer_info = consumer;
-    let mut handles = state.consumer_handles.lock().await;
-    if let Some(consumer) = handles.get(&consumer_info) {
-        consumer.stop().await;
-        handles.remove(&consumer_info);
-        debug!("Consumer stopped and removed");
-        Ok(())
-    } else {
-        debug!("Consumer {:?} to stop not found", consumer_info);
-        Ok(())
-    }
+pub async fn stop_consumer(cluster_id: String, topic: String, state: tauri::State<'_, AppState>) -> Result<()> {
+    let consumer = state.get_cluster_by_id(&cluster_id).await.get_consumer(&topic).await;
+    todo!()
+    //Ok(consumer.stop().await?)
 }
 
 #[tauri::command]

@@ -10,6 +10,6 @@ pub mod schema_registry;
 
 pub use cluster::Cluster;
 pub use admin::{ TopicInfo, PartitionInfo };
-pub use configuration::ConfigStore;
+pub use configuration::{ ConfigStore, InsulatorConfig };
 pub use error::Error;
-pub use configuration::InsulatorConfig;
+pub use consumer::types::{ ConsumerState, ConsumerOffsetConfiguration };

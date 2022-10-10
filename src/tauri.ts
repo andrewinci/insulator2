@@ -56,12 +56,10 @@ export const getTopicNamesList = (cluster: Cluster): Promise<string[]> =>
     });
 
 export const getConsumerState = (cluster: Cluster, topic: string): Promise<ConsumerState> =>
-  invoke<ConsumerState>("get_consumer_state", { consumer: { cluster_id: cluster.id, topic } }).catch(
-    (err: TauriError) => {
-      addNotification({ type: "error", title: "Get Kafka consumer state", description: format(err) });
-      throw err;
-    }
-  );
+  invoke<ConsumerState>("get_consumer_state", { clusterId: cluster.id, topic }).catch((err: TauriError) => {
+    addNotification({ type: "error", title: "Get Kafka consumer state", description: format(err) });
+    throw err;
+  });
 
 export const getRecord = (index: number, cluster: Cluster, topic: string): Promise<KafkaRecord> =>
   invoke<KafkaRecord>("get_record", { consumer: { cluster_id: cluster.id, topic }, index }).catch((err: TauriError) => {
@@ -70,20 +68,15 @@ export const getRecord = (index: number, cluster: Cluster, topic: string): Promi
   });
 
 export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
-  invoke<void>("stop_consumer", {
-    consumer: { cluster_id: clusterId, topic },
-  }).catch((err: TauriError) =>
+  invoke<void>("stop_consumer", { cluster_id: clusterId, topic }).catch((err: TauriError) =>
     addNotification({ type: "error", title: "Stop Kafka record", description: format(err) })
   );
 
-export const startConsumer = (
-  cluster: Cluster,
-  topic: string,
-  from: ConsumerSettingsFrom,
-  useAvro: boolean
-): Promise<void> =>
+export const startConsumer = (cluster: Cluster, topic: string, offsetConfig: ConsumerSettingsFrom): Promise<void> =>
   invoke<void>("start_consumer", {
-    config: { cluster, topic, from, useAvro },
+    clusterId: cluster.id,
+    offsetConfig,
+    topic,
   }).catch((err: TauriError) =>
     addNotification({ type: "error", title: "Start Kafka record", description: format(err) })
   );

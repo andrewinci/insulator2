@@ -2,7 +2,7 @@ use std::{ sync::Arc, time::Duration };
 
 use async_trait::async_trait;
 use futures::{ lock::Mutex, StreamExt };
-use log::{ warn, debug };
+use log::{ warn, debug, trace };
 use rdkafka::{
     consumer::{ StreamConsumer, Consumer as ApacheKafkaConsumer },
     Offset,
@@ -22,7 +22,7 @@ use crate::lib::{
 
 #[async_trait]
 pub trait Consumer {
-    async fn start(self, topic: &str, offset_config: ConsumerOffsetConfiguration) -> Result<()>;
+    async fn start(&self, offset_config: ConsumerOffsetConfiguration) -> Result<()>;
     async fn stop(mut self) -> Result<()>;
     async fn get_record(&self, index: usize) -> Option<RawKafkaRecord>;
     async fn get_consumer_state(&self) -> ConsumerState;
@@ -30,42 +30,69 @@ pub trait Consumer {
 
 pub struct KafkaConsumer {
     topic: String,
-    consumer: StreamConsumer,
+    consumer: Arc<Mutex<StreamConsumer>>,
     loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>,
     records: Arc<Mutex<Vec<RawKafkaRecord>>>,
-    admin: Box<dyn Admin + Send + Sync + 'static>,
+    admin_client: Arc<dyn Admin + Send + Sync + 'static>,
 }
 
 impl KafkaConsumer {
     pub fn new(
         cluster_config: &ClusterConfig,
         topic: String,
-        admin_client: impl Admin + Send + Sync + 'static
+        admin_client: Arc<dyn Admin + Send + Sync + 'static>
     ) -> KafkaConsumer {
         KafkaConsumer {
-            consumer: create_consumer(cluster_config).expect("Unable to create kafka the consumer"),
+            consumer: Arc::new(
+                Mutex::new(create_consumer(cluster_config).expect("Unable to create kafka the consumer"))
+            ),
             topic,
             loop_handle: Arc::new(Mutex::new(None)),
             records: Arc::new(Mutex::new(Vec::new())),
-            admin: Box::new(admin_client),
+            admin_client,
         }
     }
 }
 
 #[async_trait]
 impl Consumer for KafkaConsumer {
-    async fn start(self, topic: &str, offset_config: ConsumerOffsetConfiguration) -> Result<()> {
+    async fn start(&self, offset_config: ConsumerOffsetConfiguration) -> Result<()> {
+        let topic = self.topic.clone();
         if self.loop_handle.lock().await.is_some() {
             warn!("Try to start an already running consumer");
             return Err(Error::ConsumerError { message: format!("A consumer is already running for {}", topic) });
         }
         // setup the consumer to run from
-        self.setup_consumer(&offset_config)?;
+        self.setup_consumer(&offset_config).await?;
+        // clone arcs for the closure below
+        let records = self.records.clone();
+        let consumer = self.consumer.clone();
         // set the handle to the consumer loop
         self.loop_handle
             .clone()
             .lock().await
-            .replace(tauri::async_runtime::spawn(async move { self.consumer_loop().await }));
+            .replace(
+                tauri::async_runtime::spawn(async move {
+                    // clear before starting the loop
+                    records.lock().await.clear();
+                    // infinite consumer loop
+                    debug!("Start consumer loop");
+                    loop {
+                        match consumer.lock().await.stream().next().await {
+                            Some(Ok(msg)) => {
+                                trace!("New record from {}", topic);
+                                records.clone().lock().await.push(KafkaConsumer::map_kafka_record(&msg.detach()));
+                            }
+                            Some(Err(err)) => {
+                                //todo: filter out end of partition
+                                //self.notify_error("Consumer error", &err.to_string());
+                            }
+                            None => (),
+                        }
+                    }
+                    debug!("Consumer loop completed");
+                })
+            );
         Ok(())
     }
 
@@ -92,26 +119,6 @@ impl Consumer for KafkaConsumer {
 }
 
 impl KafkaConsumer {
-    async fn consumer_loop(&self) {
-        // clear before starting the loop
-        self.records.lock().await.clear();
-        // infinite consumer loop
-        debug!("Start consumer loop");
-        loop {
-            match self.consumer.stream().next().await {
-                Some(Ok(msg)) => {
-                    self.records.clone().lock().await.push(KafkaConsumer::map_kafka_record(&msg.detach()));
-                }
-                Some(Err(err)) => {
-                    //todo: filter out end of partition
-                    //self.notify_error("Consumer error", &err.to_string());
-                }
-                None => (),
-            }
-        }
-        debug!("Consumer loop completed");
-    }
-
     fn map_kafka_record(msg: &OwnedMessage) -> RawKafkaRecord {
         RawKafkaRecord {
             payload: msg.payload().map(|v| v.to_owned()),
@@ -127,9 +134,9 @@ impl KafkaConsumer {
         }
     }
 
-    fn setup_consumer(&self, config: &ConsumerOffsetConfiguration) -> Result<()> {
+    async fn setup_consumer(&self, config: &ConsumerOffsetConfiguration) -> Result<()> {
         let topic_name = self.topic.clone();
-        let topic_info = self.admin.get_topic_info(&topic_name)?;
+        let topic_info = self.admin_client.get_topic_info(&topic_name)?;
 
         let mut assignment = TopicPartitionList::new();
 
@@ -162,6 +169,7 @@ impl KafkaConsumer {
                         .expect("Unable to configure the consumer to End");
                 });
                 self.consumer
+                    .lock().await
                     .offsets_for_times(timestamp_assignment, Duration::from_secs(10))?
                     .elements()
                     .iter()
@@ -172,7 +180,7 @@ impl KafkaConsumer {
                     });
             }
         }
-        self.consumer.assign(&assignment)?;
+        self.consumer.lock().await.assign(&assignment)?;
         Ok(())
     }
 }
