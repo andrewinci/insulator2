@@ -1,3 +1,5 @@
+use log::warn;
+
 use super::{ error::Result, AppState };
 use crate::lib::{ ConsumerOffsetConfiguration, ConsumerState, ParserMode, ParsedKafkaRecord };
 
@@ -38,7 +40,17 @@ pub async fn get_record(
     let cluster = state.get_cluster_by_id(&cluster_id).await;
     let consumer = cluster.get_consumer(&topic).await;
     match consumer.get_record(index).await {
-        Some(r) => Ok(Some(cluster.parser.parse_record(r, ParserMode::Avro).await?)),
+        Some(r) => {
+            let avro_record = cluster.parser.parse_record(r.clone(), ParserMode::Avro).await;
+            let parsed = match avro_record {
+                Ok(res) => res,
+                Err(_) => {
+                    warn!("Unable to parse record with avro. Topic: {} Index : {}", topic, index);
+                    cluster.parser.parse_record(r, ParserMode::String).await?
+                }
+            };
+            Ok(Some(parsed))
+        }
         None => Ok(None),
     }
 }

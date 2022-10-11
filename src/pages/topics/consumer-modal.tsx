@@ -26,7 +26,6 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
   const form = useForm<ConsumerForm>({
     initialValues: {
       from: "End",
-      useAvro: cluster.schemaRegistry ? true : false,
       dateInterval: [nowUTC, nowUTC],
       onlyBeginning: false,
       timeInterval: [zeroUTC, zeroUTC],
@@ -76,12 +75,6 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
           </Text>
         </Stack>
         <Divider />
-        <Checkbox
-          disabled={cluster.schemaRegistry === undefined}
-          label="Use Avro (with schema registry)"
-          {...form.getInputProps("useAvro", { type: "checkbox" })}
-        />
-        <Divider />
         <Title size={15}>Start consuming from</Title>
         <Chip.Group position="left" multiple={false} {...form.getInputProps("from")}>
           <Chip value="End">End</Chip>
@@ -121,7 +114,6 @@ export const dateTimeToUnixTimeMs = (dateUTC: Date, timeUTC: Date): number => {
 
 type ConsumerForm = {
   from: "Beginning" | "End" | "Custom";
-  useAvro: boolean;
   dateInterval: [Date, Date];
   timeInterval: [Date, Date];
   onlyBeginning: boolean;
