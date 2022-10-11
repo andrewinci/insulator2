@@ -23,6 +23,13 @@ reqwest = { version = "0.11", features = ["json"] }
 url = { version = "2", features = ["serde"] }
 tokio = { version = "1", features = ["full"] }
 futures = { version = "0.3", default-features = false }
+apache-avro = { version = "0.14.0" }
+log = { version = "0.4" }
+env_logger = { version = "0.9.0" }
+async-trait = "0.1.57"
+
+[dev-dependencies]
+httpmock = "0.6"
 
 [features]
 # by default Tauri runs in production mode

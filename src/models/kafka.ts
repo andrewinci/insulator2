@@ -2,9 +2,9 @@ export type ClusterAuthentication =
   | { Sasl: { username: string; password: string; scram: boolean } }
   | {
       Ssl: {
-        caLocation: string;
-        certificateLocation: string;
-        keyLocation: string;
+        ca: string;
+        certificate: string;
+        key: string;
         keyPassword?: string;
       };
     }
@@ -24,7 +24,7 @@ export type TopicInfo = {
 
 export type KafkaRecord = {
   key: string;
-  value: string;
+  payload: string;
   partition: number;
   offset: number;
   timestamp?: number;

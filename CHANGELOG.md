@@ -1,3 +1,26 @@
+# [1.7.0](https://github.com/andrewinci/insulator2/compare/v1.6.0...v1.7.0) (2022-10-11)
+
+### Bug Fixes
+
+- **BE:** Use a map topic consumer for each cluster ([0c8da4a](https://github.com/andrewinci/insulator2/commit/0c8da4a7a205d2aba45e97751e24b144db95a254))
+- **FE:** Use UTC in consumer setting ([1329aff](https://github.com/andrewinci/insulator2/commit/1329aff926e787982de8e24c368f113fbc75c7df))
+
+### Features
+
+- **BE:** re-implement the consumer ([a117ae0](https://github.com/andrewinci/insulator2/commit/a117ae019dc7c00aa674915d2fa91ca81490549c))
+- **BE:** Retrieve schema using the id from the kafka record ([3c724b5](https://github.com/andrewinci/insulator2/commit/3c724b5a625b84df924a3b7bb7d454062f5eb38f))
+- cache schemas by subject name ([1428c57](https://github.com/andrewinci/insulator2/commit/1428c57985605b4d203d9153a41ed6ae2da839eb))
+- **FE:** Save pem in config instead of using locations ([dd62156](https://github.com/andrewinci/insulator2/commit/dd62156084924bd2d9832b64e4e0780701848772))
+- **FE:** show error notifications ([a7e40ad](https://github.com/andrewinci/insulator2/commit/a7e40adf045ea744254cb2cc7837ca5dd348b285))
+- use avro by default and fallback on string on failure ([9603e2d](https://github.com/andrewinci/insulator2/commit/9603e2d1367f777fc006ed008be02863509750d3))
+- use consumer get record from lib ([a11343f](https://github.com/andrewinci/insulator2/commit/a11343f08f2e3cc9b518ab8cd706c53e18138594))
+- use consumer stop from lib ([1c8a68c](https://github.com/andrewinci/insulator2/commit/1c8a68c7a2b2c4db53b5bd8ff32807d64803417a))
+- Use lib to start consumer and get state ([0fd64c7](https://github.com/andrewinci/insulator2/commit/0fd64c760d42d8277b05daee65463f179fecc8c0))
+- use new lib for read/write configurations ([8f7ad00](https://github.com/andrewinci/insulator2/commit/8f7ad00a4dfa60f919594ac4e5221b322a97e2f0))
+- use new lib for schema registry ([cd5580c](https://github.com/andrewinci/insulator2/commit/cd5580cdabd563ee140765922fca2bf1f33e1c8e))
+- use new lib for the topic list ([d6d348c](https://github.com/andrewinci/insulator2/commit/d6d348c1e77380124b4ca70d2af0465bbfda806d))
+- use only one schema registry for each cluster ([00d2631](https://github.com/andrewinci/insulator2/commit/00d263177ad84b7e5eadebe7652d7636af69c123))
+
 # [1.6.0](https://github.com/andrewinci/insulator2/compare/v1.5.0...v1.6.0) (2022-10-03)
 
 ### Bug Fixes

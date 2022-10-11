@@ -2,16 +2,22 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Routing } from "./Routing";
-import { AppStateProvider } from "./providers";
+import { AppStateProvider, useNotifications } from "./providers";
 import { AppShell, MantineProvider } from "@mantine/core";
 import { useAppState } from "./providers/app-state-provider";
 import { SideBar } from "./components";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
 import "allotment/dist/style.css";
+import { listen } from "@tauri-apps/api/event";
+import { format, TauriError } from "./tauri";
 
 const App = () => {
   const { appState } = useAppState();
+  const { alert } = useNotifications();
+  listen<TauriError>("error", (event) => {
+    alert("Generic error", format(event.payload));
+  });
   return (
     <MantineProvider
       theme={{ colorScheme: appState.theme == "Dark" ? "dark" : "light" }}

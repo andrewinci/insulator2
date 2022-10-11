@@ -20,6 +20,11 @@ yarn
 yarn tauri dev
 ```
 
+### Logging
+
+Use `RUST_LOG="insulator2=debug"` to get debug logs in console for the insulator app only.  
+Use `RUST_LOG=debug` to enable debug log in any component (kafkard may be very noisy).
+
 ### Release
 
 Once happy with the latest main branch artifact, release running `yarn release`. (need the GH_TOKEN)

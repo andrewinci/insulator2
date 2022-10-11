@@ -1,16 +1,15 @@
 import { useMemo, useState } from "react";
-import { SchemaRegistry } from "../../models/kafka";
 import { useNotifications } from "../../providers";
 import { format, getSchemaNamesList, TauriError } from "../../tauri";
 import { ItemList } from "../common";
 
 type SchemaListProps = {
-  schemaRegistry: SchemaRegistry;
-  onTopicSelected: (topicName: string) => void;
+  clusterId: string;
+  onSubjectSelected: (subject: string) => void;
 };
 
 export const SchemaList = (props: SchemaListProps) => {
-  const { schemaRegistry, onTopicSelected } = props;
+  const { clusterId, onSubjectSelected: onTopicSelected } = props;
   const { alert, success } = useNotifications();
   const [state, setState] = useState<{ schemas: string[]; search?: string; loading: boolean }>({
     schemas: [],
@@ -19,7 +18,7 @@ export const SchemaList = (props: SchemaListProps) => {
 
   const updateSchemasList = () => {
     setState({ ...state, loading: true });
-    getSchemaNamesList(schemaRegistry)
+    getSchemaNamesList(clusterId)
       .then((schemas) => setState({ schemas, loading: false }))
       .then((_) => success("List of schemas successfully retrieved"))
       .catch((err: TauriError) => {
@@ -29,7 +28,7 @@ export const SchemaList = (props: SchemaListProps) => {
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => updateSchemasList(), [schemaRegistry]);
+  useMemo(() => updateSchemasList(), [clusterId]);
 
   return (
     <ItemList

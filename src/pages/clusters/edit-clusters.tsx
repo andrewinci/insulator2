@@ -57,7 +57,9 @@ export const AddNewCluster = () => {
 
   const navigate = useNavigate();
   const onSubmit = async (c: ClusterFormType) => {
+    console.log("Add new cluster", c);
     const newCluster = mapFormToCluster(c);
+    console.log("Add new cluster", newCluster);
     await addCluster(newCluster).then((_) => navigate("/clusters"));
   };
 
@@ -90,6 +92,7 @@ function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
 }
 
 function mapFormToCluster(c: ClusterFormType): Cluster {
+  console.log("Add new cluster", c);
   let authentication: ClusterAuthentication = "None";
   switch (c.authentication.type) {
     case "None":

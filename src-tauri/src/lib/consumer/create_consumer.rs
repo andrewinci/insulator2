@@ -1,9 +1,9 @@
-use rdkafka::{ consumer::{ StreamConsumer }, ClientConfig };
+use rdkafka::{ consumer::StreamConsumer, ClientConfig };
 
-use crate::{ configuration::{ Authentication, Cluster }, error::{ Result } };
+use crate::lib::{ configuration::{ ClusterConfig, AuthenticationConfig }, error::Result };
 
-pub fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
-    // todo: memoize
+pub fn create_consumer(cluster: &ClusterConfig) -> Result<StreamConsumer> {
+    //todo: try to use as less threads as possible for each consumer created
     let mut config = ClientConfig::new();
     config
         .set("enable.partition.eof", "true")
@@ -14,10 +14,10 @@ pub fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
         .set("api.version.request", "true")
         .set("debug", "all");
     match &cluster.authentication {
-        Authentication::None => {
+        AuthenticationConfig::None => {
             config.set("security.protocol", "PLAINTEXT");
         }
-        Authentication::Sasl { username, password, scram } => {
+        AuthenticationConfig::Sasl { username, password, scram } => {
             config
                 .set("security.protocol", "SASL_SSL")
                 .set("sasl.mechanisms", if *scram { "SCRAM-SHA-256" } else { "PLAIN" })
@@ -26,12 +26,12 @@ pub fn create_consumer(cluster: &Cluster) -> Result<StreamConsumer> {
                 .set("sasl.password", password);
         }
 
-        Authentication::Ssl { ca_location, certificate_location, key_location, key_password } => {
+        AuthenticationConfig::Ssl { ca, certificate, key, key_password } => {
             config
                 .set("security.protocol", "ssl")
-                .set("ssl.ca.location", ca_location)
-                .set("ssl.certificate.location", certificate_location)
-                .set("ssl.key.location", key_location);
+                .set("ssl.ca.pem", ca)
+                .set("ssl.certificate.pem", certificate)
+                .set("ssl.key.pem", key);
 
             if let Some(password) = key_password {
                 config.set("ssl.key.password", password);

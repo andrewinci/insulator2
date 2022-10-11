@@ -1,13 +1,5 @@
 import { invoke } from "@tauri-apps/api";
-import {
-  Cluster,
-  ConsumerSettingsFrom,
-  ConsumerState,
-  KafkaRecord,
-  SchemaRegistry,
-  SchemaVersion,
-  TopicInfo,
-} from "./models/kafka";
+import { Cluster, ConsumerSettingsFrom, ConsumerState, KafkaRecord, SchemaVersion, TopicInfo } from "./models/kafka";
 import { addNotification, AppState } from "./providers";
 
 export type TauriError = {
@@ -33,12 +25,12 @@ export const setConfiguration = (configuration: AppState): Promise<AppState> =>
 
 /** Schema Registry API **/
 
-export const getSchemaNamesList = (config: SchemaRegistry): Promise<string[]> => {
-  return invoke<string[]>("list_subjects", { config });
+export const getSchemaNamesList = (clusterId: string): Promise<string[]> => {
+  return invoke<string[]>("list_subjects", { clusterId });
 };
 
-export const getSchemaVersions = (subjectName: string, config: SchemaRegistry): Promise<SchemaVersion[]> =>
-  invoke<SchemaVersion[]>("get_schema", { subjectName, config })
+export const getSchemaVersions = (clusterId: string, subjectName: string): Promise<SchemaVersion[]> =>
+  invoke<SchemaVersion[]>("get_schema", { clusterId, subjectName })
     .then((res) => {
       //success(`${res.length} schema version found for ${subjectName}`);
       return res;
@@ -51,9 +43,10 @@ export const getSchemaVersions = (subjectName: string, config: SchemaRegistry): 
 /** Kafka API **/
 
 export const getTopicNamesList = (cluster: Cluster): Promise<string[]> =>
-  invoke<TopicInfo[]>("list_topic", { cluster })
+  invoke<TopicInfo[]>("list_topics", { clusterId: cluster.id })
     .then((topics) => topics.map((t) => t.name))
     .catch((err: TauriError) => {
+      console.error(err);
       addNotification({
         type: "error",
         title: `Unable to retrieve the list of topics for "${cluster?.name}"`,
@@ -63,29 +56,27 @@ export const getTopicNamesList = (cluster: Cluster): Promise<string[]> =>
     });
 
 export const getConsumerState = (cluster: Cluster, topic: string): Promise<ConsumerState> =>
-  invoke<ConsumerState>("get_consumer_state", { consumer: { cluster_id: cluster.id, topic } }).catch(
-    (err: TauriError) => {
-      addNotification({ type: "error", title: "Get Kafka consumer state", description: format(err) });
-      throw err;
-    }
-  );
+  invoke<ConsumerState>("get_consumer_state", { clusterId: cluster.id, topic }).catch((err: TauriError) => {
+    addNotification({ type: "error", title: "Get Kafka consumer state", description: format(err) });
+    throw err;
+  });
 
 export const getRecord = (index: number, cluster: Cluster, topic: string): Promise<KafkaRecord> =>
-  invoke<KafkaRecord>("get_record", { consumer: { cluster_id: cluster.id, topic }, index }).catch((err: TauriError) => {
+  invoke<KafkaRecord>("get_record", { index, clusterId: cluster.id, topic }).catch((err: TauriError) => {
     addNotification({ type: "error", title: "Get Kafka record", description: format(err) });
     throw err;
   });
 
 export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
-  invoke<void>("stop_consumer", {
-    consumer: { cluster_id: clusterId, topic },
-  }).catch((err: TauriError) =>
+  invoke<void>("stop_consumer", { clusterId, topic }).catch((err: TauriError) =>
     addNotification({ type: "error", title: "Stop Kafka record", description: format(err) })
   );
 
-export const startConsumer = (cluster: Cluster, topic: string, from: ConsumerSettingsFrom): Promise<void> =>
+export const startConsumer = (cluster: Cluster, topic: string, offsetConfig: ConsumerSettingsFrom): Promise<void> =>
   invoke<void>("start_consumer", {
-    config: { cluster, topic, from },
+    clusterId: cluster.id,
+    offsetConfig,
+    topic,
   }).catch((err: TauriError) =>
     addNotification({ type: "error", title: "Start Kafka record", description: format(err) })
   );

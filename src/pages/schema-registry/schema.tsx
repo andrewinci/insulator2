@@ -4,15 +4,15 @@ import { Prism } from "@mantine/prism";
 import { IconInfoCircle, IconVersions } from "@tabler/icons";
 import { useEffect, useState } from "react";
 import { SingleLineTitle } from "../../components";
-import { SchemaRegistry, SchemaVersion } from "../../models/kafka";
+import { SchemaVersion } from "../../models/kafka";
 import { getSchemaVersions } from "../../tauri";
 
 type SchemaProps = {
   schemaName: string;
-  schemaRegistry: SchemaRegistry;
+  clusterId: string;
 };
 
-export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
+export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
   const [state, setState] = useState<{
     schemas: SchemaVersion[];
     version?: number;
@@ -24,12 +24,12 @@ export const Schema = ({ schemaName, schemaRegistry }: SchemaProps) => {
   useEffect(() => {
     setState({ ...state, loading: true });
     const update = async () => {
-      const schemas = (await getSchemaVersions(schemaName, schemaRegistry)) ?? [];
+      const schemas = (await getSchemaVersions(clusterId, schemaName)) ?? [];
       setState({ schemas, version: lastSchemaVersion(schemas), loading: false });
     };
     update();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [schemaName, schemaRegistry]);
+  }, [schemaName, clusterId]);
 
   const getCurrentSchema = () => {
     if (state.schemas.length > 0) {

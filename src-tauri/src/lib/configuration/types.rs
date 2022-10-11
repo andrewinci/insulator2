@@ -1,8 +1,8 @@
-use serde::{ Deserialize, Serialize };
+use serde::{ Serialize, Deserialize };
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct InsulatorConfig {
-    pub clusters: Vec<Cluster>,
+    pub clusters: Vec<ClusterConfig>,
     pub theme: Option<Theme>,
     #[serde(rename = "showNotifications")]
     pub show_notifications: Option<bool>,
@@ -15,24 +15,21 @@ pub enum Theme {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct Cluster {
+pub struct ClusterConfig {
     pub id: String,
     pub name: String,
     pub endpoint: String,
-    pub authentication: Authentication,
+    pub authentication: AuthenticationConfig,
     #[serde(rename = "schemaRegistry")]
-    pub schema_registry: Option<SchemaRegistry>,
+    pub schema_registry: Option<SchemaRegistryConfig>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub enum Authentication {
+pub enum AuthenticationConfig {
     Ssl {
-        #[serde(rename = "caLocation")]
-        ca_location: String,
-        #[serde(rename = "certificateLocation")]
-        certificate_location: String,
-        #[serde(rename = "keyLocation")]
-        key_location: String,
+        ca: String,
+        certificate: String,
+        key: String,
         #[serde(rename = "keyPassword")]
         key_password: Option<String>,
     },
@@ -45,7 +42,7 @@ pub enum Authentication {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SchemaRegistry {
+pub struct SchemaRegistryConfig {
     pub endpoint: String,
     pub username: Option<String>,
     pub password: Option<String>,
