@@ -1,7 +1,7 @@
 use futures::future::BoxFuture;
 use futures::lock::Mutex;
 use futures::FutureExt;
-use log::debug;
+use log::{ debug, trace };
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -58,6 +58,7 @@ impl SchemaRegistryClient for CachedSchemaRegistry {
     fn get_schema(&self, subject_name: String) -> BoxFuture<Result<Vec<Schema>>> {
         (
             async move {
+                trace!("Getting schema {} by subject name.", subject_name);
                 let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
                 let versions: Vec<i32> = self.get(url.as_ref(), &self.auth).await?;
                 let mut schemas = Vec::<Schema>::new();
@@ -75,16 +76,16 @@ impl SchemaRegistryClient for CachedSchemaRegistry {
         (
             async move {
                 let mut cache = self.schema_cache.lock().await;
-                debug!("Getting schema {} by id.", id);
+                trace!("Getting schema {} by id.", id);
 
                 if let Some(cached) = cache.get(&id) {
-                    debug!("Schema found in cache");
+                    trace!("Schema found in cache");
                     Ok(cached.clone())
                 } else {
-                    debug!("Schema not found in cache, retrieving");
+                    trace!("Schema not found in cache, retrieving");
                     let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
                     let schema: GetSchemaByIdResult = self.get(url.as_ref(), &self.auth).await?;
-                    debug!("Updating cache");
+                    trace!("Updating cache");
                     cache.insert(id, schema.schema.clone());
                     Ok(schema.schema)
                 }

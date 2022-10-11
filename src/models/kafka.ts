@@ -24,7 +24,7 @@ export type TopicInfo = {
 
 export type KafkaRecord = {
   key: string;
-  value: string;
+  payload: string;
   partition: number;
   offset: number;
   timestamp?: number;
