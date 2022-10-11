@@ -13,3 +13,5 @@ pub use admin::{ TopicInfo, PartitionInfo };
 pub use configuration::{ ConfigStore, InsulatorConfig };
 pub use error::Error;
 pub use consumer::types::{ ConsumerState, ConsumerOffsetConfiguration };
+pub use parser::ParserMode;
+pub use types::ParsedKafkaRecord;

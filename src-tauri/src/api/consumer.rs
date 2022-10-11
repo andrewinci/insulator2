@@ -11,7 +11,7 @@ use crate::{
         Consumer,
         GenericConsumer,
     },
-    lib::{ ConsumerOffsetConfiguration, ConsumerState },
+    lib::{ ConsumerOffsetConfiguration, ConsumerState, ParserMode, ParsedKafkaRecord },
     schema_registry::CachedSchemaRegistry,
 };
 
@@ -49,16 +49,15 @@ pub async fn stop_consumer(cluster_id: String, topic: String, state: tauri::Stat
 
 #[tauri::command]
 pub async fn get_record(
-    consumer: ConsumerInfo,
     index: usize,
-    state: tauri::State<'_, AppConsumers>
-) -> Result<Option<KafkaRecord>> {
-    let consumer_info = consumer;
-    let handles = state.consumer_handles.lock().await;
-    if let Some(consumer) = handles.get(&consumer_info) {
-        Ok(consumer.get_record(index).await)
-    } else {
-        warn!("Consumer {:?} not found", consumer_info);
-        Ok(None)
+    cluster_id: String,
+    topic: String,
+    state: tauri::State<'_, AppState>
+) -> Result<Option<ParsedKafkaRecord>> {
+    let cluster = state.get_cluster_by_id(&cluster_id).await;
+    let consumer = cluster.get_consumer(&topic).await;
+    match consumer.get_record(index).await {
+        Some(r) => Ok(Some(cluster.parser.parse_record(r, ParserMode::Avro).await?)),
+        None => Ok(None),
     }
 }

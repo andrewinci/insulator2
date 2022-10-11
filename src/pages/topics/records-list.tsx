@@ -55,7 +55,7 @@ const KafkaRecordCard = ({
 }) => {
   const [record, setRecord] = useState<KafkaRecord>({
     key: "N/A",
-    value: "N/A",
+    payload: "N/A",
     partition: -1,
     offset: -1,
     timestamp: undefined,
@@ -77,7 +77,7 @@ const KafkaRecordCard = ({
         <LabelValue label="timestamp: " value={timestamp} />
       </Group>
       <CustomPrism mt={2} copyLabel="Copy" language={"json"}>
-        {record?.value ?? ""}
+        {record?.payload ?? ""}
       </CustomPrism>
     </Paper>
   );
