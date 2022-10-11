@@ -27,16 +27,22 @@ pub struct Cluster {
 
 impl Cluster {
     pub fn new(config: ClusterConfig) -> Cluster {
-        //todo: share schema registry client
+        let (schema_registry_client, parser) = if
+            let Some(SchemaRegistryConfig { endpoint, username, password }) = &config.schema_registry
+        {
+            let ptr: Arc<dyn SchemaRegistryClient + Send + Sync> = Arc::new(
+                CachedSchemaRegistry::new(endpoint.clone(), &username, &password)
+            );
+            (Some(ptr.clone()), RecordParser::new(Some(ptr.clone())))
+        } else {
+            (None, RecordParser::new(None))
+        };
         Cluster {
             config: config.clone(),
-            schema_registry_client: match build_schema_registry_client(config.schema_registry.clone()) {
-                Some(client) => Some(Arc::new(client)),
-                None => None,
-            },
+            schema_registry_client,
             consumers: Arc::new(Mutex::new(HashMap::new())),
             admin_client: Arc::new(KafkaAdmin::new(&config)),
-            parser: Arc::new(RecordParser::new(build_schema_registry_client(config.schema_registry.clone()))),
+            parser: Arc::new(parser),
         }
     }
 
@@ -50,12 +56,5 @@ impl Cluster {
             );
         }
         consumers.get(topic_name).expect("the consumer must exists").clone()
-    }
-}
-fn build_schema_registry_client(config: Option<SchemaRegistryConfig>) -> Option<CachedSchemaRegistry> {
-    if let Some(SchemaRegistryConfig { endpoint, username, password }) = config {
-        Some(CachedSchemaRegistry::new(endpoint, &username, &password))
-    } else {
-        None
     }
 }

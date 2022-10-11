@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use async_trait::async_trait;
 
 use crate::lib::{
@@ -23,7 +25,7 @@ pub struct RecordParser {
 }
 
 impl RecordParser {
-    pub fn new(schema_registry_client: Option<impl SchemaRegistryClient + Send + Sync + 'static>) -> RecordParser {
+    pub fn new(schema_registry_client: Option<Arc<dyn SchemaRegistryClient + Send + Sync>>) -> RecordParser {
         RecordParser {
             avro_parser: match schema_registry_client {
                 Some(client) => Some(AvroParser::new(client)),
