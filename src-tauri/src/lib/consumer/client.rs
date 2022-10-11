@@ -33,14 +33,14 @@ pub struct KafkaConsumer {
     consumer: Arc<Mutex<StreamConsumer>>,
     loop_handle: Arc<Mutex<Vec<JoinHandle<()>>>>,
     records: Arc<Mutex<Vec<RawKafkaRecord>>>,
-    admin_client: Arc<dyn Admin + Send + Sync + 'static>,
+    admin_client: Arc<dyn Admin + Send + Sync>,
 }
 
 impl KafkaConsumer {
     pub fn new(
         cluster_config: &ClusterConfig,
         topic: String,
-        admin_client: Arc<dyn Admin + Send + Sync + 'static>
+        admin_client: Arc<dyn Admin + Send + Sync>
     ) -> KafkaConsumer {
         KafkaConsumer {
             consumer: Arc::new(
