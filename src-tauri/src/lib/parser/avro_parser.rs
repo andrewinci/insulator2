@@ -1,4 +1,4 @@
-use std::io::Cursor;
+use std::{ io::Cursor, sync::Arc };
 
 use apache_avro::{ from_avro_datum, types::Value as AvroValue, Schema };
 use serde_json::{ Map, Value as JsonValue };
@@ -6,13 +6,13 @@ use serde_json::{ Map, Value as JsonValue };
 use crate::lib::{ schema_registry::SchemaRegistryClient, error::{ Result, Error } };
 
 pub struct AvroParser {
-    schema_registry_client: Box<dyn SchemaRegistryClient + Send + Sync>,
+    schema_registry_client: Arc<dyn SchemaRegistryClient + Send + Sync>,
 }
 
 impl AvroParser {
-    pub fn new(client: impl SchemaRegistryClient + Send + Sync + 'static) -> AvroParser {
+    pub fn new(schema_registry_client: Arc<dyn SchemaRegistryClient + Send + Sync>) -> AvroParser {
         AvroParser {
-            schema_registry_client: Box::new(client),
+            schema_registry_client,
         }
     }
 
