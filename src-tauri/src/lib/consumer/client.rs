@@ -1,4 +1,4 @@
-use std::{ sync::Arc, time::Duration };
+use std::{ sync::Arc, time::Duration, ops::Not };
 
 use async_trait::async_trait;
 use futures::{ lock::Mutex, StreamExt };
@@ -23,7 +23,7 @@ use crate::lib::{
 #[async_trait]
 pub trait Consumer {
     async fn start(&self, offset_config: ConsumerOffsetConfiguration) -> Result<()>;
-    async fn stop(mut self) -> Result<()>;
+    async fn stop(&self) -> Result<()>;
     async fn get_record(&self, index: usize) -> Option<RawKafkaRecord>;
     async fn get_consumer_state(&self) -> ConsumerState;
 }
@@ -31,7 +31,7 @@ pub trait Consumer {
 pub struct KafkaConsumer {
     topic: String,
     consumer: Arc<Mutex<StreamConsumer>>,
-    loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>,
+    loop_handle: Arc<Mutex<Vec<JoinHandle<()>>>>,
     records: Arc<Mutex<Vec<RawKafkaRecord>>>,
     admin_client: Arc<dyn Admin + Send + Sync + 'static>,
 }
@@ -47,7 +47,7 @@ impl KafkaConsumer {
                 Mutex::new(create_consumer(cluster_config).expect("Unable to create kafka the consumer"))
             ),
             topic,
-            loop_handle: Arc::new(Mutex::new(None)),
+            loop_handle: Arc::new(Mutex::new(vec![])),
             records: Arc::new(Mutex::new(Vec::new())),
             admin_client,
         }
@@ -58,7 +58,7 @@ impl KafkaConsumer {
 impl Consumer for KafkaConsumer {
     async fn start(&self, offset_config: ConsumerOffsetConfiguration) -> Result<()> {
         let topic = self.topic.clone();
-        if self.loop_handle.lock().await.is_some() {
+        if self.loop_handle.lock().await.is_empty().not() {
             warn!("Try to start an already running consumer");
             return Err(Error::ConsumerError { message: format!("A consumer is already running for {}", topic) });
         }
@@ -71,7 +71,7 @@ impl Consumer for KafkaConsumer {
         self.loop_handle
             .clone()
             .lock().await
-            .replace(
+            .push(
                 tauri::async_runtime::spawn(async move {
                     // clear before starting the loop
                     records.lock().await.clear();
@@ -96,13 +96,14 @@ impl Consumer for KafkaConsumer {
         Ok(())
     }
 
-    async fn stop(mut self) -> Result<()> {
-        if let Some(handle) = &*self.loop_handle.clone().lock().await {
-            //todo: find something better than abort
+    async fn stop(&self) -> Result<()> {
+        debug!("Consumer stopped");
+        let h = self.loop_handle.clone();
+        let mut handles = h.lock().await;
+        if let Some(handle) = handles.get(0) {
             handle.abort();
-            self.loop_handle = Arc::new(Mutex::new(None));
+            handles.clear();
         }
-
         Ok(())
     }
 
@@ -112,7 +113,7 @@ impl Consumer for KafkaConsumer {
 
     async fn get_consumer_state(&self) -> ConsumerState {
         ConsumerState {
-            is_running: self.loop_handle.clone().lock().await.is_some(),
+            is_running: self.loop_handle.clone().lock().await.is_empty().not(),
             record_count: self.records.lock().await.len(),
         }
     }

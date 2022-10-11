@@ -68,7 +68,7 @@ export const getRecord = (index: number, cluster: Cluster, topic: string): Promi
   });
 
 export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
-  invoke<void>("stop_consumer", { cluster_id: clusterId, topic }).catch((err: TauriError) =>
+  invoke<void>("stop_consumer", { clusterId, topic }).catch((err: TauriError) =>
     addNotification({ type: "error", title: "Stop Kafka record", description: format(err) })
   );
 

@@ -44,8 +44,7 @@ pub async fn get_consumer_state(
 #[tauri::command]
 pub async fn stop_consumer(cluster_id: String, topic: String, state: tauri::State<'_, AppState>) -> Result<()> {
     let consumer = state.get_cluster_by_id(&cluster_id).await.get_consumer(&topic).await;
-    todo!()
-    //Ok(consumer.stop().await?)
+    Ok(consumer.stop().await?)
 }
 
 #[tauri::command]
