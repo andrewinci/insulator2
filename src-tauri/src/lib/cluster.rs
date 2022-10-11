@@ -31,7 +31,7 @@ impl Cluster {
             let Some(SchemaRegistryConfig { endpoint, username, password }) = &config.schema_registry
         {
             let ptr: Arc<dyn SchemaRegistryClient + Send + Sync> = Arc::new(
-                CachedSchemaRegistry::new(endpoint.clone(), &username, &password)
+                CachedSchemaRegistry::new(endpoint.clone(), username, password)
             );
             (Some(ptr.clone()), RecordParser::new(Some(ptr.clone())))
         } else {

@@ -5,16 +5,16 @@ pub enum Error {
     AvroParse {
         message: String,
     },
-    IOError {
+    IO {
         message: String,
     },
-    JSONSerdeError {
+    JSONSerde {
         message: String,
     },
-    ConsumerError {
+    Consumer {
         message: String,
     },
-    KafkaError {
+    Kafka {
         message: String,
     },
 }
@@ -23,7 +23,7 @@ pub(super) type Result<T> = core::result::Result<T, Error>;
 
 impl From<std::io::Error> for Error {
     fn from(error: std::io::Error) -> Self {
-        Error::IOError {
+        Error::IO {
             message: error.to_string(),
         }
     }
@@ -31,7 +31,7 @@ impl From<std::io::Error> for Error {
 
 impl From<serde_json::Error> for Error {
     fn from(error: serde_json::Error) -> Self {
-        Error::JSONSerdeError {
+        Error::JSONSerde {
             message: error.to_string(),
         }
     }
@@ -39,7 +39,7 @@ impl From<serde_json::Error> for Error {
 
 impl From<KafkaError> for Error {
     fn from(error: KafkaError) -> Self {
-        Error::KafkaError {
+        Error::Kafka {
             message: format!("{}", error),
         }
     }

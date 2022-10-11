@@ -7,7 +7,7 @@ use rdkafka::consumer::{ Consumer, StreamConsumer };
 
 pub trait Admin {
     fn list_topics(&self) -> Result<Vec<TopicInfo>>;
-    fn get_topic_info(&self, topic_name: &String) -> Result<TopicInfo>;
+    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
 }
 
 pub struct KafkaAdmin {
@@ -27,13 +27,13 @@ impl Admin for KafkaAdmin {
         self.list_topics(None)
     }
 
-    fn get_topic_info(&self, topic_name: &String) -> Result<TopicInfo> {
+    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
         let info = self.list_topics(Some(topic_name))?;
         if info.len() == 1 {
             Ok(info.get(0).unwrap().clone())
         } else {
             warn!("Topic not found or more than one topic with the same name {}", topic_name);
-            Err(Error::KafkaError {
+            Err(Error::Kafka {
                 message: "Topic not found".into(),
             })
         }
