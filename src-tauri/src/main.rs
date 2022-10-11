@@ -1,12 +1,9 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 extern crate log;
 mod api;
-mod configuration;
-mod kafka;
-mod schema_registry;
 mod lib;
 
-use api::{ consumer::AppConsumers, AppState };
+use api::{ AppState };
 use crate::api::{
     admin::list_topics,
     configuration::{ get_configuration, write_configuration },
@@ -19,7 +16,6 @@ fn main() {
     tauri::Builder
         ::default()
         .manage(AppState::default())
-        .manage(AppConsumers::default())
         .invoke_handler(
             tauri::generate_handler![
                 get_configuration,

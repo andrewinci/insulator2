@@ -60,7 +60,7 @@ impl Consumer for KafkaConsumer {
         let topic = self.topic.clone();
         if self.loop_handle.lock().await.is_empty().not() {
             warn!("Try to start an already running consumer");
-            return Err(Error::ConsumerError { message: format!("A consumer is already running for {}", topic) });
+            return Err(Error::Consumer { message: format!("A consumer is already running for {}", topic) });
         }
         // setup the consumer to run from
         self.setup_consumer(&offset_config).await?;
@@ -83,14 +83,13 @@ impl Consumer for KafkaConsumer {
                                 trace!("New record from {}", topic);
                                 records.clone().lock().await.push(KafkaConsumer::map_kafka_record(&msg.detach()));
                             }
-                            Some(Err(err)) => {
+                            Some(Err(_err)) => {
                                 //todo: filter out end of partition
                                 //self.notify_error("Consumer error", &err.to_string());
                             }
                             None => (),
                         }
                     }
-                    debug!("Consumer loop completed");
                 })
             );
         Ok(())

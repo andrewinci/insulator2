@@ -1,24 +1,5 @@
-use futures::lock::Mutex;
-use log::{ debug, warn };
-use std::{ collections::HashMap, sync::Arc };
-
 use super::{ error::Result, AppState };
-use crate::{
-    api::error::TauriError,
-    kafka::consumer::{
-        parser::{ AvroParser, RecordParser, StringParser },
-        types::{ ConsumerConfig, ConsumerInfo, KafkaRecord },
-        Consumer,
-        GenericConsumer,
-    },
-    lib::{ ConsumerOffsetConfiguration, ConsumerState, ParserMode, ParsedKafkaRecord },
-    schema_registry::CachedSchemaRegistry,
-};
-
-#[derive(Default)]
-pub struct AppConsumers {
-    pub consumer_handles: Arc<Mutex<HashMap<ConsumerInfo, Consumer>>>,
-}
+use crate::lib::{ ConsumerOffsetConfiguration, ConsumerState, ParserMode, ParsedKafkaRecord };
 
 #[tauri::command]
 pub async fn start_consumer(

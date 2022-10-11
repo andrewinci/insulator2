@@ -27,10 +27,7 @@ pub struct RecordParser {
 impl RecordParser {
     pub fn new(schema_registry_client: Option<Arc<dyn SchemaRegistryClient + Send + Sync>>) -> RecordParser {
         RecordParser {
-            avro_parser: match schema_registry_client {
-                Some(client) => Some(AvroParser::new(client)),
-                None => None,
-            },
+            avro_parser: schema_registry_client.map(|client| AvroParser::new(client)),
         }
     }
 }
