@@ -1,3 +1,9 @@
+## [1.8.1](https://github.com/andrewinci/insulator2/compare/v1.8.0...v1.8.1) (2022-10-12)
+
+### Bug Fixes
+
+- **BE:** Use scale to parse avro decimals ([22c8ae8](https://github.com/andrewinci/insulator2/commit/22c8ae8a61fd2cd699315aeb47326ae8abd8235a))
+
 # [1.8.0](https://github.com/andrewinci/insulator2/compare/v1.7.0...v1.8.0) (2022-10-12)
 
 ### Features
