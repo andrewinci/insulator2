@@ -1,3 +1,9 @@
+# [1.8.0](https://github.com/andrewinci/insulator2/compare/v1.7.0...v1.8.0) (2022-10-12)
+
+### Features
+
+- parse avro fields ([1af8f8e](https://github.com/andrewinci/insulator2/commit/1af8f8ea0fb1061b5dec9a1d811994229029eecb))
+
 # [1.7.0](https://github.com/andrewinci/insulator2/compare/v1.6.0...v1.7.0) (2022-10-11)
 
 ### Bug Fixes
