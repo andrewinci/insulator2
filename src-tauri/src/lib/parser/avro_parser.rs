@@ -1,11 +1,11 @@
-use std::{ io::Cursor, sync::Arc, collections::HashMap };
+use std::{ collections::HashMap, io::Cursor, sync::Arc };
 
-use apache_avro::{ from_avro_datum, types::Value as AvroValue, Schema };
-use serde_json::{ Map, Value as JsonValue, json };
-use num_bigint::{ BigInt };
-use rust_decimal::{ Decimal };
+use apache_avro::{ from_avro_datum, schema::Name, types::Value as AvroValue, Schema };
+use num_bigint::BigInt;
+use rust_decimal::Decimal;
+use serde_json::{ json, Map, Value as JsonValue };
 
-use crate::lib::{ schema_registry::SchemaRegistryClient, error::{ Result, Error } };
+use crate::lib::{ error::{ Error, Result }, schema_registry::SchemaRegistryClient };
 
 pub struct AvroParser {
     schema_registry_client: Arc<dyn SchemaRegistryClient + Send + Sync>,
@@ -37,7 +37,7 @@ impl AvroParser {
         let record = from_avro_datum(&schema, &mut data, None).map_err(|err| Error::AvroParse {
             message: format!("{}\n{}", "Unable to parse the avro record", err),
         })?;
-        let json = map(&record, &schema)?;
+        let json = map(&record, &schema, &mut HashMap::new())?;
         let res = serde_json::to_string(&json).map_err(|err| Error::AvroParse {
             message: format!("{}\n{}", "Unable to map the avro record to json", err),
         })?; // todo: maybe pretty_print
@@ -52,8 +52,12 @@ fn get_schema_id(raw: &[u8]) -> Result<i32> {
     Ok(i32::from_be_bytes(arr))
 }
 
-fn map(a: &AvroValue, schema: &Schema) -> Result<JsonValue> {
-    match (a, schema) {
+fn map<'a>(
+    value: &AvroValue,
+    schema: &'a Schema,
+    ref_cache: &mut HashMap<&'a Name, &'a Schema> //cache to resolve avro references
+) -> Result<JsonValue> {
+    match (value, schema) {
         (AvroValue::Null, Schema::Null) => Ok(JsonValue::Null),
         (AvroValue::Boolean(v), Schema::Boolean) => Ok(json!(*v)),
         (AvroValue::Int(v), Schema::Int) => Ok(json!(*v)),
@@ -64,7 +68,7 @@ fn map(a: &AvroValue, schema: &Schema) -> Result<JsonValue> {
         (AvroValue::Array(v), Schema::Array(s)) => {
             let mut json_vec = Vec::new();
             for v in v.iter() {
-                json_vec.push(map(v, s)?);
+                json_vec.push(map(v, s, ref_cache)?);
             }
             Ok(JsonValue::Array(json_vec))
         }
@@ -72,15 +76,16 @@ fn map(a: &AvroValue, schema: &Schema) -> Result<JsonValue> {
             //todo: DRY
             let mut json_map = Map::new();
             for (k, v) in vec.iter() {
-                json_map.insert(k.clone(), map(v, s)?);
+                json_map.insert(k.clone(), map(v, s, ref_cache)?);
             }
             Ok(JsonValue::Object(json_map))
         }
-        (AvroValue::Record(vec), Schema::Record { name: _, aliases: _, doc: _, fields, lookup }) => {
+        (AvroValue::Record(vec), Schema::Record { name, fields, lookup, .. }) => {
+            ref_cache.insert(name, schema);
             let mut json_map = Map::new();
             for (k, v) in vec.iter() {
                 let field_index = lookup.get(k).unwrap_or_else(|| panic!("Missing field {}", k));
-                json_map.insert(k.clone(), map(v, &fields.get(*field_index).unwrap().schema)?);
+                json_map.insert(k.clone(), map(v, &fields.get(*field_index).unwrap().schema, ref_cache)?);
             }
             Ok(JsonValue::Object(json_map))
         }
@@ -108,23 +113,35 @@ fn map(a: &AvroValue, schema: &Schema) -> Result<JsonValue> {
                 .variants()
                 .get(*i as usize)
                 .expect("Missing schema in the union");
-            map(&**v, schema)
+            for s in s.variants() {
+                if let Schema::Record { name, .. } = s {
+                    ref_cache.insert(name, s);
+                }
+            }
+            map(&**v, schema, ref_cache)
         }
         (AvroValue::Enum(_, v), Schema::Enum { .. }) => Ok(json!(*v)),
         //todo: check representation in avro-json
-        (AvroValue::Fixed(_, v), Schema::Fixed { .. }) => Ok(json!(*v)),
-        (_, _) => panic!("Unexpected value/schema tuple"),
+        (AvroValue::Fixed(_, v), Schema::Fixed { name, .. }) => {
+            ref_cache.insert(name, schema);
+            Ok(json!(*v))
+        }
+        (value, Schema::Ref { name }) => {
+            let schema = ref_cache.get(name).expect("Missing Avro schema reference");
+            map(value, schema, ref_cache)
+        }
+        (_, s) => panic!("Unexpected value/schema tuple. Schema: {:?}", s),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::{ sync::Arc };
+    use std::sync::Arc;
 
-    use apache_avro::{ to_avro_datum, types::Record, Schema as ApacheAvroSchema, Writer, types::Value as AvroValue };
+    use apache_avro::{ to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer };
     use async_trait::async_trait;
 
-    use crate::lib::schema_registry::{ SchemaRegistryClient, Result, Schema };
+    use crate::lib::schema_registry::{ Result, Schema, SchemaRegistryClient };
 
     use super::{ get_schema_id, AvroParser };
     struct MockSchemaRegistry {
