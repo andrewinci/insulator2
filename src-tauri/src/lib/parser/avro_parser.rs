@@ -1,4 +1,4 @@
-use std::{ io::Cursor, sync::Arc };
+use std::{ io::Cursor, sync::Arc, collections::HashMap };
 
 use apache_avro::{ from_avro_datum, types::Value as AvroValue, Schema };
 use serde_json::{ Map, Value as JsonValue, json };
@@ -37,7 +37,7 @@ impl AvroParser {
         let record = from_avro_datum(&schema, &mut data, None).map_err(|err| Error::AvroParse {
             message: format!("{}\n{}", "Unable to parse the avro record", err),
         })?;
-        let json = map(&record)?;
+        let json = map(&record, &schema)?;
         let res = serde_json::to_string(&json).map_err(|err| Error::AvroParse {
             message: format!("{}\n{}", "Unable to map the avro record to json", err),
         })?; // todo: maybe pretty_print
@@ -52,61 +52,68 @@ fn get_schema_id(raw: &[u8]) -> Result<i32> {
     Ok(i32::from_be_bytes(arr))
 }
 
-fn map(a: &AvroValue) -> Result<JsonValue> {
-    match a {
-        AvroValue::Null => Ok(JsonValue::Null),
-        AvroValue::Boolean(v) => Ok(json!(*v)),
-        AvroValue::Int(v) => Ok(json!(*v)),
-        AvroValue::Long(v) => Ok(json!(*v)),
-        AvroValue::Float(v) => Ok(json!(*v)),
-        AvroValue::Double(v) => Ok(json!(*v)),
-        AvroValue::String(v) => Ok(json!(*v)),
-        AvroValue::Array(v) => {
+fn map(a: &AvroValue, schema: &Schema) -> Result<JsonValue> {
+    match (a, schema) {
+        (AvroValue::Null, Schema::Null) => Ok(JsonValue::Null),
+        (AvroValue::Boolean(v), Schema::Boolean) => Ok(json!(*v)),
+        (AvroValue::Int(v), Schema::Int) => Ok(json!(*v)),
+        (AvroValue::Long(v), Schema::Long) => Ok(json!(*v)),
+        (AvroValue::Float(v), Schema::Float) => Ok(json!(*v)),
+        (AvroValue::Double(v), Schema::Double) => Ok(json!(*v)),
+        (AvroValue::String(v), Schema::String) => Ok(json!(*v)),
+        (AvroValue::Array(v), Schema::Array(s)) => {
             let mut json_vec = Vec::new();
             for v in v.iter() {
-                json_vec.push(map(v)?);
+                json_vec.push(map(v, s)?);
             }
             Ok(JsonValue::Array(json_vec))
         }
-        AvroValue::Map(vec) => {
+        (AvroValue::Map(vec), Schema::Map(s)) => {
             //todo: DRY
             let mut json_map = Map::new();
             for (k, v) in vec.iter() {
-                json_map.insert(k.clone(), map(v)?);
+                json_map.insert(k.clone(), map(v, s)?);
             }
             Ok(JsonValue::Object(json_map))
         }
-        AvroValue::Record(vec) => {
+        (AvroValue::Record(vec), Schema::Record { name: _, aliases: _, doc: _, fields, lookup }) => {
             let mut json_map = Map::new();
             for (k, v) in vec.iter() {
-                json_map.insert(k.clone(), map(v)?);
+                let field_index = lookup.get(k).unwrap_or_else(|| panic!("Missing field {}", k));
+                json_map.insert(k.clone(), map(v, &fields.get(*field_index).unwrap().schema)?);
             }
             Ok(JsonValue::Object(json_map))
         }
-        AvroValue::Date(v) => Ok(json!(*v)),
-        AvroValue::TimeMillis(v) => Ok(json!(*v)),
-        AvroValue::TimeMicros(v) => Ok(json!(*v)),
-        AvroValue::TimestampMillis(v) => Ok(json!(*v)),
-        AvroValue::TimestampMicros(v) => Ok(json!(*v)),
-        AvroValue::Uuid(v) => Ok(json!(*v)),
+        (AvroValue::Date(v), Schema::Date) => Ok(json!(*v)),
+        (AvroValue::TimeMillis(v), Schema::TimeMillis) => Ok(json!(*v)),
+        (AvroValue::TimeMicros(v), Schema::TimeMicros) => Ok(json!(*v)),
+        (AvroValue::TimestampMillis(v), Schema::TimestampMillis) => Ok(json!(*v)),
+        (AvroValue::TimestampMicros(v), Schema::TimestampMicros) => Ok(json!(*v)),
+        (AvroValue::Uuid(v), Schema::Uuid) => Ok(json!(*v)),
         //todo: WIP
-        AvroValue::Bytes(v) => Ok(json!(*v)), //todo: this should be like "\u00FF"
-        AvroValue::Decimal(v) => {
+        (AvroValue::Bytes(v), Schema::Bytes) => Ok(json!(*v)), //todo: this should be like "\u00FF"
+        (AvroValue::Decimal(v), Schema::Decimal { precision: _, scale, inner: _ }) => {
             let arr = <Vec<u8>>::try_from(v).expect("Invalid decimal received");
             let value = BigInt::from_signed_bytes_be(&arr);
-            //todo: need to inject the scale from the schema
-            let scale = 2;
-            let decimal = Decimal::new(i64::try_from(value).expect("Unable to cast to i64"), scale);
+            let decimal = Decimal::new(i64::try_from(value).expect("Unable to cast to i64"), scale.to_owned() as u32);
             Ok(json!(decimal))
         }
-        AvroValue::Duration(v) => {
+        (AvroValue::Duration(v), Schema::Duration) => {
             //todo: check avro json representation
             Ok(json!(format!("{:?} months {:?} days {:?} millis", v.months(), v.days(), v.millis())))
         }
         //todo: use avro-json format
-        AvroValue::Union(_, v) => map(&**v),
-        AvroValue::Enum(_, v) => Ok(json!(*v)),
-        AvroValue::Fixed(_, v) => Ok(json!(*v)), //todo: check representation in avro-json
+        (AvroValue::Union(i, v), Schema::Union(s)) => {
+            let schema = s
+                .variants()
+                .get(*i as usize)
+                .expect("Missing schema in the union");
+            map(&**v, schema)
+        }
+        (AvroValue::Enum(_, v), Schema::Enum { .. }) => Ok(json!(*v)),
+        //todo: check representation in avro-json
+        (AvroValue::Fixed(_, v), Schema::Fixed { .. }) => Ok(json!(*v)),
+        (_, _) => panic!("Unexpected value/schema tuple"),
     }
 }
 
@@ -114,14 +121,7 @@ fn map(a: &AvroValue) -> Result<JsonValue> {
 mod tests {
     use std::{ sync::Arc };
 
-    use apache_avro::{
-        to_avro_datum,
-        types::Record,
-        Schema as ApacheAvroSchema,
-        Writer,
-        types::Value as AvroValue,
-        Decimal,
-    };
+    use apache_avro::{ to_avro_datum, types::Record, Schema as ApacheAvroSchema, Writer, types::Value as AvroValue };
     use async_trait::async_trait;
 
     use crate::lib::schema_registry::{ SchemaRegistryClient, Result, Schema };
