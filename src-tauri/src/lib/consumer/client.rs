@@ -2,13 +2,14 @@ use std::{ sync::Arc, time::Duration, ops::Not };
 
 use async_trait::async_trait;
 use futures::{ lock::Mutex, StreamExt };
-use log::{ warn, debug, trace };
+use log::{ warn, debug, trace, error };
 use rdkafka::{
     consumer::{ StreamConsumer, Consumer as ApacheKafkaConsumer },
     Offset,
     TopicPartitionList,
     Message,
     message::OwnedMessage,
+    error::KafkaError,
 };
 use tauri::async_runtime::JoinHandle;
 use crate::lib::{
@@ -67,6 +68,7 @@ impl Consumer for KafkaConsumer {
         // clone arcs for the closure below
         let records = self.records.clone();
         let consumer = self.consumer.clone();
+        let handle = self.loop_handle.clone();
         // set the handle to the consumer loop
         self.loop_handle
             .clone()
@@ -83,9 +85,14 @@ impl Consumer for KafkaConsumer {
                                 trace!("New record from {}", topic);
                                 records.clone().lock().await.push(KafkaConsumer::map_kafka_record(&msg.detach()));
                             }
-                            Some(Err(_err)) => {
-                                //todo: filter out end of partition
-                                //self.notify_error("Consumer error", &err.to_string());
+                            Some(Err(err)) => {
+                                if let KafkaError::PartitionEOF { .. } = err {
+                                    continue;
+                                }
+                                error!("An error occurs consuming from kafka: {}", err);
+                                //todo: self.notify_error("Consumer error", &err.to_string());
+                                KafkaConsumer::_stop(handle.clone()).await.expect("Unable to stop the consumer");
+                                break;
                             }
                             None => (),
                         }
@@ -96,14 +103,7 @@ impl Consumer for KafkaConsumer {
     }
 
     async fn stop(&self) -> Result<()> {
-        debug!("Consumer stopped");
-        let h = self.loop_handle.clone();
-        let mut handles = h.lock().await;
-        if let Some(handle) = handles.get(0) {
-            handle.abort();
-            handles.clear();
-        }
-        Ok(())
+        KafkaConsumer::_stop(self.loop_handle.clone()).await
     }
 
     async fn get_record(&self, index: usize) -> Option<RawKafkaRecord> {
@@ -119,6 +119,16 @@ impl Consumer for KafkaConsumer {
 }
 
 impl KafkaConsumer {
+    async fn _stop(loop_handle: Arc<Mutex<Vec<JoinHandle<()>>>>) -> Result<()> {
+        debug!("Consumer stopped");
+        let mut handles = loop_handle.lock().await;
+        if let Some(handle) = handles.get(0) {
+            handle.abort();
+            handles.clear();
+        }
+        Ok(())
+    }
+
     fn map_kafka_record(msg: &OwnedMessage) -> RawKafkaRecord {
         RawKafkaRecord {
             payload: msg.payload().map(|v| v.to_owned()),
