@@ -12,6 +12,7 @@ use rdkafka::{
     error::KafkaError,
 };
 use tauri::async_runtime::JoinHandle;
+use tokio::time::sleep;
 use crate::lib::{
     error::{ Result, Error },
     consumer::types::{ ConsumerOffsetConfiguration, ConsumerState },

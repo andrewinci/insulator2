@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use futures::lock::Mutex;
-use log::{ debug, trace };
+use log::{ trace };
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -56,11 +56,12 @@ impl SchemaRegistryClient for CachedSchemaRegistry {
 
     async fn get_schema(&self, subject_name: String) -> Result<Vec<Schema>> {
         let mut cache = self.schema_cache_by_subject.lock().await;
-        debug!("Get schema for {}", subject_name);
+        trace!("Get schema for {}", subject_name);
         if let Some(cached) = cache.get(&subject_name) {
             trace!("Schema found in cache");
             Ok(cached.clone())
         } else {
+            trace!("Schema not found in cache, retrieving");
             let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
             let versions: Vec<i32> = self.get(url.as_ref(), &self.auth).await?;
             let mut schemas = Vec::<Schema>::new();
@@ -76,16 +77,15 @@ impl SchemaRegistryClient for CachedSchemaRegistry {
 
     async fn get_schema_by_id(&self, id: i32) -> Result<String> {
         let mut cache = self.schema_cache_by_id.lock().await;
-        debug!("Getting schema {} by id.", id);
+        trace!("Getting schema {} by id.", id);
 
         if let Some(cached) = cache.get(&id) {
             trace!("Schema found in cache");
             Ok(cached.clone())
         } else {
-            debug!("Schema not found in cache, retrieving");
+            trace!("Schema not found in cache, retrieving");
             let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
             let schema: GetSchemaByIdResult = self.get(url.as_ref(), &self.auth).await?;
-            debug!("Updating cache");
             cache.insert(id, schema.schema.clone());
             Ok(schema.schema)
         }
