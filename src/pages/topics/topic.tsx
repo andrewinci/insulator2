@@ -4,7 +4,7 @@ import React from "react";
 import { Async } from "react-async";
 import { Cluster, ConsumerState } from "../../models/kafka";
 import { useCurrentCluster } from "../../providers";
-import { RecordsList } from "./records-list";
+import { RecordsList } from "./record-list";
 import { getConsumerState, getRecord, stopConsumer } from "../../tauri";
 import { SingleLineTitle } from "../../components";
 import { openConsumerModal } from "./consumer-modal";

@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
 import { Paper, Text, Group } from "@mantine/core";
 import { Prism } from "@mantine/prism";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { formatISO } from "date-fns";
 import React, { useEffect, useState } from "react";
-import { FixedSizeList } from "react-window";
 import { KafkaRecord } from "../../models/kafka";
 
 type RecordsListProps = {
@@ -22,14 +22,49 @@ export const RecordsList = (props: RecordsListProps) => {
     return () => window.removeEventListener("resize", handleWindowResize);
   }, []);
 
+  const parentRef = React.useRef<HTMLDivElement>(null);
+  // The virtualizer
+  const rowVirtualizer = useVirtualizer({
+    count: itemCount,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 125,
+  });
+
   return (
-    <FixedSizeList
-      height={state.windowHeight - (heightOffset ?? 0)}
-      itemCount={itemCount}
-      itemSize={125}
-      width={"100%"}>
-      {({ index, style }) => <KafkaRecordCard index={index} style={style} fetchRecord={fetchRecord} />}
-    </FixedSizeList>
+    <>
+      {/* The scrollable element for your list */}
+      <div
+        ref={parentRef}
+        style={{
+          height: state.windowHeight - (heightOffset ?? 0),
+          overflow: "auto", // Make it scroll!
+        }}>
+        {/* The large inner element to hold all of the items */}
+        <div
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            width: "100%",
+            position: "relative",
+          }}>
+          {/* Only the visible items in the virtualizer, manually positioned to be in view */}
+          {rowVirtualizer.getVirtualItems().map((virtualItem) => (
+            <KafkaRecordCard
+              key={virtualItem.index}
+              index={virtualItem.index}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: `${virtualItem.size}px`,
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+              fetchRecord={fetchRecord}
+            />
+          ))}
+        </div>
+      </div>
+    </>
   );
 };
 
