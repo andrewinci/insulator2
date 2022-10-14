@@ -8,7 +8,7 @@ export const TopicsPage = () => {
   const { clusterId, topicName } = useParams();
   return (
     <Allotment>
-      <Allotment.Pane minSize={300} maxSize={topicName ? 1000 : undefined}>
+      <Allotment.Pane minSize={455} maxSize={topicName ? 600 : undefined}>
         <TopicList onTopicSelected={(activeTopic) => navigate(`/cluster/${clusterId}/topic/${activeTopic}`)} />
       </Allotment.Pane>
       {topicName && (
