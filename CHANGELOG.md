@@ -1,3 +1,17 @@
+# [1.9.0](https://github.com/andrewinci/insulator2/compare/v1.8.1...v1.9.0) (2022-10-14)
+
+### Bug Fixes
+
+- **BE:** Resolve avro references ([367ad94](https://github.com/andrewinci/insulator2/commit/367ad943a1819580849f224f19d95991530b8b29))
+- **BE:** Stop consumer on error ([36f8033](https://github.com/andrewinci/insulator2/commit/36f80330cdb360f95de8f9922c39ae94636056a4))
+- **FE:** Fix flickering while consuming ([3db919f](https://github.com/andrewinci/insulator2/commit/3db919fa3123af53f74e7b06e3a296d44c936254))
+
+### Features
+
+- create topic ([09a94f4](https://github.com/andrewinci/insulator2/commit/09a94f44eaa2a05e03827e909fa1532f4ff490a5))
+- **FE:** Show number of schemas and topics ([59032e2](https://github.com/andrewinci/insulator2/commit/59032e2987581f6fd93ec2332fb23bae3fc14866))
+- **FE:** Show recent items in topics and schemas ([024180f](https://github.com/andrewinci/insulator2/commit/024180fe82fef4bdfd41cd825a15028826efc65c))
+
 ## [1.8.1](https://github.com/andrewinci/insulator2/compare/v1.8.0...v1.8.1) (2022-10-12)
 
 ### Bug Fixes

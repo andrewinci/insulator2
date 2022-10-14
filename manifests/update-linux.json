@@ -1,11 +1,11 @@
 {
-  "version": "v1.8.1",
-  "notes": "## [1.8.1](https://github.com/andrewinci/insulator2/compare/v1.8.0...v1.8.1) (2022-10-12)\n\n\n### Bug Fixes\n\n* **BE:** Use scale to parse avro decimals ([22c8ae8](https://github.com/andrewinci/insulator2/commit/22c8ae8a61fd2cd699315aeb47326ae8abd8235a))\n\n\n\n",
-  "pub_date": "2022-10-12T08:05:43Z",
+  "version": "v1.9.0",
+  "notes": "# [1.9.0](https://github.com/andrewinci/insulator2/compare/v1.8.1...v1.9.0) (2022-10-14)\n\n\n### Bug Fixes\n\n* **BE:** Resolve avro references ([367ad94](https://github.com/andrewinci/insulator2/commit/367ad943a1819580849f224f19d95991530b8b29))\n* **BE:** Stop consumer on error ([36f8033](https://github.com/andrewinci/insulator2/commit/36f80330cdb360f95de8f9922c39ae94636056a4))\n* **FE:** Fix flickering while consuming ([3db919f](https://github.com/andrewinci/insulator2/commit/3db919fa3123af53f74e7b06e3a296d44c936254))\n\n\n### Features\n\n* create topic ([09a94f4](https://github.com/andrewinci/insulator2/commit/09a94f44eaa2a05e03827e909fa1532f4ff490a5))\n* **FE:** Show number of schemas and topics ([59032e2](https://github.com/andrewinci/insulator2/commit/59032e2987581f6fd93ec2332fb23bae3fc14866))\n* **FE:** Show recent items in topics and schemas ([024180f](https://github.com/andrewinci/insulator2/commit/024180fe82fef4bdfd41cd825a15028826efc65c))\n\n\n\n",
+  "pub_date": "2022-10-14T08:23:10Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.8.1/insulator-2_1.8.1_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.9.0/insulator-2_1.9.0_amd64.AppImage.tar.gz"
     }
   }
 }
