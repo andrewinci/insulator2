@@ -43,6 +43,7 @@ export const TopicList = (props: TopicListProps) => {
   return (
     <ItemList
       title="Topics"
+      listId={`topic-${activeCluster?.id}`}
       loading={state.loading}
       items={state.topics}
       onItemSelected={onTopicSelected}

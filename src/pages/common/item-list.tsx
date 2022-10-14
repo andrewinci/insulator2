@@ -13,6 +13,7 @@ import {
   Badge,
   TextInput,
 } from "@mantine/core";
+import { useLocalStorage } from "@mantine/hooks";
 import { IconClock, IconList, IconPlus, IconRefresh, IconSearch, IconStar } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList } from "react-window";
@@ -24,6 +25,8 @@ const getWindowSize = () => {
 
 type ItemListProps = {
   title: string;
+  //unique identifier for the list used for local storage of recent visited items
+  listId: string;
   items: string[];
   loading: boolean;
   onItemSelected: (item: string) => void;
@@ -33,10 +36,13 @@ type ItemListProps = {
 
 // Common list page component
 export const ItemList = (props: ItemListProps) => {
-  const { onItemSelected, onRefreshList, onAddClick, items, title, loading } = props;
-  const [state, setState] = useState<{ search: string; recent: string[] }>({
-    search: "",
-    recent: [],
+  const { onItemSelected, onRefreshList, onAddClick, listId, items, title, loading } = props;
+  const [state, setState] = useLocalStorage<{ search: string; recent: string[] }>({
+    key: listId,
+    defaultValue: {
+      search: "",
+      recent: [],
+    },
   });
   const [windowSize, setWindowSize] = useState(getWindowSize());
 
