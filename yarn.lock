@@ -1052,10 +1052,10 @@
     lodash "^4.17.4"
     read-pkg-up "^7.0.0"
 
-"@tabler/icons@^1.103.0":
-  version "1.103.0"
-  resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-1.103.0.tgz#d112adc9301b229ceca99fd87949b0df56de79f8"
-  integrity sha512-oXUNf/Bn+88Xm+uWVht9MRRB/usDtjNrzKr7XhlB1P6V4vpWdG68OMffEONDbFqvEMC/eGYfhLI/PUHsR2XN4A==
+"@tabler/icons@^1.104.0":
+  version "1.104.0"
+  resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-1.104.0.tgz#58cc09d9e11617b1d124b48300831991f74659bf"
+  integrity sha512-5AOrHjay37RmpxLpo/Cm4sHCEWuPG/pBFqJE2d4JvILXKwFa4ROTlH6G9bnAZ+yGttEW8KF0DuIKLNgvcI78Ww==
 
 "@tanstack/react-virtual@^3.0.0-beta.18":
   version "3.0.0-beta.18"
