@@ -26,11 +26,12 @@ type ItemListProps = {
   loading: boolean;
   onItemSelected: (item: string) => void;
   onRefreshList: () => void;
+  onAddClick?: () => void;
 };
 
 // Common list page component
 export const ItemList = (props: ItemListProps) => {
-  const { onItemSelected, onRefreshList, items, title, loading } = props;
+  const { onItemSelected, onRefreshList, onAddClick, items, title, loading } = props;
   const [state, setState] = useState<{ search: string }>({ search: "" });
   const [windowSize, setWindowSize] = useState(getWindowSize());
 
@@ -51,7 +52,7 @@ export const ItemList = (props: ItemListProps) => {
         <Title>{title}</Title>
         <Group>
           <Tooltip label="Create a new item">
-            <ActionIcon disabled={true}>
+            <ActionIcon disabled={onAddClick == undefined} onClick={onAddClick}>
               <IconPlus></IconPlus>
             </ActionIcon>
           </Tooltip>

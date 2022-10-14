@@ -12,13 +12,11 @@ use rdkafka::{
     error::KafkaError,
 };
 use tauri::async_runtime::JoinHandle;
-use tokio::time::sleep;
 use crate::lib::{
     error::{ Result, Error },
     consumer::types::{ ConsumerOffsetConfiguration, ConsumerState },
     types::RawKafkaRecord,
-    consumer::create_consumer,
-    configuration::ClusterConfig,
+    configuration::{ ClusterConfig, build_kafka_client_config },
     admin::Admin,
 };
 
@@ -44,10 +42,11 @@ impl KafkaConsumer {
         topic: String,
         admin_client: Arc<dyn Admin + Send + Sync>
     ) -> KafkaConsumer {
+        let consumer: StreamConsumer = build_kafka_client_config(cluster_config)
+            .create()
+            .expect("Unable to create kafka the consumer");
         KafkaConsumer {
-            consumer: Arc::new(
-                Mutex::new(create_consumer(cluster_config).expect("Unable to create kafka the consumer"))
-            ),
+            consumer: Arc::new(Mutex::new(consumer)),
             topic,
             loop_handle: Arc::new(Mutex::new(vec![])),
             records: Arc::new(Mutex::new(Vec::new())),

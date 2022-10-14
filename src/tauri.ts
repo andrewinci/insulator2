@@ -42,6 +42,24 @@ export const getSchemaVersions = (clusterId: string, subjectName: string): Promi
 
 /** Kafka API **/
 
+export const createTopic = (
+  clusterId: string,
+  topicName: string,
+  partitions: number,
+  isr: number,
+  compacted: boolean
+): Promise<void> => {
+  return invoke<void>("create_topic", { clusterId, topicName, partitions, isr, compacted }).catch((err: TauriError) => {
+    console.error(err);
+    addNotification({
+      type: "error",
+      title: `Unable to create the new topic`,
+      description: format(err),
+    });
+    throw err;
+  });
+};
+
 export const getTopicNamesList = (cluster: Cluster): Promise<string[]> =>
   invoke<TopicInfo[]>("list_topics", { clusterId: cluster.id })
     .then((topics) => topics.map((t) => t.name))

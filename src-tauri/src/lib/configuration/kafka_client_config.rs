@@ -1,8 +1,8 @@
-use rdkafka::{ consumer::StreamConsumer, ClientConfig };
+use rdkafka::{ ClientConfig };
 
-use crate::lib::{ configuration::{ ClusterConfig, AuthenticationConfig }, error::Result };
+use crate::lib::{ configuration::{ ClusterConfig, AuthenticationConfig } };
 
-pub fn create_consumer(cluster: &ClusterConfig) -> Result<StreamConsumer> {
+pub fn build_kafka_client_config(cluster: &ClusterConfig) -> ClientConfig {
     //todo: try to use as less threads as possible for each consumer created
     let mut config = ClientConfig::new();
     config
@@ -38,6 +38,5 @@ pub fn create_consumer(cluster: &ClusterConfig) -> Result<StreamConsumer> {
             }
         }
     }
-    let client_config: StreamConsumer = config.create()?;
-    Ok(client_config)
+    config
 }

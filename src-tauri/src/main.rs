@@ -5,7 +5,7 @@ mod lib;
 
 use api::{ AppState };
 use crate::api::{
-    admin::list_topics,
+    admin::{ list_topics, create_topic },
     configuration::{ get_configuration, write_configuration },
     consumer::{ get_consumer_state, get_record, start_consumer, stop_consumer },
     schema_registry::{ get_schema, list_subjects },
@@ -21,6 +21,7 @@ fn main() {
                 get_configuration,
                 write_configuration,
                 list_topics,
+                create_topic,
                 list_subjects,
                 get_schema,
                 start_consumer,
