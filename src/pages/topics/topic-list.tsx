@@ -18,10 +18,10 @@ export const TopicList = (props: TopicListProps) => {
     loading: true,
   });
   const activeCluster = useCurrentCluster();
-  const updateTopicList = () => {
+  const updateTopicList = (force = false) => {
     if (activeCluster) {
       setState({ ...state, loading: true });
-      getTopicNamesList(activeCluster)
+      getTopicNamesList(activeCluster, force)
         .then((topics) => setState({ topics, loading: false }))
         .then((_) => success("List of topics updated"))
         .catch(() => {
@@ -47,7 +47,7 @@ export const TopicList = (props: TopicListProps) => {
       loading={state.loading}
       items={state.topics}
       onItemSelected={onTopicSelected}
-      onRefreshList={updateTopicList}
+      onRefreshList={() => updateTopicList(true)}
       onAddClick={() => onCreateTopic()} //
     />
   );

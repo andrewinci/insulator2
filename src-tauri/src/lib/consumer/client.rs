@@ -144,7 +144,7 @@ impl KafkaConsumer {
 
     async fn setup_consumer(&self, config: &ConsumerOffsetConfiguration) -> Result<()> {
         let topic_name = self.topic.clone();
-        let topic_info = self.admin_client.get_topic_info(&topic_name)?;
+        let topic_info = self.admin_client.get_topic_info(&topic_name).await?;
 
         let mut assignment = TopicPartitionList::new();
 
