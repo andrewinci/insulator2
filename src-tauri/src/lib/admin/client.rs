@@ -1,10 +1,10 @@
 use async_trait::async_trait;
 use log::{ debug, warn };
-use std::{ time::Duration, vec };
+use std::{ time::Duration, vec, collections::HashMap };
 
 use super::{ types::{ PartitionInfo, TopicInfo }, ConsumerGroupInfo };
 use crate::lib::{ configuration::{ build_kafka_client_config, ClusterConfig }, error::{ Error, Result } };
-use rdkafka::admin::AdminClient;
+use rdkafka::{ admin::AdminClient, consumer::ConsumerGroupMetadata, TopicPartitionList, Offset };
 use rdkafka::{
     admin::{ AdminOptions, NewTopic, TopicReplication },
     client::DefaultClientContext,
@@ -20,6 +20,7 @@ pub trait Admin {
 }
 
 pub struct KafkaAdmin {
+    config: ClusterConfig,
     timeout: Duration,
     consumer: StreamConsumer,
     admin_client: AdminClient<DefaultClientContext>,
@@ -28,11 +29,12 @@ pub struct KafkaAdmin {
 impl KafkaAdmin {
     pub fn new(config: &ClusterConfig) -> KafkaAdmin {
         KafkaAdmin {
+            config: config.clone(),
             timeout: Duration::from_secs(30),
-            consumer: build_kafka_client_config(config)
+            consumer: build_kafka_client_config(config, None)
                 .create()
                 .expect("Unable to create a consumer for the admin client."),
-            admin_client: build_kafka_client_config(config).create().expect("Unable to build the admin client"),
+            admin_client: build_kafka_client_config(config, None).create().expect("Unable to build the admin client"),
         }
     }
 }
@@ -63,6 +65,7 @@ impl Admin for KafkaAdmin {
             replication: TopicReplication::Fixed(isr),
         };
         let opts = AdminOptions::new();
+
         let res = self.admin_client.create_topics(vec![&new_topic], &opts).await?;
         let res = res.get(0).expect("Create topic: missing result");
         match res {
@@ -81,7 +84,7 @@ impl Admin for KafkaAdmin {
 
     fn list_consumer_groups(&self) -> Result<Vec<ConsumerGroupInfo>> {
         let groups = self.consumer.fetch_group_list(None, self.timeout)?;
-        debug!("{:?}", groups.groups());
+        debug!("{:?}", groups.groups()[0].members().len());
         let groups_info: Vec<ConsumerGroupInfo> = groups
             .groups()
             .iter()
@@ -89,8 +92,48 @@ impl Admin for KafkaAdmin {
                 name: g.name().into(),
             })
             .collect();
+
+        // POC
+        // create a consumer with all the topics and partitions
+        let consumer_group_name = "payements-api".as_ref();
+        let consumer: StreamConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
+            .create()
+            .expect("Unable to build the admin client");
+
+        let metadata = consumer.fetch_metadata(None, self.timeout).unwrap();
+        // build topic/partition assignment
+        let mut topic_partition_lst = TopicPartitionList::new();
+        metadata
+            .topics()
+            .iter()
+            .for_each(|t|
+                t
+                    .partitions()
+                    .iter()
+                    .for_each(|p| {
+                        topic_partition_lst.add_partition(t.name(), p.id());
+                    })
+            );
+        consumer.assign(&topic_partition_lst).unwrap();
+        // allow up to 2 minutes for big clusters
+        let res = consumer.committed(Duration::from_secs(120)).unwrap();
+        let topic_partition_offset: Vec<_> = res
+            .elements()
+            .iter()
+            .filter(|tpo| tpo.offset() != Offset::Invalid)
+            .map(|r| TopicPartitionOffset { topic: r.topic().into(), partition_id: r.partition(), offset: r.offset() })
+            .collect();
+        debug!("Committed{:?}", topic_partition_offset);
+
         Ok(groups_info)
     }
+}
+
+#[derive(Debug)]
+struct TopicPartitionOffset {
+    topic: String,
+    partition_id: i32,
+    offset: Offset,
 }
 
 impl KafkaAdmin {
