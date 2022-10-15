@@ -1,4 +1,4 @@
-use crate::{ lib::{ Error, schema_registry::SchemaRegistryError } };
+use crate::lib::{ schema_registry::SchemaRegistryError, Error };
 use serde::{ Deserialize, Serialize };
 pub type Result<T> = std::result::Result<T, TauriError>;
 
@@ -18,7 +18,10 @@ impl From<Error> for TauriError {
             Error::Consumer { message } => ("Kafka Consumer error", message),
             Error::Kafka { message } => ("Kafka error", message),
         };
-        TauriError { error_type: error_type.into(), message }
+        TauriError {
+            error_type: error_type.into(),
+            message,
+        }
     }
 }
 

@@ -12,3 +12,8 @@ pub struct TopicInfo {
     pub name: String,
     pub partitions: Vec<PartitionInfo>,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ConsumerGroupInfo {
+    pub name: String,
+}

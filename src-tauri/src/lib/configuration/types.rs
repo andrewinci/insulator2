@@ -1,4 +1,4 @@
-use serde::{ Serialize, Deserialize };
+use serde::{ Deserialize, Serialize };
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct InsulatorConfig {
@@ -38,7 +38,8 @@ pub enum AuthenticationConfig {
         password: String,
         scram: bool,
     },
-    #[default] None,
+    #[default]
+    None,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

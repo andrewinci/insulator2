@@ -1,24 +1,26 @@
 use async_trait::async_trait;
-use log::{ warn, debug };
+use log::{ debug, warn };
 use std::{ time::Duration, vec };
 
-use super::types::{ PartitionInfo, TopicInfo };
-use crate::lib::{ configuration::{ ClusterConfig, build_kafka_client_config }, error::{ Error, Result } };
-use rdkafka::{
-    consumer::{ Consumer, StreamConsumer },
-    client::DefaultClientContext,
-    admin::{ NewTopic, TopicReplication, AdminOptions },
-};
+use super::{ types::{ PartitionInfo, TopicInfo }, ConsumerGroupInfo };
+use crate::lib::{ configuration::{ build_kafka_client_config, ClusterConfig }, error::{ Error, Result } };
 use rdkafka::admin::AdminClient;
+use rdkafka::{
+    admin::{ AdminOptions, NewTopic, TopicReplication },
+    client::DefaultClientContext,
+    consumer::{ Consumer, StreamConsumer },
+};
 
 #[async_trait]
 pub trait Admin {
     fn list_topics(&self) -> Result<Vec<TopicInfo>>;
     fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
+    fn list_consumer_groups(&self) -> Result<Vec<ConsumerGroupInfo>>;
 }
 
 pub struct KafkaAdmin {
+    timeout: Duration,
     consumer: StreamConsumer,
     admin_client: AdminClient<DefaultClientContext>,
 }
@@ -26,6 +28,7 @@ pub struct KafkaAdmin {
 impl KafkaAdmin {
     pub fn new(config: &ClusterConfig) -> KafkaAdmin {
         KafkaAdmin {
+            timeout: Duration::from_secs(30),
             consumer: build_kafka_client_config(config)
                 .create()
                 .expect("Unable to create a consumer for the admin client."),
@@ -69,17 +72,32 @@ impl Admin for KafkaAdmin {
             }
             Err(err) => {
                 warn!("{:?}", err);
-                Err(Error::Kafka { message: format!("Unable to create the topic. {} {}", err.0, err.1) })
+                Err(Error::Kafka {
+                    message: format!("Unable to create the topic. {} {}", err.0, err.1),
+                })
             }
         }
+    }
+
+    fn list_consumer_groups(&self) -> Result<Vec<ConsumerGroupInfo>> {
+        let groups = self.consumer.fetch_group_list(None, self.timeout)?;
+        debug!("{:?}", groups.groups());
+        let groups_info: Vec<ConsumerGroupInfo> = groups
+            .groups()
+            .iter()
+            .map(|g| ConsumerGroupInfo {
+                name: g.name().into(),
+            })
+            .collect();
+        Ok(groups_info)
     }
 }
 
 impl KafkaAdmin {
-    pub fn list_topics(&self, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
+    fn list_topics(&self, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
         //todo: cache them
         let topics: Vec<TopicInfo> = self.consumer
-            .fetch_metadata(topic, Duration::from_secs(30))?
+            .fetch_metadata(topic, self.timeout)?
             .topics()
             .iter()
             .map(|t| TopicInfo {

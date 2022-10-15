@@ -1,13 +1,13 @@
 use async_trait::async_trait;
 use futures::lock::Mutex;
-use log::{ trace };
+use log::trace;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::sync::Arc;
 use url::Url;
 
+use super::error::Result;
 use super::types::{ BasicAuth, GetSchemaByIdResult, Schema };
-use super::{ error::Result };
 
 #[async_trait]
 pub trait SchemaRegistryClient {
@@ -110,7 +110,7 @@ impl CachedSchemaRegistry {
 
 #[cfg(test)]
 mod tests {
-    use httpmock::{ MockServer, Method::GET };
+    use httpmock::{ Method::GET, MockServer };
 
     use super::{ CachedSchemaRegistry, SchemaRegistryClient };
 

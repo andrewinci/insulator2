@@ -3,12 +3,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::lib::{
-    types::{ ParsedKafkaRecord, RawKafkaRecord },
-    error::{ Result, Error },
+    error::{ Error, Result },
     schema_registry::SchemaRegistryClient,
+    types::{ ParsedKafkaRecord, RawKafkaRecord },
 };
 
-use super::{ string_parser::parse_string, avro_parser::AvroParser };
+use super::{ avro_parser::AvroParser, string_parser::parse_string };
 
 pub enum ParserMode {
     String,
@@ -36,7 +36,9 @@ impl RecordParser {
 impl Parser for RecordParser {
     async fn parse_record(&self, record: RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord> {
         let RawKafkaRecord { payload, key, topic, timestamp, partition, offset } = record;
-        let avro_parser = self.avro_parser.as_ref().ok_or(Error::AvroParse { message: "Missing avro parser".into() })?;
+        let avro_parser = self.avro_parser.as_ref().ok_or(Error::AvroParse {
+            message: "Missing avro parser".into(),
+        })?;
         let (key, payload) = match mode {
             ParserMode::String => (key.map(|v| parse_string(&v)), payload.map(|v| parse_string(&v))),
             ParserMode::Avro =>

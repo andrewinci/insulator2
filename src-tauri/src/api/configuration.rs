@@ -1,7 +1,7 @@
 use log::debug;
 
-use crate::lib::{ ConfigStore, InsulatorConfig };
 use super::error::Result;
+use crate::lib::{ ConfigStore, InsulatorConfig };
 
 #[tauri::command]
 pub fn get_configuration() -> Result<InsulatorConfig> {

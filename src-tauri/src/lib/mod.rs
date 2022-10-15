@@ -1,17 +1,17 @@
-mod types;
-mod consumer;
 mod admin;
-mod parser;
-mod configuration;
 mod cluster;
+mod configuration;
+mod consumer;
 mod error;
+mod parser;
+mod types;
 
 pub mod schema_registry;
 
+pub use admin::{ ConsumerGroupInfo, PartitionInfo, TopicInfo };
 pub use cluster::Cluster;
-pub use admin::{ TopicInfo, PartitionInfo };
 pub use configuration::{ ConfigStore, InsulatorConfig };
+pub use consumer::types::{ ConsumerOffsetConfiguration, ConsumerState };
 pub use error::Error;
-pub use consumer::types::{ ConsumerState, ConsumerOffsetConfiguration };
 pub use parser::ParserMode;
 pub use types::ParsedKafkaRecord;

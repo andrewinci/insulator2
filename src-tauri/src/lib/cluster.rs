@@ -1,16 +1,14 @@
-use std::{ sync::Arc, collections::HashMap };
+use std::{ collections::HashMap, sync::Arc };
 
 use futures::lock::Mutex;
 use log::debug;
 
-use crate::{
-    lib::{
-        schema_registry::{ SchemaRegistryClient, CachedSchemaRegistry },
-        consumer::{ Consumer },
-        admin::{ Admin, KafkaAdmin },
-        parser::{ Parser, RecordParser },
-        configuration::{ ClusterConfig, SchemaRegistryConfig },
-    },
+use crate::lib::{
+    admin::{ Admin, KafkaAdmin },
+    configuration::{ ClusterConfig, SchemaRegistryConfig },
+    consumer::Consumer,
+    parser::{ Parser, RecordParser },
+    schema_registry::{ CachedSchemaRegistry, SchemaRegistryClient },
 };
 
 use super::consumer::KafkaConsumer;

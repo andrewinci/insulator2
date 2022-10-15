@@ -42,6 +42,18 @@ export const getSchemaVersions = (clusterId: string, subjectName: string): Promi
 
 /** Kafka API **/
 
+export const getConsumerGroups = (clusterId: string) => {
+  return invoke<{ name: string }[]>("list_consumer_groups", { clusterId }).catch((err: TauriError) => {
+    console.error(err);
+    addNotification({
+      type: "error",
+      title: `Unable to retrieve the list of consumer groups`,
+      description: format(err),
+    });
+    throw err;
+  });
+};
+
 export const createTopic = (
   clusterId: string,
   topicName: string,

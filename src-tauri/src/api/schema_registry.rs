@@ -1,5 +1,5 @@
-use log::debug;
 use crate::lib::schema_registry::Schema;
+use log::debug;
 
 use super::{ error::{ Result, TauriError }, AppState };
 

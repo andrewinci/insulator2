@@ -1,24 +1,24 @@
-use std::{ sync::Arc, time::Duration, ops::Not };
+use std::{ ops::Not, sync::Arc, time::Duration };
 
+use crate::lib::{
+    admin::Admin,
+    configuration::{ build_kafka_client_config, ClusterConfig },
+    consumer::types::{ ConsumerOffsetConfiguration, ConsumerState },
+    error::{ Error, Result },
+    types::RawKafkaRecord,
+};
 use async_trait::async_trait;
 use futures::{ lock::Mutex, StreamExt };
-use log::{ warn, debug, trace, error };
+use log::{ debug, error, trace, warn };
 use rdkafka::{
-    consumer::{ StreamConsumer, Consumer as ApacheKafkaConsumer },
+    consumer::{ Consumer as ApacheKafkaConsumer, StreamConsumer },
+    error::KafkaError,
+    message::OwnedMessage,
+    Message,
     Offset,
     TopicPartitionList,
-    Message,
-    message::OwnedMessage,
-    error::KafkaError,
 };
 use tauri::async_runtime::JoinHandle;
-use crate::lib::{
-    error::{ Result, Error },
-    consumer::types::{ ConsumerOffsetConfiguration, ConsumerState },
-    types::RawKafkaRecord,
-    configuration::{ ClusterConfig, build_kafka_client_config },
-    admin::Admin,
-};
 
 #[async_trait]
 pub trait Consumer {
@@ -61,7 +61,9 @@ impl Consumer for KafkaConsumer {
         let topic = self.topic.clone();
         if self.loop_handle.lock().await.is_empty().not() {
             warn!("Try to start an already running consumer");
-            return Err(Error::Consumer { message: format!("A consumer is already running for {}", topic) });
+            return Err(Error::Consumer {
+                message: format!("A consumer is already running for {}", topic),
+            });
         }
         // setup the consumer to run from
         self.setup_consumer(&offset_config).await?;
