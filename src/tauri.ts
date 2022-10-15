@@ -42,8 +42,8 @@ export const getSchemaVersions = (clusterId: string, subjectName: string): Promi
 
 /** Kafka API **/
 
-export const getConsumerGroups = (clusterId: string) => {
-  return invoke<{ name: string }[]>("list_consumer_groups", { clusterId }).catch((err: TauriError) => {
+export const getConsumerGroups = (clusterId: string): Promise<string[]> => {
+  return invoke<string[]>("list_consumer_groups", { clusterId }).catch((err: TauriError) => {
     console.error(err);
     addNotification({
       type: "error",
