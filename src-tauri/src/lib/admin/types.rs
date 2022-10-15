@@ -16,12 +16,12 @@ pub struct TopicInfo {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ConsumerGroupInfo {
     pub name: String,
-    pub topic_list: Vec<TopicPartitionOffset>,
+    pub offsets: Vec<TopicPartitionOffset>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TopicPartitionOffset {
-    topic: String,
-    partition_id: i32,
-    offset: i64,
+    pub topic: String,
+    pub partition_id: i32,
+    pub offset: i64,
 }

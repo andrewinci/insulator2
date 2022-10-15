@@ -63,3 +63,14 @@ export type ConsumerSettings = {
   topic: string;
   from: ConsumerSettingsFrom;
 };
+
+export type ConsumerGroupInfo = {
+  name: string;
+  offsets: TopicPartitionOffset[];
+};
+
+export type TopicPartitionOffset = {
+  topic: string;
+  partition_id: number;
+  offset: number;
+};

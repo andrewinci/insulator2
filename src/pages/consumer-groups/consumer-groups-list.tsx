@@ -32,7 +32,7 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
 
   return (
     <ItemList
-      title="Consumers"
+      title="CGroups"
       listId={`consumer-groups-${clusterId}`}
       loading={state.loading}
       items={state.consumers}

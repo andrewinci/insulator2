@@ -12,7 +12,7 @@ export const SchemasPage = () => {
   if (schemaRegistry && schemaRegistry.endpoint) {
     return (
       <Allotment>
-        <Allotment.Pane minSize={455} maxSize={schemaName ? 600 : undefined}>
+        <Allotment.Pane minSize={430} maxSize={schemaName ? 600 : undefined}>
           <SchemaList
             clusterId={clusterId!}
             onSubjectSelected={(activeSchema) => navigate(`/cluster/${clusterId}/schema/${activeSchema}`)}

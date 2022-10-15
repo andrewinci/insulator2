@@ -1,22 +1,24 @@
 import { Allotment } from "allotment";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { ConsumerGroup } from "./consumer-group";
 import { ConsumerGroupsList } from "./consumer-groups-list";
 
 export const ConsumerGroupsPage = () => {
-  const { clusterId, schemaName } = useParams();
+  const { clusterId, consumerName } = useParams();
+  const navigate = useNavigate();
   return (
     <Allotment>
-      <Allotment.Pane minSize={455} maxSize={schemaName ? 600 : undefined}>
+      <Allotment.Pane minSize={430} maxSize={consumerName ? 600 : undefined}>
         <ConsumerGroupsList
           clusterId={clusterId!}
-          onConsumerSelected={(selectedConsumer) => console.log(selectedConsumer)}
+          onConsumerSelected={(selectedConsumer) => navigate(`/cluster/${clusterId}/consumer/${selectedConsumer}`)}
         />
       </Allotment.Pane>
-      {/* {schemaName && (
-          <Allotment.Pane minSize={300}>
-            <Schema clusterId={clusterId!} schemaName={schemaName} />
-          </Allotment.Pane>
-        )} */}
+      {consumerName && (
+        <Allotment.Pane minSize={300}>
+          <ConsumerGroup name={consumerName} clusterId={clusterId!} />
+        </Allotment.Pane>
+      )}
     </Allotment>
   );
 };
