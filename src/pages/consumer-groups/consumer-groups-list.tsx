@@ -19,7 +19,7 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
   const updateSchemasList = () => {
     setState({ ...state, loading: true });
     getConsumerGroups(clusterId)
-      .then((consumers) => setState({ consumers: consumers.map((c) => c.name), loading: false }))
+      .then((consumers) => setState({ consumers, loading: false }))
       .then((_) => success("List of consumer groups successfully retrieved"))
       .catch((err: TauriError) => {
         alert(`Unable to retrieve the list of consumers.`, format(err));

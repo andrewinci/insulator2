@@ -17,7 +17,8 @@ pub trait Admin {
     async fn list_topics(&self, force: bool) -> Result<Vec<TopicInfo>>;
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
-    fn list_consumer_groups(&self) -> Result<Vec<ConsumerGroupInfo>>;
+    fn list_consumer_groups(&self) -> Result<Vec<String>>;
+    async fn get_consumer_group_info(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
 }
 
 pub struct KafkaAdmin {
@@ -96,17 +97,18 @@ impl Admin for KafkaAdmin {
         }
     }
 
-    fn list_consumer_groups(&self) -> Result<Vec<ConsumerGroupInfo>> {
+    fn list_consumer_groups(&self) -> Result<Vec<String>> {
         let groups = self.consumer.fetch_group_list(None, self.timeout)?;
         debug!("{:?}", groups.groups()[0].members().len());
-        let groups_info: Vec<ConsumerGroupInfo> = groups
+        let group_names: Vec<_> = groups
             .groups()
             .iter()
-            .map(|g| ConsumerGroupInfo {
-                name: g.name().into(),
-            })
+            .map(|g| g.name().to_string())
             .collect();
+        Ok(group_names)
+    }
 
+    async fn get_consumer_group_info(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo> {
         // // POC
         // // create a consumer with all the topics and partitions
         // let consumer_group_name = "payements-api".as_ref();
@@ -138,8 +140,7 @@ impl Admin for KafkaAdmin {
         //     .map(|r| TopicPartitionOffset { topic: r.topic().into(), partition_id: r.partition(), offset: r.offset() })
         //     .collect();
         // debug!("Committed{:?}", topic_partition_offset);
-
-        Ok(groups_info)
+        todo!()
     }
 }
 

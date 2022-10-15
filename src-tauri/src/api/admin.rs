@@ -30,10 +30,7 @@ pub async fn create_topic(
 }
 
 #[tauri::command]
-pub async fn list_consumer_groups(
-    cluster_id: String,
-    state: tauri::State<'_, AppState>
-) -> Result<Vec<ConsumerGroupInfo>> {
+pub async fn list_consumer_groups(cluster_id: String, state: tauri::State<'_, AppState>) -> Result<Vec<String>> {
     debug!("Retrieve the list of consumer groups");
     let cluster = state.get_cluster_by_id(&cluster_id).await;
     Ok(cluster.admin_client.list_consumer_groups()?)
