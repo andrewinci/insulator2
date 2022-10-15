@@ -1,6 +1,7 @@
 use async_trait::async_trait;
+use futures::lock::Mutex;
 use log::{ debug, warn };
-use std::{ time::Duration, vec, collections::HashMap };
+use std::{ time::Duration, vec, collections::HashMap, sync::Arc };
 
 use super::{ types::{ PartitionInfo, TopicInfo }, ConsumerGroupInfo };
 use crate::lib::{ configuration::{ build_kafka_client_config, ClusterConfig }, error::{ Error, Result } };
@@ -13,8 +14,8 @@ use rdkafka::{
 
 #[async_trait]
 pub trait Admin {
-    fn list_topics(&self) -> Result<Vec<TopicInfo>>;
-    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
+    async fn list_topics(&self, force: bool) -> Result<Vec<TopicInfo>>;
+    async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<ConsumerGroupInfo>>;
 }
@@ -24,6 +25,7 @@ pub struct KafkaAdmin {
     timeout: Duration,
     consumer: StreamConsumer,
     admin_client: AdminClient<DefaultClientContext>,
+    topics: Arc<Mutex<Vec<TopicInfo>>>,
 }
 
 impl KafkaAdmin {
@@ -35,25 +37,37 @@ impl KafkaAdmin {
                 .create()
                 .expect("Unable to create a consumer for the admin client."),
             admin_client: build_kafka_client_config(config, None).create().expect("Unable to build the admin client"),
+            topics: Arc::new(Mutex::new(vec![])),
         }
     }
 }
 
 #[async_trait]
 impl Admin for KafkaAdmin {
-    fn list_topics(&self) -> Result<Vec<TopicInfo>> {
-        self.list_topics(None)
+    async fn list_topics(&self, force: bool) -> Result<Vec<TopicInfo>> {
+        let mut topics = self.topics.lock().await;
+        if force || topics.len() == 0 {
+            debug!("Clear topics cache");
+            topics.clear();
+            topics.extend(self.list_topics(None)?);
+        }
+        Ok(topics.to_vec())
     }
 
-    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
-        let info = self.list_topics(Some(topic_name))?;
-        if info.len() == 1 {
-            Ok(info.get(0).unwrap().clone())
+    async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
+        let topics = self.topics.lock().await;
+        if let Some(topic_info) = topics.iter().find(|t| t.name == topic_name) {
+            return Ok(topic_info.clone());
         } else {
-            warn!("Topic not found or more than one topic with the same name {}", topic_name);
-            Err(Error::Kafka {
-                message: "Topic not found".into(),
-            })
+            let info = self.list_topics(Some(topic_name))?;
+            if info.len() == 1 {
+                Ok(info.get(0).unwrap().clone())
+            } else {
+                warn!("Topic not found or more than one topic with the same name {}", topic_name);
+                Err(Error::Kafka {
+                    message: "Topic not found".into(),
+                })
+            }
         }
     }
 
@@ -93,52 +107,44 @@ impl Admin for KafkaAdmin {
             })
             .collect();
 
-        // POC
-        // create a consumer with all the topics and partitions
-        let consumer_group_name = "payements-api".as_ref();
-        let consumer: StreamConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
-            .create()
-            .expect("Unable to build the admin client");
+        // // POC
+        // // create a consumer with all the topics and partitions
+        // let consumer_group_name = "payements-api".as_ref();
+        // let consumer: StreamConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
+        //     .create()
+        //     .expect("Unable to build the admin client");
 
-        let metadata = consumer.fetch_metadata(None, self.timeout).unwrap();
-        // build topic/partition assignment
-        let mut topic_partition_lst = TopicPartitionList::new();
-        metadata
-            .topics()
-            .iter()
-            .for_each(|t|
-                t
-                    .partitions()
-                    .iter()
-                    .for_each(|p| {
-                        topic_partition_lst.add_partition(t.name(), p.id());
-                    })
-            );
-        consumer.assign(&topic_partition_lst).unwrap();
-        // allow up to 2 minutes for big clusters
-        let res = consumer.committed(Duration::from_secs(120)).unwrap();
-        let topic_partition_offset: Vec<_> = res
-            .elements()
-            .iter()
-            .filter(|tpo| tpo.offset() != Offset::Invalid)
-            .map(|r| TopicPartitionOffset { topic: r.topic().into(), partition_id: r.partition(), offset: r.offset() })
-            .collect();
-        debug!("Committed{:?}", topic_partition_offset);
+        // let metadata = consumer.fetch_metadata(None, self.timeout).unwrap();
+        // // build topic/partition assignment
+        // let mut topic_partition_lst = TopicPartitionList::new();
+        // metadata
+        //     .topics()
+        //     .iter()
+        //     .for_each(|t|
+        //         t
+        //             .partitions()
+        //             .iter()
+        //             .for_each(|p| {
+        //                 topic_partition_lst.add_partition(t.name(), p.id());
+        //             })
+        //     );
+        // consumer.assign(&topic_partition_lst).unwrap();
+        // // allow up to 2 minutes for big clusters
+        // let res = consumer.committed(Duration::from_secs(120)).unwrap();
+        // let topic_partition_offset: Vec<_> = res
+        //     .elements()
+        //     .iter()
+        //     .filter(|tpo| tpo.offset() != Offset::Invalid)
+        //     .map(|r| TopicPartitionOffset { topic: r.topic().into(), partition_id: r.partition(), offset: r.offset() })
+        //     .collect();
+        // debug!("Committed{:?}", topic_partition_offset);
 
         Ok(groups_info)
     }
 }
 
-#[derive(Debug)]
-struct TopicPartitionOffset {
-    topic: String,
-    partition_id: i32,
-    offset: Offset,
-}
-
 impl KafkaAdmin {
     fn list_topics(&self, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
-        //todo: cache them
         let topics: Vec<TopicInfo> = self.consumer
             .fetch_metadata(topic, self.timeout)?
             .topics()

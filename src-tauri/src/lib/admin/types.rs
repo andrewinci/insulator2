@@ -17,3 +17,10 @@ pub struct TopicInfo {
 pub struct ConsumerGroupInfo {
     pub name: String,
 }
+
+#[derive(Debug)]
+struct TopicPartitionOffset {
+    topic: String,
+    partition_id: i32,
+    offset: i64,
+}

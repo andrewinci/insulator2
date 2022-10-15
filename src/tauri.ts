@@ -72,8 +72,8 @@ export const createTopic = (
   });
 };
 
-export const getTopicNamesList = (cluster: Cluster): Promise<string[]> =>
-  invoke<TopicInfo[]>("list_topics", { clusterId: cluster.id })
+export const getTopicNamesList = (cluster: Cluster, force?: boolean): Promise<string[]> =>
+  invoke<TopicInfo[]>("list_topics", { clusterId: cluster.id, force })
     .then((topics) => topics.map((t) => t.name))
     .catch((err: TauriError) => {
       console.error(err);
