@@ -51,10 +51,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
         "resizable": true,
         "title": "Insulator 2",
-        "width": 800
+        "minWidth": 1200,
+        "minHeight": 800
       }
     ]
   }

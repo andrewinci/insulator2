@@ -1,5 +1,13 @@
 import { invoke } from "@tauri-apps/api";
-import { Cluster, ConsumerSettingsFrom, ConsumerState, KafkaRecord, SchemaVersion, TopicInfo } from "./models/kafka";
+import {
+  Cluster,
+  ConsumerGroupInfo,
+  ConsumerSettingsFrom,
+  ConsumerState,
+  KafkaRecord,
+  SchemaVersion,
+  TopicInfo,
+} from "./models/kafka";
 import { addNotification, AppState } from "./providers";
 
 export type TauriError = {
@@ -41,6 +49,20 @@ export const getSchemaVersions = (clusterId: string, subjectName: string): Promi
     });
 
 /** Kafka API **/
+
+export const describeConsumerGroup = (clusterId: string, consumerGroupName: string): Promise<ConsumerGroupInfo> => {
+  return invoke<ConsumerGroupInfo>("describe_consumer_groups", { clusterId, consumerGroupName }).catch(
+    (err: TauriError) => {
+      console.error(err);
+      addNotification({
+        type: "error",
+        title: `Unable to describe the consumer group`,
+        description: format(err),
+      });
+      throw err;
+    }
+  );
+};
 
 export const getConsumerGroups = (clusterId: string): Promise<string[]> => {
   return invoke<string[]>("list_consumer_groups", { clusterId }).catch((err: TauriError) => {
