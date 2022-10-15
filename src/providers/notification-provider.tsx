@@ -24,8 +24,8 @@ export const useNotifications = () => {
   const { showNotifications } = appState;
   return {
     alert: (title?: string, description?: string) => addNotification({ type: "error", title, description }),
-    success: (title?: string, description?: string) =>
-      showNotifications
+    success: (title?: string, description?: string, forceShow = false) =>
+      showNotifications || forceShow
         ? addNotification({ type: "ok", title, description })
         : console.log((title ?? "") + (description ?? "")),
   };
