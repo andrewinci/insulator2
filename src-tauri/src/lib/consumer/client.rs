@@ -12,7 +12,6 @@ use futures::{ lock::Mutex, StreamExt };
 use log::{ debug, error, trace, warn };
 use rdkafka::{
     consumer::{ Consumer as ApacheKafkaConsumer, StreamConsumer },
-    error::KafkaError,
     message::OwnedMessage,
     Message,
     Offset,
@@ -42,7 +41,7 @@ impl KafkaConsumer {
         topic: String,
         admin_client: Arc<dyn Admin + Send + Sync>
     ) -> KafkaConsumer {
-        let consumer: StreamConsumer = build_kafka_client_config(cluster_config)
+        let consumer: StreamConsumer = build_kafka_client_config(cluster_config, None)
             .create()
             .expect("Unable to create kafka the consumer");
         KafkaConsumer {
@@ -88,9 +87,6 @@ impl Consumer for KafkaConsumer {
                                 records.clone().lock().await.push(KafkaConsumer::map_kafka_record(&msg.detach()));
                             }
                             Some(Err(err)) => {
-                                if let KafkaError::PartitionEOF { .. } = err {
-                                    continue;
-                                }
                                 error!("An error occurs consuming from kafka: {}", err);
                                 //todo: self.notify_error("Consumer error", &err.to_string());
                                 KafkaConsumer::_stop(handle.clone()).await.expect("Unable to stop the consumer");

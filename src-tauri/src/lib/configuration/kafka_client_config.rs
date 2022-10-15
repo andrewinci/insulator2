@@ -2,15 +2,15 @@ use rdkafka::ClientConfig;
 
 use crate::lib::configuration::{ AuthenticationConfig, ClusterConfig };
 
-pub fn build_kafka_client_config(cluster: &ClusterConfig) -> ClientConfig {
+pub fn build_kafka_client_config(cluster: &ClusterConfig, group_id: Option<&str>) -> ClientConfig {
     //todo: try to use as less threads as possible for each consumer created
     let mut config = ClientConfig::new();
+    let group_id = group_id.unwrap_or("insulator-2");
     config
-        .set("enable.partition.eof", "true")
         .set("bootstrap.servers", &cluster.endpoint)
         .set("session.timeout.ms", "6000")
         .set("enable.auto.commit", "false")
-        .set("group.id", "insulator-2")
+        .set("group.id", group_id)
         .set("api.version.request", "true")
         .set("debug", "all");
     match &cluster.authentication {
