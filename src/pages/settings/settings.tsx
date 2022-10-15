@@ -1,5 +1,6 @@
 import { Button, Checkbox, Container, Divider, Select, Stack, Title, Text } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
+import { IconTrash } from "@tabler/icons";
 import { useNotifications } from "../../providers";
 import { AppTheme, useAppState } from "../../providers/app-state-provider";
 
@@ -8,12 +9,14 @@ export const Settings = () => {
   const { success } = useNotifications();
   const clearFavorites = () => {
     openConfirmModal({
-      title: "Clear favorites",
-      children: <Text size="sm">Are you sure to delete all favorites topics, schemas and consumer groups?</Text>,
+      title: "Clear cache",
+      children: (
+        <Text size="sm">Are you sure to delete all favorites and recent topics, schemas and consumer groups?</Text>
+      ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
       onConfirm: () => {
         localStorage.clear();
-        success("Favorites cache cleaned", undefined, true);
+        success("Cache cleared", undefined, true);
       },
     });
   };
@@ -42,7 +45,9 @@ export const Settings = () => {
           checked={!appState.showNotifications}
           onChange={(c) => setAppState({ ...appState, showNotifications: !c.target.checked })}
         />
-        <Button onClick={clearFavorites}>Clear favorites ❌</Button>
+        <Button onClick={clearFavorites}>
+          <IconTrash size={18} /> Clear cache
+        </Button>
       </Stack>
     </Container>
   );

@@ -12,9 +12,10 @@ import {
   Tabs,
   Badge,
   TextInput,
+  Grid,
 } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
-import { IconClock, IconList, IconPlus, IconRefresh, IconSearch, IconStar } from "@tabler/icons";
+import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconSearch, IconStar } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList } from "react-window";
 
@@ -36,11 +37,18 @@ type ItemListProps = {
 
 // Common list page component
 export const ItemList = (props: ItemListProps) => {
-  const { onItemSelected, onRefreshList, onAddClick, listId, items, title, loading } = props;
-  const [state, setState] = useLocalStorage<{ search: string; recent: string[] }>({
+  const { onItemSelected, onRefreshList, onAddClick } = props;
+  const { listId, items, title, loading } = props;
+  const [state, setState] = useLocalStorage<{
+    search: string;
+    recent: string[];
+    favorites: string[];
+    selected?: string;
+  }>({
     key: listId,
     defaultValue: {
       search: "",
+      favorites: [],
       recent: [],
     },
   });
@@ -55,10 +63,10 @@ export const ItemList = (props: ItemListProps) => {
   const filteredItems = useMemo(
     () => ({
       all: items.filter((t) => t.toLowerCase().includes(state.search ?? "")).sort(),
-      recent: state.recent.filter((t) => t.toLowerCase().includes(state.search ?? "")).sort(),
-      favorites: [],
+      recent: state.recent.filter((t) => t.toLowerCase().includes(state.search ?? "")).reverse(),
+      favorites: state.favorites.filter((t) => t.toLowerCase().includes(state.search ?? "")),
     }),
-    [items, state.recent, state.search]
+    [items, state.recent, state.search, state.favorites]
   );
 
   const tabPanel = (title: string, panelItems: string[]) => (
@@ -71,19 +79,48 @@ export const ItemList = (props: ItemListProps) => {
       {!loading && panelItems.length > 0 ? (
         <FixedSizeList height={windowSize.innerHeight - 150} itemCount={panelItems.length} itemSize={38} width={"100%"}>
           {({ index, style }) => (
-            <NavLink
-              onClick={() => {
-                const selectedItem = panelItems[index];
-                // avoid duplicates in the recent list
-                const newRecent = state.recent.filter((i) => i != selectedItem);
-                newRecent.push(selectedItem);
-                setState((s) => ({ ...s, recent: newRecent }));
-                onItemSelected(selectedItem);
-              }}
-              style={style}
-              noWrap
-              label={panelItems[index]}
-            />
+            <Grid style={style} grow gutter={0} justify={"flex-start"} align="center">
+              <Grid.Col span="auto" sx={{ maxWidth: "30px" }}>
+                <ActionIcon
+                  color="yellow"
+                  radius="xl"
+                  onClick={() => {
+                    // toggle item from the favorites list
+                    const newItem = panelItems[index];
+                    if (state.favorites.includes(newItem))
+                      setState((s) => ({ ...s, favorites: s.favorites.filter((f) => f != newItem) }));
+                    else setState((s) => ({ ...s, favorites: [...s.favorites, newItem] }));
+                  }}>
+                  <IconStar
+                    fill={filteredItems.favorites.includes(panelItems[index]) ? "yellow" : undefined}
+                    size={16}
+                    stroke={1.5}
+                  />
+                </ActionIcon>
+              </Grid.Col>
+              <Grid.Col span={11}>
+                <NavLink
+                  sx={(theme) => ({
+                    "&:hover": {
+                      backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.blue[0],
+                    },
+                    borderRadius: "5px",
+                  })}
+                  active={panelItems[index] == state.selected}
+                  onClick={() => {
+                    const selectedItem = panelItems[index];
+                    // avoid duplicates in the recent list
+                    const newRecent = state.recent.filter((i) => i != selectedItem);
+                    newRecent.push(selectedItem);
+                    setState((s) => ({ ...s, recent: newRecent, selected: selectedItem }));
+                    onItemSelected(selectedItem);
+                  }}
+                  rightSection={<IconChevronRight size={12} stroke={1.5} />}
+                  noWrap
+                  label={panelItems[index]}
+                />
+              </Grid.Col>
+            </Grid>
           )}
         </FixedSizeList>
       ) : (
@@ -126,18 +163,13 @@ export const ItemList = (props: ItemListProps) => {
       <Tabs mt={10} variant="pills" defaultValue="all">
         <Tabs.List grow>
           <TabHeader title="All" icon="all" count={props.items.length} filtered={filteredItems.all.length} />
-          <TabHeader title="Recent" icon="recent" count={state.recent.length} filtered={filteredItems.recent.length} />
           <TabHeader title="Favorites" icon="favorites" count={0} filtered={filteredItems.favorites.length} />
+          <TabHeader title="Recent" icon="recent" count={state.recent.length} filtered={filteredItems.recent.length} />
         </Tabs.List>
 
         {tabPanel("all", filteredItems.all)}
+        {tabPanel("favorites", filteredItems.favorites)}
         {tabPanel("recent", filteredItems.recent)}
-
-        <Tabs.Panel value="favorites" pt="xs">
-          <Center mt={20}>
-            <Text>Empty list</Text>
-          </Center>
-        </Tabs.Panel>
       </Tabs>
     </Container>
   );

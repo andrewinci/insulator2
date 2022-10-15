@@ -33,6 +33,7 @@ export const SchemaList = (props: SchemaListProps) => {
   return (
     <ItemList
       title="Schemas"
+      listId={`schemas-${clusterId}`}
       loading={state.loading}
       items={state.schemas}
       onItemSelected={onTopicSelected}
