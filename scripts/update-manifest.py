@@ -1,18 +1,13 @@
-from ast import arg
 import json
 import datetime
 from pathlib import Path
+from glob import glob
 import argparse
 
 parser = argparse.ArgumentParser(description="Update `updater` manifests.")
 parser.add_argument("--target", help='One of "linux", "windows" or "darwin"')
 parser.add_argument("--version", help="Manifest version")
 parser.add_argument("--notes", help="Release notes")
-parser.add_argument(
-    "--signature",
-    help="Update signature. Require the signature file to exists.",
-    action="store_true",
-)
 
 args = parser.parse_args()
 
@@ -21,7 +16,6 @@ if args.target not in ["linux", "darwin", "windows", "all"]:
     print("Invalid target. Specify one of: linux, darwin, windows, all")
     exit(1)
 
-update_signature = args.signature
 target = args.target
 version = args.version
 notes = args.notes
@@ -51,10 +45,12 @@ def update_target(target):
     print(f"Updating {target} manifest")
     raw_manifest_path = manifest_config[target]["manifest"]
     manifest = json.loads(Path(raw_manifest_path).read_text())
-    # update
-    signature = (
-        Path(manifest_config[target]["sig"]).read_text() if update_signature else None
-    )
+    # update signature
+    signature = None
+    signature_file = glob(manifest_config[target]["sig"])
+    if len(signature_file) == 1:
+        signature = Path(signature_file[0]).read_text()
+
     # Set specific fields
     if target == "darwin":
         if signature:
