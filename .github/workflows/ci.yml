@@ -86,14 +86,14 @@ jobs:
       - name: (MacOS) Update manifest
         if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/v')
         run: |
-          ./scripts/update-signatures.sh darwin
+          python ./scripts/update-manifest.py --target darwin --signature
           # remove unused manifests
           rm manifests/update-linux.json manifests/update-windows.json
 
       - name: (Windows) Update manifest
         if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/v')
         run: |
-          ./scripts/update-signatures.sh windows
+          python ./scripts/update-manifest.py --target windows --signature
           # remove unused manifests
           rm manifests/update-linux.json 
           rm manifests/update-darwin.json
@@ -101,7 +101,7 @@ jobs:
       - name: (Linux) Update manifest
         if: matrix.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/v')
         run: |
-          ./scripts/update-signatures.sh linux
+          python ./scripts/update-manifest.py --target linux --signature
           # remove unused manifests
           rm manifests/update-darwin.json manifests/update-windows.json
 
