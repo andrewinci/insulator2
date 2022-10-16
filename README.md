@@ -4,16 +4,30 @@ Insulator on Tauri.
 
 ## Dev
 
-### Dependencies
+### Required tools
 
-- MacOS:
-  ```bash
-  brew install cmake openssl@3 cyrus-sasl
-  export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
-  ```
-- (To test) Linux: `apt install cmake libssl-dev libsasl2-dev`
+- [Volta](https://github.com/volta-cli/volta) to install the pinned version of yarn and node.
+- [Rust](https://www.rust-lang.org/tools/install) rust is required to build the tauri backend
 
-Getting started
+### Setup on Ubuntu/Debian
+
+Some libraries are required on debian before build (tested on RPi)
+
+```
+sudo apt update
+sudo apt install libwebkit2gtk-4.0-dev \
+    build-essential \
+    curl \
+    wget \
+    libssl-dev \
+    libgtk-3-dev \
+    libayatana-appindicator3-dev \
+    librsvg2-dev \
+    libsasl2-dev \
+    cmake
+```
+
+### Run in dev mode
 
 ```bash
 yarn
