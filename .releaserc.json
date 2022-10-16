@@ -17,7 +17,8 @@
           "CHANGELOG.md",
           "package.json",
           "manifests/update-darwin.json",
-          "manifests/update-linux.json"
+          "manifests/update-linux.json",
+          "manifests/update-windows.json"
         ],
         "message": "chore(release): ${nextRelease.version} \n\n${nextRelease.notes}"
       }
