@@ -1,3 +1,16 @@
+# [1.10.0](https://github.com/andrewinci/insulator2/compare/v1.9.0...v1.10.0) (2022-10-16)
+
+### Bug Fixes
+
+- compile on windows ([15d0bb6](https://github.com/andrewinci/insulator2/commit/15d0bb601952f825f3e12a8362650c023208771d))
+- **FE:** Persist recent items across page change ([00764e9](https://github.com/andrewinci/insulator2/commit/00764e9512b82184fd25ef91ca822aadd6eb60c6))
+
+### Features
+
+- **FE:** Add clear cache button ([856d205](https://github.com/andrewinci/insulator2/commit/856d2052332118c7082b4e0fbbd8ae59c9b24149))
+- **FE:** Add favorites to item list ([9679171](https://github.com/andrewinci/insulator2/commit/9679171a9020d505cee90d28c53438028ad6468e))
+- Show list of consumer groups ([59a1bff](https://github.com/andrewinci/insulator2/commit/59a1bff91af23393ce551ba598307bec4e7d9549))
+
 # [1.9.0](https://github.com/andrewinci/insulator2/compare/v1.8.1...v1.9.0) (2022-10-14)
 
 ### Bug Fixes
