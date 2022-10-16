@@ -1,10 +1,10 @@
 [package]
 name = "insulator2"
 version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+description = "A client UI to inspect Kafka topics, consume, produce and much more."
+authors = ["Andrea Vinci"]
+license = "GPL-3"
+repository = "https://github.com/andrewinci/insulator2.git"
 edition = "2021"
 rust-version = "1.57"
 

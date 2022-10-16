@@ -103,3 +103,12 @@ if target in ["linux", "all"]:
 
 if target in ["windows", "all"]:
     update_target("windows")
+
+#update toml
+# if version:
+#     new_version = []
+#     with open("./src-tauri/Cargo.toml", "r") as f:
+#         new_version = f.readlines()
+#         new_version[2] = f'version = "{version}"\n'
+#     with open("./src-tauri/Cargo.toml", "w") as f:
+#         f.writelines(new_version)
