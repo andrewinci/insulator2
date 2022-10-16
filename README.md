@@ -27,6 +27,19 @@ sudo apt install libwebkit2gtk-4.0-dev \
     cmake
 ```
 
+#### MacOS
+
+`brew install cmake`
+
+#### Windows
+
+Before running the build make sure the following executables are installed and available in env
+
+- [Perl](https://strawberryperl.com/)
+- [cmake](https://github.com/Kitware/CMake/releases/download/v3.24.2/cmake-3.24.2-windows-x86_64.msi)
+
+**Note:** Use powershell to run the build commands
+
 ### Run in dev mode
 
 ```bash
