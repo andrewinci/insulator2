@@ -100,11 +100,23 @@ if target in ["linux", "all"]:
 if target in ["windows", "all"]:
     update_target("windows")
 
-#update toml
-# if version:
-#     new_version = []
-#     with open("./src-tauri/Cargo.toml", "r") as f:
-#         new_version = f.readlines()
-#         new_version[2] = f'version = "{version}"\n'
-#     with open("./src-tauri/Cargo.toml", "w") as f:
-#         f.writelines(new_version)
+
+if version:
+    # update package.json
+    package_json = json.loads(Path("./package.json").read_text())
+    package_json["version"] = version
+    Path("./package.json").write_text(json.dumps(package_json, indent=2))
+
+    # update tauri.conf.json
+    package_json = json.loads(Path("./src-tauri/tauri.conf.json").read_text())
+    package_json["package"]["version"] = version
+    Path("./src-tauri/tauri.conf.json").write_text(json.dumps(package_json, indent=2))
+
+    #update toml
+    #todo: this invalidates the cache
+    # new_version = []
+    # with open("./src-tauri/Cargo.toml", "r") as f:
+    #     new_version = f.readlines()
+    #     new_version[2] = f'version = "{version}"\n'
+    # with open("./src-tauri/Cargo.toml", "w") as f:
+    #     f.writelines(new_version)

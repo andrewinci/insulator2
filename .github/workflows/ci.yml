@@ -90,7 +90,7 @@ jobs:
       - name: (MacOS) Update manifest
         if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/v')
         run: |
-          python ./scripts/update-manifest.py --target darwin
+          python3 ./scripts/update-manifest.py --target darwin
           # remove unused manifests
           rm manifests/update-linux.json manifests/update-windows.json
 
