@@ -27,11 +27,13 @@ sudo apt install libwebkit2gtk-4.0-dev \
     cmake
 ```
 
-#### MacOS
+### Setup MacOS
+
+Requirements to compile on mac os can be installed with [brew](https://brew.sh/)
 
 `brew install cmake`
 
-#### Windows
+### Setup Windows
 
 Before running the build make sure the following executables are installed and available in env
 

@@ -19,7 +19,11 @@ elif [ "$TARGET" == "linux" ]; then
     echo "Updating linux signatures"
     SIG=$(cat src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz.sig)
     update_json manifests/update-linux.json '.platforms."linux-x86_64".signature' "$SIG"
-else 
-    echo "Invalid target. Specify one of: linux, darwin"
+elif [ "$TARGET" == "windows" ]; then
+    echo "Updating windows signatures"
+    SIG=$(cat src-tauri/target/release/bundle/msi/Insulator*.msi.zip.sig)
+    update_json manifests/update-windows.json '.platforms."windows-x86_64".signature' "$SIG"
+else
+    echo "Invalid target. Specify one of: linux, darwin, windows"
     exit 1
 fi
