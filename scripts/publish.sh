@@ -24,6 +24,7 @@ update_json src-tauri/tauri.conf.json ".package.version" $VERSION
 update_json manifests/update-darwin.json '.version' "v$VERSION"
 update_json manifests/update-darwin.json '.pub_date' "$NOW"
 update_json manifests/update-darwin.json '.platforms."darwin-x86_64".url' "https://github.com/andrewinci/insulator2/releases/download/v${VERSION}/Insulator.2.app.tar.gz"
+## use the x86_64 in aarch64 with rosetta
 update_json manifests/update-darwin.json '.platforms."darwin-aarch64".url' "https://github.com/andrewinci/insulator2/releases/download/v${VERSION}/Insulator.2.app.tar.gz"
 update_json manifests/update-darwin.json ".notes" "$RELEASE_NOTES"
 
@@ -32,3 +33,9 @@ update_json manifests/update-linux.json '.version' "v$VERSION"
 update_json manifests/update-linux.json '.pub_date' "$NOW"
 update_json manifests/update-linux.json '.platforms."linux-x86_64".url' "https://github.com/andrewinci/insulator2/releases/download/v${VERSION}/insulator-2_${VERSION}_amd64.AppImage.tar.gz"
 update_json manifests/update-linux.json ".notes" "$RELEASE_NOTES"
+
+# Update windows manifest
+update_json manifests/update-windows.json '.version' "v$VERSION"
+update_json manifests/update-windows.json '.pub_date' "$NOW"
+update_json manifests/update-windows.json '.platforms."windows-x86_64".url' "https://github.com/andrewinci/insulator2/releases/download/v${VERSION}/todo!"
+update_json manifests/update-windows.json ".notes" "$RELEASE_NOTES"
