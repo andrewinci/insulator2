@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/andrewinci/insulator2/compare/v1.10.0...v1.11.0) (2022-10-17)
+
+### Features
+
+- Cache topic list ([303f45c](https://github.com/andrewinci/insulator2/commit/303f45c3584be8289218f25f04da42129073dd3f))
+- Show topic/partition/offset registered in a cosumer group ([3f626b3](https://github.com/andrewinci/insulator2/commit/3f626b3ccf7b5711a8f80f938284afaab8cd6725))
+
 # [1.10.0](https://github.com/andrewinci/insulator2/compare/v1.9.0...v1.10.0) (2022-10-16)
 
 ### Bug Fixes
