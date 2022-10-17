@@ -6,3 +6,4 @@ yarn.lock
 .prettierignore
 Cargo.lock
 Cargo.toml
+*.py

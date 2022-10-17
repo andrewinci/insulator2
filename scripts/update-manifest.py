@@ -4,6 +4,7 @@ from pathlib import Path
 from glob import glob
 import argparse
 
+# CLI parsing configuration
 parser = argparse.ArgumentParser(description="Update `updater` manifests.")
 parser.add_argument("--target", help='One of "linux", "windows" or "darwin"')
 parser.add_argument("--version", help="Manifest version")
@@ -20,22 +21,24 @@ target = args.target
 version = args.version
 notes = args.notes
 
-
 manifest_config = {
     "darwin": {
         "manifest": "manifests/update-darwin.json",
         "sig": "src-tauri/target/release/bundle/macos/Insulator 2.app.tar.gz.sig",
         "url": f"https://github.com/andrewinci/insulator2/releases/download/v{version}/Insulator.2.app.tar.gz",
+        "platforms": ["darwin-x86_64", "darwin-aarch64"],
     },
     "linux": {
         "manifest": "manifests/update-linux.json",
         "sig": "src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz.sig",
         "url": f"https://github.com/andrewinci/insulator2/releases/download/v{version}/insulator-2_{version}_amd64.AppImage.tar.gz",
+        "platforms": ["linux-x86_64"],
     },
     "windows": {
         "manifest": "manifests/update-windows.json",
         "sig": "src-tauri/target/release/bundle/msi/Insulator*.msi.zip.sig",
         "url": f"https://github.com/andrewinci/insulator2/releases/download/v{version}/Insulator.2_{version}_x64_en-US.msi.zip",
+        "platforms": ["windows-x86_64"],
     },
 }
 
@@ -45,46 +48,27 @@ def update_target(target):
     print(f"Updating {target} manifest")
     raw_manifest_path = manifest_config[target]["manifest"]
     manifest = json.loads(Path(raw_manifest_path).read_text())
-    # update signature
+
+    # load signature if any
     signature = None
     signature_file = glob(manifest_config[target]["sig"])
     if len(signature_file) == 1:
         signature = Path(signature_file[0]).read_text()
+    
+    # set specific fields
+    for p in manifest_config[target]["platforms"]:
+        if signature:
+            manifest["platforms"][p]["signature"] = signature
+        if version:
+            manifest["platforms"][p]["url"] = manifest_config[target]["url"]
 
-    # Set specific fields
-    if target == "darwin":
-        if signature:
-            manifest["platforms"]["darwin-x86_64"]["signature"] = signature
-            manifest["platforms"]["darwin-aarch64"]["signature"] = signature
-        if version:
-            manifest["platforms"]["darwin-x86_64"]["url"] = manifest_config["darwin"][
-                "url"
-            ]
-            manifest["platforms"]["darwin-aarch64"]["url"] = manifest_config["darwin"][
-                "url"
-            ]
-    elif target == "linux":
-        if signature:
-            manifest["platforms"]["linux-x86_64"]["signature"] = signature
-        if version:
-            manifest["platforms"]["linux-x86_64"]["url"] = manifest_config["linux"][
-                "url"
-            ]
-    elif target == "windows":
-        if signature:
-            manifest["platforms"]["windows-x86_64"]["signature"] = signature
-        if version:
-            manifest["platforms"]["windows-x86_64"]["url"] = manifest_config["windows"][
-                "url"
-            ]
-    else:
-        raise "Invalid target"
     # set common fields
     if version:
         manifest["version"] = f"v{version}"
     if notes:
         manifest["notes"] = notes
     manifest["pub_date"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
     # write the new manifest
     raw_manifest = json.dumps(manifest, indent=2)
     print(raw_manifest)
@@ -112,8 +96,8 @@ if version:
     package_json["package"]["version"] = version
     Path("./src-tauri/tauri.conf.json").write_text(json.dumps(package_json, indent=2))
 
-    #update toml
-    #todo: this invalidates the cache
+    # update toml
+    # todo: this invalidates the cache
     # new_version = []
     # with open("./src-tauri/Cargo.toml", "r") as f:
     #     new_version = f.readlines()
