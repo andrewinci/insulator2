@@ -21,7 +21,7 @@ use tauri::async_runtime::JoinHandle;
 
 #[async_trait]
 pub trait Consumer {
-    async fn start(&self, offset_config: ConsumerOffsetConfiguration) -> Result<()>;
+    async fn start(&self, offset_config: &ConsumerOffsetConfiguration) -> Result<()>;
     async fn stop(&self) -> Result<()>;
     async fn get_record(&self, index: usize) -> Option<RawKafkaRecord>;
     async fn get_consumer_state(&self) -> ConsumerState;
@@ -38,7 +38,7 @@ pub struct KafkaConsumer {
 impl KafkaConsumer {
     pub fn new(
         cluster_config: &ClusterConfig,
-        topic: String,
+        topic: &str,
         admin_client: Arc<dyn Admin + Send + Sync>
     ) -> KafkaConsumer {
         let consumer: StreamConsumer = build_kafka_client_config(cluster_config, None)
@@ -46,7 +46,7 @@ impl KafkaConsumer {
             .expect("Unable to create kafka the consumer");
         KafkaConsumer {
             consumer: Arc::new(Mutex::new(consumer)),
-            topic,
+            topic: topic.to_string(),
             loop_handle: Arc::new(Mutex::new(vec![])),
             records: Arc::new(Mutex::new(Vec::new())),
             admin_client,
@@ -56,7 +56,7 @@ impl KafkaConsumer {
 
 #[async_trait]
 impl Consumer for KafkaConsumer {
-    async fn start(&self, offset_config: ConsumerOffsetConfiguration) -> Result<()> {
+    async fn start(&self, offset_config: &ConsumerOffsetConfiguration) -> Result<()> {
         let topic = self.topic.clone();
         if self.loop_handle.lock().await.is_empty().not() {
             warn!("Try to start an already running consumer");
@@ -65,7 +65,7 @@ impl Consumer for KafkaConsumer {
             });
         }
         // setup the consumer to run from
-        self.setup_consumer(&offset_config).await?;
+        self.setup_consumer(offset_config).await?;
         // clone arcs for the closure below
         let records = self.records.clone();
         let consumer = self.consumer.clone();

@@ -153,7 +153,7 @@ mod tests {
         async fn list_subjects(&self) -> Result<Vec<String>> {
             todo!()
         }
-        async fn get_schema(&self, _: String) -> Result<Vec<Schema>> {
+        async fn get_schema(&self, _: &str) -> Result<Vec<Schema>> {
             todo!()
         }
         async fn get_schema_by_id(&self, _: i32) -> Result<String> {
@@ -180,7 +180,7 @@ mod tests {
             { "name": "string_field", "type": "string" }
         ],
         "name": "sampleRecord",
-        "namespace": "com.mycorp.mynamespace",
+        "namespace": "com.example.namespace",
         "type": "record"
       }
 "#;

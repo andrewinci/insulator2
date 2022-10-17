@@ -12,7 +12,7 @@ use super::types::{ BasicAuth, GetSchemaByIdResult, Schema };
 #[async_trait]
 pub trait SchemaRegistryClient {
     async fn list_subjects(&self) -> Result<Vec<String>>;
-    async fn get_schema(&self, subject_name: String) -> Result<Vec<Schema>>;
+    async fn get_schema(&self, subject_name: &str) -> Result<Vec<Schema>>;
     async fn get_schema_by_id(&self, id: i32) -> Result<String>;
 }
 
@@ -26,18 +26,22 @@ pub struct CachedSchemaRegistry {
 }
 
 impl CachedSchemaRegistry {
-    pub fn new(endpoint: String, username: &Option<String>, password: &Option<String>) -> CachedSchemaRegistry {
-        let auth = username.clone().map(|username| BasicAuth {
-            username,
-            password: password.clone(),
-        });
-        CachedSchemaRegistry::new_with_client(endpoint, auth, reqwest::Client::new())
+    pub fn new(endpoint: &str, username: Option<&str>, password: Option<&str>) -> CachedSchemaRegistry {
+        if let Some(username) = username {
+            let auth = BasicAuth {
+                username: username.to_string(),
+                password: password.map(|p| p.to_owned()),
+            };
+            CachedSchemaRegistry::new_with_client(endpoint, Some(&auth), reqwest::Client::new())
+        } else {
+            CachedSchemaRegistry::new_with_client(endpoint, None, reqwest::Client::new())
+        }
     }
 
-    pub fn new_with_client(endpoint: String, auth: Option<BasicAuth>, client: reqwest::Client) -> CachedSchemaRegistry {
+    pub fn new_with_client(endpoint: &str, auth: Option<&BasicAuth>, client: reqwest::Client) -> CachedSchemaRegistry {
         CachedSchemaRegistry {
-            endpoint,
-            auth,
+            endpoint: endpoint.into(),
+            auth: auth.map(|a| a.to_owned()),
             timeout_seconds: 10,
             client,
             schema_cache_by_id: Arc::new(Mutex::new(HashMap::new())),
@@ -54,10 +58,10 @@ impl SchemaRegistryClient for CachedSchemaRegistry {
         Ok(res)
     }
 
-    async fn get_schema(&self, subject_name: String) -> Result<Vec<Schema>> {
+    async fn get_schema(&self, subject_name: &str) -> Result<Vec<Schema>> {
         let mut cache = self.schema_cache_by_subject.lock().await;
         trace!("Get schema for {}", subject_name);
-        if let Some(cached) = cache.get(&subject_name) {
+        if let Some(cached) = cache.get(subject_name) {
             trace!("Schema found in cache");
             Ok(cached.clone())
         } else {
@@ -70,7 +74,7 @@ impl SchemaRegistryClient for CachedSchemaRegistry {
                 let schema: Schema = self.get(url.as_ref(), &self.auth).await?;
                 schemas.push(schema);
             }
-            cache.insert(subject_name, schemas.clone());
+            cache.insert(subject_name.to_string(), schemas.clone());
             Ok(schemas)
         }
     }
@@ -124,7 +128,7 @@ mod tests {
             when.method(GET).path("/schemas/ids/1");
             then.status(200).header("content-type", "text/json").body("{\"schema\":\"schema-placeholder\"}");
         });
-        let sut = CachedSchemaRegistry::new(server.base_url(), &None, &None);
+        let sut = CachedSchemaRegistry::new(&server.base_url(), None, None);
         let call_1 = sut.get_schema_by_id(1).await;
         let call_2 = sut.get_schema_by_id(1).await;
         assert!(call_1.is_ok());

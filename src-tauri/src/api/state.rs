@@ -23,7 +23,7 @@ impl AppState {
                 .iter()
                 .find(|c| c.id == cluster_id)
                 .expect("Unable to find the cluster config");
-            let cluster = Cluster::new(cluster_config.to_owned());
+            let cluster = Cluster::new(cluster_config);
             map.insert(cluster_id.into(), cluster);
         }
         map.get(cluster_id)

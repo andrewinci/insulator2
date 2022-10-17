@@ -24,12 +24,12 @@ pub struct Cluster {
 }
 
 impl Cluster {
-    pub fn new(config: ClusterConfig) -> Cluster {
+    pub fn new(config: &ClusterConfig) -> Cluster {
         let (schema_registry_client, parser) = if
             let Some(SchemaRegistryConfig { endpoint, username, password }) = &config.schema_registry
         {
             let ptr: Arc<dyn SchemaRegistryClient + Send + Sync> = Arc::new(
-                CachedSchemaRegistry::new(endpoint.clone(), username, password)
+                CachedSchemaRegistry::new(endpoint, username.as_deref(), password.as_deref())
             );
             (Some(ptr.clone()), RecordParser::new(Some(ptr.clone())))
         } else {
@@ -39,18 +39,18 @@ impl Cluster {
             config: config.clone(),
             schema_registry_client,
             consumers: Arc::new(Mutex::new(HashMap::new())),
-            admin_client: Arc::new(KafkaAdmin::new(&config)),
+            admin_client: Arc::new(KafkaAdmin::new(config)),
             parser: Arc::new(parser),
         }
     }
 
-    pub async fn get_consumer(&self, topic_name: &String) -> Arc<dyn Consumer + Send + Sync> {
+    pub async fn get_consumer(&self, topic_name: &str) -> Arc<dyn Consumer + Send + Sync> {
         let mut consumers = self.consumers.lock().await;
         if consumers.get(topic_name).is_none() {
             debug!("Create consumer for topic {}", topic_name);
             consumers.insert(
-                topic_name.clone(),
-                Arc::new(KafkaConsumer::new(&self.config, topic_name.clone(), self.admin_client.clone()))
+                topic_name.to_string(),
+                Arc::new(KafkaConsumer::new(&self.config, topic_name, self.admin_client.clone()))
             );
         }
         consumers.get(topic_name).expect("the consumer must exists").clone()

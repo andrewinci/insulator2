@@ -1,15 +1,15 @@
 use async_trait::async_trait;
 use futures::lock::Mutex;
 use log::{ debug, warn, error };
-use std::{ time::Duration, vec, collections::HashMap, sync::Arc };
+use std::{ time::Duration, vec, sync::Arc };
 
 use super::{ types::{ PartitionInfo, TopicInfo }, ConsumerGroupInfo };
 use crate::lib::{
     configuration::{ build_kafka_client_config, ClusterConfig },
-    error::{ Error, Result, self },
+    error::{ Error, Result },
     admin::TopicPartitionOffset,
 };
-use rdkafka::{ admin::AdminClient, consumer::ConsumerGroupMetadata, TopicPartitionList, Offset };
+use rdkafka::{ admin::AdminClient, TopicPartitionList, Offset };
 use rdkafka::{
     admin::{ AdminOptions, NewTopic, TopicReplication },
     client::DefaultClientContext,
@@ -113,7 +113,7 @@ impl Admin for KafkaAdmin {
 
     async fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo> {
         // create a consumer with the defined consumer_group_name.
-        // NOTE: the consumer shouldn't join the consumer group, otherwise it'll cause a rebalance
+        // NOTE: the consumer shouldn't join the consumer group, otherwise it'll cause a re-balance
         debug!("Build the consumer for the consumer group {}", consumer_group_name);
         let consumer: StreamConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
             .create()
@@ -138,7 +138,7 @@ impl Admin for KafkaAdmin {
             .map(|r| TopicPartitionOffset {
                 topic: r.topic().into(),
                 partition_id: r.partition(),
-                offset: map_offset(r.offset()),
+                offset: map_offset(&r.offset()),
             })
             .collect();
         debug!("Retrieve completed");
@@ -172,10 +172,10 @@ impl KafkaAdmin {
     }
 }
 
-fn map_offset(offset: Offset) -> i64 {
+fn map_offset(offset: &Offset) -> i64 {
     match offset {
         Offset::Beginning => 0,
-        Offset::Offset(v) => v,
+        Offset::Offset(v) => *v,
         _ => {
             error!("Unexpected offset {:?}. Returning -1.", offset);
             -1

@@ -17,7 +17,7 @@ pub enum ParserMode {
 
 #[async_trait]
 pub trait Parser {
-    async fn parse_record(&self, record: RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord>;
+    async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord>;
 }
 
 pub struct RecordParser {
@@ -34,8 +34,8 @@ impl RecordParser {
 
 #[async_trait]
 impl Parser for RecordParser {
-    async fn parse_record(&self, record: RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord> {
-        let RawKafkaRecord { payload, key, topic, timestamp, partition, offset } = record;
+    async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord> {
+        let RawKafkaRecord { payload, key, topic, timestamp, partition, offset } = record.clone();
         let avro_parser = self.avro_parser.as_ref().ok_or(Error::AvroParse {
             message: "Missing avro parser".into(),
         })?;
