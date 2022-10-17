@@ -35,7 +35,7 @@ manifest_config = {
     "windows": {
         "manifest": "manifests/update-windows.json",
         "sig": "src-tauri/target/release/bundle/msi/Insulator*.msi.zip.sig",
-        "url": f"https://github.com/andrewinci/insulator2/releases/download/v{version}/Insulator_2_{version}_x64_en-US.msi.zip",
+        "url": f"https://github.com/andrewinci/insulator2/releases/download/v{version}/Insulator.2_{version}_x64_en-US.msi.zip",
     },
 }
 
