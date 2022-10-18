@@ -1,5 +1,6 @@
 mod client;
 mod error;
+mod http_client;
 mod types;
 
 pub use client::CachedSchemaRegistry;

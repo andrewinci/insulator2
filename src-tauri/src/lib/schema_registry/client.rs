@@ -1,12 +1,12 @@
 use async_trait::async_trait;
 use futures::lock::Mutex;
 use log::trace;
-use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::sync::Arc;
 use url::Url;
 
 use super::error::Result;
+use super::http_client::{ HttpClient, ReqwestClient };
 use super::types::{ BasicAuth, GetSchemaByIdResult, Schema };
 
 #[async_trait]
@@ -16,34 +16,34 @@ pub trait SchemaRegistryClient {
     async fn get_schema_by_id(&self, id: i32) -> Result<String>;
 }
 
-pub struct CachedSchemaRegistry {
-    client: reqwest::Client,
+pub struct CachedSchemaRegistry<C = ReqwestClient> where C: HttpClient + Sync + Send {
+    http_client: C,
     endpoint: String,
-    auth: Option<BasicAuth>,
-    timeout_seconds: u64,
     schema_cache_by_id: Arc<Mutex<HashMap<i32, String>>>,
     schema_cache_by_subject: Arc<Mutex<HashMap<String, Vec<Schema>>>>,
 }
 
-impl CachedSchemaRegistry {
-    pub fn new(endpoint: &str, username: Option<&str>, password: Option<&str>) -> CachedSchemaRegistry {
-        if let Some(username) = username {
+impl CachedSchemaRegistry<ReqwestClient> {
+    pub fn new(endpoint: &str, username: Option<&str>, password: Option<&str>) -> Self {
+        let auth = if let Some(username) = username {
             let auth = BasicAuth {
                 username: username.to_string(),
                 password: password.map(|p| p.to_owned()),
             };
-            CachedSchemaRegistry::new_with_client(endpoint, Some(&auth), reqwest::Client::new())
+            Some(auth)
         } else {
-            CachedSchemaRegistry::new_with_client(endpoint, None, reqwest::Client::new())
-        }
+            None
+        };
+        let http_client = ReqwestClient::new(auth);
+        CachedSchemaRegistry::new_with_client(endpoint, http_client)
     }
+}
 
-    pub fn new_with_client(endpoint: &str, auth: Option<&BasicAuth>, client: reqwest::Client) -> CachedSchemaRegistry {
-        CachedSchemaRegistry {
+impl<C> CachedSchemaRegistry<C> where C: HttpClient + Sync + Send {
+    pub fn new_with_client(endpoint: &str, http_client: C) -> Self {
+        Self {
+            http_client,
             endpoint: endpoint.into(),
-            auth: auth.map(|a| a.to_owned()),
-            timeout_seconds: 10,
-            client,
             schema_cache_by_id: Arc::new(Mutex::new(HashMap::new())),
             schema_cache_by_subject: Arc::new(Mutex::new(HashMap::new())),
         }
@@ -51,10 +51,10 @@ impl CachedSchemaRegistry {
 }
 
 #[async_trait]
-impl SchemaRegistryClient for CachedSchemaRegistry {
+impl<C> SchemaRegistryClient for CachedSchemaRegistry<C> where C: HttpClient + Sync + Send {
     async fn list_subjects(&self) -> Result<Vec<String>> {
         let url = Url::parse(&self.endpoint)?.join("subjects")?;
-        let res = self.get(url.as_ref(), &self.auth).await?;
+        let res = self.http_client.get(url.as_ref()).await?;
         Ok(res)
     }
 
@@ -67,11 +67,11 @@ impl SchemaRegistryClient for CachedSchemaRegistry {
         } else {
             trace!("Schema not found in cache, retrieving");
             let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
-            let versions: Vec<i32> = self.get(url.as_ref(), &self.auth).await?;
+            let versions: Vec<i32> = self.http_client.get(url.as_ref()).await?;
             let mut schemas = Vec::<Schema>::new();
             for v in versions {
                 let url = url.join(&v.to_string())?;
-                let schema: Schema = self.get(url.as_ref(), &self.auth).await?;
+                let schema: Schema = self.http_client.get(url.as_ref()).await?;
                 schemas.push(schema);
             }
             cache.insert(subject_name.to_string(), schemas.clone());
@@ -89,51 +89,47 @@ impl SchemaRegistryClient for CachedSchemaRegistry {
         } else {
             trace!("Schema not found in cache, retrieving");
             let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
-            let schema: GetSchemaByIdResult = self.get(url.as_ref(), &self.auth).await?;
+            let schema: GetSchemaByIdResult = self.http_client.get(url.as_ref()).await?;
             cache.insert(id, schema.schema.clone());
             Ok(schema.schema)
         }
     }
 }
 
-impl CachedSchemaRegistry {
-    async fn get<T: DeserializeOwned>(&self, url: &str, auth: &Option<BasicAuth>) -> Result<T> {
-        let url = url.to_string();
-        let auth = auth.clone();
-
-        let mut request = self.client.get(url);
-        request = request.timeout(core::time::Duration::from_secs(self.timeout_seconds));
-        if let Some(auth) = auth {
-            request = request.basic_auth(auth.username, auth.password);
-        }
-        let response = request.send().await?;
-        let res = response.json().await?;
-        Ok(res)
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use httpmock::{ Method::GET, MockServer };
+    use async_trait::async_trait;
+    use mockall::mock;
+    use serde::de::DeserializeOwned;
 
-    use super::{ CachedSchemaRegistry, SchemaRegistryClient };
+    use super::{ CachedSchemaRegistry, Result, SchemaRegistryClient };
+    use crate::lib::schema_registry::{ http_client::HttpClient, types::GetSchemaByIdResult };
+    use mockall::{ predicate::* };
 
     #[tokio::test]
     async fn test_cache() {
-        // Start a lightweight mock server.
-        let server = MockServer::start();
+        mock! {
+            HttpTestClient {};
 
-        // Create a mock on the server.
-        let server_mock = server.mock(|when, then| {
-            when.method(GET).path("/schemas/ids/1");
-            then.status(200).header("content-type", "text/json").body("{\"schema\":\"schema-placeholder\"}");
-        });
-        let sut = CachedSchemaRegistry::new(&server.base_url(), None, None);
+            #[async_trait]
+            impl HttpClient for HttpTestClient {
+                async fn get<T: 'static + DeserializeOwned>(&self, _url: &str) -> Result<T>;
+            }
+        }
+        let mut mock_http_client = MockHttpTestClient::new();
+        mock_http_client
+            .expect_get::<GetSchemaByIdResult>()
+            .once()
+            .returning(|_| {
+                Ok(GetSchemaByIdResult {
+                    schema: "123".into(),
+                })
+            });
+
+        let sut = CachedSchemaRegistry::new_with_client("https://example.com", mock_http_client);
         let call_1 = sut.get_schema_by_id(1).await;
         let call_2 = sut.get_schema_by_id(1).await;
         assert!(call_1.is_ok());
         assert!(call_2.is_ok());
-        // Ensure the specified mock was called exactly one time (or fail with a detailed error description).
-        server_mock.assert();
     }
 }
