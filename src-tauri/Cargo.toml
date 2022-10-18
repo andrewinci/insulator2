@@ -6,7 +6,7 @@ authors = ["Andrea Vinci"]
 license = "GPL-3"
 repository = "https://github.com/andrewinci/insulator2.git"
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.64"
 
 [build-dependencies]
 tauri-build = { version = "1.1", features = [] }
