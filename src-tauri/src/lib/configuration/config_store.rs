@@ -2,7 +2,7 @@ use super::InsulatorConfig;
 use crate::lib::error::Result;
 use dirs::home_dir;
 use std::path::PathBuf;
-use std::{ fs, path::Path };
+use std::{fs, path::Path};
 
 #[derive(Default)]
 pub struct ConfigStore {}

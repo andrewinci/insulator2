@@ -1,28 +1,38 @@
 use async_trait::async_trait;
 use futures::lock::Mutex;
-use log::{ debug, warn, error };
-use std::{ time::Duration, vec, sync::Arc };
+use log::{debug, error, warn};
+use std::{sync::Arc, time::Duration, vec};
 
-use super::{ types::{ PartitionInfo, TopicInfo }, ConsumerGroupInfo };
-use crate::lib::{
-    configuration::{ build_kafka_client_config, ClusterConfig },
-    error::{ Error, Result },
-    admin::TopicPartitionOffset,
+use super::{
+    types::{PartitionInfo, TopicInfo},
+    ConsumerGroupInfo,
 };
-use rdkafka::{ admin::AdminClient, TopicPartitionList, Offset };
+use crate::lib::{
+    admin::TopicPartitionOffset,
+    configuration::{build_kafka_client_config, ClusterConfig},
+    error::{Error, Result},
+};
+use rdkafka::{admin::AdminClient, Offset, TopicPartitionList};
 use rdkafka::{
-    admin::{ AdminOptions, NewTopic, TopicReplication },
+    admin::{AdminOptions, NewTopic, TopicReplication},
     client::DefaultClientContext,
-    consumer::{ Consumer, StreamConsumer },
+    consumer::{Consumer, StreamConsumer},
 };
 
 #[async_trait]
 pub trait Admin {
     async fn list_topics(&self, force: bool) -> Result<Vec<TopicInfo>>;
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
-    async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
+    async fn create_topic(
+        &self,
+        topic_name: &str,
+        partitions: i32,
+        isr: i32,
+        compacted: bool,
+    ) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
-    async fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
+    async fn describe_consumer_group(&self, consumer_group_name: &str)
+        -> Result<ConsumerGroupInfo>;
 }
 
 pub struct KafkaAdmin {
@@ -41,7 +51,9 @@ impl KafkaAdmin {
             consumer: build_kafka_client_config(config, None)
                 .create()
                 .expect("Unable to create a consumer for the admin client."),
-            admin_client: build_kafka_client_config(config, None).create().expect("Unable to build the admin client"),
+            admin_client: build_kafka_client_config(config, None)
+                .create()
+                .expect("Unable to build the admin client"),
             topics: Arc::new(Mutex::new(vec![])),
         }
     }
@@ -68,7 +80,10 @@ impl Admin for KafkaAdmin {
             if info.len() == 1 {
                 Ok(info.get(0).unwrap().clone())
             } else {
-                warn!("Topic not found or more than one topic with the same name {}", topic_name);
+                warn!(
+                    "Topic not found or more than one topic with the same name {}",
+                    topic_name
+                );
                 Err(Error::Kafka {
                     message: "Topic not found".into(),
                 })
@@ -76,16 +91,28 @@ impl Admin for KafkaAdmin {
         }
     }
 
-    async fn create_topic(&self, name: &str, num_partitions: i32, isr: i32, compacted: bool) -> Result<()> {
+    async fn create_topic(
+        &self,
+        name: &str,
+        num_partitions: i32,
+        isr: i32,
+        compacted: bool,
+    ) -> Result<()> {
         let new_topic = NewTopic {
             name,
             num_partitions,
-            config: vec![("cleanup.policy", if compacted { "compact" } else { "delete" })],
+            config: vec![(
+                "cleanup.policy",
+                if compacted { "compact" } else { "delete" },
+            )],
             replication: TopicReplication::Fixed(isr),
         };
         let opts = AdminOptions::new();
 
-        let res = self.admin_client.create_topics(vec![&new_topic], &opts).await?;
+        let res = self
+            .admin_client
+            .create_topics(vec![&new_topic], &opts)
+            .await?;
         let res = res.get(0).expect("Create topic: missing result");
         match res {
             Ok(_) => {
@@ -111,22 +138,29 @@ impl Admin for KafkaAdmin {
         Ok(group_names)
     }
 
-    async fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo> {
+    async fn describe_consumer_group(
+        &self,
+        consumer_group_name: &str,
+    ) -> Result<ConsumerGroupInfo> {
         // create a consumer with the defined consumer_group_name.
         // NOTE: the consumer shouldn't join the consumer group, otherwise it'll cause a re-balance
-        debug!("Build the consumer for the consumer group {}", consumer_group_name);
-        let consumer: StreamConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
-            .create()
-            .expect("Unable to build the consumer");
+        debug!(
+            "Build the consumer for the consumer group {}",
+            consumer_group_name
+        );
+        let consumer: StreamConsumer =
+            build_kafka_client_config(&self.config, Some(consumer_group_name))
+                .create()
+                .expect("Unable to build the consumer");
 
         let topics = self.list_topics(false).await?;
         debug!("Assign ALL topics and ALL partitions to the consumer");
         let mut topic_partition_lst = TopicPartitionList::new();
-        topics.iter().for_each(|topic|
+        topics.iter().for_each(|topic| {
             topic.partitions.iter().for_each(|partition| {
                 topic_partition_lst.add_partition(&topic.name, partition.id);
             })
-        );
+        });
         consumer.assign(&topic_partition_lst).unwrap();
         debug!("Check any committed offset to the consumer group");
         // allow up to 3 minutes for big clusters and slow connections
@@ -145,13 +179,17 @@ impl Admin for KafkaAdmin {
 
         //todo: retrieve consumer group status and active consumers with `fetch_group_list`
 
-        Ok(ConsumerGroupInfo { name: consumer_group_name.into(), offsets })
+        Ok(ConsumerGroupInfo {
+            name: consumer_group_name.into(),
+            offsets,
+        })
     }
 }
 
 impl KafkaAdmin {
     fn internal_list_topics(&self, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
-        let topics: Vec<TopicInfo> = self.consumer
+        let topics: Vec<TopicInfo> = self
+            .consumer
             .fetch_metadata(topic, self.timeout)?
             .topics()
             .iter()

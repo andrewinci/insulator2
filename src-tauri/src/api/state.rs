@@ -1,9 +1,9 @@
-use std::{ collections::HashMap, sync::Arc };
+use std::{collections::HashMap, sync::Arc};
 
 use futures::lock::Mutex;
 use log::debug;
 
-use crate::lib::{ Cluster, ConfigStore };
+use crate::lib::{Cluster, ConfigStore};
 
 type ClusterId = String;
 
@@ -18,8 +18,11 @@ impl AppState {
         let mut map = clusters.lock().await;
         if map.get(cluster_id).is_none() {
             debug!("Init cluster {}", cluster_id);
-            let configurations = ConfigStore::new().get_configuration().expect("Unable to get the configuration");
-            let cluster_config = configurations.clusters
+            let configurations = ConfigStore::new()
+                .get_configuration()
+                .expect("Unable to get the configuration");
+            let cluster_config = configurations
+                .clusters
                 .iter()
                 .find(|c| c.id == cluster_id)
                 .expect("Unable to find the cluster config");

@@ -1,8 +1,6 @@
 #[derive(Debug)]
 pub enum SchemaRegistryError {
-    HttpClientError {
-        msg: String,
-    },
+    HttpClientError { msg: String },
     UrlError,
 }
 

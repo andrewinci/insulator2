@@ -6,8 +6,8 @@ use std::sync::Arc;
 use url::Url;
 
 use super::error::Result;
-use super::http_client::{ HttpClient, ReqwestClient };
-use super::types::{ BasicAuth, GetSchemaByIdResult, Schema };
+use super::http_client::{HttpClient, ReqwestClient};
+use super::types::{BasicAuth, GetSchemaByIdResult, Schema};
 
 #[async_trait]
 pub trait SchemaRegistryClient {
@@ -16,7 +16,10 @@ pub trait SchemaRegistryClient {
     async fn get_schema_by_id(&self, id: i32) -> Result<String>;
 }
 
-pub struct CachedSchemaRegistry<C = ReqwestClient> where C: HttpClient + Sync + Send {
+pub struct CachedSchemaRegistry<C = ReqwestClient>
+where
+    C: HttpClient + Sync + Send,
+{
     http_client: C,
     endpoint: String,
     schema_cache_by_id: Arc<Mutex<HashMap<i32, String>>>,
@@ -39,7 +42,10 @@ impl CachedSchemaRegistry<ReqwestClient> {
     }
 }
 
-impl<C> CachedSchemaRegistry<C> where C: HttpClient + Sync + Send {
+impl<C> CachedSchemaRegistry<C>
+where
+    C: HttpClient + Sync + Send,
+{
     pub fn new_with_client(endpoint: &str, http_client: C) -> Self {
         Self {
             http_client,
@@ -51,7 +57,10 @@ impl<C> CachedSchemaRegistry<C> where C: HttpClient + Sync + Send {
 }
 
 #[async_trait]
-impl<C> SchemaRegistryClient for CachedSchemaRegistry<C> where C: HttpClient + Sync + Send {
+impl<C> SchemaRegistryClient for CachedSchemaRegistry<C>
+where
+    C: HttpClient + Sync + Send,
+{
     async fn list_subjects(&self) -> Result<Vec<String>> {
         let url = Url::parse(&self.endpoint)?.join("subjects")?;
         let res = self.http_client.get(url.as_ref()).await?;
@@ -66,7 +75,8 @@ impl<C> SchemaRegistryClient for CachedSchemaRegistry<C> where C: HttpClient + S
             Ok(cached.clone())
         } else {
             trace!("Schema not found in cache, retrieving");
-            let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
+            let url = Url::parse(&self.endpoint)?
+                .join(format!("/subjects/{}/versions/", subject_name).as_str())?;
             let versions: Vec<i32> = self.http_client.get(url.as_ref()).await?;
             let mut schemas = Vec::<Schema>::new();
             for v in versions {
@@ -102,9 +112,9 @@ mod tests {
     use mockall::mock;
     use serde::de::DeserializeOwned;
 
-    use super::{ CachedSchemaRegistry, Result, SchemaRegistryClient };
-    use crate::lib::schema_registry::{ http_client::HttpClient, types::GetSchemaByIdResult };
-    use mockall::{ predicate::* };
+    use super::{CachedSchemaRegistry, Result, SchemaRegistryClient};
+    use crate::lib::schema_registry::{http_client::HttpClient, types::GetSchemaByIdResult};
+    use mockall::predicate::*;
 
     #[tokio::test]
     async fn test_cache() {

@@ -1,11 +1,14 @@
-use std::{ collections::HashMap, io::Cursor, sync::Arc };
+use std::{collections::HashMap, io::Cursor, sync::Arc};
 
-use apache_avro::{ from_avro_datum, schema::Name, types::Value as AvroValue, Schema };
+use apache_avro::{from_avro_datum, schema::Name, types::Value as AvroValue, Schema};
 use num_bigint::BigInt;
 use rust_decimal::Decimal;
-use serde_json::{ json, Map, Value as JsonValue };
+use serde_json::{json, Map, Value as JsonValue};
 
-use crate::lib::{ error::{ Error, Result }, schema_registry::SchemaRegistryClient };
+use crate::lib::{
+    error::{Error, Result},
+    schema_registry::SchemaRegistryClient,
+};
 
 pub struct AvroParser {
     schema_registry_client: Arc<dyn SchemaRegistryClient + Send + Sync>,
@@ -27,11 +30,22 @@ impl AvroParser {
 
         let id = get_schema_id(raw)?;
 
-        let raw_schema = self.schema_registry_client.get_schema_by_id(id).await.map_err(|err| Error::AvroParse {
-            message: format!("{}\n{}", "Unable to retrieve the schema from schema registry", err.to_string()),
-        })?;
+        let raw_schema = self
+            .schema_registry_client
+            .get_schema_by_id(id)
+            .await
+            .map_err(|err| Error::AvroParse {
+                message: format!(
+                    "{}\n{}",
+                    "Unable to retrieve the schema from schema registry",
+                    err.to_string()
+                ),
+            })?;
         let schema = Schema::parse_str(raw_schema.as_str()).map_err(|err| Error::AvroParse {
-            message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
+            message: format!(
+                "{}\n{}",
+                "Unable to parse the schema from schema registry", err
+            ),
         })?;
         let mut data = Cursor::new(&raw[5..]);
         let record = from_avro_datum(&schema, &mut data, None).map_err(|err| Error::AvroParse {
@@ -55,7 +69,7 @@ fn get_schema_id(raw: &[u8]) -> Result<i32> {
 fn map<'a>(
     value: &AvroValue,
     schema: &'a Schema,
-    ref_cache: &mut HashMap<&'a Name, &'a Schema> //cache to resolve avro references
+    ref_cache: &mut HashMap<&'a Name, &'a Schema>, //cache to resolve avro references
 ) -> Result<JsonValue> {
     match (value, schema) {
         (AvroValue::Null, Schema::Null) => Ok(JsonValue::Null),
@@ -80,12 +94,25 @@ fn map<'a>(
             }
             Ok(JsonValue::Object(json_map))
         }
-        (AvroValue::Record(vec), Schema::Record { name, fields, lookup, .. }) => {
+        (
+            AvroValue::Record(vec),
+            Schema::Record {
+                name,
+                fields,
+                lookup,
+                ..
+            },
+        ) => {
             ref_cache.insert(name, schema);
             let mut json_map = Map::new();
             for (k, v) in vec.iter() {
-                let field_index = lookup.get(k).unwrap_or_else(|| panic!("Missing field {}", k));
-                json_map.insert(k.clone(), map(v, &fields.get(*field_index).unwrap().schema, ref_cache)?);
+                let field_index = lookup
+                    .get(k)
+                    .unwrap_or_else(|| panic!("Missing field {}", k));
+                json_map.insert(
+                    k.clone(),
+                    map(v, &fields.get(*field_index).unwrap().schema, ref_cache)?,
+                );
             }
             Ok(JsonValue::Object(json_map))
         }
@@ -97,15 +124,30 @@ fn map<'a>(
         (AvroValue::Uuid(v), Schema::Uuid) => Ok(json!(*v)),
         //todo: WIP
         (AvroValue::Bytes(v), Schema::Bytes) => Ok(json!(*v)), //todo: this should be like "\u00FF"
-        (AvroValue::Decimal(v), Schema::Decimal { precision: _, scale, inner: _ }) => {
+        (
+            AvroValue::Decimal(v),
+            Schema::Decimal {
+                precision: _,
+                scale,
+                inner: _,
+            },
+        ) => {
             let arr = <Vec<u8>>::try_from(v).expect("Invalid decimal received");
             let value = BigInt::from_signed_bytes_be(&arr);
-            let decimal = Decimal::new(i64::try_from(value).expect("Unable to cast to i64"), scale.to_owned() as u32);
+            let decimal = Decimal::new(
+                i64::try_from(value).expect("Unable to cast to i64"),
+                scale.to_owned() as u32,
+            );
             Ok(json!(decimal))
         }
         (AvroValue::Duration(v), Schema::Duration) => {
             //todo: check avro json representation
-            Ok(json!(format!("{:?} months {:?} days {:?} millis", v.months(), v.days(), v.millis())))
+            Ok(json!(format!(
+                "{:?} months {:?} days {:?} millis",
+                v.months(),
+                v.days(),
+                v.millis()
+            )))
         }
         //todo: use avro-json format
         (AvroValue::Union(i, v), Schema::Union(s)) => {
@@ -138,12 +180,14 @@ fn map<'a>(
 mod tests {
     use std::sync::Arc;
 
-    use apache_avro::{ to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer };
+    use apache_avro::{
+        to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer,
+    };
     use async_trait::async_trait;
 
-    use crate::lib::schema_registry::{ Result, Schema, SchemaRegistryClient };
+    use crate::lib::schema_registry::{Result, Schema, SchemaRegistryClient};
 
-    use super::{ get_schema_id, AvroParser };
+    use super::{get_schema_id, AvroParser};
     struct MockSchemaRegistry {
         schema: String,
     }
@@ -166,8 +210,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_simple_types_parsing() {
-        let raw_schema =
-            r#"
+        let raw_schema = r#"
     {
         "fields": [
             { "name": "null_field", "type": "null" },
@@ -201,7 +244,8 @@ mod tests {
         raw.append(&mut encoded);
 
         let res = get_sut(raw_schema.to_string())
-            .parse_payload(&raw[..]).await
+            .parse_payload(&raw[..])
+            .await
             .unwrap();
 
         assert_eq!(

@@ -1,5 +1,5 @@
-use crate::lib::{ schema_registry::SchemaRegistryError, Error };
-use serde::{ Deserialize, Serialize };
+use crate::lib::{schema_registry::SchemaRegistryError, Error};
+use serde::{Deserialize, Serialize};
 pub type Result<T> = std::result::Result<T, TauriError>;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

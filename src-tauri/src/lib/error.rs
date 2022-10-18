@@ -2,21 +2,11 @@ use rdkafka::error::KafkaError;
 
 #[derive(Debug)]
 pub enum Error {
-    AvroParse {
-        message: String,
-    },
-    IO {
-        message: String,
-    },
-    JSONSerde {
-        message: String,
-    },
-    Consumer {
-        message: String,
-    },
-    Kafka {
-        message: String,
-    },
+    AvroParse { message: String },
+    IO { message: String },
+    JSONSerde { message: String },
+    Consumer { message: String },
+    Kafka { message: String },
 }
 
 pub(super) type Result<T> = core::result::Result<T, Error>;

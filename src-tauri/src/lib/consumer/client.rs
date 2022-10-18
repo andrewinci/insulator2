@@ -1,21 +1,19 @@
-use std::{ ops::Not, sync::Arc, time::Duration };
+use std::{ops::Not, sync::Arc, time::Duration};
 
 use crate::lib::{
     admin::Admin,
-    configuration::{ build_kafka_client_config, ClusterConfig },
-    consumer::types::{ ConsumerOffsetConfiguration, ConsumerState },
-    error::{ Error, Result },
+    configuration::{build_kafka_client_config, ClusterConfig},
+    consumer::types::{ConsumerOffsetConfiguration, ConsumerState},
+    error::{Error, Result},
     types::RawKafkaRecord,
 };
 use async_trait::async_trait;
-use futures::{ lock::Mutex, StreamExt };
-use log::{ debug, error, trace, warn };
+use futures::{lock::Mutex, StreamExt};
+use log::{debug, error, trace, warn};
 use rdkafka::{
-    consumer::{ Consumer as ApacheKafkaConsumer, StreamConsumer },
+    consumer::{Consumer as ApacheKafkaConsumer, StreamConsumer},
     message::OwnedMessage,
-    Message,
-    Offset,
-    TopicPartitionList,
+    Message, Offset, TopicPartitionList,
 };
 use tauri::async_runtime::JoinHandle;
 
@@ -39,7 +37,7 @@ impl KafkaConsumer {
     pub fn new(
         cluster_config: &ClusterConfig,
         topic: &str,
-        admin_client: Arc<dyn Admin + Send + Sync>
+        admin_client: Arc<dyn Admin + Send + Sync>,
     ) -> KafkaConsumer {
         let consumer: StreamConsumer = build_kafka_client_config(cluster_config, None)
             .create()
@@ -73,30 +71,35 @@ impl Consumer for KafkaConsumer {
         // set the handle to the consumer loop
         self.loop_handle
             .clone()
-            .lock().await
-            .push(
-                tauri::async_runtime::spawn(async move {
-                    // clear before starting the loop
-                    records.lock().await.clear();
-                    // infinite consumer loop
-                    debug!("Start consumer loop");
-                    loop {
-                        match consumer.lock().await.stream().next().await {
-                            Some(Ok(msg)) => {
-                                trace!("New record from {}", topic);
-                                records.clone().lock().await.push(KafkaConsumer::map_kafka_record(&msg.detach()));
-                            }
-                            Some(Err(err)) => {
-                                error!("An error occurs consuming from kafka: {}", err);
-                                //todo: self.notify_error("Consumer error", &err.to_string());
-                                KafkaConsumer::_stop(handle.clone()).await.expect("Unable to stop the consumer");
-                                break;
-                            }
-                            None => (),
+            .lock()
+            .await
+            .push(tauri::async_runtime::spawn(async move {
+                // clear before starting the loop
+                records.lock().await.clear();
+                // infinite consumer loop
+                debug!("Start consumer loop");
+                loop {
+                    match consumer.lock().await.stream().next().await {
+                        Some(Ok(msg)) => {
+                            trace!("New record from {}", topic);
+                            records
+                                .clone()
+                                .lock()
+                                .await
+                                .push(KafkaConsumer::map_kafka_record(&msg.detach()));
                         }
+                        Some(Err(err)) => {
+                            error!("An error occurs consuming from kafka: {}", err);
+                            //todo: self.notify_error("Consumer error", &err.to_string());
+                            KafkaConsumer::_stop(handle.clone())
+                                .await
+                                .expect("Unable to stop the consumer");
+                            break;
+                        }
+                        None => (),
                     }
-                })
-            );
+                }
+            }));
         Ok(())
     }
 
@@ -160,13 +163,15 @@ impl KafkaConsumer {
                         .expect("Unable to configure the consumer to Beginning");
                 });
             }
-            ConsumerOffsetConfiguration::End =>
-                topic_info.partitions.iter().for_each(|p| {
-                    assignment
-                        .set_partition_offset(&topic_name, p.id, Offset::End)
-                        .expect("Unable to configure the consumer to End");
-                }),
-            ConsumerOffsetConfiguration::Custom { start_timestamp, stop_timestamp: _ } => {
+            ConsumerOffsetConfiguration::End => topic_info.partitions.iter().for_each(|p| {
+                assignment
+                    .set_partition_offset(&topic_name, p.id, Offset::End)
+                    .expect("Unable to configure the consumer to End");
+            }),
+            ConsumerOffsetConfiguration::Custom {
+                start_timestamp,
+                stop_timestamp: _,
+            } => {
                 // note: the offsets_for_times function takes a TopicPartitionList in which the
                 // offset is the timestamp in ms (instead of the actual offset) and returns a
                 // new TopicPartitionList with the actual offset
@@ -177,7 +182,8 @@ impl KafkaConsumer {
                         .expect("Unable to configure the consumer to End");
                 });
                 self.consumer
-                    .lock().await
+                    .lock()
+                    .await
                     .offsets_for_times(timestamp_assignment, Duration::from_secs(10))?
                     .elements()
                     .iter()

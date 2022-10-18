@@ -1,11 +1,11 @@
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ConsumerOffsetConfiguration {
     Beginning,
     End,
     Custom {
-        start_timestamp: i64, //time in ms
+        start_timestamp: i64,        //time in ms
         stop_timestamp: Option<i64>, //time in ms
     },
 }

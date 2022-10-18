@@ -1,14 +1,14 @@
-use std::{ collections::HashMap, sync::Arc };
+use std::{collections::HashMap, sync::Arc};
 
 use futures::lock::Mutex;
 use log::debug;
 
 use crate::lib::{
-    admin::{ Admin, KafkaAdmin },
-    configuration::{ ClusterConfig, SchemaRegistryConfig },
+    admin::{Admin, KafkaAdmin},
+    configuration::{ClusterConfig, SchemaRegistryConfig},
     consumer::Consumer,
-    parser::{ Parser, RecordParser },
-    schema_registry::{ CachedSchemaRegistry, SchemaRegistryClient },
+    parser::{Parser, RecordParser},
+    schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
 };
 
 use super::consumer::KafkaConsumer;
@@ -25,11 +25,14 @@ pub struct Cluster {
 
 impl Cluster {
     pub fn new(config: &ClusterConfig) -> Cluster {
-        let (schema_registry_client, parser) = if
-            let Some(SchemaRegistryConfig { endpoint, username, password }) = &config.schema_registry
+        let (schema_registry_client, parser) = if let Some(SchemaRegistryConfig {
+            endpoint,
+            username,
+            password,
+        }) = &config.schema_registry
         {
             let ptr: Arc<dyn SchemaRegistryClient + Send + Sync> = Arc::new(
-                CachedSchemaRegistry::new(endpoint, username.as_deref(), password.as_deref())
+                CachedSchemaRegistry::new(endpoint, username.as_deref(), password.as_deref()),
             );
             (Some(ptr.clone()), RecordParser::new(Some(ptr.clone())))
         } else {
@@ -50,9 +53,16 @@ impl Cluster {
             debug!("Create consumer for topic {}", topic_name);
             consumers.insert(
                 topic_name.to_string(),
-                Arc::new(KafkaConsumer::new(&self.config, topic_name, self.admin_client.clone()))
+                Arc::new(KafkaConsumer::new(
+                    &self.config,
+                    topic_name,
+                    self.admin_client.clone(),
+                )),
             );
         }
-        consumers.get(topic_name).expect("the consumer must exists").clone()
+        consumers
+            .get(topic_name)
+            .expect("the consumer must exists")
+            .clone()
     }
 }
