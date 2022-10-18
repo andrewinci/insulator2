@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { Paper, Text, Group } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { formatISO } from "date-fns";
+import * as dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { KafkaRecord } from "../../models/kafka";
 
@@ -99,7 +99,7 @@ const KafkaRecordCard = ({
   useEffect(() => {
     fetchRecord(index).then((r) => setRecord(r));
   }, [fetchRecord, index]);
-  const timestamp = record?.timestamp ? formatISO(new Date(record.timestamp)) : "N/A";
+  const timestamp = record?.timestamp ? dayjs(record.timestamp).toISOString() : "N/A";
   return (
     <Paper shadow="xs" p={5} withBorder style={{ ...style, maxHeight: 120, width: "calc(100% - 20px)" }}>
       <Group spacing={0} noWrap={true} style={{ height: 20 }}>

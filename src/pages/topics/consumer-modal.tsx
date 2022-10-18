@@ -3,8 +3,11 @@ import { openModal, useModals } from "@mantine/modals";
 import { DateRangePicker, DatePicker, TimeRangeInput, TimeInput } from "@mantine/dates";
 import { Cluster, ConsumerSettingsFrom } from "../../models/kafka";
 import { useForm } from "@mantine/form";
-import { addMinutes, getUnixTime } from "date-fns";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { startConsumer } from "../../tauri";
+
+dayjs.extend(utc);
 
 type ConsumerModalProps = {
   cluster: Cluster;
@@ -21,8 +24,8 @@ export const openConsumerModal = (props: ConsumerModalProps) => {
 
 const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
   const { closeAll } = useModals();
-  const nowUTC = addMinutes(new Date(), new Date().getTimezoneOffset());
-  const zeroUTC = addMinutes(new Date(0), new Date(0).getTimezoneOffset());
+  const nowUTC = dayjs.utc().toDate();
+  const zeroUTC = dayjs().set("h", 0).set("m", 0).set("s", 0).toDate();
   const form = useForm<ConsumerForm>({
     initialValues: {
       from: "End",
@@ -106,10 +109,10 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
 
 export const dateTimeToUnixTimeMs = (dateUTC: Date, timeUTC: Date): number => {
   // convert to UTC
-  timeUTC = addMinutes(timeUTC, -1 * new Date().getTimezoneOffset());
-  dateUTC = addMinutes(dateUTC, -1 * new Date().getTimezoneOffset());
+  timeUTC = dayjs(timeUTC).utc().toDate();
+  dateUTC = dayjs(dateUTC).utc().toDate();
   const dateTime = dateUTC.toISOString().substring(0, 10) + timeUTC.toISOString().substring(10);
-  return getUnixTime(new Date(dateTime)) * 1000;
+  return dayjs(new Date(dateTime)).unix() * 1000;
 };
 
 type ConsumerForm = {
