@@ -2,7 +2,6 @@ use std::{collections::HashMap, sync::Arc};
 
 use futures::lock::Mutex;
 use log::debug;
-use tauri::App;
 
 use crate::lib::{Cluster, ConfigStore};
 
@@ -27,7 +26,7 @@ impl AppState {
             .clone() //todo: return a reference
     }
 
-    fn build_new_cluster<'a>(cluster_id: &str) -> Cluster {
+    fn build_new_cluster(cluster_id: &str) -> Cluster {
         debug!("Init cluster {}", cluster_id);
         let configurations = ConfigStore::new()
             .get_configuration()

@@ -14,27 +14,47 @@ use crate::lib::{
 use super::consumer::KafkaConsumer;
 
 type TopicName = String;
-#[derive(Clone)]
-pub struct Cluster {
+
+pub struct Cluster<SR = CachedSchemaRegistry, C = KafkaConsumer, P = RecordParser, A = KafkaAdmin>
+where
+    SR: SchemaRegistryClient + Send + Sync,
+    C: Consumer + Send + Sync,
+    P: Parser + Send + Sync,
+    A: Admin + Send + Sync,
+{
     pub config: ClusterConfig,
-    pub schema_registry_client: Option<Arc<dyn SchemaRegistryClient + Send + Sync>>,
-    consumers: Arc<Mutex<HashMap<TopicName, Arc<dyn Consumer + Send + Sync>>>>,
-    pub admin_client: Arc<dyn Admin + Send + Sync>,
-    pub parser: Arc<dyn Parser + Send + Sync>,
+    pub schema_registry_client: Option<Arc<SR>>,
+    consumers: Arc<Mutex<HashMap<TopicName, Arc<C>>>>,
+    pub admin_client: Arc<A>,
+    pub parser: Arc<P>,
+}
+
+impl Clone for Cluster<CachedSchemaRegistry> {
+    fn clone(&self) -> Self {
+        Self {
+            config: self.config.clone(),
+            schema_registry_client: self.schema_registry_client.clone(),
+            consumers: self.consumers.clone(),
+            admin_client: self.admin_client.clone(),
+            parser: self.parser.clone(),
+        }
+    }
 }
 
 impl Cluster {
-    pub fn new(config: &ClusterConfig) -> Cluster {
+    pub fn new(config: &ClusterConfig) -> Self {
         let (schema_registry_client, parser) = if let Some(SchemaRegistryConfig {
             endpoint,
             username,
             password,
         }) = &config.schema_registry
         {
-            let ptr: Arc<dyn SchemaRegistryClient + Send + Sync> = Arc::new(
-                CachedSchemaRegistry::new(endpoint, username.as_deref(), password.as_deref()),
-            );
-            (Some(ptr.clone()), RecordParser::new(Some(ptr.clone())))
+            let ptr = Arc::new(CachedSchemaRegistry::new(
+                endpoint,
+                username.as_deref(),
+                password.as_deref(),
+            ));
+            (Some(ptr.clone()), RecordParser::new(Some(ptr)))
         } else {
             (None, RecordParser::new(None))
         };
@@ -47,7 +67,7 @@ impl Cluster {
         }
     }
 
-    pub async fn get_consumer(&self, topic_name: &str) -> Arc<dyn Consumer + Send + Sync> {
+    pub async fn get_consumer(&self, topic_name: &str) -> Arc<KafkaConsumer> {
         let mut consumers = self.consumers.lock().await;
         if consumers.get(topic_name).is_none() {
             debug!("Create consumer for topic {}", topic_name);

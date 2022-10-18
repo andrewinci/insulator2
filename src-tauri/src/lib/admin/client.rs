@@ -44,7 +44,7 @@ pub struct KafkaAdmin {
 }
 
 impl KafkaAdmin {
-    pub fn new(config: &ClusterConfig) -> KafkaAdmin {
+    pub fn new(config: &ClusterConfig) -> Self {
         KafkaAdmin {
             config: config.clone(),
             timeout: Duration::from_secs(30),

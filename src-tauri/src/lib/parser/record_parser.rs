@@ -4,7 +4,7 @@ use async_trait::async_trait;
 
 use crate::lib::{
     error::{Error, Result},
-    schema_registry::SchemaRegistryClient,
+    schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
     types::{ParsedKafkaRecord, RawKafkaRecord},
 };
 
@@ -24,14 +24,18 @@ pub trait Parser {
     ) -> Result<ParsedKafkaRecord>;
 }
 
-pub struct RecordParser {
-    avro_parser: Option<AvroParser>,
+pub struct RecordParser<C = CachedSchemaRegistry>
+where
+    C: SchemaRegistryClient + Send + Sync,
+{
+    avro_parser: Option<AvroParser<C>>,
 }
 
-impl RecordParser {
-    pub fn new(
-        schema_registry_client: Option<Arc<dyn SchemaRegistryClient + Send + Sync>>,
-    ) -> RecordParser {
+impl<C> RecordParser<C>
+where
+    C: SchemaRegistryClient + Send + Sync,
+{
+    pub fn new(schema_registry_client: Option<Arc<C>>) -> Self {
         RecordParser {
             avro_parser: schema_registry_client.map(|client| AvroParser::new(client)),
         }
@@ -39,7 +43,10 @@ impl RecordParser {
 }
 
 #[async_trait]
-impl Parser for RecordParser {
+impl<C> Parser for RecordParser<C>
+where
+    C: SchemaRegistryClient + Sync + Send,
+{
     async fn parse_record(
         &self,
         record: &RawKafkaRecord,

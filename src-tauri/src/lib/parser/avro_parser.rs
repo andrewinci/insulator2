@@ -7,15 +7,21 @@ use serde_json::{json, Map, Value as JsonValue};
 
 use crate::lib::{
     error::{Error, Result},
-    schema_registry::SchemaRegistryClient,
+    schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
 };
 
-pub struct AvroParser {
-    schema_registry_client: Arc<dyn SchemaRegistryClient + Send + Sync>,
+pub struct AvroParser<C = CachedSchemaRegistry>
+where
+    C: SchemaRegistryClient + Send + Sync,
+{
+    schema_registry_client: Arc<C>,
 }
 
-impl AvroParser {
-    pub fn new(schema_registry_client: Arc<dyn SchemaRegistryClient + Send + Sync>) -> AvroParser {
+impl<C> AvroParser<C>
+where
+    C: SchemaRegistryClient + Send + Sync,
+{
+    pub fn new(schema_registry_client: Arc<C>) -> Self {
         AvroParser {
             schema_registry_client,
         }
@@ -204,7 +210,7 @@ mod tests {
             Ok(self.schema.clone())
         }
     }
-    fn get_sut(schema: String) -> AvroParser {
+    fn get_sut(schema: String) -> AvroParser<MockSchemaRegistry> {
         AvroParser::new(Arc::new(MockSchemaRegistry { schema }))
     }
 

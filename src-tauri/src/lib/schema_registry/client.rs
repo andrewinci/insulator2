@@ -16,6 +16,7 @@ pub trait SchemaRegistryClient {
     async fn get_schema_by_id(&self, id: i32) -> Result<String>;
 }
 
+#[derive(Clone)]
 pub struct CachedSchemaRegistry<C = ReqwestClient>
 where
     C: HttpClient + Sync + Send,

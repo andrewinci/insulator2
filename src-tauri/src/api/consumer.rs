@@ -1,7 +1,9 @@
 use log::warn;
 
 use super::{error::Result, AppState};
-use crate::lib::{ConsumerOffsetConfiguration, ConsumerState, ParsedKafkaRecord, ParserMode};
+use crate::lib::{
+    Consumer, ConsumerOffsetConfiguration, ConsumerState, ParsedKafkaRecord, Parser, ParserMode,
+};
 
 #[tauri::command]
 pub async fn start_consumer(

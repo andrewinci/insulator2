@@ -9,7 +9,7 @@ pub struct ConfigStore {}
 
 impl ConfigStore {
     //todo: cache?
-    pub fn new() -> ConfigStore {
+    pub fn new() -> Self {
         ConfigStore {}
     }
     pub fn get_configuration(&self) -> Result<InsulatorConfig> {

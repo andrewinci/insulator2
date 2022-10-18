@@ -1,7 +1,7 @@
 use std::{ops::Not, sync::Arc, time::Duration};
 
 use crate::lib::{
-    admin::Admin,
+    admin::{Admin, KafkaAdmin},
     configuration::{build_kafka_client_config, ClusterConfig},
     consumer::types::{ConsumerOffsetConfiguration, ConsumerState},
     error::{Error, Result},
@@ -25,20 +25,22 @@ pub trait Consumer {
     async fn get_consumer_state(&self) -> ConsumerState;
 }
 
-pub struct KafkaConsumer {
+pub struct KafkaConsumer<A = KafkaAdmin>
+where
+    A: Admin + Send + Sync,
+{
     topic: String,
     consumer: Arc<Mutex<StreamConsumer>>,
     loop_handle: Arc<Mutex<Vec<JoinHandle<()>>>>,
     records: Arc<Mutex<Vec<RawKafkaRecord>>>,
-    admin_client: Arc<dyn Admin + Send + Sync>,
+    admin_client: Arc<A>,
 }
 
-impl KafkaConsumer {
-    pub fn new(
-        cluster_config: &ClusterConfig,
-        topic: &str,
-        admin_client: Arc<dyn Admin + Send + Sync>,
-    ) -> KafkaConsumer {
+impl<A> KafkaConsumer<A>
+where
+    A: Admin + Send + Sync,
+{
+    pub fn new(cluster_config: &ClusterConfig, topic: &str, admin_client: Arc<A>) -> Self {
         let consumer: StreamConsumer = build_kafka_client_config(cluster_config, None)
             .create()
             .expect("Unable to create kafka the consumer");
