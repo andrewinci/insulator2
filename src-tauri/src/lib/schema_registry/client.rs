@@ -119,7 +119,7 @@ mod tests {
     #[tokio::test]
     async fn test_cache() {
         mock! {
-            HttpTestClient {};
+            HttpTestClient {}
 
             #[async_trait]
             impl HttpClient for HttpTestClient {
