@@ -64,8 +64,8 @@ export const describeConsumerGroup = (clusterId: string, consumerGroupName: stri
   );
 };
 
-export const getConsumerGroups = (clusterId: string): Promise<string[]> => {
-  return invoke<string[]>("list_consumer_groups", { clusterId }).catch((err: TauriError) => {
+export const getConsumerGroups = (clusterId: string, force: boolean): Promise<string[]> => {
+  return invoke<string[]>("list_consumer_groups", { clusterId, force }).catch((err: TauriError) => {
     console.error(err);
     addNotification({
       type: "error",

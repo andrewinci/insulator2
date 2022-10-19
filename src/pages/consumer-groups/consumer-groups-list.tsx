@@ -16,9 +16,9 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
     loading: true,
   });
 
-  const updateSchemasList = () => {
+  const updateSchemasList = (force = false) => {
     setState({ ...state, loading: true });
-    getConsumerGroups(clusterId)
+    getConsumerGroups(clusterId, force)
       .then((consumers) => setState({ consumers, loading: false }))
       .then((_) => success("List of consumer groups successfully retrieved"))
       .catch((err: TauriError) => {
@@ -37,7 +37,7 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
       loading={state.loading}
       items={state.consumers}
       onItemSelected={onConsumerSelected}
-      onRefreshList={updateSchemasList}
+      onRefreshList={() => updateSchemasList(true)}
     />
   );
 };

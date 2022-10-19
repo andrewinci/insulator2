@@ -24,7 +24,7 @@ pub trait Admin {
     async fn list_topics(&self, force: bool) -> Result<Vec<TopicInfo>>;
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
-    fn list_consumer_groups(&self) -> Result<Vec<String>>;
+    async fn list_consumer_groups(&self, force: bool) -> Result<Vec<String>>;
     async fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
 }
 
@@ -34,6 +34,8 @@ pub struct KafkaAdmin {
     consumer: StreamConsumer,
     admin_client: AdminClient<DefaultClientContext>,
     topics: Arc<Mutex<Vec<TopicInfo>>>,
+    // consumer groups
+    consumer_groups: Arc<Mutex<Vec<String>>>,
 }
 
 impl KafkaAdmin {
@@ -48,6 +50,7 @@ impl KafkaAdmin {
                 .create()
                 .expect("Unable to build the admin client"),
             topics: Arc::new(Mutex::new(vec![])),
+            consumer_groups: Arc::new(Mutex::new(vec![])),
         }
     }
 }
@@ -109,10 +112,14 @@ impl Admin for KafkaAdmin {
         }
     }
 
-    fn list_consumer_groups(&self) -> Result<Vec<String>> {
-        let groups = self.consumer.fetch_group_list(None, self.timeout)?;
-        let group_names: Vec<_> = groups.groups().iter().map(|g| g.name().to_string()).collect();
-        Ok(group_names)
+    async fn list_consumer_groups(&self, force: bool) -> Result<Vec<String>> {
+        let mut consumer_group_names = self.consumer_groups.lock().await;
+        if force || consumer_group_names.is_empty() {
+            let groups = self.consumer.fetch_group_list(None, self.timeout)?;
+            let group_names: Vec<_> = groups.groups().iter().map(|g| g.name().to_string()).collect();
+            consumer_group_names.extend(group_names);
+        }
+        Ok(consumer_group_names.clone())
     }
 
     async fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo> {
