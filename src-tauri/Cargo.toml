@@ -42,7 +42,7 @@ rdkafka = { version = "0.27", features = ["cmake-build", "ssl-vendored", "gssapi
 openssl-src = { git = "https://github.com/vectordotdev/openssl-src-rs.git", branch  = "enable_engine" }
 
 [dev-dependencies]
-mockall = "0.11.2"
+mockall = "0.11.3"
 
 [features]
 # by default Tauri runs in production mode
