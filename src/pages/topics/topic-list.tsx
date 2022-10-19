@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { useCurrentCluster, useNotifications } from "../../providers";
+import { useNotifications } from "../../providers";
 import { ItemList } from "../common";
 import { createTopic, getTopicNamesList } from "../../tauri";
 import { Button, Checkbox, Group, NumberInput, Stack, TextInput, Title } from "@mantine/core";
 import { openModal, useModals } from "@mantine/modals";
 import { useForm } from "@mantine/form";
+import { useParams } from "react-router-dom";
 
 type TopicListProps = {
   onTopicSelected: (topicName: string) => void;
@@ -12,16 +13,20 @@ type TopicListProps = {
 
 export const TopicList = (props: TopicListProps) => {
   const { onTopicSelected } = props;
+  const { clusterId } = useParams();
   const { success } = useNotifications();
   const [state, setState] = useState<{ topics: string[]; search?: string; loading: boolean }>({
     topics: [],
     loading: true,
   });
-  const activeCluster = useCurrentCluster();
+  if (!clusterId) {
+    throw Error("Missing clusterId in path!");
+  }
+
   const updateTopicList = (force = false) => {
-    if (activeCluster) {
+    if (clusterId) {
       setState({ ...state, loading: true });
-      getTopicNamesList(activeCluster, force)
+      getTopicNamesList(clusterId, force)
         .then((topics) => setState({ topics, loading: false }))
         .then((_) => success("List of topics updated"))
         .catch(() => {
@@ -31,19 +36,19 @@ export const TopicList = (props: TopicListProps) => {
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => updateTopicList(), [activeCluster]);
+  useMemo(() => updateTopicList(), [clusterId]);
 
   const onCreateTopic = () =>
     openModal({
       title: <Title order={3}>Consumer settings</Title>,
-      children: <CreateTopicModal clusterId={activeCluster!.id} updateTopicList={updateTopicList} />,
+      children: <CreateTopicModal clusterId={clusterId} updateTopicList={updateTopicList} />,
       closeOnClickOutside: false,
     });
 
   return (
     <ItemList
       title="Topics"
-      listId={`topic-${activeCluster?.id}`}
+      listId={`topic-${clusterId}`}
       loading={state.loading}
       items={state.topics}
       onItemSelected={onTopicSelected}

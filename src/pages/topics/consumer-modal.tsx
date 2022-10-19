@@ -1,7 +1,7 @@
 import { Chip, Stack, Title, Text, Group, Checkbox, Button, Divider } from "@mantine/core";
 import { openModal, useModals } from "@mantine/modals";
 import { DateRangePicker, DatePicker, TimeRangeInput, TimeInput } from "@mantine/dates";
-import { Cluster, ConsumerSettingsFrom } from "../../models/kafka";
+import { ConsumerSettingsFrom } from "../../models/kafka";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -10,7 +10,7 @@ import { startConsumer } from "../../tauri";
 dayjs.extend(utc);
 
 type ConsumerModalProps = {
-  cluster: Cluster;
+  clusterId: string;
   topicName: string;
 };
 
@@ -22,7 +22,7 @@ export const openConsumerModal = (props: ConsumerModalProps) => {
   });
 };
 
-const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
+const ModalBody = ({ clusterId, topicName }: ConsumerModalProps) => {
   const { closeAll } = useModals();
   const nowUTC = dayjs.utc().toDate();
   const zeroUTC = dayjs().set("h", 0).set("m", 0).set("s", 0).toDate();
@@ -62,7 +62,7 @@ const ModalBody = ({ cluster, topicName }: ConsumerModalProps) => {
     }
   };
   const onSubmit = async (f: ConsumerForm) => {
-    await startConsumer(cluster, topicName, getConsumerSettingFrom(f));
+    await startConsumer(clusterId, topicName, getConsumerSettingFrom(f));
     closeAll();
   };
 

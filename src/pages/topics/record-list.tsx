@@ -68,7 +68,7 @@ export const RecordsList = (props: RecordsListProps) => {
   );
 };
 
-const LabelValue = ({ label, value }: { label: string; value: any }) => (
+const LabelValue = ({ label, value }: { label: string; value: string | number }) => (
   <>
     <Text size={13} ml={10} italic>
       {label}

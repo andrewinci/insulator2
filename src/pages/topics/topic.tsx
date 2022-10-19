@@ -2,16 +2,16 @@ import { ActionIcon, Button, Center, Container, Divider, Group, Loader, Tooltip,
 import { IconInfoCircle } from "@tabler/icons";
 import React from "react";
 import { Async } from "react-async";
-import { Cluster, ConsumerState } from "../../models/kafka";
-import { useCurrentCluster } from "../../providers";
+import { ConsumerState } from "../../models/kafka";
 import { RecordsList } from "./record-list";
 import { getConsumerState, getRecord, stopConsumer } from "../../tauri";
 import { SingleLineTitle } from "../../components";
 import { openConsumerModal } from "./consumer-modal";
+import { useParams } from "react-router-dom";
 
 type TopicPageProps = {
   topicName: string;
-  cluster: Cluster;
+  clusterId: string;
 };
 
 type TopicPageState = ConsumerState;
@@ -42,22 +42,21 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
     if (nextState.isRunning != this.state.isRunning) return true;
     const res =
       nextProps.topicName === this.props.topicName &&
-      nextProps.cluster.id === this.props.cluster.id &&
+      nextProps.clusterId === this.props.clusterId &&
       this.state.isRunning === nextState.isRunning &&
       this.state.recordCount === nextState.recordCount;
     return !res;
   }
 
   updateState = () =>
-    getConsumerState(this.props.cluster, this.props.topicName).then((s) =>
+    getConsumerState(this.props.clusterId, this.props.topicName).then((s) =>
       this.setState((current) => ({ ...current, ...s }))
     );
 
-  toggleConsumerRunning = async () =>
-    this.state.isRunning
-      ? await stopConsumer(this.props.cluster.id, this.props.topicName)
-      : openConsumerModal({ cluster: this.props.cluster, topicName: this.props.topicName });
-
+  toggleConsumerRunning = async () => {
+    const { clusterId, topicName } = this.props;
+    this.state.isRunning ? await stopConsumer(clusterId, topicName) : openConsumerModal({ clusterId, topicName });
+  };
   render = () => (
     <Container>
       <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
@@ -82,7 +81,7 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
           <RecordsList
             heightOffset={140}
             itemCount={this.state.recordCount}
-            fetchRecord={(index) => getRecord(index, this.props.cluster, this.props.topicName)}
+            fetchRecord={(index) => getRecord(index, this.props.clusterId, this.props.topicName)}
           />
         </Async.Resolved>
       </Async>
@@ -91,9 +90,9 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
 }
 
 export const Topic = (props: { topicName: string }) => {
-  const cluster = useCurrentCluster();
-  return cluster ? (
-    <TopicStateful topicName={props.topicName} cluster={cluster}></TopicStateful>
+  const { clusterId } = useParams();
+  return clusterId ? (
+    <TopicStateful topicName={props.topicName} clusterId={clusterId}></TopicStateful>
   ) : (
     <Text>Missing cluster configuration</Text>
   );

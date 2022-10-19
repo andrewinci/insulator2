@@ -1,5 +1,4 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import { Cluster } from "../models/kafka";
 import { getConfiguration, setConfiguration } from "../tauri";
 
@@ -29,11 +28,6 @@ export type AppTheme = "Light" | "Dark";
 const AppStateContext = createContext<AppStateContextType>(defaultAppState);
 
 export const useAppState = () => useContext(AppStateContext);
-export const useCurrentCluster = () => {
-  const { appState } = useAppState();
-  const { clusterId } = useParams();
-  return appState.clusters.find((c) => c.id == clusterId);
-};
 
 export const AppStateProvider = ({ children }: { children: ReactNode }) => {
   const [appState, setAppState] = useState<AppState>(defaultAppState.appState);

@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api";
 import {
-  Cluster,
   ConsumerGroupInfo,
   ConsumerSettingsFrom,
   ConsumerState,
@@ -94,27 +93,27 @@ export const createTopic = (
   });
 };
 
-export const getTopicNamesList = (cluster: Cluster, force?: boolean): Promise<string[]> =>
-  invoke<TopicInfo[]>("list_topics", { clusterId: cluster.id, force })
+export const getTopicNamesList = (clusterId: string, force?: boolean): Promise<string[]> =>
+  invoke<TopicInfo[]>("list_topics", { clusterId, force })
     .then((topics) => topics.map((t) => t.name))
     .catch((err: TauriError) => {
       console.error(err);
       addNotification({
         type: "error",
-        title: `Unable to retrieve the list of topics for "${cluster?.name}"`,
+        title: `Unable to retrieve the list of topics`,
         description: format(err),
       });
       throw err;
     });
 
-export const getConsumerState = (cluster: Cluster, topic: string): Promise<ConsumerState> =>
-  invoke<ConsumerState>("get_consumer_state", { clusterId: cluster.id, topic }).catch((err: TauriError) => {
+export const getConsumerState = (clusterId: string, topic: string): Promise<ConsumerState> =>
+  invoke<ConsumerState>("get_consumer_state", { clusterId, topic }).catch((err: TauriError) => {
     addNotification({ type: "error", title: "Get Kafka consumer state", description: format(err) });
     throw err;
   });
 
-export const getRecord = (index: number, cluster: Cluster, topic: string): Promise<KafkaRecord> =>
-  invoke<KafkaRecord>("get_record", { index, clusterId: cluster.id, topic }).catch((err: TauriError) => {
+export const getRecord = (index: number, clusterId: string, topic: string): Promise<KafkaRecord> =>
+  invoke<KafkaRecord>("get_record", { index, clusterId, topic }).catch((err: TauriError) => {
     addNotification({ type: "error", title: "Get Kafka record", description: format(err) });
     throw err;
   });
@@ -124,9 +123,9 @@ export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
     addNotification({ type: "error", title: "Stop Kafka record", description: format(err) })
   );
 
-export const startConsumer = (cluster: Cluster, topic: string, offsetConfig: ConsumerSettingsFrom): Promise<void> =>
+export const startConsumer = (clusterId: string, topic: string, offsetConfig: ConsumerSettingsFrom): Promise<void> =>
   invoke<void>("start_consumer", {
-    clusterId: cluster.id,
+    clusterId,
     offsetConfig,
     topic,
   }).catch((err: TauriError) =>

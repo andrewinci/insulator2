@@ -10,6 +10,7 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
   const [state, setState] = useState<ConsumerGroupInfo | undefined>(undefined);
   useMemo(() => {
     setState(undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, clusterId]);
 
   const retrieveConsumerGroup = useMemo(

@@ -1,7 +1,7 @@
 import { Container, Divider, Title } from "@mantine/core";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
-import { useAppState, useCurrentCluster, useNotifications } from "../../providers";
+import { useAppState, useNotifications } from "../../providers";
 import { Cluster, ClusterAuthentication } from "../../models/kafka";
 import { AuthenticationFormType, ClusterForm, ClusterFormType, SaslFormType, SslFormType } from "./form";
 
@@ -9,7 +9,8 @@ export const EditCluster = () => {
   const { alert } = useNotifications();
   const { setAppState, appState } = useAppState();
   const navigate = useNavigate();
-  const cluster = useCurrentCluster();
+  const { clusterId } = useParams();
+  const cluster = appState.clusters.find((c) => c.id == clusterId);
   if (!cluster) {
     alert("Something went wrong", "Missing clusterId in navigation.");
     return <></>;
