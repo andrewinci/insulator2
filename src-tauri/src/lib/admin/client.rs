@@ -123,14 +123,15 @@ impl Admin for KafkaAdmin {
             .create()
             .expect("Unable to build the consumer");
 
-        let topics = self.list_topics(false).await?;
         debug!("Build the list of all partitions and topics");
+        let topics = self.list_topics(false).await?;
         let mut topic_partition_lst = TopicPartitionList::new();
         topics.iter().for_each(|topic| {
             topic.partitions.iter().for_each(|partition| {
                 topic_partition_lst.add_partition(&topic.name, partition.id);
             })
         });
+
         debug!("Check any committed offset to the consumer group");
         // allow up to 1 minute of tmo for big clusters and slow connections
         let res = consumer
@@ -148,16 +149,25 @@ impl Admin for KafkaAdmin {
             .collect();
         debug!("Retrieve completed {:?}", &offsets);
 
-        //todo: retrieve consumer group status and active consumers with `fetch_group_list`
-
         Ok(ConsumerGroupInfo {
             name: consumer_group_name.into(),
+            state: self.get_consumer_group_state(consumer_group_name).await?,
             offsets,
         })
     }
 }
 
 impl KafkaAdmin {
+    async fn get_consumer_group_state(&self, consumer_group_name: &str) -> Result<String> {
+        debug!("Retrieve consumer group status");
+        let fetch_group_response = self
+            .consumer
+            .fetch_group_list(Some(consumer_group_name), self.timeout)?;
+        let groups: Vec<_> = fetch_group_response.groups().iter().collect();
+        assert_eq!(groups.len(), 1);
+        Ok(groups[0].state().to_string())
+    }
+
     fn internal_list_topics(&self, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
         let topics: Vec<TopicInfo> = self
             .consumer
