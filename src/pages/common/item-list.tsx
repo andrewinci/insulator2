@@ -117,7 +117,7 @@ export const ItemList = (props: ItemListProps) => {
                   }}
                   rightSection={<IconChevronRight size={12} stroke={1.5} />}
                   noWrap
-                  label={panelItems[index]}
+                  label={<Text sx={{ maxWidth: "300px" }}>{panelItems[index]}</Text>}
                 />
               </Grid.Col>
             </Grid>
