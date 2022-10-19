@@ -154,17 +154,16 @@ impl Admin for KafkaAdmin {
                 .expect("Unable to build the consumer");
 
         let topics = self.list_topics(false).await?;
-        debug!("Assign ALL topics and ALL partitions to the consumer");
+        debug!("Build the list of all partitions and topics");
         let mut topic_partition_lst = TopicPartitionList::new();
         topics.iter().for_each(|topic| {
             topic.partitions.iter().for_each(|partition| {
                 topic_partition_lst.add_partition(&topic.name, partition.id);
             })
         });
-        consumer.assign(&topic_partition_lst).unwrap();
         debug!("Check any committed offset to the consumer group");
-        // allow up to 3 minutes for big clusters and slow connections
-        let res = consumer.committed(Duration::from_secs(3 * 60)).unwrap();
+        // allow up to 1 minute of tmo for big clusters and slow connections
+        let res = consumer.committed_offsets(topic_partition_lst, Duration::from_secs(60)).unwrap();
         let offsets: Vec<_> = res
             .elements()
             .iter()
@@ -175,8 +174,8 @@ impl Admin for KafkaAdmin {
                 offset: map_offset(&r.offset()),
             })
             .collect();
-        debug!("Retrieve completed");
-
+        debug!("Retrieve completed {:?}", &offsets);
+        
         //todo: retrieve consumer group status and active consumers with `fetch_group_list`
 
         Ok(ConsumerGroupInfo {
