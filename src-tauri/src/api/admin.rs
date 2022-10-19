@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::lib::{Admin, ConsumerGroupInfo, TopicInfo};
+use crate::lib::admin::{Admin, ConsumerGroupInfo, TopicInfo};
 
 use super::{error::Result, AppState};
 

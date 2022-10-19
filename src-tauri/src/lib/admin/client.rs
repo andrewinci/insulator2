@@ -163,7 +163,9 @@ impl Admin for KafkaAdmin {
         });
         debug!("Check any committed offset to the consumer group");
         // allow up to 1 minute of tmo for big clusters and slow connections
-        let res = consumer.committed_offsets(topic_partition_lst, Duration::from_secs(60)).unwrap();
+        let res = consumer
+            .committed_offsets(topic_partition_lst, Duration::from_secs(60))
+            .unwrap();
         let offsets: Vec<_> = res
             .elements()
             .iter()
@@ -175,7 +177,7 @@ impl Admin for KafkaAdmin {
             })
             .collect();
         debug!("Retrieve completed {:?}", &offsets);
-        
+
         //todo: retrieve consumer group status and active consumers with `fetch_group_list`
 
         Ok(ConsumerGroupInfo {

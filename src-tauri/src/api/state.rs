@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 use futures::lock::Mutex;
 use log::debug;
 
-use crate::lib::{Cluster, ConfigStore};
+use crate::lib::{configuration::ConfigStore, Cluster};
 
 type ClusterId = String;
 
