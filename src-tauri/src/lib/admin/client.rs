@@ -23,16 +23,9 @@ use rdkafka::{
 pub trait Admin {
     async fn list_topics(&self, force: bool) -> Result<Vec<TopicInfo>>;
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
-    async fn create_topic(
-        &self,
-        topic_name: &str,
-        partitions: i32,
-        isr: i32,
-        compacted: bool,
-    ) -> Result<()>;
+    async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
-    async fn describe_consumer_group(&self, consumer_group_name: &str)
-        -> Result<ConsumerGroupInfo>;
+    async fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
 }
 
 pub struct KafkaAdmin {
@@ -91,28 +84,16 @@ impl Admin for KafkaAdmin {
         }
     }
 
-    async fn create_topic(
-        &self,
-        name: &str,
-        num_partitions: i32,
-        isr: i32,
-        compacted: bool,
-    ) -> Result<()> {
+    async fn create_topic(&self, name: &str, num_partitions: i32, isr: i32, compacted: bool) -> Result<()> {
         let new_topic = NewTopic {
             name,
             num_partitions,
-            config: vec![(
-                "cleanup.policy",
-                if compacted { "compact" } else { "delete" },
-            )],
+            config: vec![("cleanup.policy", if compacted { "compact" } else { "delete" })],
             replication: TopicReplication::Fixed(isr),
         };
         let opts = AdminOptions::new();
 
-        let res = self
-            .admin_client
-            .create_topics(vec![&new_topic], &opts)
-            .await?;
+        let res = self.admin_client.create_topics(vec![&new_topic], &opts).await?;
         let res = res.get(0).expect("Create topic: missing result");
         match res {
             Ok(_) => {
@@ -130,28 +111,17 @@ impl Admin for KafkaAdmin {
 
     fn list_consumer_groups(&self) -> Result<Vec<String>> {
         let groups = self.consumer.fetch_group_list(None, self.timeout)?;
-        let group_names: Vec<_> = groups
-            .groups()
-            .iter()
-            .map(|g| g.name().to_string())
-            .collect();
+        let group_names: Vec<_> = groups.groups().iter().map(|g| g.name().to_string()).collect();
         Ok(group_names)
     }
 
-    async fn describe_consumer_group(
-        &self,
-        consumer_group_name: &str,
-    ) -> Result<ConsumerGroupInfo> {
+    async fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo> {
         // create a consumer with the defined consumer_group_name.
         // NOTE: the consumer shouldn't join the consumer group, otherwise it'll cause a re-balance
-        debug!(
-            "Build the consumer for the consumer group {}",
-            consumer_group_name
-        );
-        let consumer: StreamConsumer =
-            build_kafka_client_config(&self.config, Some(consumer_group_name))
-                .create()
-                .expect("Unable to build the consumer");
+        debug!("Build the consumer for the consumer group {}", consumer_group_name);
+        let consumer: StreamConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
+            .create()
+            .expect("Unable to build the consumer");
 
         let topics = self.list_topics(false).await?;
         debug!("Build the list of all partitions and topics");

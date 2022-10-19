@@ -24,10 +24,7 @@ pub fn build_kafka_client_config(cluster: &ClusterConfig, group_id: Option<&str>
         } => {
             config
                 .set("security.protocol", "SASL_SSL")
-                .set(
-                    "sasl.mechanisms",
-                    if *scram { "SCRAM-SHA-256" } else { "PLAIN" },
-                )
+                .set("sasl.mechanisms", if *scram { "SCRAM-SHA-256" } else { "PLAIN" })
                 .set("ssl.endpoint.identification.algorithm", "https")
                 .set("sasl.username", username)
                 .set("sasl.password", password);

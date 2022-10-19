@@ -8,9 +8,7 @@ pub type Result<T> = core::result::Result<T, SchemaRegistryError>;
 
 impl From<reqwest::Error> for SchemaRegistryError {
     fn from(err: reqwest::Error) -> Self {
-        Self::HttpClientError {
-            msg: err.to_string(),
-        }
+        Self::HttpClientError { msg: err.to_string() }
     }
 }
 

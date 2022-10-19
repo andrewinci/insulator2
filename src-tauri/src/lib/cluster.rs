@@ -73,16 +73,9 @@ impl Cluster {
             debug!("Create consumer for topic {}", topic_name);
             consumers.insert(
                 topic_name.to_string(),
-                Arc::new(KafkaConsumer::new(
-                    &self.config,
-                    topic_name,
-                    self.admin_client.clone(),
-                )),
+                Arc::new(KafkaConsumer::new(&self.config, topic_name, self.admin_client.clone())),
             );
         }
-        consumers
-            .get(topic_name)
-            .expect("the consumer must exists")
-            .clone()
+        consumers.get(topic_name).expect("the consumer must exists").clone()
     }
 }

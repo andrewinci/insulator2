@@ -76,8 +76,7 @@ where
             Ok(cached.clone())
         } else {
             trace!("Schema not found in cache, retrieving");
-            let url = Url::parse(&self.endpoint)?
-                .join(format!("/subjects/{}/versions/", subject_name).as_str())?;
+            let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
             let versions: Vec<i32> = self.http_client.get(url.as_ref()).await?;
             let mut schemas = Vec::<Schema>::new();
             for v in versions {
@@ -131,11 +130,7 @@ mod tests {
         mock_http_client
             .expect_get::<GetSchemaByIdResult>()
             .once()
-            .returning(|_| {
-                Ok(GetSchemaByIdResult {
-                    schema: "123".into(),
-                })
-            });
+            .returning(|_| Ok(GetSchemaByIdResult { schema: "123".into() }));
 
         let sut = CachedSchemaRegistry::new_with_client("https://example.com", mock_http_client);
         let call_1 = sut.get_schema_by_id(1).await;

@@ -17,11 +17,7 @@ pub enum ParserMode {
 
 #[async_trait]
 pub trait Parser {
-    async fn parse_record(
-        &self,
-        record: &RawKafkaRecord,
-        mode: ParserMode,
-    ) -> Result<ParsedKafkaRecord>;
+    async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord>;
 }
 
 pub struct RecordParser<C = CachedSchemaRegistry>
@@ -47,11 +43,7 @@ impl<C> Parser for RecordParser<C>
 where
     C: SchemaRegistryClient + Sync + Send,
 {
-    async fn parse_record(
-        &self,
-        record: &RawKafkaRecord,
-        mode: ParserMode,
-    ) -> Result<ParsedKafkaRecord> {
+    async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord> {
         let RawKafkaRecord {
             payload,
             key,
@@ -64,10 +56,7 @@ where
             message: "Missing avro parser".into(),
         })?;
         let (key, payload) = match mode {
-            ParserMode::String => (
-                key.map(|v| parse_string(&v)),
-                payload.map(|v| parse_string(&v)),
-            ),
+            ParserMode::String => (key.map(|v| parse_string(&v)), payload.map(|v| parse_string(&v))),
             ParserMode::Avro => (
                 key.map(|v| parse_string(&v)),
                 match payload {

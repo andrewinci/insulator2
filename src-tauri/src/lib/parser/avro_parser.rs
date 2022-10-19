@@ -22,9 +22,7 @@ where
     C: SchemaRegistryClient + Send + Sync,
 {
     pub fn new(schema_registry_client: Arc<C>) -> Self {
-        AvroParser {
-            schema_registry_client,
-        }
+        AvroParser { schema_registry_client }
     }
 
     pub async fn parse_payload(&self, raw: &[u8]) -> Result<String> {
@@ -48,10 +46,7 @@ where
                 ),
             })?;
         let schema = Schema::parse_str(raw_schema.as_str()).map_err(|err| Error::AvroParse {
-            message: format!(
-                "{}\n{}",
-                "Unable to parse the schema from schema registry", err
-            ),
+            message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
         })?;
         let mut data = Cursor::new(&raw[5..]);
         let record = from_avro_datum(&schema, &mut data, None).map_err(|err| Error::AvroParse {
@@ -103,22 +98,14 @@ fn map<'a>(
         (
             AvroValue::Record(vec),
             Schema::Record {
-                name,
-                fields,
-                lookup,
-                ..
+                name, fields, lookup, ..
             },
         ) => {
             ref_cache.insert(name, schema);
             let mut json_map = Map::new();
             for (k, v) in vec.iter() {
-                let field_index = lookup
-                    .get(k)
-                    .unwrap_or_else(|| panic!("Missing field {}", k));
-                json_map.insert(
-                    k.clone(),
-                    map(v, &fields.get(*field_index).unwrap().schema, ref_cache)?,
-                );
+                let field_index = lookup.get(k).unwrap_or_else(|| panic!("Missing field {}", k));
+                json_map.insert(k.clone(), map(v, &fields.get(*field_index).unwrap().schema, ref_cache)?);
             }
             Ok(JsonValue::Object(json_map))
         }
@@ -157,10 +144,7 @@ fn map<'a>(
         }
         //todo: use avro-json format
         (AvroValue::Union(i, v), Schema::Union(s)) => {
-            let schema = s
-                .variants()
-                .get(*i as usize)
-                .expect("Missing schema in the union");
+            let schema = s.variants().get(*i as usize).expect("Missing schema in the union");
             for s in s.variants() {
                 if let Schema::Record { name, .. } = s {
                     ref_cache.insert(name, s);
@@ -186,9 +170,7 @@ fn map<'a>(
 mod tests {
     use std::sync::Arc;
 
-    use apache_avro::{
-        to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer,
-    };
+    use apache_avro::{to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer};
     use async_trait::async_trait;
 
     use crate::lib::schema_registry::{Result, Schema, SchemaRegistryClient};
@@ -249,10 +231,7 @@ mod tests {
         let mut raw: Vec<u8> = vec![0x00, 0x00, 0x00, 0x00, 0x00];
         raw.append(&mut encoded);
 
-        let res = get_sut(raw_schema.to_string())
-            .parse_payload(&raw[..])
-            .await
-            .unwrap();
+        let res = get_sut(raw_schema.to_string()).parse_payload(&raw[..]).await.unwrap();
 
         assert_eq!(
             res,
