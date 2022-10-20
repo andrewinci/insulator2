@@ -11,7 +11,7 @@ Insulator on Tauri.
 
 ### Setup on Ubuntu/Debian
 
-Some libraries are required on debian before build (tested on RPi)
+Some libraries are required on debian in order to build
 
 ```
 sudo apt update
@@ -49,6 +49,19 @@ yarn
 yarn tauri dev
 ```
 
+### Build
+
+To build the application locally run
+
+```bash
+# Mac OS
+yarn tauri build -b dmg
+# Windows
+yarn tauri build -b msi
+# Linux
+yarn tauri build -b deb appimage
+```
+
 ### Logging
 
 Use `RUST_LOG="insulator2=debug"` to get debug logs in console for the insulator app only.  
@@ -71,6 +84,7 @@ Once happy with the latest main branch artifact, release running `yarn release`.
 ## Todo
 
 - [x] Use semantic release version in the artifact
-- [ ] Windows build
+- [x] Windows build
+- [x] Use a single file for all the configurations
 - [ ] Make font size configurable in record list
-- [ ] Use a single encrypted file for all the configurations
+- [ ] Encrypt config file
