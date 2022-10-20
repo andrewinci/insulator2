@@ -61,15 +61,20 @@ jobs:
         run: |
           # clean up cached bundle
           yarn rimraf src-tauri/target/release/bundle/
+          mkdir dist
           yarn lint && yarn test && yarn tauri build -b dmg
 
       - name: (Windows) Test and build
         if: matrix.os == 'windows-latest' && !startsWith(github.ref, 'refs/tags/v')
-        run: yarn lint && yarn test && yarn tauri build -b msi
+        run: |
+          mkdir dist
+          yarn lint && yarn test && yarn tauri build -b msi
 
       - name: (Linux) Test and build
         if: matrix.os == 'ubuntu-latest' && !startsWith(github.ref, 'refs/tags/v')
-        run: yarn lint && yarn test && yarn tauri build -b deb appimage
+        run: |
+          mkdir dist
+          yarn lint && yarn test && yarn tauri build -b deb appimage
 
       - name: Build release artifact
         if: startsWith(github.ref, 'refs/tags/v')
