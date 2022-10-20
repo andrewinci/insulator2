@@ -1,3 +1,16 @@
+# [1.12.0](https://github.com/andrewinci/insulator2/compare/v1.11.0...v1.12.0) (2022-10-20)
+
+### Bug Fixes
+
+- **BE:** Use committed_offsets speed up query offsets ([f7be070](https://github.com/andrewinci/insulator2/commit/f7be0706503864bcddaf21c2ab3d9736bf3945bb))
+- **FE:** overlapping start and text in item list ([2eb6a08](https://github.com/andrewinci/insulator2/commit/2eb6a08315a4b06804228c74a742999b2d1bb9bd))
+- **FE:** Scroll list of offsets in consumer groups ([9c9f120](https://github.com/andrewinci/insulator2/commit/9c9f12085ecb771297bd82f8ec5d4ba2710af8ff))
+
+### Features
+
+- **BE:** cache consumer groups ([55bad17](https://github.com/andrewinci/insulator2/commit/55bad17dd34326c4d2b2c808fe75e2d471cd73b3))
+- **BE:** retrieve consumer group status ([4c26eea](https://github.com/andrewinci/insulator2/commit/4c26eea77d237717e8f5649b3a4add0c9b021733))
+
 # [1.11.0](https://github.com/andrewinci/insulator2/compare/v1.10.0...v1.11.0) (2022-10-17)
 
 ### Features

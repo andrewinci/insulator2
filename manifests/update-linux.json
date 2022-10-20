@@ -1,11 +1,11 @@
 {
-  "version": "v1.11.0",
-  "notes": "# [1.11.0](https://github.com/andrewinci/insulator2/compare/v1.10.0...v1.11.0) (2022-10-17)\n\n\n### Features\n\n* Cache topic list ([303f45c](https://github.com/andrewinci/insulator2/commit/303f45c3584be8289218f25f04da42129073dd3f))\n* Show topic/partition/offset registered in a cosumer group ([3f626b3](https://github.com/andrewinci/insulator2/commit/3f626b3ccf7b5711a8f80f938284afaab8cd6725))\n\n\n\n",
-  "pub_date": "2022-10-17T08:06:38Z",
+  "version": "v1.12.0",
+  "notes": "# [1.12.0](https://github.com/andrewinci/insulator2/compare/v1.11.0...v1.12.0) (2022-10-20)\n\n\n### Bug Fixes\n\n* **BE:** Use committed_offsets speed up query offsets ([f7be070](https://github.com/andrewinci/insulator2/commit/f7be0706503864bcddaf21c2ab3d9736bf3945bb))\n* **FE:** overlapping start and text in item list ([2eb6a08](https://github.com/andrewinci/insulator2/commit/2eb6a08315a4b06804228c74a742999b2d1bb9bd))\n* **FE:** Scroll list of offsets in consumer groups ([9c9f120](https://github.com/andrewinci/insulator2/commit/9c9f12085ecb771297bd82f8ec5d4ba2710af8ff))\n\n\n### Features\n\n* **BE:** cache consumer groups ([55bad17](https://github.com/andrewinci/insulator2/commit/55bad17dd34326c4d2b2c808fe75e2d471cd73b3))\n* **BE:** retrieve consumer group status ([4c26eea](https://github.com/andrewinci/insulator2/commit/4c26eea77d237717e8f5649b3a4add0c9b021733))\n\n\n\n",
+  "pub_date": "2022-10-20T08:10:25Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.11.0/insulator-2_1.11.0_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.12.0/insulator-2_1.12.0_amd64.AppImage.tar.gz"
     }
   }
 }
