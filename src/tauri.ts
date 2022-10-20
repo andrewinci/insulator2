@@ -49,8 +49,12 @@ export const getSchemaVersions = (clusterId: string, subjectName: string): Promi
 
 /** Kafka API **/
 
-export const describeConsumerGroup = (clusterId: string, consumerGroupName: string): Promise<ConsumerGroupInfo> => {
-  return invoke<ConsumerGroupInfo>("describe_consumer_groups", { clusterId, consumerGroupName }).catch(
+export const describeConsumerGroup = (
+  clusterId: string,
+  consumerGroupName: string,
+  useCache: boolean
+): Promise<ConsumerGroupInfo> => {
+  return invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, useCache }).catch(
     (err: TauriError) => {
       console.error(err);
       addNotification({

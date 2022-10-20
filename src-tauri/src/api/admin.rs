@@ -47,13 +47,28 @@ pub async fn list_consumer_groups(
 }
 
 #[tauri::command]
-pub async fn describe_consumer_groups(
+pub async fn describe_consumer_group(
     cluster_id: &str,
     consumer_group_name: &str,
+    use_cache: Option<bool>,
     state: tauri::State<'_, AppState>,
 ) -> Result<ConsumerGroupInfo> {
     debug!("Describe consumer group");
     let cluster = state.get_cluster(cluster_id).await;
+
+    if use_cache == Some(true) {
+        debug!("Retrieve the consumer group info from the cache");
+        // let offsets: Vec<_> = (0..100).map(|n| TopicPartitionOffset {
+        //     topic: "test_topic".into(),
+        //     partition_id: n,
+        //     offset: (n*1321) as i64,
+        // }).collect();
+        // return Ok(ConsumerGroupInfo {
+        //     name: "Test consumer group".into(),
+        //     state: "ACTIVE".into(),
+        //     offsets,
+        // });
+    }
     Ok(cluster
         .admin_client
         .describe_consumer_group(consumer_group_name)

@@ -66,6 +66,7 @@ export type ConsumerSettings = {
 
 export type ConsumerGroupInfo = {
   name: string;
+  state: string;
   offsets: TopicPartitionOffset[];
 };
 

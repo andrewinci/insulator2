@@ -1,4 +1,4 @@
-import { Text, Button, Container, Divider, Group, Stack, SimpleGrid } from "@mantine/core";
+import { Text, Button, Container, Divider, Group, Stack, Grid } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons";
 import { useMemo, useState } from "react";
 import { SingleLineTitle } from "../../components";
@@ -15,7 +15,7 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
 
   const retrieveConsumerGroup = useMemo(
     () => async () => {
-      await describeConsumerGroup(clusterId, name).then((s) => setState(s));
+      await describeConsumerGroup(clusterId, name, true).then((s) => setState(s));
     },
     [name, clusterId]
   );
@@ -50,18 +50,40 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
         </Group>
         {state && (
           <>
-            <SimpleGrid cols={3}>
-              <Text weight={"bold"}>Topic</Text>
-              <Text weight={"bold"}>Partition</Text>
-              <Text weight={"bold"}>Offset</Text>
-              {state.offsets.map((o, i) => (
-                <>
-                  <Text key={`topic-${i}`}>{o.topic}</Text>
-                  <Text key={`partition-${i}`}>{o.partition_id}</Text>
-                  <Text key={`offset-${i}`}>{o.offset}</Text>
-                </>
-              ))}
-            </SimpleGrid>
+            <Container sx={{ overflowX: "hidden", overflowY: "scroll", width: "100%", height: "calc(100vh - 180px)" }}>
+              <Grid>
+                <Grid.Col span={8}>
+                  <Text align="left" weight={"bold"}>
+                    Topic
+                  </Text>
+                </Grid.Col>
+                <Grid.Col span={2}>
+                  <Text align="left" weight={"bold"}>
+                    Partition
+                  </Text>
+                </Grid.Col>
+                <Grid.Col span={2}>
+                  <Text align="left" weight={"bold"}>
+                    Offset
+                  </Text>
+                </Grid.Col>
+                {state.offsets.map((o, i) => (
+                  <>
+                    <Grid.Col span={8}>
+                      <Text sx={{ overflowWrap: "break-word" }} key={`topic-${i}`}>
+                        {o.topic}
+                      </Text>
+                    </Grid.Col>
+                    <Grid.Col span={2}>
+                      <Text key={`partition-${i}`}>{o.partition_id}</Text>
+                    </Grid.Col>
+                    <Grid.Col span={2}>
+                      <Text key={`offset-${i}`}>{o.offset}</Text>
+                    </Grid.Col>
+                  </>
+                ))}
+              </Grid>
+            </Container>
             {/* <Button my={10} color="red">
               Update
             </Button> */}
