@@ -1,7 +1,6 @@
 use async_trait::async_trait;
-use futures::lock::Mutex;
 use log::{debug, error, warn};
-use std::{sync::Arc, time::Duration, vec};
+use std::{time::Duration, vec};
 
 use super::{
     types::{PartitionInfo, TopicInfo},
@@ -21,11 +20,11 @@ use rdkafka::{
 
 #[async_trait]
 pub trait Admin {
-    async fn list_topics(&self, force: bool) -> Result<Vec<TopicInfo>>;
-    async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
+    fn list_topics(&self) -> Result<Vec<TopicInfo>>;
+    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
-    async fn list_consumer_groups(&self, force: bool) -> Result<Vec<String>>;
-    async fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
+    fn list_consumer_groups(&self) -> Result<Vec<String>>;
+    fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
 }
 
 pub struct KafkaAdmin {
@@ -33,9 +32,6 @@ pub struct KafkaAdmin {
     timeout: Duration,
     consumer: StreamConsumer,
     admin_client: AdminClient<DefaultClientContext>,
-    topics: Arc<Mutex<Vec<TopicInfo>>>,
-    // consumer groups
-    consumer_groups: Arc<Mutex<Vec<String>>>,
 }
 
 impl KafkaAdmin {
@@ -49,41 +45,28 @@ impl KafkaAdmin {
             admin_client: build_kafka_client_config(config, None)
                 .create()
                 .expect("Unable to build the admin client"),
-            topics: Arc::new(Mutex::new(vec![])),
-            consumer_groups: Arc::new(Mutex::new(vec![])),
         }
     }
 }
 
 #[async_trait]
 impl Admin for KafkaAdmin {
-    async fn list_topics(&self, force: bool) -> Result<Vec<TopicInfo>> {
-        let mut topics = self.topics.lock().await;
-        if force || topics.len() == 0 {
-            debug!("Clear topics cache");
-            topics.clear();
-            topics.extend(self.internal_list_topics(None)?);
-        }
-        Ok(topics.to_vec())
+    fn list_topics(&self) -> Result<Vec<TopicInfo>> {
+        self.internal_list_topics(None)
     }
 
-    async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
-        let topics = self.topics.lock().await;
-        if let Some(topic_info) = topics.iter().find(|t| t.name == topic_name) {
-            return Ok(topic_info.clone());
+    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
+        let info = self.internal_list_topics(Some(topic_name))?;
+        if info.len() == 1 {
+            Ok(info.get(0).unwrap().clone())
         } else {
-            let info = self.internal_list_topics(Some(topic_name))?;
-            if info.len() == 1 {
-                Ok(info.get(0).unwrap().clone())
-            } else {
-                warn!(
-                    "Topic not found or more than one topic with the same name {}",
-                    topic_name
-                );
-                Err(Error::Kafka {
-                    message: "Topic not found".into(),
-                })
-            }
+            warn!(
+                "Topic not found or more than one topic with the same name {}",
+                topic_name
+            );
+            Err(Error::Kafka {
+                message: "Topic not found".into(),
+            })
         }
     }
 
@@ -112,17 +95,13 @@ impl Admin for KafkaAdmin {
         }
     }
 
-    async fn list_consumer_groups(&self, force: bool) -> Result<Vec<String>> {
-        let mut consumer_group_names = self.consumer_groups.lock().await;
-        if force || consumer_group_names.is_empty() {
-            let groups = self.consumer.fetch_group_list(None, self.timeout)?;
-            let group_names: Vec<_> = groups.groups().iter().map(|g| g.name().to_string()).collect();
-            consumer_group_names.extend(group_names);
-        }
-        Ok(consumer_group_names.clone())
+    fn list_consumer_groups(&self) -> Result<Vec<String>> {
+        let groups = self.consumer.fetch_group_list(None, self.timeout)?;
+        let group_names: Vec<_> = groups.groups().iter().map(|g| g.name().to_string()).collect();
+        Ok(group_names)
     }
 
-    async fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo> {
+    fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo> {
         // create a consumer with the defined consumer_group_name.
         // NOTE: the consumer shouldn't join the consumer group, otherwise it'll cause a re-balance
         debug!("Build the consumer for the consumer group {}", consumer_group_name);
@@ -131,7 +110,7 @@ impl Admin for KafkaAdmin {
             .expect("Unable to build the consumer");
 
         debug!("Build the list of all partitions and topics");
-        let topics = self.list_topics(false).await?;
+        let topics = self.list_topics()?;
         let mut topic_partition_lst = TopicPartitionList::new();
         topics.iter().for_each(|topic| {
             topic.partitions.iter().for_each(|partition| {
@@ -158,14 +137,14 @@ impl Admin for KafkaAdmin {
 
         Ok(ConsumerGroupInfo {
             name: consumer_group_name.into(),
-            state: self.get_consumer_group_state(consumer_group_name).await?,
+            state: self.get_consumer_group_state(consumer_group_name)?,
             offsets,
         })
     }
 }
 
 impl KafkaAdmin {
-    async fn get_consumer_group_state(&self, consumer_group_name: &str) -> Result<String> {
+    fn get_consumer_group_state(&self, consumer_group_name: &str) -> Result<String> {
         debug!("Retrieve consumer group status");
         let fetch_group_response = self
             .consumer

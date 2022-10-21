@@ -2,17 +2,12 @@ import { Text, Button, Container, Divider, Group, Stack, Grid, Center, Loader } 
 import { IconRefresh } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { SingleLineTitle } from "../../components";
-import { useNotifications } from "../../providers";
 import { describeConsumerGroup } from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
-  const { isFetching, isError, data, error, refetch } = useQuery(["describeConsumerGroup", clusterId, name], () =>
+  const { isLoading, data, refetch, isRefetching } = useQuery(["describeConsumerGroup", clusterId, name], () =>
     describeConsumerGroup(clusterId, name)
   );
-  const { alert } = useNotifications();
-  if (isError) {
-    alert(`Error fetching the consumer group ${name}`, `${error}`);
-  }
 
   return (
     <Container>
@@ -23,8 +18,8 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
 
       <Stack m={10} align={"stretch"} justify={"flex-start"}>
         <Group>
-          <Button mb={10} size="xs" onClick={() => refetch()}>
-            <IconRefresh /> Refresh
+          <Button mb={10} size="xs" leftIcon={<IconRefresh />} onClick={() => refetch()} loading={isRefetching}>
+            Refresh
           </Button>
 
           {/*
@@ -42,12 +37,12 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
             </Menu.Dropdown>
           </Menu> */}
         </Group>
-        {isFetching && (
+        {isLoading && (
           <Center mt={10}>
             <Loader />
           </Center>
         )}
-        {!isFetching && data && (
+        {!isLoading && data && (
           <>
             <Container sx={{ overflowX: "hidden", overflowY: "scroll", width: "100%", height: "calc(100vh - 180px)" }}>
               <Grid>

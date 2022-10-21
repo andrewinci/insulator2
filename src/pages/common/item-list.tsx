@@ -29,7 +29,8 @@ type ItemListProps = {
   //unique identifier for the list used for local storage of recent visited items
   listId: string;
   items: string[];
-  loading: boolean;
+  isLoading: boolean;
+  isFetching: boolean;
   onItemSelected: (item: string) => void;
   onRefreshList: () => void;
   onAddClick?: () => void;
@@ -38,7 +39,7 @@ type ItemListProps = {
 // Common list page component
 export const ItemList = (props: ItemListProps) => {
   const { onItemSelected, onRefreshList, onAddClick } = props;
-  const { listId, items, title, loading } = props;
+  const { listId, items, title, isLoading, isFetching } = props;
   const [state, setState] = useLocalStorage<{
     search: string;
     recent: string[];
@@ -71,12 +72,12 @@ export const ItemList = (props: ItemListProps) => {
 
   const tabPanel = (title: string, panelItems: string[]) => (
     <Tabs.Panel value={title} pt="xs">
-      {loading && (
+      {isLoading && (
         <Center mt={10}>
           <Loader />
         </Center>
       )}
-      {!loading && panelItems.length > 0 ? (
+      {!isLoading && panelItems.length > 0 ? (
         <FixedSizeList height={windowSize.innerHeight - 150} itemCount={panelItems.length} itemSize={38} width={"100%"}>
           {({ index, style }) => (
             <Grid style={style} grow gutter={0} justify={"flex-start"} align="center">
@@ -153,7 +154,7 @@ export const ItemList = (props: ItemListProps) => {
             </ActionIcon>
           </Tooltip>
           <Tooltip label="Refresh list">
-            <ActionIcon size="sm" onClick={onRefreshList}>
+            <ActionIcon loading={isFetching} size="sm" onClick={onRefreshList}>
               <IconRefresh></IconRefresh>
             </ActionIcon>
           </Tooltip>
@@ -166,7 +167,6 @@ export const ItemList = (props: ItemListProps) => {
           <TabHeader title="Favorites" icon="favorites" count={0} filtered={filteredItems.favorites.length} />
           <TabHeader title="Recent" icon="recent" count={state.recent.length} filtered={filteredItems.recent.length} />
         </Tabs.List>
-
         {tabPanel("all", filteredItems.all)}
         {tabPanel("favorites", filteredItems.favorites)}
         {tabPanel("recent", filteredItems.recent)}

@@ -1,47 +1,25 @@
-import { useMemo, useState } from "react";
-import { useNotifications } from "../../providers";
 import { ItemList } from "../common";
 import { createTopic, getTopicNamesList } from "../../tauri/admin";
 import { Button, Checkbox, Group, NumberInput, Stack, TextInput, Title } from "@mantine/core";
 import { openModal, useModals } from "@mantine/modals";
 import { useForm } from "@mantine/form";
-import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 type TopicListProps = {
+  clusterId: string;
   onTopicSelected: (topicName: string) => void;
 };
 
 export const TopicList = (props: TopicListProps) => {
-  const { onTopicSelected } = props;
-  const { clusterId } = useParams();
-  const { success } = useNotifications();
-  const [state, setState] = useState<{ topics: string[]; search?: string; loading: boolean }>({
-    topics: [],
-    loading: true,
-  });
-  if (!clusterId) {
-    throw Error("Missing clusterId in path!");
-  }
-
-  const updateTopicList = (force = false) => {
-    if (clusterId) {
-      setState({ ...state, loading: true });
-      getTopicNamesList(clusterId, force)
-        .then((topics) => setState({ topics, loading: false }))
-        .then((_) => success("List of topics updated"))
-        .catch(() => {
-          setState({ topics: [], loading: false });
-        });
-    }
-  };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => updateTopicList(), [clusterId]);
+  const { onTopicSelected, clusterId } = props;
+  const { isFetching, isLoading, data, refetch } = useQuery(["getTopicNamesList", clusterId], () =>
+    getTopicNamesList(clusterId)
+  );
 
   const onCreateTopic = () =>
     openModal({
       title: <Title order={3}>Consumer settings</Title>,
-      children: <CreateTopicModal clusterId={clusterId} updateTopicList={updateTopicList} />,
+      children: <CreateTopicModal clusterId={clusterId} updateTopicList={refetch} />,
       closeOnClickOutside: false,
     });
 
@@ -49,10 +27,11 @@ export const TopicList = (props: TopicListProps) => {
     <ItemList
       title="Topics"
       listId={`topic-${clusterId}`}
-      loading={state.loading}
-      items={state.topics}
+      isLoading={isLoading}
+      isFetching={isFetching}
+      items={data ?? []}
       onItemSelected={onTopicSelected}
-      onRefreshList={() => updateTopicList(true)}
+      onRefreshList={refetch}
       onAddClick={() => onCreateTopic()} //
     />
   );
