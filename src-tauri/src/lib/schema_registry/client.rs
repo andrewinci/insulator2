@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use futures::lock::Mutex;
-use log::trace;
+use log::{trace, debug};
 use std::collections::HashMap;
 use std::sync::Arc;
 use url::Url;
@@ -24,7 +24,6 @@ where
     http_client: C,
     endpoint: String,
     schema_cache_by_id: Arc<Mutex<HashMap<i32, String>>>,
-    schema_cache_by_subject: Arc<Mutex<HashMap<String, Vec<Schema>>>>,
 }
 
 impl CachedSchemaRegistry<ReqwestClient> {
@@ -52,7 +51,6 @@ where
             http_client,
             endpoint: endpoint.into(),
             schema_cache_by_id: Arc::new(Mutex::new(HashMap::new())),
-            schema_cache_by_subject: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 }
@@ -69,24 +67,16 @@ where
     }
 
     async fn get_schema(&self, subject_name: &str) -> Result<Vec<Schema>> {
-        let mut cache = self.schema_cache_by_subject.lock().await;
-        trace!("Get schema for {}", subject_name);
-        if let Some(cached) = cache.get(subject_name) {
-            trace!("Schema found in cache");
-            Ok(cached.clone())
-        } else {
-            trace!("Schema not found in cache, retrieving");
-            let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
-            let versions: Vec<i32> = self.http_client.get(url.as_ref()).await?;
-            let mut schemas = Vec::<Schema>::new();
-            for v in versions {
-                let url = url.join(&v.to_string())?;
-                let schema: Schema = self.http_client.get(url.as_ref()).await?;
-                schemas.push(schema);
-            }
-            cache.insert(subject_name.to_string(), schemas.clone());
-            Ok(schemas)
+        debug!("Get schema for {}", subject_name);
+        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
+        let versions: Vec<i32> = self.http_client.get(url.as_ref()).await?;
+        let mut schemas = Vec::<Schema>::new();
+        for v in versions {
+            let url = url.join(&v.to_string())?;
+            let schema: Schema = self.http_client.get(url.as_ref()).await?;
+            schemas.push(schema);
         }
+        Ok(schemas)
     }
 
     async fn get_schema_by_id(&self, id: i32) -> Result<String> {
