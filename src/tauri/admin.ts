@@ -3,12 +3,8 @@ import { ConsumerGroupInfo, TopicInfo } from "../models/kafka";
 import { addNotification } from "../providers";
 import { format, TauriError } from "./error";
 
-export const describeConsumerGroup = (
-  clusterId: string,
-  consumerGroupName: string,
-  useCache: boolean
-): Promise<ConsumerGroupInfo> => {
-  return invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, useCache }).catch(
+export const describeConsumerGroup = (clusterId: string, consumerGroupName: string): Promise<ConsumerGroupInfo> => {
+  return invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName }).catch(
     (err: TauriError) => {
       console.error(err);
       addNotification({

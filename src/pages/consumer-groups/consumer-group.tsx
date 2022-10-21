@@ -1,24 +1,18 @@
-import { Text, Button, Container, Divider, Group, Stack, Grid } from "@mantine/core";
+import { Text, Button, Container, Divider, Group, Stack, Grid, Center, Loader } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons";
-import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { SingleLineTitle } from "../../components";
-import { ConsumerGroupInfo } from "../../models/kafka";
+import { useNotifications } from "../../providers";
 import { describeConsumerGroup } from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
-  // todo: wip cache last result on the backend
-  const [state, setState] = useState<ConsumerGroupInfo | undefined>(undefined);
-  useMemo(() => {
-    setState(undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, clusterId]);
-
-  const retrieveConsumerGroup = useMemo(
-    () => async () => {
-      await describeConsumerGroup(clusterId, name, true).then((s) => setState(s));
-    },
-    [name, clusterId]
+  const { isFetching, isError, data, error, refetch } = useQuery(["describeConsumerGroup", clusterId, name], () =>
+    describeConsumerGroup(clusterId, name)
   );
+  const { alert } = useNotifications();
+  if (isError) {
+    alert(`Error fetching the consumer group ${name}`, `${error}`);
+  }
 
   return (
     <Container>
@@ -29,7 +23,7 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
 
       <Stack m={10} align={"stretch"} justify={"flex-start"}>
         <Group>
-          <Button mb={10} size="xs" onClick={retrieveConsumerGroup}>
+          <Button mb={10} size="xs" onClick={() => refetch()}>
             <IconRefresh /> Refresh
           </Button>
 
@@ -48,7 +42,12 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
             </Menu.Dropdown>
           </Menu> */}
         </Group>
-        {state && (
+        {isFetching && (
+          <Center mt={10}>
+            <Loader />
+          </Center>
+        )}
+        {!isFetching && data && (
           <>
             <Container sx={{ overflowX: "hidden", overflowY: "scroll", width: "100%", height: "calc(100vh - 180px)" }}>
               <Grid>
@@ -67,7 +66,7 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
                     Offset
                   </Text>
                 </Grid.Col>
-                {state.offsets.map((o, i) => (
+                {data.offsets.map((o, i) => (
                   <>
                     <Grid.Col span={8}>
                       <Text sx={{ overflowWrap: "break-word" }} key={`topic-${i}`}>
