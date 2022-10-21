@@ -4,7 +4,7 @@ import React from "react";
 import { Async } from "react-async";
 import { ConsumerState } from "../../models/kafka";
 import { RecordsList } from "./record-list";
-import { getConsumerState, getRecord, stopConsumer } from "../../tauri";
+import { getConsumerState, getRecord, stopConsumer } from "../../tauri/consumer";
 import { SingleLineTitle } from "../../components";
 import { openConsumerModal } from "./consumer-modal";
 import { useParams } from "react-router-dom";

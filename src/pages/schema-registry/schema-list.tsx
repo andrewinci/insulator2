@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNotifications } from "../../providers";
-import { format, getSchemaNamesList, TauriError } from "../../tauri";
+import { getSchemaNamesList } from "../../tauri/schema-registry";
+import { format, TauriError } from "../../tauri/error";
 import { ItemList } from "../common";
 
 type SchemaListProps = {

@@ -10,7 +10,7 @@ import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
 import "allotment/dist/style.css";
 import { listen } from "@tauri-apps/api/event";
-import { format, TauriError } from "./tauri";
+import { format, TauriError } from "./tauri/error";
 
 const App = () => {
   const { appState } = useAppState();

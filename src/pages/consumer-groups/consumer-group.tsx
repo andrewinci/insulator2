@@ -3,7 +3,7 @@ import { IconRefresh } from "@tabler/icons";
 import { useMemo, useState } from "react";
 import { SingleLineTitle } from "../../components";
 import { ConsumerGroupInfo } from "../../models/kafka";
-import { describeConsumerGroup } from "../../tauri";
+import { describeConsumerGroup } from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
   // todo: wip cache last result on the backend

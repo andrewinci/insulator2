@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNotifications } from "../../providers";
 import { ItemList } from "../common";
-import { createTopic, getTopicNamesList } from "../../tauri";
+import { createTopic, getTopicNamesList } from "../../tauri/admin";
 import { Button, Checkbox, Group, NumberInput, Stack, TextInput, Title } from "@mantine/core";
 import { openModal, useModals } from "@mantine/modals";
 import { useForm } from "@mantine/form";

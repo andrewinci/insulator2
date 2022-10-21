@@ -5,7 +5,7 @@ import { ConsumerSettingsFrom } from "../../models/kafka";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { startConsumer } from "../../tauri";
+import { startConsumer } from "../../tauri/consumer";
 
 dayjs.extend(utc);
 

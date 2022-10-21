@@ -5,7 +5,7 @@ import { IconInfoCircle, IconVersions } from "@tabler/icons";
 import { useEffect, useState } from "react";
 import { SingleLineTitle } from "../../components";
 import { SchemaVersion } from "../../models/kafka";
-import { getSchemaVersions } from "../../tauri";
+import { getSchemaVersions } from "../../tauri/schema-registry";
 
 type SchemaProps = {
   schemaName: string;

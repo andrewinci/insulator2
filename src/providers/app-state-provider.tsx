@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { Cluster } from "../models/kafka";
-import { getConfiguration, setConfiguration } from "../tauri";
+import { getConfiguration, setConfiguration } from "../tauri/configuration";
 
 export type AppState = {
   clusters: Cluster[];
