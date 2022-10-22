@@ -10,6 +10,11 @@ use super::error::Result;
 use super::http_client::{HttpClient, ReqwestClient};
 use super::types::{BasicAuth, Schema, Subject};
 
+#[derive(Deserialize)]
+struct GetSchemaByIdResult {
+    pub schema: String,
+}
+
 #[async_trait]
 pub trait SchemaRegistryClient {
     async fn list_subjects(&self) -> Result<Vec<String>>;
@@ -77,10 +82,6 @@ where
     }
 
     async fn get_schema_by_id(&self, id: i32) -> Result<String> {
-        #[derive(Deserialize)]
-        struct GetSchemaByIdResult {
-            pub schema: String,
-        }
         let mut cache = self.schema_cache_by_id.lock().await;
         trace!("Getting schema {} by id.", id);
 
@@ -129,16 +130,11 @@ where
 mod tests {
     use async_trait::async_trait;
     use mockall::mock;
-    use serde::{de::DeserializeOwned, Deserialize};
+    use serde::{de::DeserializeOwned};
 
     use super::{CachedSchemaRegistry, Result, SchemaRegistryClient};
-    use crate::lib::schema_registry::http_client::HttpClient;
+    use crate::lib::schema_registry::{http_client::HttpClient, client::GetSchemaByIdResult};
     use mockall::predicate::*;
-
-    #[derive(Deserialize)]
-    struct GetSchemaByIdResult {
-        pub schema: String,
-    }
 
     #[tokio::test]
     async fn test_cache() {
