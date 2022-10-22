@@ -23,7 +23,6 @@ export const RecordsList = (props: RecordsListProps) => {
   }, []);
 
   const parentRef = React.useRef<HTMLDivElement>(null);
-  // The virtualizer
   const rowVirtualizer = useVirtualizer({
     count: itemCount,
     getScrollElement: () => parentRef.current,
@@ -32,21 +31,18 @@ export const RecordsList = (props: RecordsListProps) => {
 
   return (
     <>
-      {/* The scrollable element for your list */}
       <div
         ref={parentRef}
         style={{
           height: state.windowHeight - (heightOffset ?? 0),
           overflow: "auto", // Make it scroll!
         }}>
-        {/* The large inner element to hold all of the items */}
         <div
           style={{
             height: `${rowVirtualizer.getTotalSize()}px`,
             width: "100%",
             position: "relative",
           }}>
-          {/* Only the visible items in the virtualizer, manually positioned to be in view */}
           {rowVirtualizer.getVirtualItems().map((virtualItem) => (
             <KafkaRecordCard
               key={virtualItem.index}

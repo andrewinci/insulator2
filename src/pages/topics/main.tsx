@@ -19,7 +19,7 @@ export const TopicsPage = () => {
       </Allotment.Pane>
       {topicName && (
         <Allotment.Pane minSize={520}>
-          <Topic topicName={topicName} />
+          <Topic clusterId={clusterId} topicName={topicName} />
         </Allotment.Pane>
       )}
     </Allotment>

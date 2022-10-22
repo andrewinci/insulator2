@@ -104,11 +104,12 @@ where
     async fn get_compatibility_level(&self, subject_name: &str) -> Result<String> {
         #[derive(Deserialize)]
         struct CompatibilityResponse {
-            compatibilityLevel: String,
+            #[serde(alias = "compatibilityLevel")]
+            compatibility_level: String,
         }
         let url = Url::parse(&self.endpoint)?.join(format!("/config/{}?defaultToGlobal=true", subject_name).as_str())?;
         let response: CompatibilityResponse = self.http_client.get(url.as_ref()).await?;
-        Ok(response.compatibilityLevel)
+        Ok(response.compatibility_level)
     }
 
     async fn get_versions(&self, subject_name: &str) -> Result<Vec<Schema>> {
