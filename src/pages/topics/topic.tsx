@@ -19,23 +19,14 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
     console.log(typeof topicInfo.configurations);
     return {
       partitionCount: topicInfo.partitions.length,
-      estimatedRecord: 100, //todo
+      estimatedRecord: topicInfo.partitions.map((p) => p.last_offset ?? 0).reduce((a, b) => a + b, 0),
       cleanupPolicy: topicInfo.configurations["cleanup.policy"] ?? "...",
     };
   });
+
   const toggleConsumerRunning = async () => {
     if (!data) return;
     data.isRunning ? await stopConsumer(clusterId, topicName) : openConsumerModal({ clusterId, topicName });
-  };
-
-  // gradient from green to red
-  const getColor = (value: number) => {
-    const MAX = 10000;
-    if (value > MAX) {
-      value = MAX;
-    }
-    const hue = ((1 - value / MAX) * 130).toString(10);
-    return ["hsl(", hue, ",100%,50%)"].join("");
   };
 
   return (
@@ -66,7 +57,7 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
             size="xs"
             onClick={toggleConsumerRunning}
             rightIcon={
-              <Badge variant="filled" sx={{ backgroundColor: getColor(data.recordCount) }}>
+              <Badge variant="filled" color={"red"}>
                 {data.recordCount}
               </Badge>
             }>

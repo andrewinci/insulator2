@@ -1,6 +1,7 @@
 export type TopicInfo = {
   name: string;
   partitions: PartitionInfo[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   configurations: any;
 };
 
@@ -43,4 +44,5 @@ export type PartitionInfo = {
   id: number;
   isr: number;
   replicas: number;
+  last_offset?: number;
 };

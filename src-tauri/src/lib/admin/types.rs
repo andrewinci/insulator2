@@ -7,13 +7,14 @@ pub struct PartitionInfo {
     pub id: i32,
     pub isr: usize,
     pub replicas: usize,
+    pub last_offset: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TopicInfo {
     pub name: String,
     pub partitions: Vec<PartitionInfo>,
-    pub configurations: HashMap<String, Option<String>>
+    pub configurations: HashMap<String, Option<String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

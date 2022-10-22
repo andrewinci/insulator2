@@ -59,7 +59,23 @@ impl Admin for KafkaAdmin {
     }
 
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
-        let partitions_info = self.internal_list_topics(Some(topic_name))?;
+        let topic_list = self.internal_list_topics(Some(topic_name))?;
+        let topic = {
+            if let Some(topic) = topic_list.first() {
+                Ok(topic)
+            } else {
+                warn!(
+                    "Topic not found or more than one topic with the same name {}",
+                    topic_name
+                );
+                Err(Error::Kafka {
+                    message: "Topic not found".into(),
+                })
+            }
+        }?;
+
+        // todo: move to another function
+        debug!("Retrieving the topic configurations");
         let responses = self
             .admin_client
             .describe_configs([&ResourceSpecifier::Topic(topic_name)], &AdminOptions::default())
@@ -71,22 +87,29 @@ impl Admin for KafkaAdmin {
             })
         }
         debug!("Topic {} configurations {:?}", topic_name, configurations);
-        if partitions_info.len() == 1 {
-            let Topic { name, partitions } = partitions_info.get(0).unwrap();
-            Ok(TopicInfo {
-                name: name.to_string(),
-                partitions: partitions.to_vec(),
-                configurations,
-            })
-        } else {
-            warn!(
-                "Topic not found or more than one topic with the same name {}",
-                topic_name
-            );
-            Err(Error::Kafka {
-                message: "Topic not found".into(),
-            })
-        }
+        // todo: move to another function
+        // retrieve the last offsets
+        let mut tp = TopicPartitionList::new();
+        (0..topic.partitions.len()).for_each(|p_id| {
+            tp.add_partition_offset(topic_name, p_id as i32, Offset::End)
+                .expect("Unable to add partition offset");
+        });
+        let offsets = self.consumer.offsets_for_times(tp, self.timeout)?;
+        debug!("Retrieved offsets {:?}", offsets);
+        let Topic { name, partitions } = topic;
+        Ok(TopicInfo {
+            name: name.to_string(),
+            partitions: partitions
+                .iter()
+                .map(|p| PartitionInfo {
+                    id: p.id,
+                    last_offset: Some(map_offset(&offsets.find_partition(topic_name, p.id).unwrap().offset())),
+                    isr: p.isr,
+                    replicas: p.replicas,
+                })
+                .collect(),
+            configurations,
+        })
     }
 
     async fn create_topic(&self, name: &str, num_partitions: i32, isr: i32, compacted: bool) -> Result<()> {
@@ -189,6 +212,7 @@ impl KafkaAdmin {
                         id: m.id(),
                         isr: m.isr().len(),
                         replicas: m.replicas().len(),
+                        last_offset: None,
                     })
                     .collect(),
             })
