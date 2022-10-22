@@ -5,7 +5,7 @@ import { IconInfoCircle, IconVersions } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { PageHeader } from "../../components";
-import { getSchemaVersions } from "../../tauri/schema-registry";
+import { getSubject } from "../../tauri/schema-registry";
 
 type SchemaProps = {
   schemaName: string;
@@ -15,23 +15,22 @@ type SchemaProps = {
 const pretty = (j: string) => (j ? JSON.stringify(JSON.parse(j), null, 2) : "");
 
 export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
-  const { data, isLoading } = useQuery(["getSchemaVersions", clusterId, schemaName], () =>
-    getSchemaVersions(clusterId, schemaName)
+  const { data: subject, isLoading } = useQuery(["getSchemaVersions", clusterId, schemaName], () =>
+    getSubject(clusterId, schemaName)
   );
   const [state, setState] = useState<{ version?: number }>();
 
   useMemo(() => {
-    if (data) {
-      const lastSchemaVersion = Math.max(...data.map((s) => s.version));
+    if (subject) {
+      const lastSchemaVersion = Math.max(...subject.versions.map((s) => s.version));
       setState({ version: lastSchemaVersion });
     }
-  }, [data]);
+  }, [subject]);
 
   return (
     <Container>
       <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
-        {/* Todo: retrieve the compatibility level from the backend GET https://docs.confluent.io/platform/current/schema-registry/develop/api.html /config/(string: subject)  */}
-        <PageHeader title={schemaName} subtitle={`Compatibility level: ${"FULL_TRANSITIVE"}`} />
+        <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`} />
         <Tooltip position="bottom" label="Schema info">
           <ActionIcon>
             <IconInfoCircle />
@@ -39,12 +38,12 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
         </Tooltip>
       </Group>
       <Divider my={10} />
-      {!isLoading && data && (
+      {!isLoading && subject && (
         <Group>
           <Tooltip position="right" label="Schema version">
             <Select
               icon={<IconVersions />}
-              data={data.map((s) => s.version.toString())}
+              data={subject.versions.map((s) => s.version.toString())}
               value={state?.version?.toString()}
               onChange={(v) => v && setState({ ...state, version: +v })}
             />
@@ -56,7 +55,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
           <Loader />
         </Center>
         <CustomPrism hidden={isLoading} style={{ height: "calc(100vh - 155px)" }} language="json">
-          {pretty(data?.find((s) => s.version == state?.version)?.schema ?? "")}
+          {pretty(subject?.versions?.find((s) => s.version == state?.version)?.schema ?? "")}
         </CustomPrism>
       </ScrollArea>
     </Container>

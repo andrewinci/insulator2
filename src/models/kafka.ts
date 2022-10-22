@@ -41,13 +41,6 @@ export type SchemaRegistry = {
   password?: string;
 };
 
-export type SchemaVersion = {
-  subject: string;
-  id: number;
-  version: number;
-  schema: string;
-};
-
 export type ConsumerSettingsFrom =
   | "Beginning"
   | "End"

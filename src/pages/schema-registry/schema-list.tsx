@@ -1,4 +1,4 @@
-import { getSchemaNamesList } from "../../tauri/schema-registry";
+import { listSubjects } from "../../tauri/schema-registry";
 import { ItemList } from "../common";
 import { useQuery } from "@tanstack/react-query";
 
@@ -10,7 +10,7 @@ type SchemaListProps = {
 export const SchemaList = (props: SchemaListProps) => {
   const { clusterId, onSubjectSelected } = props;
   const { data, isLoading, isFetching, refetch } = useQuery(["getSchemaNamesList", clusterId], () =>
-    getSchemaNamesList(clusterId)
+    listSubjects(clusterId)
   );
 
   return (

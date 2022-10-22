@@ -1,4 +1,4 @@
-use crate::lib::schema_registry::{Schema, SchemaRegistryClient};
+use crate::lib::schema_registry::{Schema, SchemaRegistryClient, Subject};
 use log::debug;
 
 use super::{
@@ -17,11 +17,11 @@ pub async fn list_subjects(cluster_id: &str, state: tauri::State<'_, AppState>) 
 }
 
 #[tauri::command]
-pub async fn get_schema(subject_name: &str, cluster_id: &str, state: tauri::State<'_, AppState>) -> Result<Vec<Schema>> {
+pub async fn get_subject(subject_name: &str, cluster_id: &str, state: tauri::State<'_, AppState>) -> Result<Subject> {
     debug!("Retrieve all schema version for subject {}", subject_name);
     let client = state.get_schema_reg_client(cluster_id).await.ok_or(TauriError {
         error_type: "Configuration error".into(),
         message: "Missing schema registry configuration".into(),
     })?;
-    Ok(client.get_schema(subject_name).await?)
+    Ok(client.get_subject(subject_name).await?)
 }

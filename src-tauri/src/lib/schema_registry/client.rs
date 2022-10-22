@@ -1,18 +1,19 @@
 use async_trait::async_trait;
 use futures::lock::Mutex;
 use log::{debug, trace};
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::sync::Arc;
 use url::Url;
 
 use super::error::Result;
 use super::http_client::{HttpClient, ReqwestClient};
-use super::types::{BasicAuth, GetSchemaByIdResult, Schema};
+use super::types::{BasicAuth, Schema, Subject};
 
 #[async_trait]
 pub trait SchemaRegistryClient {
     async fn list_subjects(&self) -> Result<Vec<String>>;
-    async fn get_schema(&self, subject_name: &str) -> Result<Vec<Schema>>;
+    async fn get_subject(&self, subject_name: &str) -> Result<Subject>;
     async fn get_schema_by_id(&self, id: i32) -> Result<String>;
 }
 
@@ -66,20 +67,20 @@ where
         Ok(res)
     }
 
-    async fn get_schema(&self, subject_name: &str) -> Result<Vec<Schema>> {
-        debug!("Get schema for {}", subject_name);
-        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
-        let versions: Vec<i32> = self.http_client.get(url.as_ref()).await?;
-        let mut schemas = Vec::<Schema>::new();
-        for v in versions {
-            let url = url.join(&v.to_string())?;
-            let schema: Schema = self.http_client.get(url.as_ref()).await?;
-            schemas.push(schema);
-        }
-        Ok(schemas)
+    async fn get_subject(&self, subject_name: &str) -> Result<Subject> {
+        debug!("Get subject {}", subject_name);
+        Ok(Subject {
+            subject: subject_name.into(),
+            versions: self.get_versions(subject_name).await?,
+            compatibility: self.get_compatibility_level(subject_name).await?,
+        })
     }
 
     async fn get_schema_by_id(&self, id: i32) -> Result<String> {
+        #[derive(Deserialize)]
+        struct GetSchemaByIdResult {
+            pub schema: String,
+        }
         let mut cache = self.schema_cache_by_id.lock().await;
         trace!("Getting schema {} by id.", id);
 
@@ -96,15 +97,47 @@ where
     }
 }
 
+impl<C> CachedSchemaRegistry<C>
+where
+    C: HttpClient + Sync + Send,
+{
+    async fn get_compatibility_level(&self, subject_name: &str) -> Result<String> {
+        #[derive(Deserialize)]
+        struct CompatibilityResponse {
+            compatibilityLevel: String,
+        }
+        let url = Url::parse(&self.endpoint)?.join(format!("/config/{}?defaultToGlobal=true", subject_name).as_str())?;
+        let response: CompatibilityResponse = self.http_client.get(url.as_ref()).await?;
+        Ok(response.compatibilityLevel)
+    }
+
+    async fn get_versions(&self, subject_name: &str) -> Result<Vec<Schema>> {
+        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
+        let versions: Vec<i32> = self.http_client.get(url.as_ref()).await?;
+        let mut schemas = Vec::<Schema>::new();
+        for v in versions {
+            let url = url.join(&v.to_string())?;
+            let schema: Schema = self.http_client.get(url.as_ref()).await?;
+            schemas.push(schema);
+        }
+        Ok(schemas)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use async_trait::async_trait;
     use mockall::mock;
-    use serde::de::DeserializeOwned;
+    use serde::{de::DeserializeOwned, Deserialize};
 
     use super::{CachedSchemaRegistry, Result, SchemaRegistryClient};
-    use crate::lib::schema_registry::{http_client::HttpClient, types::GetSchemaByIdResult};
+    use crate::lib::schema_registry::http_client::HttpClient;
     use mockall::predicate::*;
+
+    #[derive(Deserialize)]
+    struct GetSchemaByIdResult {
+        pub schema: String,
+    }
 
     #[tokio::test]
     async fn test_cache() {

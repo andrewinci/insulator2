@@ -173,7 +173,7 @@ mod tests {
     use apache_avro::{to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer};
     use async_trait::async_trait;
 
-    use crate::lib::schema_registry::{Result, Schema, SchemaRegistryClient};
+    use crate::lib::schema_registry::{Result, SchemaRegistryClient, Subject};
 
     use super::{get_schema_id, AvroParser};
     struct MockSchemaRegistry {
@@ -185,7 +185,7 @@ mod tests {
         async fn list_subjects(&self) -> Result<Vec<String>> {
             todo!()
         }
-        async fn get_schema(&self, _: &str) -> Result<Vec<Schema>> {
+        async fn get_subject(&self, _: &str) -> Result<Subject> {
             todo!()
         }
         async fn get_schema_by_id(&self, _: i32) -> Result<String> {
