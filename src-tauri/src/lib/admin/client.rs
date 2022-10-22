@@ -3,7 +3,7 @@ use log::{debug, error, warn};
 use std::{time::Duration, vec};
 
 use super::{
-    types::{PartitionInfo, TopicInfo},
+    types::{PartitionInfo, Topic},
     ConsumerGroupInfo,
 };
 use crate::lib::{
@@ -20,8 +20,8 @@ use rdkafka::{
 
 #[async_trait]
 pub trait Admin {
-    fn list_topics(&self) -> Result<Vec<TopicInfo>>;
-    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
+    fn list_topics(&self) -> Result<Vec<Topic>>;
+    fn get_topic_info(&self, topic_name: &str) -> Result<Topic>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
     fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
@@ -51,11 +51,11 @@ impl KafkaAdmin {
 
 #[async_trait]
 impl Admin for KafkaAdmin {
-    fn list_topics(&self) -> Result<Vec<TopicInfo>> {
+    fn list_topics(&self) -> Result<Vec<Topic>> {
         self.internal_list_topics(None)
     }
 
-    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
+    fn get_topic_info(&self, topic_name: &str) -> Result<Topic> {
         let info = self.internal_list_topics(Some(topic_name))?;
         if info.len() == 1 {
             Ok(info.get(0).unwrap().clone())
@@ -154,13 +154,13 @@ impl KafkaAdmin {
         Ok(groups[0].state().to_string())
     }
 
-    fn internal_list_topics(&self, topic: Option<&str>) -> Result<Vec<TopicInfo>> {
-        let topics: Vec<TopicInfo> = self
+    fn internal_list_topics(&self, topic: Option<&str>) -> Result<Vec<Topic>> {
+        let topics: Vec<Topic> = self
             .consumer
             .fetch_metadata(topic, self.timeout)?
             .topics()
             .iter()
-            .map(|t| TopicInfo {
+            .map(|t| Topic {
                 name: t.name().to_string(),
                 partitions: t
                     .partitions()

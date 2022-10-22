@@ -1,11 +1,11 @@
 use log::debug;
 
-use crate::lib::admin::{Admin, ConsumerGroupInfo, TopicInfo};
+use crate::lib::admin::{Admin, ConsumerGroupInfo, Topic};
 
 use super::{error::Result, AppState};
 
 #[tauri::command]
-pub async fn list_topics(cluster_id: &str, state: tauri::State<'_, AppState>) -> Result<Vec<TopicInfo>> {
+pub async fn list_topics(cluster_id: &str, state: tauri::State<'_, AppState>) -> Result<Vec<Topic>> {
     debug!("Retrieve the list of topics");
     let cluster = state.get_cluster(cluster_id).await;
     Ok(cluster.admin_client.list_topics()?)

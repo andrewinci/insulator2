@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api";
-import { ConsumerGroupInfo, TopicInfo } from "../models/kafka";
+import { ConsumerGroupInfo, Topic } from "../models/kafka";
 import { addNotification } from "../providers";
 import { format, TauriError } from "./error";
 
@@ -48,7 +48,7 @@ export const createTopic = (
 };
 
 export const getTopicNamesList = (clusterId: string): Promise<string[]> =>
-  invoke<TopicInfo[]>("list_topics", { clusterId })
+  invoke<Topic[]>("list_topics", { clusterId })
     .then((topics) => topics.map((t) => t.name))
     .catch((err: TauriError) => {
       console.error(err);

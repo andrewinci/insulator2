@@ -18,7 +18,7 @@ export type Cluster = {
   schemaRegistry?: SchemaRegistry;
 };
 
-export type TopicInfo = {
+export type Topic = {
   name: string;
 };
 
