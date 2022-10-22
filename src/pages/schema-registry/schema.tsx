@@ -4,7 +4,7 @@ import { Prism } from "@mantine/prism";
 import { IconInfoCircle, IconVersions } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { SingleLineTitle } from "../../components";
+import { PageHeader } from "../../components";
 import { getSchemaVersions } from "../../tauri/schema-registry";
 
 type SchemaProps = {
@@ -30,7 +30,8 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
   return (
     <Container>
       <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
-        <SingleLineTitle>{schemaName}</SingleLineTitle>
+        {/* Todo: retrieve the compatibility level from the backend GET https://docs.confluent.io/platform/current/schema-registry/develop/api.html /config/(string: subject)  */}
+        <PageHeader title={schemaName} subtitle={`Compatibility level: ${"FULL_TRANSITIVE"}`} />
         <Tooltip position="bottom" label="Schema info">
           <ActionIcon>
             <IconInfoCircle />

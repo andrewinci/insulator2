@@ -1,38 +1,41 @@
-import { Divider, Image, Box, Center, Group, Navbar, ScrollArea, Title } from "@mantine/core";
+import { Text, Divider, Image, Box, Center, Group, Navbar, ScrollArea, Title, Stack } from "@mantine/core";
 import { SidebarItem } from "./sidebar-item";
 import { IconCircleDashed, IconLine, IconSatellite, IconServer, IconSettings } from "@tabler/icons";
 import logo from "../../src-tauri/icons/128x128.png";
 import { matchPath, useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import { useAppState } from "../providers";
+import { getVersion } from "@tauri-apps/api/app";
+import { useQuery } from "@tanstack/react-query";
 
 export const SideBar = () => {
   const { appState } = useAppState();
   const location = useLocation();
+  const { data: appVersion } = useQuery(["insulatorVersion"], getVersion);
   const { clusterName, clusterId } = useMemo(() => {
     const { clusterId } = matchPath("/cluster/:clusterId/*", location.pathname)?.params ?? {};
     const clusterName = appState.clusters.find((c) => c.id == clusterId)?.name;
     return { clusterName, clusterId };
   }, [location, appState]);
-
   return (
     <Navbar width={{ base: 220 }} p="xs">
       <Navbar.Section>
-        <Center>
-          <Group style={{ height: "45px" }} spacing={10}>
-            <Image width={30} height={30} src={logo} alt="insulator" />
-            <Title order={2}>Insulator</Title>
-          </Group>
+        <Center mt={5}>
+          <Stack align={"center"} spacing={0}>
+            <Group style={{ height: "32px" }} spacing={10}>
+              <Image width={30} height={30} src={logo} alt="insulator" />
+              <Title order={2}>Insulator</Title>
+            </Group>
+            <Text size={12}>v{appVersion}</Text>
+          </Stack>
         </Center>
-        <Divider mt="md" />
+        <Divider mt={5} />
       </Navbar.Section>
       {clusterName && (
         <Navbar.Section mt="xs">
-          <Center>
-            <Title align="center" order={4}>
-              {clusterName}
-            </Title>
-          </Center>
+          <Text size={18} align={"center"}>
+            {clusterName}
+          </Text>
         </Navbar.Section>
       )}
       <Navbar.Section grow component={ScrollArea} mt="-xs" mx="-xs" px="xs">

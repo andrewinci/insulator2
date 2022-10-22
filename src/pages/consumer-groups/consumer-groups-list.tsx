@@ -15,7 +15,7 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
 
   return (
     <ItemList
-      title="CGroups"
+      title="Consumers"
       listId={`consumer-groups-${clusterId}`}
       isFetching={isFetching}
       isLoading={isLoading}

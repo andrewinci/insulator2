@@ -1,6 +1,7 @@
 import { Button, Text, Container, Divider, Paper, Stack, Title, Group, ScrollArea } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { Link, useNavigate } from "react-router-dom";
+import { PageHeader } from "../../components";
 import { Cluster } from "../../models/kafka";
 import { useAppState } from "../../providers";
 
@@ -21,7 +22,7 @@ export const ClusterList = () => {
   return (
     <Container>
       <Group position={"apart"}>
-        <Title>Clusters</Title>
+        <PageHeader title="Clusters" subtitle={`Total: ${appState.clusters.length}`} />
         <Button component={Link} to="/cluster/new">
           Add Cluster
         </Button>

@@ -5,7 +5,7 @@ import { Async } from "react-async";
 import { ConsumerState } from "../../models/kafka";
 import { RecordsList } from "./record-list";
 import { getConsumerState, getRecord, stopConsumer } from "../../tauri/consumer";
-import { SingleLineTitle } from "../../components";
+import { PageHeader } from "../../components";
 import { openConsumerModal } from "./consumer-modal";
 import { useParams } from "react-router-dom";
 
@@ -60,7 +60,12 @@ class TopicStateful extends React.Component<TopicPageProps, TopicPageState> {
   render = () => (
     <Container>
       <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
-        <SingleLineTitle>{this.props.topicName}</SingleLineTitle>
+        {/* todo: retrieve info from the topic */}
+        <PageHeader
+          title={this.props.topicName}
+          subtitle={"Estimated Records: 10000000000, Cleanup policy: Delete, Partitions: 12"}
+        />
+
         <Tooltip position="bottom" label="Topic info">
           <ActionIcon>
             <IconInfoCircle />

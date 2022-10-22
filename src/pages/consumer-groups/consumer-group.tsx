@@ -1,7 +1,7 @@
 import { Text, Button, Container, Divider, Group, Stack, Grid, Center, Loader } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
-import { SingleLineTitle } from "../../components";
+import { PageHeader } from "../../components";
 import { describeConsumerGroup } from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
@@ -11,9 +11,7 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
 
   return (
     <Container>
-      <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
-        <SingleLineTitle>{name}</SingleLineTitle>
-      </Group>
+      <PageHeader title={name} subtitle={`status: ${data?.state ?? "..."}`} />
       <Divider my={10} />
 
       <Stack m={10} align={"stretch"} justify={"flex-start"}>

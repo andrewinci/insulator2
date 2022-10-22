@@ -18,7 +18,7 @@ export const TopicsPage = () => {
         />
       </Allotment.Pane>
       {topicName && (
-        <Allotment.Pane minSize={300}>
+        <Allotment.Pane minSize={520}>
           <Topic topicName={topicName} />
         </Allotment.Pane>
       )}

@@ -1,7 +1,6 @@
 import {
   Container,
   Divider,
-  Title,
   Group,
   NavLink,
   Loader,
@@ -18,6 +17,7 @@ import { useLocalStorage } from "@mantine/hooks";
 import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconSearch, IconStar } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList } from "react-window";
+import { PageHeader } from "../../components";
 
 const getWindowSize = () => {
   const { innerWidth, innerHeight } = window;
@@ -135,7 +135,7 @@ export const ItemList = (props: ItemListProps) => {
   return (
     <Container>
       <Group align={"center"} position={"apart"}>
-        <Title>{title}</Title>
+        <PageHeader title={title} subtitle={`Total: ${props.items.length}`} />
         <TextInput
           size="xs"
           style={{ width: "40%" }}
@@ -192,7 +192,7 @@ const TabHeader = (props: { title: string; count: number; filtered: number; icon
       sx={{ height: 30 }}
       rightSection={
         <Badge variant="filled" size="md" p={3}>
-          {props.filtered} / {props.count}
+          {props.filtered}
         </Badge>
       }
       value={props.title.toLowerCase()}

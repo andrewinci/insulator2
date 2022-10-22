@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use futures::lock::Mutex;
-use log::{trace, debug};
+use log::{debug, trace};
 use std::collections::HashMap;
 use std::sync::Arc;
 use url::Url;
