@@ -43,7 +43,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
           <Tooltip position="right" label="Schema version">
             <Select
               icon={<IconVersions />}
-              data={subject.versions.map((s) => s.version.toString())}
+              data={subject.versions.map((s) => ({ value: s.version.toString(), label: `v${s.version} - ${s.id}` }))}
               value={state?.version?.toString()}
               onChange={(v) => v && setState({ ...state, version: +v })}
             />
