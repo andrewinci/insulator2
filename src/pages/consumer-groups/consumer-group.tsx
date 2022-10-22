@@ -5,8 +5,10 @@ import { PageHeader } from "../../components";
 import { describeConsumerGroup } from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
-  const { isLoading, data, refetch, isRefetching } = useQuery(["describeConsumerGroup", clusterId, name], () =>
-    describeConsumerGroup(clusterId, name)
+  const { isLoading, data, refetch, isRefetching } = useQuery(
+    ["describeConsumerGroup", clusterId, name],
+    () => describeConsumerGroup(clusterId, name),
+    { refetchOnWindowFocus: false, refetchOnMount: false }
   );
 
   return (
