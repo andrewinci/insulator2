@@ -5,6 +5,7 @@ import { getConsumerState, getRecord, stopConsumer } from "../../tauri/consumer"
 import { PageHeader } from "../../components";
 import { openConsumerModal } from "./consumer-modal";
 import { useQuery } from "@tanstack/react-query";
+import { getTopicInfo } from "../../tauri/admin";
 
 export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: string }) => {
   const { data, isLoading } = useQuery(
@@ -13,6 +14,14 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
     { refetchInterval: 200 }
   );
 
+  const { data: topicInfo } = useQuery(["getTopicInfo", clusterId, topicName], async () => {
+    const topicInfo = await getTopicInfo(clusterId, topicName);
+    return {
+      partitionCount: topicInfo.partitions.length,
+      estimatedRecord: 100, //todo
+      cleanupPolicy: "Delete Compact",
+    };
+  });
   const toggleConsumerRunning = async () => {
     if (!data) return;
     data.isRunning ? await stopConsumer(clusterId, topicName) : openConsumerModal({ clusterId, topicName });
@@ -21,10 +30,11 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
   return (
     <Container>
       <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
-        {/* todo: retrieve info from the topic */}
         <PageHeader
           title={topicName}
-          subtitle={`Estimated Records: 10000000000, Cleanup policy: Delete, Partitions: ${321}`}
+          subtitle={`Estimated Records: ${topicInfo?.estimatedRecord ?? "..."}, Cleanup policy: ${
+            topicInfo?.cleanupPolicy ?? "..."
+          }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}
         />
 
         <Tooltip position="bottom" label="Topic info">

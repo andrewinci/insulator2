@@ -130,10 +130,10 @@ where
 mod tests {
     use async_trait::async_trait;
     use mockall::mock;
-    use serde::{de::DeserializeOwned};
+    use serde::de::DeserializeOwned;
 
     use super::{CachedSchemaRegistry, Result, SchemaRegistryClient};
-    use crate::lib::schema_registry::{http_client::HttpClient, client::GetSchemaByIdResult};
+    use crate::lib::schema_registry::{client::GetSchemaByIdResult, http_client::HttpClient};
     use mockall::predicate::*;
 
     #[tokio::test]

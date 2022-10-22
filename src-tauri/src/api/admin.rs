@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::lib::admin::{Admin, ConsumerGroupInfo, Topic};
+use crate::lib::admin::{Admin, ConsumerGroupInfo, Topic, TopicInfo};
 
 use super::{error::Result, AppState};
 
@@ -9,6 +9,13 @@ pub async fn list_topics(cluster_id: &str, state: tauri::State<'_, AppState>) ->
     debug!("Retrieve the list of topics");
     let cluster = state.get_cluster(cluster_id).await;
     Ok(cluster.admin_client.list_topics()?)
+}
+
+#[tauri::command]
+pub async fn get_topic_info(cluster_id: &str, topic_name: &str, state: tauri::State<'_, AppState>) -> Result<TopicInfo> {
+    debug!("Retrieve topic info for {}", topic_name);
+    let cluster = state.get_cluster(cluster_id).await;
+    Ok(cluster.admin_client.get_topic_info(topic_name)?)
 }
 
 #[tauri::command]

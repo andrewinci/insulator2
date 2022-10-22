@@ -8,6 +8,12 @@ pub struct PartitionInfo {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct TopicInfo {
+    pub name: String,
+    pub partitions: Vec<PartitionInfo>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Topic {
     pub name: String,
     pub partitions: Vec<PartitionInfo>,

@@ -1,25 +1,6 @@
-export type ClusterAuthentication =
-  | { Sasl: { username: string; password: string; scram: boolean } }
-  | {
-      Ssl: {
-        ca: string;
-        certificate: string;
-        key: string;
-        keyPassword?: string;
-      };
-    }
-  | "None";
-
-export type Cluster = {
-  id: string;
+export type TopicInfo = {
   name: string;
-  endpoint: string;
-  authentication: ClusterAuthentication;
-  schemaRegistry?: SchemaRegistry;
-};
-
-export type Topic = {
-  name: string;
+  partitions: PartitionInfo[];
 };
 
 export type KafkaRecord = {
@@ -35,12 +16,6 @@ export type ConsumerState = {
   recordCount: number;
 };
 
-export type SchemaRegistry = {
-  endpoint: string;
-  username?: string;
-  password?: string;
-};
-
 export type ConsumerSettingsFrom =
   | "Beginning"
   | "End"
@@ -50,12 +25,6 @@ export type ConsumerSettingsFrom =
         stop_timestamp?: number; //time in ms
       };
     };
-
-export type ConsumerSettings = {
-  cluster: Cluster;
-  topic: string;
-  from: ConsumerSettingsFrom;
-};
 
 export type ConsumerGroupInfo = {
   name: string;
@@ -67,4 +36,10 @@ export type TopicPartitionOffset = {
   topic: string;
   partition_id: number;
   offset: number;
+};
+
+export type PartitionInfo = {
+  id: number;
+  isr: number;
+  replicas: number;
 };

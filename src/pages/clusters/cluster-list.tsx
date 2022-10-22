@@ -2,7 +2,7 @@ import { Button, Text, Container, Divider, Paper, Stack, Title, Group, ScrollAre
 import { openConfirmModal } from "@mantine/modals";
 import { Link, useNavigate } from "react-router-dom";
 import { PageHeader } from "../../components";
-import { Cluster } from "../../models/kafka";
+import { Cluster } from "../../models";
 import { useAppState } from "../../providers";
 
 export const ClusterList = () => {

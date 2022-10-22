@@ -3,7 +3,7 @@ use log::{debug, error, warn};
 use std::{time::Duration, vec};
 
 use super::{
-    types::{PartitionInfo, Topic},
+    types::{PartitionInfo, Topic, TopicInfo},
     ConsumerGroupInfo,
 };
 use crate::lib::{
@@ -21,7 +21,7 @@ use rdkafka::{
 #[async_trait]
 pub trait Admin {
     fn list_topics(&self) -> Result<Vec<Topic>>;
-    fn get_topic_info(&self, topic_name: &str) -> Result<Topic>;
+    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
     fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
@@ -55,10 +55,14 @@ impl Admin for KafkaAdmin {
         self.internal_list_topics(None)
     }
 
-    fn get_topic_info(&self, topic_name: &str) -> Result<Topic> {
-        let info = self.internal_list_topics(Some(topic_name))?;
-        if info.len() == 1 {
-            Ok(info.get(0).unwrap().clone())
+    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
+        let partitions_info = self.internal_list_topics(Some(topic_name))?;
+        if partitions_info.len() == 1 {
+            let Topic { name, partitions } = partitions_info.get(0).unwrap();
+            Ok(TopicInfo {
+                name: name.to_string(),
+                partitions: partitions.to_vec(),
+            })
         } else {
             warn!(
                 "Topic not found or more than one topic with the same name {}",

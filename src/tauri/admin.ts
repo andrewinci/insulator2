@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api";
-import { ConsumerGroupInfo, Topic } from "../models/kafka";
+import { ConsumerGroupInfo, TopicInfo } from "../models/kafka";
 import { addNotification } from "../providers";
 import { format, TauriError } from "./error";
 
@@ -47,8 +47,8 @@ export const createTopic = (
   });
 };
 
-export const getTopicNamesList = (clusterId: string): Promise<string[]> =>
-  invoke<Topic[]>("list_topics", { clusterId })
+export const listTopics = (clusterId: string): Promise<string[]> =>
+  invoke<{ name: string }[]>("list_topics", { clusterId })
     .then((topics) => topics.map((t) => t.name))
     .catch((err: TauriError) => {
       console.error(err);
@@ -59,3 +59,14 @@ export const getTopicNamesList = (clusterId: string): Promise<string[]> =>
       });
       throw err;
     });
+
+export const getTopicInfo = (clusterId: string, topicName: string): Promise<TopicInfo> =>
+  invoke<TopicInfo>("get_topic_info", { clusterId, topicName }).catch((err: TauriError) => {
+    console.error(err);
+    addNotification({
+      type: "error",
+      title: `Unable to retrieve topic info`,
+      description: format(err),
+    });
+    throw err;
+  });
