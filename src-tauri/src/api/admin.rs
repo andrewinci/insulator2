@@ -15,7 +15,7 @@ pub async fn list_topics(cluster_id: &str, state: tauri::State<'_, AppState>) ->
 pub async fn get_topic_info(cluster_id: &str, topic_name: &str, state: tauri::State<'_, AppState>) -> Result<TopicInfo> {
     debug!("Retrieve topic info for {}", topic_name);
     let cluster = state.get_cluster(cluster_id).await;
-    Ok(cluster.admin_client.get_topic_info(topic_name)?)
+    Ok(cluster.admin_client.get_topic_info(topic_name).await?)
 }
 
 #[tauri::command]

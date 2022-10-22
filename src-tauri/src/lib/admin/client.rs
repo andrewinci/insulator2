@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use log::{debug, error, warn};
-use std::{time::Duration, vec};
+use std::{collections::HashMap, time::Duration, vec};
 
 use super::{
     types::{PartitionInfo, Topic, TopicInfo},
@@ -11,7 +11,10 @@ use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     error::{Error, Result},
 };
-use rdkafka::{admin::AdminClient, Offset, TopicPartitionList};
+use rdkafka::{
+    admin::{AdminClient, ResourceSpecifier},
+    Offset, TopicPartitionList,
+};
 use rdkafka::{
     admin::{AdminOptions, NewTopic, TopicReplication},
     client::DefaultClientContext,
@@ -21,7 +24,7 @@ use rdkafka::{
 #[async_trait]
 pub trait Admin {
     fn list_topics(&self) -> Result<Vec<Topic>>;
-    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
+    async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
     fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
@@ -55,13 +58,25 @@ impl Admin for KafkaAdmin {
         self.internal_list_topics(None)
     }
 
-    fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
+    async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
         let partitions_info = self.internal_list_topics(Some(topic_name))?;
+        let responses = self
+            .admin_client
+            .describe_configs([&ResourceSpecifier::Topic(topic_name)], &AdminOptions::default())
+            .await?;
+        let mut configurations = HashMap::<String, Option<String>>::new();
+        if let Some(Ok(topic_config)) = responses.first() {
+            topic_config.entries.iter().for_each(|c| {
+                configurations.insert(c.name.clone(), c.value.as_ref().cloned());
+            })
+        }
+        debug!("Topic {} configurations {:?}", topic_name, configurations);
         if partitions_info.len() == 1 {
             let Topic { name, partitions } = partitions_info.get(0).unwrap();
             Ok(TopicInfo {
                 name: name.to_string(),
                 partitions: partitions.to_vec(),
+                configurations,
             })
         } else {
             warn!(
@@ -81,9 +96,10 @@ impl Admin for KafkaAdmin {
             config: vec![("cleanup.policy", if compacted { "compact" } else { "delete" })],
             replication: TopicReplication::Fixed(isr),
         };
-        let opts = AdminOptions::new();
-
-        let res = self.admin_client.create_topics(vec![&new_topic], &opts).await?;
+        let res = self
+            .admin_client
+            .create_topics(vec![&new_topic], &AdminOptions::default())
+            .await?;
         let res = res.get(0).expect("Create topic: missing result");
         match res {
             Ok(_) => {

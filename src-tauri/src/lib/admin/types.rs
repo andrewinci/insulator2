@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -11,6 +13,7 @@ pub struct PartitionInfo {
 pub struct TopicInfo {
     pub name: String,
     pub partitions: Vec<PartitionInfo>,
+    pub configurations: HashMap<String, Option<String>>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

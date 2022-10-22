@@ -1,4 +1,4 @@
-import { ActionIcon, Button, Center, Container, Divider, Group, Loader, Tooltip } from "@mantine/core";
+import { ActionIcon, Badge, Button, Center, Container, Divider, Group, Loader, Tooltip } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons";
 import { RecordsList } from "./record-list";
 import { getConsumerState, getRecord, stopConsumer } from "../../tauri/consumer";
@@ -16,15 +16,26 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
 
   const { data: topicInfo } = useQuery(["getTopicInfo", clusterId, topicName], async () => {
     const topicInfo = await getTopicInfo(clusterId, topicName);
+    console.log(typeof topicInfo.configurations);
     return {
       partitionCount: topicInfo.partitions.length,
       estimatedRecord: 100, //todo
-      cleanupPolicy: "Delete Compact",
+      cleanupPolicy: topicInfo.configurations["cleanup.policy"] ?? "...",
     };
   });
   const toggleConsumerRunning = async () => {
     if (!data) return;
     data.isRunning ? await stopConsumer(clusterId, topicName) : openConsumerModal({ clusterId, topicName });
+  };
+
+  // gradient from green to red
+  const getColor = (value: number) => {
+    const MAX = 10000;
+    if (value > MAX) {
+      value = MAX;
+    }
+    const hue = ((1 - value / MAX) * 130).toString(10);
+    return ["hsl(", hue, ",100%,50%)"].join("");
   };
 
   return (
@@ -36,7 +47,6 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
             topicInfo?.cleanupPolicy ?? "..."
           }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}
         />
-
         <Tooltip position="bottom" label="Topic info">
           <ActionIcon>
             <IconInfoCircle />
@@ -51,7 +61,15 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
       )}
       {!isLoading && data && (
         <>
-          <Button mb={10} size="xs" onClick={toggleConsumerRunning}>
+          <Button
+            mb={10}
+            size="xs"
+            onClick={toggleConsumerRunning}
+            rightIcon={
+              <Badge variant="filled" sx={{ backgroundColor: getColor(data.recordCount) }}>
+                {data.recordCount}
+              </Badge>
+            }>
             {data.isRunning ? "Stop" : "Consume"}
           </Button>
           <RecordsList

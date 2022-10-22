@@ -1,6 +1,7 @@
 export type TopicInfo = {
   name: string;
   partitions: PartitionInfo[];
+  configurations: any;
 };
 
 export type KafkaRecord = {
