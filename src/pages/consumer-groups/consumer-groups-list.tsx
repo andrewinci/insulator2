@@ -1,8 +1,9 @@
-import { ActionIcon, Button, Center, Group, Modal, Select, Stack, Text, TextInput, Title } from "@mantine/core";
+import { ActionIcon, Button, Center, Chip, Group, Modal, Select, Stack, Text, TextInput, Title } from "@mantine/core";
 import { IconTrash } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { SingleLineTitle } from "../../components";
+import { ConsumerSettingsFrom } from "../../models";
 import { setConsumerGroup, getConsumerGroups, listTopics } from "../../tauri/admin";
 import { ItemList } from "../common";
 
@@ -44,7 +45,11 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
 
 const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; close: () => void }) => {
   const { data } = useQuery(["listTopics", clusterId], () => listTopics(clusterId));
-  const [state, setState] = useState<{ name: string; topics: string[] }>({ name: "", topics: [] });
+  const [state, setState] = useState<{ name: string; topics: string[]; offset: string }>({
+    name: "",
+    topics: [],
+    offset: "Beginning",
+  });
 
   return (
     <Stack spacing={0}>
@@ -53,7 +58,20 @@ const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; clo
         value={state.name}
         onChange={(event) => setState((s) => ({ ...s, name: event.currentTarget.value }))}
         label="Consumer group name"></TextInput>
+      <Text mt={10} size={15}>
+        Set offset
+      </Text>
+      <Chip.Group
+        position="left"
+        multiple={false}
+        onChange={(v) => setState((s) => ({ ...s, offset: v }))}
+        value={state.offset}>
+        <Chip value="End">End</Chip>
+        <Chip value="Beginning">Beginning</Chip>
+        {/* <Chip value="Custom">Custom Time</Chip> */}
+      </Chip.Group>
       <Select
+        mt={10}
         label="Add topics to the consumer group"
         data={data?.filter((t) => !state.topics.includes(t)) ?? []}
         onChange={(t) => {
@@ -85,7 +103,11 @@ const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; clo
       </Stack>
       <Group mt={10} position="right">
         <Button
-          onClick={() => setConsumerGroup(clusterId, state.name, state.topics, "Beginning").then((_) => close())}
+          onClick={() =>
+            setConsumerGroup(clusterId, state.name, state.topics, state.offset as ConsumerSettingsFrom).then((_) =>
+              close()
+            )
+          }
           type="submit">
           Create 🚀
         </Button>
