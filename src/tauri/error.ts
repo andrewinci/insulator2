@@ -3,4 +3,9 @@ export type TauriError = {
   message: string;
 };
 
-export const format = ({ errorType, message }: TauriError) => `${errorType}: ${message}`;
+export const format = ({ errorType, message }: TauriError) => {
+  if (errorType && message) return `${errorType}: ${message}`;
+  if (errorType) return `${errorType}`;
+  if (message) return `${message}`;
+  else return "";
+};

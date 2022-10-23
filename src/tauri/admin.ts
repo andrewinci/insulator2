@@ -3,6 +3,18 @@ import { ConsumerGroupInfo, TopicInfo } from "../models/kafka";
 import { addNotification } from "../providers";
 import { format, TauriError } from "./error";
 
+export const createConsumerGroup = (clusterId: string, consumerGroupName: string, topics: string[]): Promise<void> => {
+  return invoke<void>("create_consumer_group", { clusterId, consumerGroupName, topics }).catch((err: TauriError) => {
+    console.error(err);
+    addNotification({
+      type: "error",
+      title: `Unable to create the consumer group ${consumerGroupName}`,
+      description: format(err),
+    });
+    throw err;
+  });
+};
+
 export const describeConsumerGroup = (clusterId: string, consumerGroupName: string): Promise<ConsumerGroupInfo> => {
   return invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName }).catch(
     (err: TauriError) => {

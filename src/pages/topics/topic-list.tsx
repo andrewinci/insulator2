@@ -12,9 +12,7 @@ type TopicListProps = {
 
 export const TopicList = (props: TopicListProps) => {
   const { onTopicSelected, clusterId } = props;
-  const { isFetching, isLoading, data, refetch } = useQuery(["getTopicNamesList", clusterId], () =>
-    listTopics(clusterId)
-  );
+  const { isFetching, isLoading, data, refetch } = useQuery(["listTopics", clusterId], () => listTopics(clusterId));
 
   const onCreateTopic = () =>
     openModal({

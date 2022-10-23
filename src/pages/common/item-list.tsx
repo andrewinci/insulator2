@@ -83,7 +83,7 @@ export const ItemList = (props: ItemListProps) => {
             <Grid style={style} grow gutter={0} justify={"flex-start"} align="center">
               <Grid.Col span="auto" sx={{ maxWidth: "30px" }}>
                 <ActionIcon
-                  color="yellow"
+                  color="orange"
                   radius="xl"
                   onClick={() => {
                     // toggle item from the favorites list
@@ -93,7 +93,7 @@ export const ItemList = (props: ItemListProps) => {
                     else setState((s) => ({ ...s, favorites: [...s.favorites, newItem] }));
                   }}>
                   <IconStar
-                    fill={filteredItems.favorites.includes(panelItems[index]) ? "yellow" : undefined}
+                    fill={filteredItems.favorites.includes(panelItems[index]) ? "orange" : undefined}
                     size={16}
                     stroke={1.5}
                   />
