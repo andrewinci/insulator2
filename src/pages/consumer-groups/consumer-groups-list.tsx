@@ -30,7 +30,13 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
         onRefreshList={refetch}
       />
       <Modal opened={opened} onClose={() => setOpened(false)} title={<Title order={3}>Create consumer group</Title>}>
-        <CreateConsumerGroupModal clusterId={clusterId} close={() => setOpened(false)} />
+        <CreateConsumerGroupModal
+          clusterId={clusterId}
+          close={() => {
+            setOpened(false);
+            refetch();
+          }}
+        />
       </Modal>
     </>
   );
@@ -42,7 +48,11 @@ const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; clo
 
   return (
     <Stack spacing={0}>
-      <TextInput required label="Consumer group name"></TextInput>
+      <TextInput
+        required
+        value={state.name}
+        onChange={(event) => setState((s) => ({ ...s, name: event.currentTarget.value }))}
+        label="Consumer group name"></TextInput>
       <Select
         label="Add topics to the consumer group"
         data={data?.filter((t) => !state.topics.includes(t)) ?? []}

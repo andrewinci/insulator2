@@ -52,3 +52,18 @@ pub async fn describe_consumer_group(
     let cluster = state.get_cluster(cluster_id).await;
     Ok(cluster.admin_client.describe_consumer_group(consumer_group_name)?)
 }
+
+#[tauri::command]
+pub async fn create_consumer_group(
+    cluster_id: &str,
+    consumer_group_name: &str,
+    topics: Vec<&str>,
+    state: tauri::State<'_, AppState>,
+) -> Result<()> {
+    debug!("Create consumer group {}", consumer_group_name);
+    let cluster = state.get_cluster(cluster_id).await;
+    Ok(cluster
+        .admin_client
+        .create_consumer_group(consumer_group_name, &topics)
+        .await?)
+}

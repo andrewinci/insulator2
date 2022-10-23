@@ -4,7 +4,9 @@ mod api;
 mod lib;
 
 use crate::api::{
-    admin::{create_topic, describe_consumer_group, get_topic_info, list_consumer_groups, list_topics},
+    admin::{
+        create_consumer_group, create_topic, describe_consumer_group, get_topic_info, list_consumer_groups, list_topics,
+    },
     configuration::{get_configuration, write_configuration},
     consumer::{get_consumer_state, get_record, start_consumer, stop_consumer},
     schema_registry::{get_subject, list_subjects},
@@ -32,7 +34,8 @@ fn main() {
             get_topic_info,
             create_topic,
             list_consumer_groups,
-            describe_consumer_group
+            describe_consumer_group,
+            create_consumer_group
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

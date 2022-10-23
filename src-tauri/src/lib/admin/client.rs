@@ -13,6 +13,7 @@ use crate::lib::{
 };
 use rdkafka::{
     admin::{AdminClient, ResourceSpecifier},
+    consumer::{BaseConsumer, CommitMode},
     Offset, TopicPartitionList,
 };
 use rdkafka::{
@@ -30,6 +31,7 @@ pub trait Admin {
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
     // consumers
+    async fn create_consumer_group(&self, consumer_group_name: &str, topics: &[&str]) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
     fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
 }
@@ -58,6 +60,40 @@ impl KafkaAdmin {
 
 #[async_trait]
 impl Admin for KafkaAdmin {
+    async fn create_consumer_group(&self, consumer_group_name: &str, topic_names: &[&str]) -> Result<()> {
+        let consumer: BaseConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
+            .create()
+            .expect("Unable to build the consumer");
+
+        let mut tp = TopicPartitionList::new();
+        let topics = self.list_topics()?;
+
+        let tp_temp: Vec<_> = topics
+            .iter()
+            .filter(|t| topic_names.contains(&t.name.as_str()))
+            .flat_map(|t| t.partitions.iter().map(|p| (t.name.clone(), p.id)))
+            .collect();
+
+        // create TopicPartitionList
+        tp_temp.iter().for_each(|(t, p)| {
+            tp.add_partition_offset(t.as_str(), *p, Offset::Offset(0))
+                .expect("Unable to add a partition to the consumer group");
+        });
+
+        // assign
+        consumer.assign(&tp)?;
+        consumer
+            .fetch_metadata(None, self.timeout)
+            .expect("Unable to fetch metadata");
+
+        // seek to the end
+        tp_temp.iter().for_each(|(t, p)| {
+            consumer.store_offset(t.as_str(), *p, -1).expect("Unable to store");
+        });
+
+        Ok(consumer.commit_consumer_state(CommitMode::Sync)?)
+    }
+
     fn list_topics(&self) -> Result<Vec<Topic>> {
         self.internal_list_topics(None)
     }

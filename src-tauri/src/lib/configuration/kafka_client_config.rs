@@ -10,6 +10,8 @@ pub fn build_kafka_client_config(cluster: &ClusterConfig, group_id: Option<&str>
         .set("bootstrap.servers", &cluster.endpoint)
         .set("session.timeout.ms", "6000")
         .set("enable.auto.commit", "false")
+        .set("enable.auto.offset.store", "false")
+        .set("offset.store.method", "broker")
         .set("group.id", group_id)
         .set("api.version.request", "true")
         .set("debug", "all");
