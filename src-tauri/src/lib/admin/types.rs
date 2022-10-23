@@ -3,11 +3,16 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct PartitionInfo {
+pub struct Topic {
+    pub name: String,
+    pub partitions: Vec<Partition>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Partition {
     pub id: i32,
     pub isr: usize,
     pub replicas: usize,
-    pub last_offset: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -18,9 +23,11 @@ pub struct TopicInfo {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Topic {
-    pub name: String,
-    pub partitions: Vec<PartitionInfo>,
+pub struct PartitionInfo {
+    pub id: i32,
+    pub isr: usize,
+    pub replicas: usize,
+    pub last_offset: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

@@ -4,7 +4,7 @@ use std::{collections::HashMap, time::Duration, vec};
 
 use super::{
     types::{PartitionInfo, Topic, TopicInfo},
-    ConsumerGroupInfo,
+    ConsumerGroupInfo, Partition,
 };
 use crate::lib::{
     admin::TopicPartitionOffset,
@@ -21,11 +21,15 @@ use rdkafka::{
     consumer::{Consumer, StreamConsumer},
 };
 
+//todo: split by topic and consumer?
 #[async_trait]
 pub trait Admin {
+    // topics
     fn list_topics(&self) -> Result<Vec<Topic>>;
+    fn get_topic(&self, topic_name: &str) -> Result<Topic>;
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
+    // consumers
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
     fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
 }
@@ -58,36 +62,24 @@ impl Admin for KafkaAdmin {
         self.internal_list_topics(None)
     }
 
-    async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
+    fn get_topic(&self, topic_name: &str) -> Result<Topic> {
         let topic_list = self.internal_list_topics(Some(topic_name))?;
-        let topic = {
-            if let Some(topic) = topic_list.first() {
-                Ok(topic)
-            } else {
-                warn!(
-                    "Topic not found or more than one topic with the same name {}",
-                    topic_name
-                );
-                Err(Error::Kafka {
-                    message: "Topic not found".into(),
-                })
-            }
-        }?;
-
-        // todo: move to another function
-        debug!("Retrieving the topic configurations");
-        let responses = self
-            .admin_client
-            .describe_configs([&ResourceSpecifier::Topic(topic_name)], &AdminOptions::default())
-            .await?;
-        let mut configurations = HashMap::<String, Option<String>>::new();
-        if let Some(Ok(topic_config)) = responses.first() {
-            topic_config.entries.iter().for_each(|c| {
-                configurations.insert(c.name.clone(), c.value.as_ref().cloned());
+        if let Some(topic) = topic_list.first() {
+            Ok(topic.to_owned())
+        } else {
+            warn!(
+                "Topic not found or more than one topic with the same name {}",
+                topic_name
+            );
+            Err(Error::Kafka {
+                message: "Topic not found".into(),
             })
         }
-        debug!("Topic {} configurations {:?}", topic_name, configurations);
-        // todo: move to another function
+    }
+
+    async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
+        let topic = self.get_topic(topic_name)?;
+
         // retrieve the last offsets
         let mut tp = TopicPartitionList::new();
         (0..topic.partitions.len()).for_each(|p_id| {
@@ -103,12 +95,12 @@ impl Admin for KafkaAdmin {
                 .iter()
                 .map(|p| PartitionInfo {
                     id: p.id,
-                    last_offset: Some(map_offset(&offsets.find_partition(topic_name, p.id).unwrap().offset())),
+                    last_offset: map_offset(&offsets.find_partition(topic_name, p.id).unwrap().offset()),
                     isr: p.isr,
                     replicas: p.replicas,
                 })
                 .collect(),
-            configurations,
+            configurations: self.get_topic_configuration(topic_name).await?,
         })
     }
 
@@ -197,8 +189,23 @@ impl KafkaAdmin {
         Ok(groups[0].state().to_string())
     }
 
+    async fn get_topic_configuration(&self, topic_name: &str) -> Result<HashMap<String, Option<String>>> {
+        debug!("Retrieving the topic configurations");
+        let responses = self
+            .admin_client
+            .describe_configs([&ResourceSpecifier::Topic(topic_name)], &AdminOptions::default())
+            .await?;
+        let mut configurations = HashMap::<String, Option<String>>::new();
+        if let Some(Ok(topic_config)) = responses.first() {
+            topic_config.entries.iter().for_each(|c| {
+                configurations.insert(c.name.clone(), c.value.as_ref().cloned());
+            })
+        }
+        Ok(configurations)
+    }
+
     fn internal_list_topics(&self, topic: Option<&str>) -> Result<Vec<Topic>> {
-        let topics: Vec<Topic> = self
+        let topics: Vec<_> = self
             .consumer
             .fetch_metadata(topic, self.timeout)?
             .topics()
@@ -208,11 +215,10 @@ impl KafkaAdmin {
                 partitions: t
                     .partitions()
                     .iter()
-                    .map(|m| PartitionInfo {
+                    .map(|m| Partition {
                         id: m.id(),
                         isr: m.isr().len(),
                         replicas: m.replicas().len(),
-                        last_offset: None,
                     })
                     .collect(),
             })

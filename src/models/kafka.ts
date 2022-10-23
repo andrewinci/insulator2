@@ -44,5 +44,5 @@ export type PartitionInfo = {
   id: number;
   isr: number;
   replicas: number;
-  last_offset?: number;
+  last_offset: number;
 };
