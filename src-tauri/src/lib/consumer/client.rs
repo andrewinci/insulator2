@@ -1,7 +1,6 @@
 use std::{ops::Not, sync::Arc, time::Duration};
 
 use crate::lib::{
-    admin::{Admin, KafkaAdmin},
     configuration::{build_kafka_client_config, ClusterConfig},
     consumer::types::{ConsumerOffsetConfiguration, ConsumerState},
     error::{Error, Result},
@@ -25,22 +24,15 @@ pub trait Consumer {
     async fn get_consumer_state(&self) -> ConsumerState;
 }
 
-pub struct KafkaConsumer<A = KafkaAdmin>
-where
-    A: Admin + Send + Sync,
-{
+pub struct KafkaConsumer {
     topic: String,
     consumer: Arc<Mutex<StreamConsumer>>,
     loop_handle: Arc<Mutex<Vec<JoinHandle<()>>>>,
     records: Arc<Mutex<Vec<RawKafkaRecord>>>,
-    admin_client: Arc<A>,
 }
 
-impl<A> KafkaConsumer<A>
-where
-    A: Admin + Send + Sync,
-{
-    pub fn new(cluster_config: &ClusterConfig, topic: &str, admin_client: Arc<A>) -> Self {
+impl KafkaConsumer {
+    pub fn new(cluster_config: &ClusterConfig, topic: &str) -> Self {
         let consumer: StreamConsumer = build_kafka_client_config(cluster_config, None)
             .create()
             .expect("Unable to create kafka the consumer");
@@ -49,7 +41,6 @@ where
             topic: topic.to_string(),
             loop_handle: Arc::new(Mutex::new(vec![])),
             records: Arc::new(Mutex::new(Vec::new())),
-            admin_client,
         }
     }
 }
@@ -65,7 +56,7 @@ impl Consumer for KafkaConsumer {
             });
         }
         // setup the consumer to run from
-        self.setup_consumer(offset_config).await?;
+        self.internal_setup_consumer(offset_config).await?;
         // clone arcs for the closure below
         let records = self.records.clone();
         let consumer = self.consumer.clone();
@@ -147,29 +138,47 @@ impl KafkaConsumer {
         }
     }
 
-    async fn setup_consumer(&self, config: &ConsumerOffsetConfiguration) -> Result<()> {
-        let topic_name = self.topic.clone();
-        let topic_info = self.admin_client.get_topic(&topic_name)?;
+    async fn internal_setup_consumer(&self, config: &ConsumerOffsetConfiguration) -> Result<()> {
+        let consumer_ptr = self.consumer.clone();
+        let consumer = &*consumer_ptr.lock().await;
+        KafkaConsumer::setup_consumer(consumer, &[&self.topic], config).await
+    }
 
-        let mut assignment = TopicPartitionList::new();
-
-        topic_info.partitions.iter().for_each(|p| {
-            assignment.add_partition(&topic_name, p.id);
-        });
+    pub async fn setup_consumer(
+        consumer: &rdkafka::consumer::StreamConsumer,
+        topics: &[&str],
+        config: &ConsumerOffsetConfiguration,
+    ) -> Result<()> {
+        let tmo = Duration::from_secs(60);
+        let metadata = consumer.fetch_metadata(None, tmo)?;
+        let topic_partition: Vec<_> = metadata
+            .topics()
+            .iter()
+            .filter(|t| topics.contains(&t.name()))
+            .flat_map(|t| t.partitions().iter().map(|p| (t.name(), p.id())))
+            .collect();
 
         match config {
             ConsumerOffsetConfiguration::Beginning => {
-                topic_info.partitions.iter().for_each(|p| {
-                    assignment
-                        .set_partition_offset(&topic_name, p.id, Offset::Beginning)
-                        .expect("Unable to configure the consumer to Beginning");
+                let mut timestamp_assignment = TopicPartitionList::new();
+                topic_partition.iter().for_each(|(t, p)| {
+                    timestamp_assignment
+                        .add_partition_offset(t, *p, Offset::Beginning)
+                        .expect("Unable to configure the consumer to the beginning");
                 });
+                trace!("Assign partitions {:?}", timestamp_assignment);
+                consumer.assign(&consumer.offsets_for_times(timestamp_assignment, tmo)?)?;
             }
-            ConsumerOffsetConfiguration::End => topic_info.partitions.iter().for_each(|p| {
-                assignment
-                    .set_partition_offset(&topic_name, p.id, Offset::End)
-                    .expect("Unable to configure the consumer to End");
-            }),
+            ConsumerOffsetConfiguration::End => {
+                let mut timestamp_assignment = TopicPartitionList::new();
+                topic_partition.iter().for_each(|(t, p)| {
+                    timestamp_assignment
+                        .add_partition_offset(t, *p, Offset::End)
+                        .expect("Unable to configure the consumer to the end");
+                });
+                trace!("Assign partitions {:?}", timestamp_assignment);
+                consumer.assign(&consumer.offsets_for_times(timestamp_assignment, tmo)?)?;
+            }
             ConsumerOffsetConfiguration::Custom {
                 start_timestamp,
                 stop_timestamp: _,
@@ -178,25 +187,15 @@ impl KafkaConsumer {
                 // offset is the timestamp in ms (instead of the actual offset) and returns a
                 // new TopicPartitionList with the actual offset
                 let mut timestamp_assignment = TopicPartitionList::new();
-                topic_info.partitions.iter().for_each(|p| {
+                topic_partition.iter().for_each(|(t, p)| {
                     timestamp_assignment
-                        .add_partition_offset(&topic_name, p.id, Offset::Offset(*start_timestamp))
-                        .expect("Unable to configure the consumer to End");
+                        .add_partition_offset(t, *p, Offset::Offset(*start_timestamp))
+                        .expect("Unable to configure the consumer to timestamp");
                 });
-                self.consumer
-                    .lock()
-                    .await
-                    .offsets_for_times(timestamp_assignment, Duration::from_secs(10))?
-                    .elements()
-                    .iter()
-                    .for_each(|tp| {
-                        assignment
-                            .set_partition_offset(tp.topic(), tp.partition(), tp.offset())
-                            .expect("Unable to configure the consumer to starting offset");
-                    });
+                trace!("Assign partitions {:?}", timestamp_assignment);
+                consumer.assign(&consumer.offsets_for_times(timestamp_assignment, tmo)?)?;
             }
         }
-        self.consumer.lock().await.assign(&assignment)?;
         Ok(())
     }
 }

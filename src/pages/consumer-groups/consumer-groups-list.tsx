@@ -3,7 +3,7 @@ import { IconTrash } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { SingleLineTitle } from "../../components";
-import { createConsumerGroup, getConsumerGroups, listTopics } from "../../tauri/admin";
+import { setConsumerGroup, getConsumerGroups, listTopics } from "../../tauri/admin";
 import { ItemList } from "../common";
 
 type SchemaListProps = {
@@ -85,7 +85,7 @@ const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; clo
       </Stack>
       <Group mt={10} position="right">
         <Button
-          onClick={() => createConsumerGroup(clusterId, state.name, state.topics).then((_) => close())}
+          onClick={() => setConsumerGroup(clusterId, state.name, state.topics, "Beginning").then((_) => close())}
           type="submit">
           Create 🚀
         </Button>

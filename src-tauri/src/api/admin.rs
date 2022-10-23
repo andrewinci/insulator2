@@ -1,6 +1,9 @@
 use log::debug;
 
-use crate::lib::admin::{Admin, ConsumerGroupInfo, Topic, TopicInfo};
+use crate::lib::{
+    admin::{Admin, ConsumerGroupInfo, Topic, TopicInfo},
+    consumer::ConsumerOffsetConfiguration,
+};
 
 use super::{error::Result, AppState};
 
@@ -54,16 +57,17 @@ pub async fn describe_consumer_group(
 }
 
 #[tauri::command]
-pub async fn create_consumer_group(
+pub async fn set_consumer_group(
     cluster_id: &str,
     consumer_group_name: &str,
     topics: Vec<&str>,
+    offset_config: ConsumerOffsetConfiguration,
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
     debug!("Create consumer group {}", consumer_group_name);
     let cluster = state.get_cluster(cluster_id).await;
     Ok(cluster
         .admin_client
-        .create_consumer_group(consumer_group_name, &topics)
+        .set_consumer_group(consumer_group_name, &topics, &offset_config)
         .await?)
 }

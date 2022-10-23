@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use log::{debug, error, warn};
+use log::{debug, trace, warn};
 use std::{collections::HashMap, time::Duration, vec};
 
 use super::{
@@ -9,11 +9,12 @@ use super::{
 use crate::lib::{
     admin::TopicPartitionOffset,
     configuration::{build_kafka_client_config, ClusterConfig},
+    consumer::{ConsumerOffsetConfiguration, KafkaConsumer},
     error::{Error, Result},
 };
 use rdkafka::{
     admin::{AdminClient, ResourceSpecifier},
-    consumer::{BaseConsumer, CommitMode},
+    consumer::CommitMode,
     Offset, TopicPartitionList,
 };
 use rdkafka::{
@@ -31,7 +32,12 @@ pub trait Admin {
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
     // consumers
-    async fn create_consumer_group(&self, consumer_group_name: &str, topics: &[&str]) -> Result<()>;
+    async fn set_consumer_group(
+        &self,
+        consumer_group_name: &str,
+        topics: &[&str],
+        config: &ConsumerOffsetConfiguration,
+    ) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
     fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
 }
@@ -60,35 +66,30 @@ impl KafkaAdmin {
 
 #[async_trait]
 impl Admin for KafkaAdmin {
-    async fn create_consumer_group(&self, consumer_group_name: &str, topic_names: &[&str]) -> Result<()> {
-        let consumer: BaseConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
+    async fn set_consumer_group(
+        &self,
+        consumer_group_name: &str,
+        topic_names: &[&str],
+        config: &ConsumerOffsetConfiguration,
+    ) -> Result<()> {
+        let consumer: StreamConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
             .create()
             .expect("Unable to build the consumer");
 
-        let mut tp = TopicPartitionList::new();
-        let topics = self.list_topics()?;
+        // assign offsets
+        KafkaConsumer::setup_consumer(&consumer, topic_names, config).await?;
 
-        let tp_temp: Vec<_> = topics
-            .iter()
-            .filter(|t| topic_names.contains(&t.name.as_str()))
-            .flat_map(|t| t.partitions.iter().map(|p| (t.name.clone(), p.id)))
-            .collect();
-
-        // create TopicPartitionList
-        tp_temp.iter().for_each(|(t, p)| {
-            tp.add_partition_offset(t.as_str(), *p, Offset::Offset(0))
-                .expect("Unable to add a partition to the consumer group");
-        });
-
-        // assign
-        consumer.assign(&tp)?;
-        consumer
-            .fetch_metadata(None, self.timeout)
-            .expect("Unable to fetch metadata");
-
-        // seek to the end
-        tp_temp.iter().for_each(|(t, p)| {
-            consumer.store_offset(t.as_str(), *p, -1).expect("Unable to store");
+        // store offset to commit
+        consumer.assignment()?.elements().iter().for_each(|t| {
+            trace!(
+                "Store topic {:?} partition {:?} offset {:?}",
+                t.topic(),
+                t.partition(),
+                t.offset().to_raw()
+            );
+            consumer
+                .store_offset(t.topic(), t.partition(), t.offset().to_raw().unwrap() - 1)
+                .expect("Unable to store the offset into the consumer group");
         });
 
         Ok(consumer.commit_consumer_state(CommitMode::Sync)?)
@@ -131,7 +132,12 @@ impl Admin for KafkaAdmin {
                 .iter()
                 .map(|p| PartitionInfo {
                     id: p.id,
-                    last_offset: map_offset(&offsets.find_partition(topic_name, p.id).unwrap().offset()),
+                    last_offset: offsets
+                        .find_partition(topic_name, p.id)
+                        .unwrap()
+                        .offset()
+                        .to_raw()
+                        .unwrap(),
                     isr: p.isr,
                     replicas: p.replicas,
                 })
@@ -201,7 +207,7 @@ impl Admin for KafkaAdmin {
             .map(|r| TopicPartitionOffset {
                 topic: r.topic().into(),
                 partition_id: r.partition(),
-                offset: map_offset(&r.offset()),
+                offset: r.offset().to_raw().unwrap(),
             })
             .collect();
         debug!("Retrieve completed {:?}", &offsets);
@@ -260,16 +266,5 @@ impl KafkaAdmin {
             })
             .collect();
         Ok(topics)
-    }
-}
-
-fn map_offset(offset: &Offset) -> i64 {
-    match offset {
-        Offset::Beginning => 0,
-        Offset::Offset(v) => *v,
-        _ => {
-            error!("Unexpected offset {:?}. Returning -1.", offset);
-            -1
-        }
     }
 }
