@@ -1,11 +1,11 @@
 {
-  "version": "v1.12.0",
-  "notes": "# [1.12.0](https://github.com/andrewinci/insulator2/compare/v1.11.0...v1.12.0) (2022-10-20)\n\n\n### Bug Fixes\n\n* **BE:** Use committed_offsets speed up query offsets ([f7be070](https://github.com/andrewinci/insulator2/commit/f7be0706503864bcddaf21c2ab3d9736bf3945bb))\n* **FE:** overlapping start and text in item list ([2eb6a08](https://github.com/andrewinci/insulator2/commit/2eb6a08315a4b06804228c74a742999b2d1bb9bd))\n* **FE:** Scroll list of offsets in consumer groups ([9c9f120](https://github.com/andrewinci/insulator2/commit/9c9f12085ecb771297bd82f8ec5d4ba2710af8ff))\n\n\n### Features\n\n* **BE:** cache consumer groups ([55bad17](https://github.com/andrewinci/insulator2/commit/55bad17dd34326c4d2b2c808fe75e2d471cd73b3))\n* **BE:** retrieve consumer group status ([4c26eea](https://github.com/andrewinci/insulator2/commit/4c26eea77d237717e8f5649b3a4add0c9b021733))\n\n\n\n",
-  "pub_date": "2022-10-20T08:10:25Z",
+  "version": "v1.13.0",
+  "notes": "# [1.13.0](https://github.com/andrewinci/insulator2/compare/v1.12.0...v1.13.0) (2022-10-23)\n\n\n### Bug Fixes\n\n* **FE:** disable refetch in consumer group page ([8eda18f](https://github.com/andrewinci/insulator2/commit/8eda18f39b771dbca8d415ad424752c103fb35ef))\n\n\n### Features\n\n* Add reset offset in consumer group ([2a3d4b7](https://github.com/andrewinci/insulator2/commit/2a3d4b7421b3ab762e05be225c0f24525129bc88))\n* **BE:** Add create consumer group function ([447b09c](https://github.com/andrewinci/insulator2/commit/447b09cdc2befb3d765edff66583f0b45c317471))\n* **BE:** Show schema id ([10befc6](https://github.com/andrewinci/insulator2/commit/10befc6729eb3815f8a72769b20f190aa44d74ce))\n* **FE:** Add create consumer group modal window ([544ea81](https://github.com/andrewinci/insulator2/commit/544ea8162a622a5f19d9ec73210f584492049345))\n* **FE:** Add page subtitles with mock data ([d7bc953](https://github.com/andrewinci/insulator2/commit/d7bc953b1bdff16b637f57c1c908a6b6ef097760))\n* Show cleanup policy in the topic page ([cb7203c](https://github.com/andrewinci/insulator2/commit/cb7203cf9ae4e1318cc638412e57de0fa15a3424))\n* Show estimated number of records ([e9e0853](https://github.com/andrewinci/insulator2/commit/e9e0853ee979c545c6f7aa0a71d56d4c175f5afc))\n* Show number of partitions in topic view ([fad38da](https://github.com/andrewinci/insulator2/commit/fad38da0d2d5489300654ce97dfa7f583dc02541))\n* Show schema compatibility level ([3214136](https://github.com/andrewinci/insulator2/commit/3214136b36ae6042dd763c02ec38eca30738e926))\n\n\n\n",
+  "pub_date": "2022-10-23T23:10:28Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.12.0/Insulator.2_1.12.0_x64_en-US.msi.zip"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.13.0/Insulator.2_1.13.0_x64_en-US.msi.zip"
     }
   }
 }

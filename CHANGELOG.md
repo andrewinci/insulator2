@@ -1,3 +1,21 @@
+# [1.13.0](https://github.com/andrewinci/insulator2/compare/v1.12.0...v1.13.0) (2022-10-23)
+
+### Bug Fixes
+
+- **FE:** disable refetch in consumer group page ([8eda18f](https://github.com/andrewinci/insulator2/commit/8eda18f39b771dbca8d415ad424752c103fb35ef))
+
+### Features
+
+- Add reset offset in consumer group ([2a3d4b7](https://github.com/andrewinci/insulator2/commit/2a3d4b7421b3ab762e05be225c0f24525129bc88))
+- **BE:** Add create consumer group function ([447b09c](https://github.com/andrewinci/insulator2/commit/447b09cdc2befb3d765edff66583f0b45c317471))
+- **BE:** Show schema id ([10befc6](https://github.com/andrewinci/insulator2/commit/10befc6729eb3815f8a72769b20f190aa44d74ce))
+- **FE:** Add create consumer group modal window ([544ea81](https://github.com/andrewinci/insulator2/commit/544ea8162a622a5f19d9ec73210f584492049345))
+- **FE:** Add page subtitles with mock data ([d7bc953](https://github.com/andrewinci/insulator2/commit/d7bc953b1bdff16b637f57c1c908a6b6ef097760))
+- Show cleanup policy in the topic page ([cb7203c](https://github.com/andrewinci/insulator2/commit/cb7203cf9ae4e1318cc638412e57de0fa15a3424))
+- Show estimated number of records ([e9e0853](https://github.com/andrewinci/insulator2/commit/e9e0853ee979c545c6f7aa0a71d56d4c175f5afc))
+- Show number of partitions in topic view ([fad38da](https://github.com/andrewinci/insulator2/commit/fad38da0d2d5489300654ce97dfa7f583dc02541))
+- Show schema compatibility level ([3214136](https://github.com/andrewinci/insulator2/commit/3214136b36ae6042dd763c02ec38eca30738e926))
+
 # [1.12.0](https://github.com/andrewinci/insulator2/compare/v1.11.0...v1.12.0) (2022-10-20)
 
 ### Bug Fixes
