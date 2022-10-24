@@ -1,8 +1,9 @@
-import { Text, Button, Container, Divider, Group, Stack, Grid, Center, Loader, Menu } from "@mantine/core";
+import { Text, Button, Container, Divider, Group, Stack, Grid, Center, Loader, Menu, Accordion } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
 import { openConfirmModal } from "@mantine/modals";
 import { IconFlag, IconPlayerPlay, IconRefresh, IconTool } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { PageHeader } from "../../components";
 import { ConsumerSettingsFrom } from "../../models";
 import { describeConsumerGroup, setConsumerGroup } from "../../tauri/admin";
@@ -53,6 +54,20 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
     }
   };
 
+  const topicOffsetMap = useMemo(() => {
+    if (!data) return;
+    const map = data.offsets.reduce((prev, current) => {
+      if (!prev[current.topic]) {
+        prev[current.topic] = { lag: 0, offsets: [] };
+      }
+      prev[current.topic].lag += current.offset;
+      prev[current.topic].offsets.push({ offset: current.offset, partition: current.partition_id });
+      return prev;
+    }, {} as Record<string, { lag: number; offsets: { partition: number; offset: number }[] }>);
+    //todo: lag
+    return Object.entries(map);
+  }, [data]);
+
   return (
     <Container>
       <PageHeader title={name} subtitle={`status: ${data?.state ?? "..."}`} />
@@ -86,45 +101,58 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
             <Loader />
           </Center>
         )}
-        {!isLoading && data && (
+        {!isLoading && data && topicOffsetMap && (
           <>
             <Container sx={{ overflowX: "hidden", overflowY: "scroll", width: "100%", height: "calc(100vh - 180px)" }}>
-              <Grid>
-                <Grid.Col span={8}>
-                  <Text align="left" weight={"bold"}>
-                    Topic
-                  </Text>
-                </Grid.Col>
-                <Grid.Col span={2}>
-                  <Text align="left" weight={"bold"}>
-                    Partition
-                  </Text>
-                </Grid.Col>
-                <Grid.Col span={2}>
-                  <Text align="left" weight={"bold"}>
-                    Offset
-                  </Text>
-                </Grid.Col>
-                {data.offsets.map((o, i) => (
-                  <>
-                    <Grid.Col span={8}>
-                      <Text sx={{ overflowWrap: "break-word" }} key={`topic-${i}`}>
-                        {o.topic}
-                      </Text>
-                    </Grid.Col>
-                    <Grid.Col span={2}>
-                      <Text key={`partition-${i}`}>{o.partition_id}</Text>
-                    </Grid.Col>
-                    <Grid.Col span={2}>
-                      <Text key={`offset-${i}`}>{o.offset}</Text>
-                    </Grid.Col>
-                  </>
+              <Accordion chevronPosition="left" variant="contained" defaultValue="customization">
+                {topicOffsetMap.map(([topic, details]) => (
+                  <Accordion.Item key={topic} value={topic}>
+                    <Accordion.Control>
+                      <Group position="apart">
+                        <Text weight={"bold"} size={"md"}>
+                          {topic}
+                        </Text>
+                        {/* <Text italic size={"md"}>Lag: {details.lag}</Text> */}
+                      </Group>
+                    </Accordion.Control>
+                    <Accordion.Panel>
+                      <Grid>
+                        <Grid.Col span={6}>
+                          <Text align="left" weight={"bold"}>
+                            Topic
+                          </Text>
+                        </Grid.Col>
+                        <Grid.Col span={3}>
+                          <Text align="left" weight={"bold"}>
+                            Partition
+                          </Text>
+                        </Grid.Col>
+                        <Grid.Col span={3}>
+                          <Text align="left" weight={"bold"}>
+                            Offset
+                          </Text>
+                        </Grid.Col>
+                        {details.offsets.map(({ offset, partition }) => (
+                          <>
+                            <Grid.Col span={6}>
+                              <Text sx={{ overflowWrap: "break-word" }} key={`topic-${partition}`}>
+                                {topic}
+                              </Text>
+                            </Grid.Col>
+                            <Grid.Col span={3}>
+                              <Text key={`partition-${partition}`}>{partition}</Text>
+                            </Grid.Col>
+                            <Grid.Col span={3}>
+                              <Text key={`offset-${partition}`}>{offset}</Text>
+                            </Grid.Col>
+                          </>
+                        ))}
+                      </Grid>
+                    </Accordion.Panel>
+                  </Accordion.Item>
                 ))}
-              </Grid>
+              </Accordion>
             </Container>
-            {/* <Button my={10} color="red">
-              Update
-            </Button> */}
           </>
         )}
       </Stack>
