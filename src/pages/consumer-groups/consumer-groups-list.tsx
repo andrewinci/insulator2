@@ -45,10 +45,11 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
 
 const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; close: () => void }) => {
   const { data } = useQuery(["listTopics", clusterId], () => listTopics(clusterId));
-  const [state, setState] = useState<{ name: string; topics: string[]; offset: string }>({
+  const [state, setState] = useState<{ name: string; topics: string[]; offset: string; isCreating: boolean }>({
     name: "",
     topics: [],
     offset: "Beginning",
+    isCreating: false,
   });
 
   return (
@@ -66,8 +67,8 @@ const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; clo
         multiple={false}
         onChange={(v) => setState((s) => ({ ...s, offset: v }))}
         value={state.offset}>
-        <Chip value="End">End</Chip>
         <Chip value="Beginning">Beginning</Chip>
+        <Chip value="End">End</Chip>
         {/* <Chip value="Custom">Custom Time</Chip> */}
       </Chip.Group>
       <Select
@@ -103,12 +104,14 @@ const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; clo
       </Stack>
       <Group mt={10} position="right">
         <Button
-          onClick={() =>
-            setConsumerGroup(clusterId, state.name, state.topics, state.offset as ConsumerSettingsFrom).then((_) =>
-              close()
-            )
-          }
-          type="submit">
+          onClick={async () => {
+            setState((s) => ({ ...s, isCreating: true }));
+            await setConsumerGroup(clusterId, state.name, state.topics, state.offset as ConsumerSettingsFrom);
+            setState((s) => ({ ...s, isCreating: false }));
+            close();
+          }}
+          type="submit"
+          loading={state.isCreating}>
           Create 🚀
         </Button>
       </Group>
