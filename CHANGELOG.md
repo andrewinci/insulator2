@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/andrewinci/insulator2/compare/v1.13.0...v1.14.0) (2022-10-24)
+
+### Features
+
+- Show consumer group lag by topic ([3cf424b](https://github.com/andrewinci/insulator2/commit/3cf424b33e74fe98129717b8c72e32cfd0bd2143))
+- Use accordion to group consumer data by topic name ([90ebda7](https://github.com/andrewinci/insulator2/commit/90ebda7000b804d60f061c3aa5b36fa9bf037f6c))
+
 # [1.13.0](https://github.com/andrewinci/insulator2/compare/v1.12.0...v1.13.0) (2022-10-23)
 
 ### Bug Fixes
