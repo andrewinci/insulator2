@@ -56,11 +56,12 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
 
   const topicOffsetMap = useMemo(() => {
     if (!data) return;
+    console.log(data);
     const map = data.offsets.reduce((prev, current) => {
       if (!prev[current.topic]) {
         prev[current.topic] = { lag: 0, offsets: [] };
       }
-      prev[current.topic].lag += current.offset;
+      prev[current.topic].lag += current.last_offset - current.offset;
       prev[current.topic].offsets.push({ offset: current.offset, partition: current.partition_id });
       return prev;
     }, {} as Record<string, { lag: number; offsets: { partition: number; offset: number }[] }>);
@@ -112,7 +113,9 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
                         <Text weight={"bold"} size={"md"}>
                           {topic}
                         </Text>
-                        {/* <Text italic size={"md"}>Lag: {details.lag}</Text> */}
+                        <Text italic size={"md"}>
+                          Lag: {details.lag}
+                        </Text>
                       </Group>
                     </Accordion.Control>
                     <Accordion.Panel>

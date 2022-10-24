@@ -191,16 +191,19 @@ impl Admin for KafkaAdmin {
         let mut topic_partition_lst = TopicPartitionList::new();
         topics.iter().for_each(|topic| {
             topic.partitions.iter().for_each(|partition| {
-                topic_partition_lst.add_partition(&topic.name, partition.id);
+                topic_partition_lst
+                    .add_partition_offset(&topic.name, partition.id, Offset::End)
+                    .expect("Unable to add the partition offset");
             })
         });
 
-        debug!("Check any committed offset to the consumer group");
+        debug!("Retrieve any committed offset to the consumer group");
         // allow up to 1 minute of tmo for big clusters and slow connections
-        let res = consumer
-            .committed_offsets(topic_partition_lst, Duration::from_secs(60))
+        let committed_offsets = consumer
+            .committed_offsets(topic_partition_lst.clone(), Duration::from_secs(60))
             .unwrap();
-        let offsets: Vec<_> = res
+        let last_offset = consumer.offsets_for_times(topic_partition_lst, Duration::from_secs(60))?;
+        let offsets: Vec<_> = committed_offsets
             .elements()
             .iter()
             .filter(|tpo| tpo.offset() != Offset::Invalid)
@@ -208,9 +211,15 @@ impl Admin for KafkaAdmin {
                 topic: r.topic().into(),
                 partition_id: r.partition(),
                 offset: r.offset().to_raw().unwrap(),
+                last_offset: last_offset
+                    .find_partition(r.topic(), r.partition())
+                    .unwrap()
+                    .offset()
+                    .to_raw()
+                    .unwrap(),
             })
             .collect();
-        debug!("Retrieve completed {:?}", &offsets);
+        trace!("Retrieve completed {:?}", &offsets);
 
         Ok(ConsumerGroupInfo {
             name: consumer_group_name.into(),

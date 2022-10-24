@@ -38,6 +38,7 @@ export type TopicPartitionOffset = {
   topic: string;
   partition_id: number;
   offset: number;
+  last_offset: number;
 };
 
 export type PartitionInfo = {
