@@ -30,7 +30,6 @@ export type ConsumerSettingsFrom =
 
 export type ConsumerGroupInfo = {
   name: string;
-  state: string;
   offsets: TopicPartitionOffset[];
 };
 

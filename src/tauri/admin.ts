@@ -22,6 +22,18 @@ export const setConsumerGroup = (
   );
 };
 
+export const getConsumerGroupState = (clusterId: string, consumerGroupName: string): Promise<string> => {
+  return invoke<string>("get_consumer_group_state", { clusterId, consumerGroupName }).catch((err: TauriError) => {
+    console.error(err);
+    addNotification({
+      type: "error",
+      title: `Unable to get the consumer group state`,
+      description: format(err),
+    });
+    throw err;
+  });
+};
+
 export const describeConsumerGroup = (clusterId: string, consumerGroupName: string): Promise<ConsumerGroupInfo> => {
   return invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName }).catch(
     (err: TauriError) => {

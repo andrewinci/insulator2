@@ -33,7 +33,6 @@ pub struct PartitionInfo {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ConsumerGroupInfo {
     pub name: String,
-    pub state: String,
     pub offsets: Vec<TopicPartitionOffset>,
 }
 

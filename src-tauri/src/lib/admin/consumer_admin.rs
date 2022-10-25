@@ -70,8 +70,9 @@ impl ConsumerGroupAdmin for KafkaAdmin {
             .create()
             .expect("Unable to build the consumer");
 
-        debug!("Build the list of all partitions and topics");
+        debug!("Retrieve the list of all topics/partition");
         let topics = self.list_topics()?;
+        debug!("Build the topic/partition list");
         let mut topic_partition_lst = TopicPartitionList::new();
         topics.iter().for_each(|topic| {
             topic.partitions.iter().for_each(|partition| {
@@ -103,11 +104,10 @@ impl ConsumerGroupAdmin for KafkaAdmin {
                     .unwrap(),
             })
             .collect();
-        trace!("Retrieve completed {:?}", &offsets);
+        debug!("Retrieve completed");
 
         Ok(ConsumerGroupInfo {
             name: consumer_group_name.into(),
-            state: self.get_consumer_group_state(consumer_group_name)?,
             offsets,
         })
     }

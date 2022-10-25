@@ -6,10 +6,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { PageHeader } from "../../components";
 import { ConsumerSettingsFrom } from "../../models";
-import { describeConsumerGroup, setConsumerGroup } from "../../tauri/admin";
+import { describeConsumerGroup, getConsumerGroupState, setConsumerGroup } from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
   const [state, setState] = useSetState<{ isResetting: boolean }>({ isResetting: false });
+  const { data: consumerGroupState } = useQuery(["getConsumerGroupState", clusterId, name], () =>
+    getConsumerGroupState(clusterId, name)
+  );
   const { isLoading, data, refetch, isRefetching } = useQuery(
     ["describeConsumerGroup", clusterId, name],
     () => describeConsumerGroup(clusterId, name),
@@ -65,13 +68,12 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
       prev[current.topic].offsets.push({ offset: current.offset, partition: current.partition_id });
       return prev;
     }, {} as Record<string, { lag: number; offsets: { partition: number; offset: number }[] }>);
-    //todo: lag
-    return Object.entries(map);
+    return Object.entries(map).sort();
   }, [data]);
 
   return (
     <Container>
-      <PageHeader title={name} subtitle={`status: ${data?.state ?? "..."}`} />
+      <PageHeader title={name} subtitle={`topics: ${topicOffsetMap?.length}, status: ${consumerGroupState ?? "..."}`} />
       <Divider my={10} />
 
       <Stack m={10} align={"stretch"} justify={"flex-start"}>

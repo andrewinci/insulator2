@@ -57,6 +57,17 @@ pub async fn describe_consumer_group(
 }
 
 #[tauri::command]
+pub async fn get_consumer_group_state(
+    cluster_id: &str,
+    consumer_group_name: &str,
+    state: tauri::State<'_, AppState>,
+) -> Result<String> {
+    debug!("Get consumer group");
+    let cluster = state.get_cluster(cluster_id).await;
+    Ok(cluster.admin_client.get_consumer_group_state(consumer_group_name)?)
+}
+
+#[tauri::command]
 pub async fn set_consumer_group(
     cluster_id: &str,
     consumer_group_name: &str,

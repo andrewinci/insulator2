@@ -1,11 +1,7 @@
 use std::time::Duration;
 
-use super::{
-    TopicAdmin, ConsumerGroupAdmin,
-};
-use crate::lib::{
-    configuration::{build_kafka_client_config, ClusterConfig},
-};
+use super::{ConsumerGroupAdmin, TopicAdmin};
+use crate::lib::configuration::{build_kafka_client_config, ClusterConfig};
 use rdkafka::admin::AdminClient;
 use rdkafka::{client::DefaultClientContext, consumer::StreamConsumer};
 
