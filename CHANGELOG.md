@@ -1,3 +1,14 @@
+## [1.14.1](https://github.com/andrewinci/insulator2/compare/v1.14.0...v1.14.1) (2022-10-25)
+
+### Bug Fixes
+
+- only get latest offset for consumer group topics ([e16f361](https://github.com/andrewinci/insulator2/commit/e16f3619b8d928e0b6b06ff9fd7d42b6d62e7a33))
+
+### Performance Improvements
+
+- cache list of all topics/partitions ([6b99732](https://github.com/andrewinci/insulator2/commit/6b99732291d594bb520ce7cc8c199a35092d29a0))
+- move get consumer state to another API call ([a4f8999](https://github.com/andrewinci/insulator2/commit/a4f899957482565cb925a6547e55a4d0b55a59e7))
+
 # [1.14.0](https://github.com/andrewinci/insulator2/compare/v1.13.0...v1.14.0) (2022-10-24)
 
 ### Features
