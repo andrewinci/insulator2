@@ -53,13 +53,16 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
       onConfirm: async () => {
         if (!data) return;
         setState({ isResetting: true });
-        await setConsumerGroup(
-          clusterId,
-          data.name,
-          data.offsets.map((o) => o.topic),
-          offset
-        ).then((_) => refetch());
-        setState({ isResetting: false });
+        try {
+          await setConsumerGroup(
+            clusterId,
+            data.name,
+            data.offsets.map((o) => o.topic),
+            offset
+          ).then((_) => refetch());
+        } finally {
+          setState({ isResetting: false });
+        }
       },
     });
   };
@@ -85,13 +88,19 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
 
       <Stack m={10} align={"stretch"} justify={"flex-start"}>
         <Group>
-          <Button mb={10} size="xs" leftIcon={<IconRefresh />} onClick={() => refetch()} loading={isRefetching}>
+          <Button
+            mb={10}
+            size="xs"
+            leftIcon={<IconRefresh />}
+            disabled={isLoading}
+            onClick={() => refetch()}
+            loading={isRefetching}>
             Refresh
           </Button>
 
           <Menu shadow="md" width={200}>
             <Menu.Target>
-              <Button mb={10} size="xs" leftIcon={<IconTool />} loading={state.isResetting}>
+              <Button mb={10} size="xs" leftIcon={<IconTool />} disabled={isLoading} loading={state.isResetting}>
                 Reset offset
               </Button>
             </Menu.Target>
