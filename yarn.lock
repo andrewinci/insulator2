@@ -680,20 +680,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/core@npm:^5.3.3":
-  version: 5.5.4
-  resolution: "@mantine/core@npm:5.5.4"
+"@mantine/core@npm:^5.6.2":
+  version: 5.6.2
+  resolution: "@mantine/core@npm:5.6.2"
   dependencies:
     "@floating-ui/react-dom-interactions": ^0.10.1
-    "@mantine/styles": 5.5.4
-    "@mantine/utils": 5.5.4
+    "@mantine/styles": 5.6.2
+    "@mantine/utils": 5.6.2
     "@radix-ui/react-scroll-area": 1.0.0
     react-textarea-autosize: 8.3.4
   peerDependencies:
-    "@mantine/hooks": 5.5.4
+    "@mantine/hooks": 5.6.2
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: bc89283a88164e8ba4c3daeaef0ad498e86a745e03b82d7bc3234cddd576c690889ccb50c5257253175312ebdb4f9a28006d93cbe3b321d8575e44432834f5d5
+  checksum: b5bbe039747b183e1fc6ce9b9bfdd54f57fb5c8b7cc18d65303b1d58df09bc80d281e24d69d4b10fbe8fae755f1254defc839f0d81f86c7cfaaf9bb1ce4920e5
   languageName: node
   linkType: hard
 
@@ -776,9 +776,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/styles@npm:5.5.4":
-  version: 5.5.4
-  resolution: "@mantine/styles@npm:5.5.4"
+"@mantine/styles@npm:5.6.2":
+  version: 5.6.2
+  resolution: "@mantine/styles@npm:5.6.2"
   dependencies:
     clsx: 1.1.1
     csstype: 3.0.9
@@ -786,7 +786,7 @@ __metadata:
     "@emotion/react": ">=11.9.0"
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: c38de2afa73781697ab6804e79f471fde0a6624d283ef8588fc387ba74f630a4ced846de75f72179d25cdebab20e301b5bb457967b4dafac3d4e495e9346f821
+  checksum: afca10958090e268ae63fde1957f2a7a079d9b4173c7a6df89c3b94c6e011032354923130064ee744489fc9ea75598afca82404d27934a49e86b4cb92a0d9630
   languageName: node
   linkType: hard
 
@@ -4523,7 +4523,7 @@ __metadata:
   dependencies:
     "@emotion/react": ^11.10.4
     "@emotion/styled": ^11.10.4
-    "@mantine/core": ^5.3.3
+    "@mantine/core": ^5.6.2
     "@mantine/dates": ^5.5.4
     "@mantine/form": ^5.6.2
     "@mantine/hooks": ^5.3.3
