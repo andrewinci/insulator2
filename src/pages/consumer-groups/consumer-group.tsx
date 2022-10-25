@@ -5,7 +5,7 @@ import { IconFlag, IconPlayerPlay, IconRefresh, IconTool } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { PageHeader } from "../../components";
-import { ConsumerSettingsFrom } from "../../models";
+import { ConsumerGroupInfo, ConsumerSettingsFrom } from "../../models";
 import { describeConsumerGroup, getConsumerGroupState, setConsumerGroup } from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
@@ -13,48 +13,55 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
   const { data: consumerGroupState } = useQuery(["getConsumerGroupState", clusterId, name], () =>
     getConsumerGroupState(clusterId, name)
   );
-  const { isLoading, data, refetch, isRefetching } = useQuery(
+  let data: ConsumerGroupInfo | undefined = undefined;
+  const {
+    isLoading,
+    data: temp,
+    refetch,
+    isRefetching,
+  } = useQuery(
     ["describeConsumerGroup", clusterId, name],
-    () => describeConsumerGroup(clusterId, name),
+    () => describeConsumerGroup(clusterId, name, data ? true : false), // ignore cache if we already have data (hence it's a refresh)
     { refetchOnWindowFocus: false, refetchOnMount: false }
   );
+  data = temp;
 
   const resetOffset = (offset: ConsumerSettingsFrom) => {
-    if (data) {
-      openConfirmModal({
-        title: "Reset offset",
-        children: (
-          <>
-            <Text size="sm">
-              Are you sure to reset the offset of the consumer group{" "}
-              <Text component="span" weight={"bold"}>
-                {data.name}
-              </Text>{" "}
-              to{" "}
-              <Text component="span" weight={"bold"}>
-                {offset.toString()}
-              </Text>
-              ?
+    if (!data) return;
+    openConfirmModal({
+      title: "Reset offset",
+      children: (
+        <>
+          <Text size="sm">
+            Are you sure to reset the offset of the consumer group{" "}
+            <Text component="span" weight={"bold"}>
+              {data.name}
+            </Text>{" "}
+            to{" "}
+            <Text component="span" weight={"bold"}>
+              {offset.toString()}
             </Text>
-            <Text my={10} size="sm" color={"red"}>
-              This action is irreversible.
-            </Text>
-          </>
-        ),
-        labels: { confirm: "Confirm", cancel: "Cancel" },
-        onCancel: () => console.log("Cancel"),
-        onConfirm: async () => {
-          setState({ isResetting: true });
-          await setConsumerGroup(
-            clusterId,
-            data.name,
-            data.offsets.map((o) => o.topic),
-            offset
-          ).then((_) => refetch());
-          setState({ isResetting: false });
-        },
-      });
-    }
+            ?
+          </Text>
+          <Text my={10} size="sm" color={"red"}>
+            This action is irreversible.
+          </Text>
+        </>
+      ),
+      labels: { confirm: "Confirm", cancel: "Cancel" },
+      onCancel: () => console.log("Cancel"),
+      onConfirm: async () => {
+        if (!data) return;
+        setState({ isResetting: true });
+        await setConsumerGroup(
+          clusterId,
+          data.name,
+          data.offsets.map((o) => o.topic),
+          offset
+        ).then((_) => refetch());
+        setState({ isResetting: false });
+      },
+    });
   };
 
   const topicOffsetMap = useMemo(() => {

@@ -49,11 +49,14 @@ pub async fn list_consumer_groups(cluster_id: &str, state: tauri::State<'_, AppS
 pub async fn describe_consumer_group(
     cluster_id: &str,
     consumer_group_name: &str,
+    ignore_cache: Option<bool>,
     state: tauri::State<'_, AppState>,
 ) -> Result<ConsumerGroupInfo> {
     debug!("Describe consumer group");
     let cluster = state.get_cluster(cluster_id).await;
-    Ok(cluster.admin_client.describe_consumer_group(consumer_group_name)?)
+    Ok(cluster
+        .admin_client
+        .describe_consumer_group(consumer_group_name, ignore_cache.unwrap_or(false))?)
 }
 
 #[tauri::command]

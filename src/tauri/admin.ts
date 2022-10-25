@@ -34,8 +34,12 @@ export const getConsumerGroupState = (clusterId: string, consumerGroupName: stri
   });
 };
 
-export const describeConsumerGroup = (clusterId: string, consumerGroupName: string): Promise<ConsumerGroupInfo> => {
-  return invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName }).catch(
+export const describeConsumerGroup = (
+  clusterId: string,
+  consumerGroupName: string,
+  ignoreCache: boolean
+): Promise<ConsumerGroupInfo> => {
+  return invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, ignoreCache }).catch(
     (err: TauriError) => {
       console.error(err);
       addNotification({

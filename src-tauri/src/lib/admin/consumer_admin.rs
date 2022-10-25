@@ -21,7 +21,7 @@ pub trait ConsumerGroupAdmin {
         config: &ConsumerOffsetConfiguration,
     ) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
-    fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo>;
+    fn describe_consumer_group(&self, consumer_group_name: &str, ignore_cache: bool) -> Result<ConsumerGroupInfo>;
     fn get_consumer_group_state(&self, consumer_group_name: &str) -> Result<String>;
 }
 
@@ -62,7 +62,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
         Ok(group_names)
     }
 
-    fn describe_consumer_group(&self, consumer_group_name: &str) -> Result<ConsumerGroupInfo> {
+    fn describe_consumer_group(&self, consumer_group_name: &str, ignore_cache: bool) -> Result<ConsumerGroupInfo> {
         // create a consumer with the defined consumer_group_name.
         // NOTE: the consumer shouldn't join the consumer group, otherwise it'll cause a re-balance
         debug!("Build the consumer for the consumer group {}", consumer_group_name);
@@ -71,7 +71,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
             .expect("Unable to build the consumer");
 
         debug!("Build the topic/partition list");
-        let topic_partition_lst = self.get_all_topic_partition_list()?;
+        let topic_partition_lst = self.get_all_topic_partition_list(ignore_cache)?;
 
         debug!("Retrieve any committed offset to the consumer group");
         // allow up to 1 minute of tmo for big clusters and slow connections
@@ -124,18 +124,20 @@ impl KafkaAdmin {
         Ok(self.consumer.offsets_for_times(lst, Duration::from_secs(60))?)
     }
 
-    fn get_all_topic_partition_list(&self) -> Result<TopicPartitionList> {
-        debug!("Retrieve the list of all topics/partition");
-        let topics = self.list_topics()?;
-        debug!("Build the topic/partition list");
-        let mut topic_partition_lst = TopicPartitionList::new();
-        topics.iter().for_each(|topic| {
-            topic.partitions.iter().for_each(|partition| {
-                topic_partition_lst
-                    .add_partition_offset(&topic.name, partition.id, Offset::End)
-                    .expect("Unable to add the partition offset");
-            })
-        });
-        Ok(topic_partition_lst)
+    fn get_all_topic_partition_list(&self, ignore_cache: bool) -> Result<TopicPartitionList> {
+        let mut topic_partition_list = self.all_topic_partition_list.lock().unwrap();
+        if ignore_cache || topic_partition_list.count() == 0 {
+            debug!("Retrieve the list of all topics/partition");
+            let topics = self.list_topics()?;
+            debug!("Build the topic/partition list");
+            topics.iter().for_each(|topic| {
+                topic.partitions.iter().for_each(|partition| {
+                    topic_partition_list
+                        .add_partition_offset(&topic.name, partition.id, Offset::End)
+                        .expect("Unable to add the partition offset");
+                })
+            });
+        }
+        Ok(topic_partition_list.clone())
     }
 }
