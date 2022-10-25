@@ -17,6 +17,6 @@ mod tests {
     fn parse_invalid_to_string() {
         let vec: Vec<u8> = vec![0x00, 0x41, 0xff];
         let res = parse_string(&vec);
-        assert!(res.len() > 0)
+        assert!(!res.is_empty())
     }
 }

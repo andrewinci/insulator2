@@ -6,12 +6,10 @@ use log::debug;
 use crate::lib::{
     admin::{Admin, KafkaAdmin},
     configuration::{ClusterConfig, SchemaRegistryConfig},
-    consumer::Consumer,
+    consumer::{Consumer, KafkaConsumer},
     parser::{Parser, RecordParser},
     schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
 };
-
-use super::consumer::KafkaConsumer;
 
 type TopicName = String;
 

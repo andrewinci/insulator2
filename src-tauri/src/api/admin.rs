@@ -1,7 +1,7 @@
 use log::debug;
 
 use crate::lib::{
-    admin::{Admin, ConsumerGroupInfo, Topic, TopicInfo},
+    admin::{ConsumerGroupAdmin, ConsumerGroupInfo, Topic, TopicAdmin, TopicInfo},
     consumer::ConsumerOffsetConfiguration,
 };
 
