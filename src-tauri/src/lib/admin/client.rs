@@ -3,8 +3,10 @@ use std::time::Duration;
 
 use super::{ConsumerGroupAdmin, TopicAdmin};
 use crate::lib::configuration::{build_kafka_client_config, ClusterConfig};
+use crate::lib::error::Result;
+use log::debug;
 use rdkafka::admin::AdminClient;
-use rdkafka::TopicPartitionList;
+use rdkafka::{TopicPartitionList, Offset};
 use rdkafka::{client::DefaultClientContext, consumer::StreamConsumer};
 
 pub trait Admin: TopicAdmin + ConsumerGroupAdmin {}
@@ -16,6 +18,8 @@ pub struct KafkaAdmin {
     pub(super) admin_client: AdminClient<DefaultClientContext>,
     pub(super) all_topic_partition_list: Arc<Mutex<TopicPartitionList>>,
 }
+
+impl Admin for KafkaAdmin {}
 
 impl KafkaAdmin {
     pub fn new(config: &ClusterConfig) -> Self {
@@ -31,6 +35,21 @@ impl KafkaAdmin {
             all_topic_partition_list: Arc::new(Mutex::new(TopicPartitionList::new())),
         }
     }
-}
 
-impl Admin for KafkaAdmin {}
+    pub(super) fn get_all_topic_partition_list(&self, ignore_cache: bool) -> Result<TopicPartitionList> {
+        let mut topic_partition_list = self.all_topic_partition_list.lock().unwrap();
+        if ignore_cache || topic_partition_list.count() == 0 {
+            debug!("Retrieve the list of all topics/partition");
+            let topics = self.list_topics()?;
+            debug!("Build the topic/partition list");
+            topics.iter().for_each(|topic| {
+                topic.partitions.iter().for_each(|partition| {
+                    topic_partition_list
+                        .add_partition_offset(&topic.name, partition.id, Offset::End)
+                        .expect("Unable to add the partition offset");
+                })
+            });
+        }
+        Ok(topic_partition_list.clone())
+    }
+}

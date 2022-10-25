@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use log::debug;
 
 use crate::lib::{
@@ -84,4 +86,15 @@ pub async fn set_consumer_group(
         .admin_client
         .set_consumer_group(consumer_group_name, &topics, &offset_config)
         .await?)
+}
+
+#[tauri::command]
+pub async fn get_last_offsets(
+    cluster_id: &str,
+    topic_names: Vec<&str>,
+    state: tauri::State<'_, AppState>,
+) -> Result<HashMap<String, (i32, i64)>> {
+    debug!("Get last offset for topics {:?}", topic_names);
+    let cluster = state.get_cluster(cluster_id).await;
+    Ok(cluster.admin_client.get_last_offsets(&topic_names)?)
 }

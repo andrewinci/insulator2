@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use log::{debug, warn};
-use std::{collections::HashMap, vec};
+use std::{collections::HashMap, vec, time::Duration};
 
 use super::{
     types::{PartitionInfo, Topic, TopicInfo},
@@ -20,6 +20,7 @@ pub trait TopicAdmin {
     fn get_topic(&self, topic_name: &str) -> Result<Topic>;
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
+    fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, (i32, i64)>>;
 }
 
 #[async_trait]
@@ -73,6 +74,28 @@ impl TopicAdmin for KafkaAdmin {
                 .collect(),
             configurations: self.get_topic_configuration(topic_name).await?,
         })
+    }
+
+    // return a list in which the index is the partition id and the value is the offset
+    fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, (i32, i64)>> {
+        let all_partitions = self.get_all_topic_partition_list(false)?;
+        let mut topic_partition_list = TopicPartitionList::new();
+        for topic in topic_names {
+            all_partitions.elements_for_topic(topic).iter().for_each(|tpo| {
+                topic_partition_list
+                    .add_partition_offset(*topic, tpo.partition(), Offset::End)
+                    .expect("Unable to add the offset to the list");
+            })
+        }
+        let offsets = self
+            .consumer
+            .offsets_for_times(topic_partition_list, Duration::from_secs(60))?;
+        let res: HashMap<String, (i32, i64)> = offsets
+            .elements()
+            .into_iter()
+            .map(|e| (e.topic().to_string(), (e.partition(), e.offset().to_raw().unwrap())))
+            .collect();
+        Ok(res)
     }
 
     async fn create_topic(&self, name: &str, num_partitions: i32, isr: i32, compacted: bool) -> Result<()> {

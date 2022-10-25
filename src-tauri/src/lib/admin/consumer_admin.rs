@@ -1,10 +1,10 @@
 use async_trait::async_trait;
 use log::{debug, trace};
-use std::time::Duration;
+use std::{time::Duration};
 
 use super::{ConsumerGroupInfo, KafkaAdmin};
 use crate::lib::{
-    admin::{topic_admin::TopicAdmin, TopicPartitionOffset},
+    admin::{TopicPartitionOffset},
     configuration::build_kafka_client_config,
     consumer::{ConsumerOffsetConfiguration, KafkaConsumer},
     error::Result,
@@ -119,25 +119,9 @@ impl ConsumerGroupAdmin for KafkaAdmin {
 }
 
 impl KafkaAdmin {
+
     fn get_last_offset(&self, mut lst: TopicPartitionList) -> Result<TopicPartitionList> {
         lst.set_all_offsets(Offset::End)?;
         Ok(self.consumer.offsets_for_times(lst, Duration::from_secs(60))?)
-    }
-
-    fn get_all_topic_partition_list(&self, ignore_cache: bool) -> Result<TopicPartitionList> {
-        let mut topic_partition_list = self.all_topic_partition_list.lock().unwrap();
-        if ignore_cache || topic_partition_list.count() == 0 {
-            debug!("Retrieve the list of all topics/partition");
-            let topics = self.list_topics()?;
-            debug!("Build the topic/partition list");
-            topics.iter().for_each(|topic| {
-                topic.partitions.iter().for_each(|partition| {
-                    topic_partition_list
-                        .add_partition_offset(&topic.name, partition.id, Offset::End)
-                        .expect("Unable to add the partition offset");
-                })
-            });
-        }
-        Ok(topic_partition_list.clone())
     }
 }

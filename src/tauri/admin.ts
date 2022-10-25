@@ -105,3 +105,14 @@ export const getTopicInfo = (clusterId: string, topicName: string): Promise<Topi
     });
     throw err;
   });
+
+export const getLastOffsets = (clusterId: string, topicNames: [string]): Promise<Record<string, [number, number]>> =>
+  invoke<Record<string, [number, number]>>("get_last_offsets", { clusterId, topicNames }).catch((err: TauriError) => {
+    console.error(err);
+    addNotification({
+      type: "error",
+      title: `Unable to retrieve the last offset`,
+      description: format(err),
+    });
+    throw err;
+  });

@@ -6,7 +6,7 @@ mod lib;
 use crate::api::{
     admin::{
         create_topic, describe_consumer_group, get_consumer_group_state, get_topic_info, list_consumer_groups,
-        list_topics, set_consumer_group,
+        list_topics, set_consumer_group, get_last_offsets,
     },
     configuration::{get_configuration, write_configuration},
     consumer::{get_consumer_state, get_record, start_consumer, stop_consumer},
@@ -34,6 +34,7 @@ fn main() {
             list_topics,
             get_topic_info,
             create_topic,
+            get_last_offsets,
             // admin consumer groups
             get_consumer_group_state,
             list_consumer_groups,
