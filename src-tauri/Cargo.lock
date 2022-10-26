@@ -1430,7 +1430,6 @@ dependencies = [
  "log",
  "mockall",
  "num-bigint",
- "openssl-src",
  "rdkafka",
  "reqwest",
  "rust_decimal",
