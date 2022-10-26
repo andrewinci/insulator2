@@ -28,7 +28,6 @@ num-bigint = "0.4"
 rust_decimal = "1.26"
 
 [target.'cfg(windows)'.dependencies]
-openssl-src = { version = "111", default-features = false }
 rdkafka = { version = "0.27", features = ["cmake-build", "ssl-vendored"] } #todo: add "gssapi" to use scram on windows
 
 [target.'cfg(unix)'.dependencies]
@@ -39,7 +38,7 @@ rdkafka = { version = "0.27", features = ["cmake-build", "ssl-vendored", "gssapi
 # Enables OpenSSL ENGINE support during cross compilation to musl
 # TODO remove this branch and instead use the openssl-src feature flag once it is available
 #    (see https://github.com/vectordotdev/vector/issues/13695)
-openssl-src = { git = "https://github.com/vectordotdev/openssl-src-rs.git", branch  = "enable_engine" }
+openssl-src = { git = "https://github.com/vectordotdev/openssl-src-rs.git", branch  = "enable_engine"}
 
 [dev-dependencies]
 mockall = "0.11.3"
