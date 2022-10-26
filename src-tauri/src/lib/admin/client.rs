@@ -6,8 +6,8 @@ use crate::lib::configuration::{build_kafka_client_config, ClusterConfig};
 use crate::lib::error::Result;
 use log::debug;
 use rdkafka::admin::AdminClient;
-use rdkafka::{TopicPartitionList, Offset};
 use rdkafka::{client::DefaultClientContext, consumer::StreamConsumer};
+use rdkafka::{Offset, TopicPartitionList};
 
 pub trait Admin: TopicAdmin + ConsumerGroupAdmin {}
 

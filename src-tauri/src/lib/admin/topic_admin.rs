@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use log::{debug, warn};
-use std::{collections::HashMap, vec, time::Duration};
+use std::{collections::HashMap, time::Duration, vec};
 
 use super::{
     types::{PartitionInfo, Topic, TopicInfo},

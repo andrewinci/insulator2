@@ -1,10 +1,10 @@
 use async_trait::async_trait;
 use log::{debug, trace};
-use std::{time::Duration};
+use std::time::Duration;
 
 use super::{ConsumerGroupInfo, KafkaAdmin};
 use crate::lib::{
-    admin::{TopicPartitionOffset},
+    admin::TopicPartitionOffset,
     configuration::build_kafka_client_config,
     consumer::{ConsumerOffsetConfiguration, KafkaConsumer},
     error::Result,
@@ -119,7 +119,6 @@ impl ConsumerGroupAdmin for KafkaAdmin {
 }
 
 impl KafkaAdmin {
-
     fn get_last_offset(&self, mut lst: TopicPartitionList) -> Result<TopicPartitionList> {
         lst.set_all_offsets(Offset::End)?;
         Ok(self.consumer.offsets_for_times(lst, Duration::from_secs(60))?)

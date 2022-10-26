@@ -172,19 +172,13 @@ const ResetOffsetMenu = (props: {
 
   return (
     <Group>
-      <Button
-        mb={10}
-        size="xs"
-        leftIcon={<IconRefresh />}
-        disabled={disabled}
-        onClick={() => refresh()}
-        loading={loading}>
+      <Button mb={10} size="xs" leftIcon={<IconRefresh />} onClick={() => refresh()} loading={loading || disabled}>
         Refresh
       </Button>
 
       <Menu shadow="md" width={200}>
         <Menu.Target>
-          <Button mb={10} size="xs" leftIcon={<IconTool />} disabled={loading} loading={state.isResetting}>
+          <Button mb={10} size="xs" leftIcon={<IconTool />} disabled={loading || disabled} loading={state.isResetting}>
             Reset offset
           </Button>
         </Menu.Target>

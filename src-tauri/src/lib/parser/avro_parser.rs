@@ -152,14 +152,19 @@ fn map<'a>(
             }
             map(&**v, schema, ref_cache)
         }
-        (AvroValue::Enum(_, v), Schema::Enum { .. }) => Ok(json!(*v)),
+        (AvroValue::Enum(_, v), Schema::Enum { name, .. }) => {
+            ref_cache.insert(name, schema);
+            Ok(json!(*v))
+        }
         //todo: check representation in avro-json
         (AvroValue::Fixed(_, v), Schema::Fixed { name, .. }) => {
             ref_cache.insert(name, schema);
             Ok(json!(*v))
         }
         (value, Schema::Ref { name }) => {
-            let schema = ref_cache.get(name).expect("Missing Avro schema reference");
+            let schema = ref_cache
+                .get(name)
+                .unwrap_or_else(|| panic!("Missing Avro schema reference {:?}", name));
             map(value, schema, ref_cache)
         }
         (_, s) => panic!("Unexpected value/schema tuple. Schema: {:?}", s),
