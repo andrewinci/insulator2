@@ -1,11 +1,11 @@
 {
-  "version": "v1.14.0",
-  "notes": "# [1.14.0](https://github.com/andrewinci/insulator2/compare/v1.13.0...v1.14.0) (2022-10-24)\n\n\n### Features\n\n* Show consumer group lag by topic ([3cf424b](https://github.com/andrewinci/insulator2/commit/3cf424b33e74fe98129717b8c72e32cfd0bd2143))\n* Use accordion to group consumer data by topic name ([90ebda7](https://github.com/andrewinci/insulator2/commit/90ebda7000b804d60f061c3aa5b36fa9bf037f6c))\n\n\n\n",
-  "pub_date": "2022-10-24T08:44:35Z",
+  "version": "v1.14.1",
+  "notes": "## [1.14.1](https://github.com/andrewinci/insulator2/compare/v1.14.0...v1.14.1) (2022-10-26)\n\n\n### Bug Fixes\n\n* disable refresh/reset offset buttons while loading ([156e794](https://github.com/andrewinci/insulator2/commit/156e794f864b1b724f6ffb770924a944725ab1d4))\n* only get latest offset for consumer group topics ([e16f361](https://github.com/andrewinci/insulator2/commit/e16f3619b8d928e0b6b06ff9fd7d42b6d62e7a33))\n\n\n### Performance Improvements\n\n* cache list of all topics/partitions ([6b99732](https://github.com/andrewinci/insulator2/commit/6b99732291d594bb520ce7cc8c199a35092d29a0))\n* move get consumer state to another API call ([a4f8999](https://github.com/andrewinci/insulator2/commit/a4f899957482565cb925a6547e55a4d0b55a59e7))\n\n\n\n",
+  "pub_date": "2022-10-26T09:00:31Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.14.0/insulator-2_1.14.0_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.14.1/insulator-2_1.14.1_amd64.AppImage.tar.gz"
     }
   }
 }
