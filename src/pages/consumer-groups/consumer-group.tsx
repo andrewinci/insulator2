@@ -9,7 +9,6 @@ import { ConsumerGroupInfo, ConsumerSettingsFrom } from "../../models";
 import { describeConsumerGroup, getConsumerGroupState, setConsumerGroup } from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
-  const [state, setState] = useSetState<{ isResetting: boolean }>({ isResetting: false });
   const { data: consumerGroupState } = useQuery(["getConsumerGroupState", clusterId, name], () =>
     getConsumerGroupState(clusterId, name)
   );
@@ -25,47 +24,6 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
     { refetchOnWindowFocus: false, refetchOnMount: false }
   );
   data = temp;
-
-  const resetOffset = (offset: ConsumerSettingsFrom) => {
-    if (!data) return;
-    openConfirmModal({
-      title: "Reset offset",
-      children: (
-        <>
-          <Text size="sm">
-            Are you sure to reset the offset of the consumer group{" "}
-            <Text component="span" weight={"bold"}>
-              {data.name}
-            </Text>{" "}
-            to{" "}
-            <Text component="span" weight={"bold"}>
-              {offset.toString()}
-            </Text>
-            ?
-          </Text>
-          <Text my={10} size="sm" color={"red"}>
-            This action is irreversible.
-          </Text>
-        </>
-      ),
-      labels: { confirm: "Confirm", cancel: "Cancel" },
-      onCancel: () => console.log("Cancel"),
-      onConfirm: async () => {
-        if (!data) return;
-        setState({ isResetting: true });
-        try {
-          await setConsumerGroup(
-            clusterId,
-            data.name,
-            data.offsets.map((o) => o.topic),
-            offset
-          ).then((_) => refetch());
-        } finally {
-          setState({ isResetting: false });
-        }
-      },
-    });
-  };
 
   const topicOffsetMap = useMemo(() => {
     if (!data) return;
@@ -87,34 +45,14 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
       <Divider my={10} />
 
       <Stack m={10} align={"stretch"} justify={"flex-start"}>
-        <Group>
-          <Button
-            mb={10}
-            size="xs"
-            leftIcon={<IconRefresh />}
-            disabled={isLoading}
-            onClick={() => refetch()}
-            loading={isRefetching}>
-            Refresh
-          </Button>
+        <ResetOffsetMenu
+          loading={isLoading}
+          disabled={isRefetching}
+          clusterId={clusterId}
+          data={data}
+          refresh={refetch}
+        />
 
-          <Menu shadow="md" width={200}>
-            <Menu.Target>
-              <Button mb={10} size="xs" leftIcon={<IconTool />} disabled={isLoading} loading={state.isResetting}>
-                Reset offset
-              </Button>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item onClick={() => resetOffset("Beginning")} icon={<IconPlayerPlay size={14} />}>
-                Reset to the beginning
-              </Menu.Item>
-              <Menu.Item onClick={() => resetOffset("End")} icon={<IconFlag size={14} />}>
-                Reset to end
-              </Menu.Item>
-              {/* <Menu.Item icon={<IconClock size={14} />}>Reset to a point in time</Menu.Item> */}
-            </Menu.Dropdown>
-          </Menu>
-        </Group>
         {isLoading && (
           <Center mt={10}>
             <Loader />
@@ -178,5 +116,88 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
         )}
       </Stack>
     </Container>
+  );
+};
+
+const ResetOffsetMenu = (props: {
+  loading: boolean;
+  disabled: boolean;
+  clusterId: string;
+  data: ConsumerGroupInfo | undefined;
+  refresh: () => void;
+}) => {
+  const { clusterId, loading, disabled, data, refresh } = props;
+  const [state, setState] = useSetState<{ isResetting: boolean }>({ isResetting: false });
+
+  const resetOffset = (offset: ConsumerSettingsFrom) => {
+    if (!data) return;
+    openConfirmModal({
+      title: "Reset offset",
+      children: (
+        <>
+          <Text size="sm">
+            Are you sure to reset the offset of the consumer group{" "}
+            <Text component="span" weight={"bold"}>
+              {data.name}
+            </Text>{" "}
+            to{" "}
+            <Text component="span" weight={"bold"}>
+              {offset.toString()}
+            </Text>
+            ?
+          </Text>
+          <Text my={10} size="sm" color={"red"}>
+            This action is irreversible.
+          </Text>
+        </>
+      ),
+      labels: { confirm: "Confirm", cancel: "Cancel" },
+      onCancel: () => console.log("Cancel"),
+      onConfirm: async () => {
+        if (!data) return;
+        setState({ isResetting: true });
+        try {
+          await setConsumerGroup(
+            clusterId,
+            data.name,
+            data.offsets.map((o) => o.topic),
+            offset
+          ).then((_) => refresh());
+        } finally {
+          setState({ isResetting: false });
+        }
+      },
+    });
+  };
+
+  return (
+    <Group>
+      <Button
+        mb={10}
+        size="xs"
+        leftIcon={<IconRefresh />}
+        disabled={disabled}
+        onClick={() => refresh()}
+        loading={loading}>
+        Refresh
+      </Button>
+
+      <Menu shadow="md" width={200}>
+        <Menu.Target>
+          <Button mb={10} size="xs" leftIcon={<IconTool />} disabled={loading} loading={state.isResetting}>
+            Reset offset
+          </Button>
+        </Menu.Target>
+        <Menu.Dropdown>
+          <Menu.Item onClick={() => resetOffset("Beginning")} icon={<IconPlayerPlay size={14} />}>
+            Reset to the beginning
+          </Menu.Item>
+          <Menu.Item onClick={() => resetOffset("End")} icon={<IconFlag size={14} />}>
+            Reset to end
+          </Menu.Item>
+          {/* <Menu.Item icon={<IconClock size={14} />}>Reset to a point in time</Menu.Item> */}
+        </Menu.Dropdown>
+      </Menu>
+    </Group>
   );
 };
