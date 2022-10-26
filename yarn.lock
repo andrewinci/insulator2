@@ -761,18 +761,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/prism@npm:^5.4.1":
-  version: 5.5.4
-  resolution: "@mantine/prism@npm:5.5.4"
+"@mantine/prism@npm:^5.6.2":
+  version: 5.6.2
+  resolution: "@mantine/prism@npm:5.6.2"
   dependencies:
-    "@mantine/utils": 5.5.4
+    "@mantine/utils": 5.6.2
     prism-react-renderer: ^1.2.1
   peerDependencies:
-    "@mantine/core": 5.5.4
-    "@mantine/hooks": 5.5.4
+    "@mantine/core": 5.6.2
+    "@mantine/hooks": 5.6.2
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: aa51cfce1fadba2dfb1eb80399dbed98a15cabfe9075c619b84941a74d0a6f1c5d47c58eaf6c9ea62347e667a8ffe360e0b55eeb0f3f5005e49e434fadc96d11
+  checksum: b8b7803468d45a8df1f50a13904e15fe008ab96b863259e5862b2d9444d8e5dcd382f776d792405f2e4ad84ec5d63e9fc5d9d6466259f79b1f3297a8a865e53f
   languageName: node
   linkType: hard
 
@@ -4536,7 +4536,7 @@ __metadata:
     "@mantine/hooks": ^5.3.3
     "@mantine/modals": ^5.6.2
     "@mantine/notifications": ^5.6.2
-    "@mantine/prism": ^5.4.1
+    "@mantine/prism": ^5.6.2
     "@semantic-release/changelog": ^6.0.1
     "@semantic-release/commit-analyzer": ^9.0.2
     "@semantic-release/exec": ^6.0.3
