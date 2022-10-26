@@ -1,3 +1,9 @@
+## [1.14.2](https://github.com/andrewinci/insulator2/compare/v1.14.1...v1.14.2) (2022-10-26)
+
+### Bug Fixes
+
+- resolve avro ref to enums ([e8eb9ab](https://github.com/andrewinci/insulator2/commit/e8eb9ab0432430eff54f1a44b885148f8c4bde11))
+
 ## [1.14.1](https://github.com/andrewinci/insulator2/compare/v1.14.0...v1.14.1) (2022-10-26)
 
 ### Bug Fixes

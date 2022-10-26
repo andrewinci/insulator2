@@ -1,11 +1,11 @@
 {
-  "version": "v1.14.1",
-  "notes": "## [1.14.1](https://github.com/andrewinci/insulator2/compare/v1.14.0...v1.14.1) (2022-10-26)\n\n\n### Bug Fixes\n\n* disable refresh/reset offset buttons while loading ([156e794](https://github.com/andrewinci/insulator2/commit/156e794f864b1b724f6ffb770924a944725ab1d4))\n* only get latest offset for consumer group topics ([e16f361](https://github.com/andrewinci/insulator2/commit/e16f3619b8d928e0b6b06ff9fd7d42b6d62e7a33))\n\n\n### Performance Improvements\n\n* cache list of all topics/partitions ([6b99732](https://github.com/andrewinci/insulator2/commit/6b99732291d594bb520ce7cc8c199a35092d29a0))\n* move get consumer state to another API call ([a4f8999](https://github.com/andrewinci/insulator2/commit/a4f899957482565cb925a6547e55a4d0b55a59e7))\n\n\n\n",
-  "pub_date": "2022-10-26T09:00:31Z",
+  "version": "v1.14.2",
+  "notes": "## [1.14.2](https://github.com/andrewinci/insulator2/compare/v1.14.1...v1.14.2) (2022-10-26)\n\n\n### Bug Fixes\n\n* resolve avro ref to enums ([e8eb9ab](https://github.com/andrewinci/insulator2/commit/e8eb9ab0432430eff54f1a44b885148f8c4bde11))\n\n\n\n",
+  "pub_date": "2022-10-26T12:44:53Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.14.1/insulator-2_1.14.1_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.14.2/insulator-2_1.14.2_amd64.AppImage.tar.gz"
     }
   }
 }
