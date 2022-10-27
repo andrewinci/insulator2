@@ -61,14 +61,22 @@ export const ItemList = (props: ItemListProps) => {
     return () => window.removeEventListener("resize", handleWindowResize);
   }, []);
 
-  const filteredItems = useMemo(
-    () => ({
-      all: items.filter((t) => t.toLowerCase().includes(state.search ?? "")).sort(),
-      recent: state.recent.filter((t) => t.toLowerCase().includes(state.search ?? "")).reverse(),
-      favorites: state.favorites.filter((t) => t.toLowerCase().includes(state.search ?? "")),
-    }),
-    [items, state.recent, state.search, state.favorites]
-  );
+  const filteredItems = useMemo(() => {
+    try {
+      const regex = new RegExp(state?.search ?? ".", "i");
+      return {
+        all: items.filter((t) => regex.test(t)).sort(),
+        recent: state.recent.filter((t) => regex.test(t)).reverse(),
+        favorites: state.favorites.filter((t) => regex.test(t)),
+      };
+    } catch {
+      return {
+        all: [],
+        recent: [],
+        favorites: [],
+      };
+    }
+  }, [items, state.recent, state.search, state.favorites]);
 
   const tabPanel = (title: string, panelItems: string[]) => (
     <Tabs.Panel value={title} pt="xs">

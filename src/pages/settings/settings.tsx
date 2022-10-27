@@ -1,4 +1,4 @@
-import { Button, Checkbox, Container, Divider, Select, Stack, Title, Text } from "@mantine/core";
+import { Button, Checkbox, Container, Divider, Select, Stack, Title, Text, Center } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { IconTrash } from "@tabler/icons";
 import { useNotifications } from "../../providers";
@@ -25,30 +25,37 @@ export const Settings = () => {
     <Container>
       <Title mb={10}>Settings</Title>
       <Divider mb={10}></Divider>
-      <Stack style={{ maxWidth: "400px" }}>
-        <Select
-          label="Theme"
-          defaultValue={"Light"}
-          value={appState.theme}
-          data={[
-            { value: "Dark", label: "Dark" },
-            { value: "Light", label: "Light" },
-          ]}
-          onChange={(v) => {
-            if (v) {
-              setAppState({ ...appState, theme: v as AppTheme });
-            }
-          }}
-        />
-        <Checkbox
-          label="Hide notifications"
-          checked={!appState.showNotifications}
-          onChange={(c) => setAppState({ ...appState, showNotifications: !c.target.checked })}
-        />
-        <Button onClick={clearFavorites}>
-          <IconTrash size={18} /> Clear cache
-        </Button>
-      </Stack>
+      <Center>
+        <Stack sx={{ width: "400px" }}>
+          <Select
+            label="Theme"
+            defaultValue={"Light"}
+            value={appState.theme}
+            data={[
+              { value: "Dark", label: "Dark" },
+              { value: "Light", label: "Light" },
+            ]}
+            onChange={(v) => {
+              if (v) {
+                setAppState({ ...appState, theme: v as AppTheme });
+              }
+            }}
+          />
+          <Checkbox
+            label="Hide notifications"
+            checked={!appState.showNotifications}
+            onChange={(c) => setAppState({ ...appState, showNotifications: !c.target.checked })}
+          />
+          {/* <Checkbox
+            label="Use regex in search"
+            checked={!appState.useRegex}
+            onChange={(c) => setAppState({ ...appState, useRegex: c.target.checked })}
+          /> */}
+          <Button onClick={clearFavorites}>
+            <IconTrash size={18} /> Clear cache
+          </Button>
+        </Stack>
+      </Center>
     </Container>
   );
 };
