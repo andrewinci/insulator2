@@ -68,7 +68,7 @@ export const ItemList = (props: ItemListProps) => {
       const regex = new RegExp(state?.search ?? ".", "i");
       const test = userSettings.useRegex
         ? (s: string) => regex.test(s)
-        : (s: string) => s.toLowerCase().includes(state?.search.toLowerCase());
+        : (s: string) => s.toLowerCase().includes(state?.search ?? "");
       return {
         all: items.filter((t) => test(t)).sort(),
         recent: state.recent.filter((t) => test(t)).reverse(),

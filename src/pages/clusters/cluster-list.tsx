@@ -1,5 +1,7 @@
-import { Button, Text, Container, Divider, Paper, Stack, Title, Group, ScrollArea } from "@mantine/core";
+import { Button, Text, Container, Divider, Paper, Stack, Title, Group, ScrollArea, TextInput } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
+import { IconSearch } from "@tabler/icons";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PageHeader } from "../../components";
 import { Cluster } from "../../models";
@@ -7,6 +9,7 @@ import { useUserSettings } from "../../providers";
 
 export const ClusterList = () => {
   const { userSettings, setUserSettings } = useUserSettings();
+  const [state, setState] = useState<{ search: string }>({ search: "" });
   const navigate = useNavigate();
 
   const openModal = (cluster: Cluster) =>
@@ -21,6 +24,17 @@ export const ClusterList = () => {
     <Container>
       <Group position={"apart"}>
         <PageHeader title="Clusters" subtitle={`Total: ${userSettings.clusters.length}`} />
+        <TextInput
+          size="xs"
+          style={{ width: "40%" }}
+          icon={<IconSearch />}
+          placeholder={"Search"}
+          value={state.search}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onChange={(v: any) => {
+            if (v) setState({ ...state, search: v.target.value.toLowerCase() });
+          }}
+        />
         <Button component={Link} to="/cluster/new">
           Add Cluster
         </Button>
@@ -28,30 +42,32 @@ export const ClusterList = () => {
       <Divider mt={10} />
       <ScrollArea px={15} style={{ height: "calc(100vh - 100px)" }}>
         <Stack mt={10}>
-          {userSettings.clusters.map((c) => (
-            <Paper key={c.name} shadow="md" p="md" withBorder>
-              <Stack>
-                <Title order={3}>{c.name}</Title>
-                <Text size={13}>{c.endpoint}</Text>
-                <Group position="right">
-                  <Button.Group>
-                    <Button onClick={() => openModal(c)} color={"red"}>
-                      Delete
-                    </Button>
-                    <Button component={Link} to={`/cluster/edit/${c.id}`} color={"teal"}>
-                      Edit
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        navigate(`/cluster/${c.id}/topics`);
-                      }}>
-                      Use
-                    </Button>
-                  </Button.Group>
-                </Group>
-              </Stack>
-            </Paper>
-          ))}
+          {userSettings.clusters
+            .filter((c) => c.name.toLowerCase().includes(state.search ?? ""))
+            .map((c) => (
+              <Paper key={c.name} shadow="md" p="md" withBorder>
+                <Stack>
+                  <Title order={3}>{c.name}</Title>
+                  <Text size={13}>{c.endpoint}</Text>
+                  <Group position="right">
+                    <Button.Group>
+                      <Button onClick={() => openModal(c)} color={"red"}>
+                        Delete
+                      </Button>
+                      <Button component={Link} to={`/cluster/edit/${c.id}`} color={"teal"}>
+                        Edit
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          navigate(`/cluster/${c.id}/topics`);
+                        }}>
+                        Use
+                      </Button>
+                    </Button.Group>
+                  </Group>
+                </Stack>
+              </Paper>
+            ))}
         </Stack>
       </ScrollArea>
     </Container>
