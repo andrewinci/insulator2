@@ -18,6 +18,7 @@ import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconSearc
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList } from "react-window";
 import { PageHeader } from "../../components";
+import { useUserSettings } from "../../providers";
 
 const getWindowSize = () => {
   const { innerWidth, innerHeight } = window;
@@ -54,6 +55,7 @@ export const ItemList = (props: ItemListProps) => {
     },
   });
   const [windowSize, setWindowSize] = useState(getWindowSize());
+  const { userSettings } = useUserSettings();
 
   useEffect(() => {
     const handleWindowResize = () => setWindowSize(getWindowSize());
@@ -64,10 +66,13 @@ export const ItemList = (props: ItemListProps) => {
   const filteredItems = useMemo(() => {
     try {
       const regex = new RegExp(state?.search ?? ".", "i");
+      const test = userSettings.useRegex
+        ? (s: string) => regex.test(s)
+        : (s: string) => s.toLowerCase().includes(state?.search.toLowerCase());
       return {
-        all: items.filter((t) => regex.test(t)).sort(),
-        recent: state.recent.filter((t) => regex.test(t)).reverse(),
-        favorites: state.favorites.filter((t) => regex.test(t)),
+        all: items.filter((t) => test(t)).sort(),
+        recent: state.recent.filter((t) => test(t)).reverse(),
+        favorites: state.favorites.filter((t) => test(t)),
       };
     } catch {
       return {
@@ -76,7 +81,7 @@ export const ItemList = (props: ItemListProps) => {
         favorites: [],
       };
     }
-  }, [items, state.recent, state.search, state.favorites]);
+  }, [items, state.recent, state.search, state.favorites, userSettings.useRegex]);
 
   const tabPanel = (title: string, panelItems: string[]) => (
     <Tabs.Panel value={title} pt="xs">
@@ -148,7 +153,7 @@ export const ItemList = (props: ItemListProps) => {
           size="xs"
           style={{ width: "40%" }}
           icon={<IconSearch />}
-          placeholder="Search"
+          placeholder={userSettings.useRegex ? "Search (regex)" : "Search"}
           value={state.search}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onChange={(v: any) => {

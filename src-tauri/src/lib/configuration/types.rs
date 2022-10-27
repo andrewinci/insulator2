@@ -6,6 +6,8 @@ pub struct InsulatorConfig {
     pub theme: Option<Theme>,
     #[serde(rename = "showNotifications")]
     pub show_notifications: Option<bool>,
+    #[serde(rename = "useRegex")]
+    pub use_regex: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

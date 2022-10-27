@@ -12,6 +12,7 @@ const defaultAppState: AppStateContextType = {
     clusters: [],
     theme: "Light",
     showNotifications: false,
+    useRegex: true,
   },
 } as unknown as AppStateContextType;
 
