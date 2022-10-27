@@ -39,6 +39,8 @@ impl KafkaAdmin {
     pub(super) fn get_all_topic_partition_list(&self, ignore_cache: bool) -> Result<TopicPartitionList> {
         let mut topic_partition_list = self.all_topic_partition_list.lock().unwrap();
         if ignore_cache || topic_partition_list.count() == 0 {
+            // clear before setting values
+            *topic_partition_list = TopicPartitionList::new();
             debug!("Retrieve the list of all topics/partition");
             let topics = self.list_topics()?;
             debug!("Build the topic/partition list");
