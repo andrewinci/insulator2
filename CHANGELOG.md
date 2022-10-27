@@ -1,3 +1,15 @@
+# [1.15.0](https://github.com/andrewinci/insulator2/compare/v1.14.2...v1.15.0) (2022-10-27)
+
+### Bug Fixes
+
+- duplicates in consumer group view ([42eb3de](https://github.com/andrewinci/insulator2/commit/42eb3de30b82c0054d60e991b7defbf5a5f510d3))
+
+### Features
+
+- **FE:** show search bar in cluster view ([7e5460a](https://github.com/andrewinci/insulator2/commit/7e5460ae1e270ac8c40a1258931ddabc5206f4b9))
+- make search bar configurable from settings ([1db0e24](https://github.com/andrewinci/insulator2/commit/1db0e240d11b7a02978fa3e15b2d093c3701a212))
+- use regex in search bar ([584e0a7](https://github.com/andrewinci/insulator2/commit/584e0a713efbb9aa31d1c80858f9970949624cf0))
+
 ## [1.14.2](https://github.com/andrewinci/insulator2/compare/v1.14.1...v1.14.2) (2022-10-26)
 
 ### Bug Fixes

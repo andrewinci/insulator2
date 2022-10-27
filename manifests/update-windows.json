@@ -1,11 +1,11 @@
 {
-  "version": "v1.14.2",
-  "notes": "## [1.14.2](https://github.com/andrewinci/insulator2/compare/v1.14.1...v1.14.2) (2022-10-26)\n\n\n### Bug Fixes\n\n* resolve avro ref to enums ([e8eb9ab](https://github.com/andrewinci/insulator2/commit/e8eb9ab0432430eff54f1a44b885148f8c4bde11))\n\n\n\n",
-  "pub_date": "2022-10-26T12:44:53Z",
+  "version": "v1.15.0",
+  "notes": "# [1.15.0](https://github.com/andrewinci/insulator2/compare/v1.14.2...v1.15.0) (2022-10-27)\n\n\n### Bug Fixes\n\n* duplicates in consumer group view ([42eb3de](https://github.com/andrewinci/insulator2/commit/42eb3de30b82c0054d60e991b7defbf5a5f510d3))\n\n\n### Features\n\n* **FE:** show search bar in cluster view ([7e5460a](https://github.com/andrewinci/insulator2/commit/7e5460ae1e270ac8c40a1258931ddabc5206f4b9))\n* make search bar configurable from settings ([1db0e24](https://github.com/andrewinci/insulator2/commit/1db0e240d11b7a02978fa3e15b2d093c3701a212))\n* use regex in search bar ([584e0a7](https://github.com/andrewinci/insulator2/commit/584e0a713efbb9aa31d1c80858f9970949624cf0))\n\n\n\n",
+  "pub_date": "2022-10-27T23:54:09Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.14.2/Insulator.2_1.14.2_x64_en-US.msi.zip"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.15.0/Insulator.2_1.15.0_x64_en-US.msi.zip"
     }
   }
 }
