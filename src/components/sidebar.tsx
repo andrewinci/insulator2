@@ -4,12 +4,12 @@ import { IconCircleDashed, IconLine, IconSatellite, IconServer, IconSettings } f
 import logo from "../../src-tauri/icons/128x128.png";
 import { matchPath, useLocation } from "react-router-dom";
 import { useMemo } from "react";
-import { useAppState } from "../providers";
+import { useUserSettings } from "../providers";
 import { getVersion } from "@tauri-apps/api/app";
 import { useQuery } from "@tanstack/react-query";
 
 export const SideBar = () => {
-  const { appState } = useAppState();
+  const { userSettings: appState } = useUserSettings();
   const location = useLocation();
   const { data: appVersion } = useQuery(["insulatorVersion"], getVersion);
   const { clusterName, clusterId } = useMemo(() => {
@@ -70,7 +70,7 @@ export const SideBar = () => {
             </>
           )}
           <SidebarItem
-            url={`/cluster/${clusterId}/settings`}
+            url={clusterId ? `/cluster/${clusterId}/settings` : `/settings`}
             icon={<IconSettings size={16} />}
             color={"red"}
             label={"Settings"}

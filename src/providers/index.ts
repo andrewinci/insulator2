@@ -1,2 +1,2 @@
-export * from "./app-state-provider";
+export * from "./user-settings-provider";
 export * from "./notification-provider";

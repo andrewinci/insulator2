@@ -22,5 +22,6 @@ export const Routing = () => (
     <Route path="/cluster/:clusterId/consumer/:consumerName" element={<ConsumerGroupsPage />} />
     {/* Settings */}
     <Route path="/cluster/:clusterId/settings" element={<Settings />} />
+    <Route path="/settings" element={<Settings />} />
   </Routes>
 );

@@ -1,13 +1,13 @@
 import { Center, Text } from "@mantine/core";
 import { Allotment } from "allotment";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAppState } from "../../providers";
+import { useUserSettings } from "../../providers";
 import { Schema } from "./schema";
 import { SchemaList } from "./schema-list";
 
 export const SchemasPage = () => {
   const { clusterId, schemaName } = useParams();
-  const { appState } = useAppState();
+  const { userSettings: appState } = useUserSettings();
   const schemaRegistry = appState.clusters.find((c) => c.id == clusterId)?.schemaRegistry;
   const navigate = useNavigate();
   if (schemaRegistry && schemaRegistry.endpoint && clusterId) {

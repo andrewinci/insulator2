@@ -3,10 +3,10 @@ import { openConfirmModal } from "@mantine/modals";
 import { Link, useNavigate } from "react-router-dom";
 import { PageHeader } from "../../components";
 import { Cluster } from "../../models";
-import { useAppState } from "../../providers";
+import { useUserSettings } from "../../providers";
 
 export const ClusterList = () => {
-  const { appState, setAppState } = useAppState();
+  const { userSettings: appState, removeCluster } = useUserSettings();
   const navigate = useNavigate();
 
   const openModal = (cluster: Cluster) =>
@@ -14,9 +14,7 @@ export const ClusterList = () => {
       title: `Are you sure to delete "${cluster.name}"`,
       children: <Text size="sm">If confirmed, it will not be possible to retrieve this configuration.</Text>,
       labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: () => {
-        setAppState({ ...appState, clusters: appState.clusters.filter((c) => c.id != cluster.id) });
-      },
+      onConfirm: () => removeCluster(cluster.id),
     });
 
   return (

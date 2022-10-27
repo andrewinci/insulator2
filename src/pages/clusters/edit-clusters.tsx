@@ -1,13 +1,13 @@
 import { Container, Divider, Title } from "@mantine/core";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
-import { useAppState, useNotifications } from "../../providers";
+import { useUserSettings, useNotifications } from "../../providers";
 import { Cluster, ClusterAuthentication } from "../../models";
 import { AuthenticationFormType, ClusterForm, ClusterFormType, SaslFormType, SslFormType } from "./form";
 
 export const EditCluster = () => {
   const { alert } = useNotifications();
-  const { setAppState, appState } = useAppState();
+  const { userSettings: appState, upsertCluster } = useUserSettings();
   const navigate = useNavigate();
   const { clusterId } = useParams();
   const cluster = appState.clusters.find((c) => c.id == clusterId);
@@ -21,8 +21,7 @@ export const EditCluster = () => {
       alert("Cluster configuration not found", `Unable to update ${cluster.name}.`);
       return Promise.reject();
     } else {
-      const clusters = appState.clusters.map((c) => (c.id != clusterId ? c : cluster));
-      return setAppState({ ...appState, clusters });
+      return upsertCluster({ ...cluster, id: clusterId });
     }
   };
 
@@ -42,7 +41,7 @@ export const EditCluster = () => {
 
 export const AddNewCluster = () => {
   const { alert } = useNotifications();
-  const { setAppState, appState } = useAppState();
+  const { upsertCluster, userSettings: appState } = useUserSettings();
 
   const addCluster = (cluster: Cluster) => {
     if (appState.clusters.find((c) => c.name == cluster.name)) {
@@ -52,7 +51,7 @@ export const AddNewCluster = () => {
       );
       return Promise.reject();
     } else {
-      return setAppState({ ...appState, clusters: [...appState.clusters, cluster] });
+      return upsertCluster(cluster);
     }
   };
 

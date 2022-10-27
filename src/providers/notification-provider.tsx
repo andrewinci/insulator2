@@ -1,6 +1,6 @@
 import { IconCheck, IconX } from "@tabler/icons";
 import { showNotification } from "@mantine/notifications";
-import { useAppState } from "./app-state-provider";
+import { useUserSettings } from "./user-settings-provider";
 
 export type Notification = {
   type: "ok" | "error";
@@ -20,7 +20,7 @@ export const addNotification = (n: Notification) => {
 };
 
 export const useNotifications = () => {
-  const { appState } = useAppState();
+  const { userSettings: appState } = useUserSettings();
   const { showNotifications } = appState;
   return {
     alert: (title?: string, description?: string) => addNotification({ type: "error", title, description }),

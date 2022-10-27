@@ -1,11 +1,12 @@
 import { Button, Checkbox, Container, Divider, Select, Stack, Title, Text, Center } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { IconTrash } from "@tabler/icons";
+import { AppTheme } from "../../models";
 import { useNotifications } from "../../providers";
-import { AppTheme, useAppState } from "../../providers/app-state-provider";
+import { useUserSettings } from "../../providers/user-settings-provider";
 
 export const Settings = () => {
-  const { appState, setAppState } = useAppState();
+  const { userSettings: appState, setTheme, setShowNotifications } = useUserSettings();
   const { success } = useNotifications();
   const clearFavorites = () => {
     openConfirmModal({
@@ -37,14 +38,14 @@ export const Settings = () => {
             ]}
             onChange={(v) => {
               if (v) {
-                setAppState({ ...appState, theme: v as AppTheme });
+                setTheme(v as AppTheme);
               }
             }}
           />
           <Checkbox
-            label="Hide notifications"
-            checked={!appState.showNotifications}
-            onChange={(c) => setAppState({ ...appState, showNotifications: !c.target.checked })}
+            label="Show notifications"
+            checked={appState.showNotifications}
+            onChange={(c) => setShowNotifications(c.target.checked)}
           />
           {/* <Checkbox
             label="Use regex in search"

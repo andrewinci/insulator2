@@ -2,9 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Routing } from "./Routing";
-import { AppStateProvider, useNotifications } from "./providers";
+import { UserSettingsProvider, useNotifications } from "./providers";
 import { AppShell, MantineProvider } from "@mantine/core";
-import { useAppState } from "./providers/app-state-provider";
+import { useUserSettings } from "./providers/user-settings-provider";
 import { SideBar } from "./components";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
@@ -14,7 +14,7 @@ import { format, TauriError } from "./tauri/error";
 import { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 const App = () => {
-  const { appState } = useAppState();
+  const { userSettings: appState } = useUserSettings();
   const { alert } = useNotifications();
   const queryClient = new QueryClient();
   listen<TauriError>("error", (event) => {
@@ -55,8 +55,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <AppStateProvider>
+    <UserSettingsProvider>
       <RouterProvider router={router} />
-    </AppStateProvider>
+    </UserSettingsProvider>
   </React.StrictMode>
 );
