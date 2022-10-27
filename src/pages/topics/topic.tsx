@@ -5,7 +5,7 @@ import { getConsumerState, getRecord, stopConsumer } from "../../tauri/consumer"
 import { PageHeader } from "../../components";
 import { openConsumerModal } from "./consumer-modal";
 import { useQuery } from "@tanstack/react-query";
-import { getTopicInfo } from "../../tauri/admin";
+import { getLastOffsets, getTopicInfo } from "../../tauri/admin";
 
 export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: string }) => {
   const { data, isLoading } = useQuery(
@@ -14,12 +14,15 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
     { refetchInterval: 200 }
   );
 
+  const { data: estimatedRecord } = useQuery(["getLastOffsets", clusterId, topicName], () =>
+    getLastOffsets(clusterId, [topicName])
+      .then((res) => res[topicName].map((po) => po.offset))
+      .then((offsets) => offsets.reduce((a, b) => a + b, 0))
+  );
   const { data: topicInfo } = useQuery(["getTopicInfo", clusterId, topicName], async () => {
     const topicInfo = await getTopicInfo(clusterId, topicName);
-    console.log(typeof topicInfo.configurations);
     return {
       partitionCount: topicInfo.partitions.length,
-      estimatedRecord: topicInfo.partitions.map((p) => p.last_offset ?? 0).reduce((a, b) => a + b, 0),
       cleanupPolicy: topicInfo.configurations["cleanup.policy"] ?? "...",
     };
   });
@@ -34,7 +37,7 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
       <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
         <PageHeader
           title={topicName}
-          subtitle={`Estimated Records: ${topicInfo?.estimatedRecord ?? "..."}, Cleanup policy: ${
+          subtitle={`Estimated Records: ${estimatedRecord ?? "..."}, Cleanup policy: ${
             topicInfo?.cleanupPolicy ?? "..."
           }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}
         />

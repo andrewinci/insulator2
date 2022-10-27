@@ -27,7 +27,6 @@ pub struct PartitionInfo {
     pub id: i32,
     pub isr: usize,
     pub replicas: usize,
-    pub last_offset: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -42,4 +41,10 @@ pub struct TopicPartitionOffset {
     pub partition_id: i32,
     pub offset: i64,
     pub last_offset: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PartitionOffset {
+    pub partition_id: i32,
+    pub offset: i64,
 }

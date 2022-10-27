@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api";
-import { ConsumerGroupInfo, ConsumerSettingsFrom, TopicInfo } from "../models/kafka";
+import { ConsumerGroupInfo, ConsumerSettingsFrom, PartitionOffset, TopicInfo } from "../models/kafka";
 import { addNotification } from "../providers";
 import { format, TauriError } from "./error";
 
@@ -106,8 +106,8 @@ export const getTopicInfo = (clusterId: string, topicName: string): Promise<Topi
     throw err;
   });
 
-export const getLastOffsets = (clusterId: string, topicNames: [string]): Promise<Record<string, [number, number]>> =>
-  invoke<Record<string, [number, number]>>("get_last_offsets", { clusterId, topicNames }).catch((err: TauriError) => {
+export const getLastOffsets = (clusterId: string, topicNames: [string]): Promise<Record<string, [PartitionOffset]>> =>
+  invoke<Record<string, [PartitionOffset]>>("get_last_offsets", { clusterId, topicNames }).catch((err: TauriError) => {
     console.error(err);
     addNotification({
       type: "error",

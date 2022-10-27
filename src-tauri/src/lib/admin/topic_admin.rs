@@ -3,7 +3,7 @@ use log::{debug, warn};
 use std::{collections::HashMap, time::Duration, vec};
 
 use super::{
-    types::{PartitionInfo, Topic, TopicInfo},
+    types::{PartitionInfo, PartitionOffset, Topic, TopicInfo},
     KafkaAdmin, Partition,
 };
 use crate::lib::error::{Error, Result};
@@ -20,7 +20,7 @@ pub trait TopicAdmin {
     fn get_topic(&self, topic_name: &str) -> Result<Topic>;
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
-    fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, (i32, i64)>>;
+    fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, Vec<PartitionOffset>>>;
 }
 
 #[async_trait]
@@ -53,8 +53,6 @@ impl TopicAdmin for KafkaAdmin {
             tp.add_partition_offset(topic_name, p_id as i32, Offset::End)
                 .expect("Unable to add partition offset");
         });
-        let offsets = self.consumer.offsets_for_times(tp, self.timeout)?;
-        debug!("Retrieved offsets {:?}", offsets);
         let Topic { name, partitions } = topic;
         Ok(TopicInfo {
             name: name.to_string(),
@@ -62,12 +60,6 @@ impl TopicAdmin for KafkaAdmin {
                 .iter()
                 .map(|p| PartitionInfo {
                     id: p.id,
-                    last_offset: offsets
-                        .find_partition(topic_name, p.id)
-                        .unwrap()
-                        .offset()
-                        .to_raw()
-                        .unwrap(),
                     isr: p.isr,
                     replicas: p.replicas,
                 })
@@ -77,7 +69,7 @@ impl TopicAdmin for KafkaAdmin {
     }
 
     // return a list in which the index is the partition id and the value is the offset
-    fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, (i32, i64)>> {
+    fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, Vec<PartitionOffset>>> {
         let all_partitions = self.get_all_topic_partition_list(false)?;
         let mut topic_partition_list = TopicPartitionList::new();
         for topic in topic_names {
@@ -90,11 +82,17 @@ impl TopicAdmin for KafkaAdmin {
         let offsets = self
             .consumer
             .offsets_for_times(topic_partition_list, Duration::from_secs(60))?;
-        let res: HashMap<String, (i32, i64)> = offsets
-            .elements()
-            .into_iter()
-            .map(|e| (e.topic().to_string(), (e.partition(), e.offset().to_raw().unwrap())))
-            .collect();
+        let mut res = HashMap::<String, Vec<PartitionOffset>>::new();
+        offsets.elements().iter().for_each(|t| {
+            if !res.contains_key(t.topic()) {
+                res.insert(t.topic().into(), vec![]);
+            }
+            let partition_offsets = res.get_mut(t.topic()).unwrap();
+            partition_offsets.push(PartitionOffset {
+                partition_id: t.partition(),
+                offset: t.offset().to_raw().unwrap(),
+            })
+        });
         Ok(res)
     }
 

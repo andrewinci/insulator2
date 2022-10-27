@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use log::debug;
 
 use crate::lib::{
-    admin::{ConsumerGroupAdmin, ConsumerGroupInfo, Topic, TopicAdmin, TopicInfo},
+    admin::{ConsumerGroupAdmin, ConsumerGroupInfo, PartitionOffset, Topic, TopicAdmin, TopicInfo},
     consumer::ConsumerOffsetConfiguration,
 };
 
@@ -93,7 +93,7 @@ pub async fn get_last_offsets(
     cluster_id: &str,
     topic_names: Vec<&str>,
     state: tauri::State<'_, AppState>,
-) -> Result<HashMap<String, (i32, i64)>> {
+) -> Result<HashMap<String, Vec<PartitionOffset>>> {
     debug!("Get last offset for topics {:?}", topic_names);
     let cluster = state.get_cluster(cluster_id).await;
     Ok(cluster.admin_client.get_last_offsets(&topic_names)?)

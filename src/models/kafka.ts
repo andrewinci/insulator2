@@ -46,3 +46,7 @@ export type PartitionInfo = {
   replicas: number;
   last_offset: number;
 };
+export type PartitionOffset = {
+  partitionId: number;
+  offset: number;
+};
