@@ -735,17 +735,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/dates@npm:^5.6.2":
-  version: 5.6.2
-  resolution: "@mantine/dates@npm:5.6.2"
+"@mantine/dates@npm:^5.6.3":
+  version: 5.6.3
+  resolution: "@mantine/dates@npm:5.6.3"
   dependencies:
-    "@mantine/utils": 5.6.2
+    "@mantine/utils": 5.6.3
   peerDependencies:
-    "@mantine/core": 5.6.2
-    "@mantine/hooks": 5.6.2
+    "@mantine/core": 5.6.3
+    "@mantine/hooks": 5.6.3
     dayjs: ">=1.0.0"
     react: ">=16.8.0"
-  checksum: e0b7bcf6e39fc01cd01144a0c5a0bb2e9d23ec4eaf6c5eea1c45560fe0dc3332017a17907954110ec01011143d6c65687e9793ff358bfa55daec1c3277a04aad
+  checksum: 51ee9ee7028ab66148092350490c7ff8b62078f6d42b486305b526d9eadda8014c42ff0b93cb81ca95bfec73da869722097dc1be31f78787beda2a5fa3324646
   languageName: node
   linkType: hard
 
@@ -4570,7 +4570,7 @@ __metadata:
     "@emotion/react": ^11.10.4
     "@emotion/styled": ^11.10.4
     "@mantine/core": ^5.6.2
-    "@mantine/dates": ^5.6.2
+    "@mantine/dates": ^5.6.3
     "@mantine/form": ^5.6.2
     "@mantine/hooks": ^5.6.3
     "@mantine/modals": ^5.6.2
