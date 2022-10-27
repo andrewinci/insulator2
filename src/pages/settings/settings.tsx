@@ -6,7 +6,7 @@ import { useNotifications } from "../../providers";
 import { useUserSettings } from "../../providers/user-settings-provider";
 
 export const Settings = () => {
-  const { userSettings: appState, setTheme, setShowNotifications } = useUserSettings();
+  const { userSettings, setUserSettings } = useUserSettings();
   const { success } = useNotifications();
   const clearFavorites = () => {
     openConfirmModal({
@@ -31,27 +31,27 @@ export const Settings = () => {
           <Select
             label="Theme"
             defaultValue={"Light"}
-            value={appState.theme}
+            value={userSettings.theme}
             data={[
               { value: "Dark", label: "Dark" },
               { value: "Light", label: "Light" },
             ]}
             onChange={(v) => {
               if (v) {
-                setTheme(v as AppTheme);
+                setUserSettings((s) => ({ ...s, theme: v as AppTheme }));
               }
             }}
           />
           <Checkbox
             label="Show notifications"
-            checked={appState.showNotifications}
-            onChange={(c) => setShowNotifications(c.target.checked)}
+            checked={userSettings.showNotifications}
+            onChange={(c) => setUserSettings((s) => ({ ...s, showNotifications: c.target.checked }))}
           />
-          {/* <Checkbox
+          <Checkbox
             label="Use regex in search"
-            checked={!appState.useRegex}
-            onChange={(c) => setAppState({ ...appState, useRegex: c.target.checked })}
-          /> */}
+            checked={userSettings.useRegex}
+            onChange={(c) => setUserSettings((s) => ({ ...s, useRegex: c.target.checked }))}
+          />
           <Button onClick={clearFavorites}>
             <IconTrash size={18} /> Clear cache
           </Button>

@@ -2,6 +2,7 @@ export type UserSettings = {
   clusters: Cluster[];
   theme: AppTheme;
   showNotifications?: boolean;
+  useRegex?: boolean;
 };
 
 export type AppTheme = "Light" | "Dark";

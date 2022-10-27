@@ -6,7 +6,7 @@ import { Cluster } from "../../models";
 import { useUserSettings } from "../../providers";
 
 export const ClusterList = () => {
-  const { userSettings: appState, removeCluster } = useUserSettings();
+  const { userSettings, setUserSettings } = useUserSettings();
   const navigate = useNavigate();
 
   const openModal = (cluster: Cluster) =>
@@ -14,13 +14,13 @@ export const ClusterList = () => {
       title: `Are you sure to delete "${cluster.name}"`,
       children: <Text size="sm">If confirmed, it will not be possible to retrieve this configuration.</Text>,
       labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: () => removeCluster(cluster.id),
+      onConfirm: () => setUserSettings((s) => ({ ...s, clusters: s.clusters.filter((c) => c.id != cluster.id) })),
     });
 
   return (
     <Container>
       <Group position={"apart"}>
-        <PageHeader title="Clusters" subtitle={`Total: ${appState.clusters.length}`} />
+        <PageHeader title="Clusters" subtitle={`Total: ${userSettings.clusters.length}`} />
         <Button component={Link} to="/cluster/new">
           Add Cluster
         </Button>
@@ -28,7 +28,7 @@ export const ClusterList = () => {
       <Divider mt={10} />
       <ScrollArea px={15} style={{ height: "calc(100vh - 100px)" }}>
         <Stack mt={10}>
-          {appState.clusters.map((c) => (
+          {userSettings.clusters.map((c) => (
             <Paper key={c.name} shadow="md" p="md" withBorder>
               <Stack>
                 <Title order={3}>{c.name}</Title>

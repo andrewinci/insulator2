@@ -2,26 +2,36 @@ import { Container, Divider, Title } from "@mantine/core";
 import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 import { useUserSettings, useNotifications } from "../../providers";
-import { Cluster, ClusterAuthentication } from "../../models";
+import { Cluster, ClusterAuthentication, UserSettings } from "../../models";
 import { AuthenticationFormType, ClusterForm, ClusterFormType, SaslFormType, SslFormType } from "./form";
+
+const upsertCluster = (s: UserSettings, cluster: Cluster): UserSettings => {
+  if (s.clusters.find((c) => c.id == cluster.id)) {
+    // update
+    return { ...s, clusters: s.clusters.map((c) => (c.id != cluster.id ? c : cluster)) };
+  } else {
+    // insert
+    return { ...s, clusters: [...s.clusters, cluster] };
+  }
+};
 
 export const EditCluster = () => {
   const { alert } = useNotifications();
-  const { userSettings: appState, upsertCluster } = useUserSettings();
+  const { userSettings, setUserSettings } = useUserSettings();
   const navigate = useNavigate();
   const { clusterId } = useParams();
-  const cluster = appState.clusters.find((c) => c.id == clusterId);
+  const cluster = userSettings.clusters.find((c) => c.id == clusterId);
   if (!cluster) {
     alert("Something went wrong", "Missing clusterId in navigation.");
     return <></>;
   }
 
   const editCluster = (clusterId: string, cluster: Cluster) => {
-    if (!appState.clusters.find((c) => c.id == clusterId)) {
+    if (!userSettings.clusters.find((c) => c.id == clusterId)) {
       alert("Cluster configuration not found", `Unable to update ${cluster.name}.`);
       return Promise.reject();
     } else {
-      return upsertCluster({ ...cluster, id: clusterId });
+      return setUserSettings((s) => upsertCluster(s, { ...cluster, id: clusterId }));
     }
   };
 
@@ -41,17 +51,17 @@ export const EditCluster = () => {
 
 export const AddNewCluster = () => {
   const { alert } = useNotifications();
-  const { upsertCluster, userSettings: appState } = useUserSettings();
+  const { userSettings, setUserSettings } = useUserSettings();
 
   const addCluster = (cluster: Cluster) => {
-    if (appState.clusters.find((c) => c.name == cluster.name)) {
+    if (userSettings.clusters.find((c) => c.name == cluster.name)) {
       alert(
         "Cluster configuration already exists",
         `A cluster with the name "${cluster.name}" already exists. Try with another name.`
       );
       return Promise.reject();
     } else {
-      return upsertCluster(cluster);
+      return setUserSettings((s) => upsertCluster(s, cluster));
     }
   };
 
