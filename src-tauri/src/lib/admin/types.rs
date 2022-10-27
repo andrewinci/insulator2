@@ -40,11 +40,11 @@ pub struct TopicPartitionOffset {
     pub topic: String,
     pub partition_id: i32,
     pub offset: i64,
-    pub last_offset: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PartitionOffset {
+    #[serde(rename = "partitionId")]
     pub partition_id: i32,
     pub offset: i64,
 }

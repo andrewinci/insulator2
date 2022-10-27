@@ -10,7 +10,7 @@ use crate::lib::{
     error::Result,
 };
 use rdkafka::consumer::{Consumer, StreamConsumer};
-use rdkafka::{consumer::CommitMode, Offset, TopicPartitionList};
+use rdkafka::{consumer::CommitMode, Offset};
 
 #[async_trait]
 pub trait ConsumerGroupAdmin {
@@ -79,9 +79,6 @@ impl ConsumerGroupAdmin for KafkaAdmin {
             .committed_offsets(topic_partition_lst, Duration::from_secs(60))
             .unwrap();
 
-        debug!("Retrieve last offset to compute the lag");
-        let last_offset = self.get_last_offset(committed_offsets.clone())?;
-
         debug!("Build API response");
         let offsets: Vec<_> = committed_offsets
             .elements()
@@ -91,16 +88,10 @@ impl ConsumerGroupAdmin for KafkaAdmin {
                 topic: r.topic().into(),
                 partition_id: r.partition(),
                 offset: r.offset().to_raw().unwrap(),
-                last_offset: last_offset
-                    .find_partition(r.topic(), r.partition())
-                    .unwrap()
-                    .offset()
-                    .to_raw()
-                    .unwrap(),
             })
             .collect();
         debug!("Retrieve completed");
-
+        debug!("{:?}", offsets);
         Ok(ConsumerGroupInfo {
             name: consumer_group_name.into(),
             offsets,
@@ -115,12 +106,5 @@ impl ConsumerGroupAdmin for KafkaAdmin {
         let groups: Vec<_> = fetch_group_response.groups().iter().collect();
         assert_eq!(groups.len(), 1);
         Ok(groups[0].state().to_string())
-    }
-}
-
-impl KafkaAdmin {
-    fn get_last_offset(&self, mut lst: TopicPartitionList) -> Result<TopicPartitionList> {
-        lst.set_all_offsets(Offset::End)?;
-        Ok(self.consumer.offsets_for_times(lst, Duration::from_secs(60))?)
     }
 }

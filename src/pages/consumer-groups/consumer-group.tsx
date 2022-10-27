@@ -3,41 +3,36 @@ import { useSetState } from "@mantine/hooks";
 import { openConfirmModal } from "@mantine/modals";
 import { IconFlag, IconPlayerPlay, IconRefresh, IconTool } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
+import React from "react";
 import { useMemo } from "react";
 import { PageHeader } from "../../components";
 import { ConsumerGroupInfo, ConsumerSettingsFrom } from "../../models";
-import { describeConsumerGroup, getConsumerGroupState, setConsumerGroup } from "../../tauri/admin";
+import { describeConsumerGroup, getConsumerGroupState, getLastOffsets, setConsumerGroup } from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
   const { data: consumerGroupState } = useQuery(["getConsumerGroupState", clusterId, name], () =>
     getConsumerGroupState(clusterId, name)
   );
-  let data: ConsumerGroupInfo | undefined = undefined;
   const {
     isLoading,
-    data: temp,
+    data: consumerGroupInfo,
     refetch,
     isRefetching,
-  } = useQuery(
-    ["describeConsumerGroup", clusterId, name],
-    () => describeConsumerGroup(clusterId, name, data ? true : false), // ignore cache if we already have data (hence it's a refresh)
-    { refetchOnWindowFocus: false, refetchOnMount: false }
-  );
-  data = temp;
-
+  } = useQuery(["describeConsumerGroup", clusterId, name], () => describeConsumerGroup(clusterId, name, true), {
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
   const topicOffsetMap = useMemo(() => {
-    if (!data) return;
-    console.log(data);
-    const map = data.offsets.reduce((prev, current) => {
+    if (!consumerGroupInfo) return;
+    const map = consumerGroupInfo.offsets.reduce((prev, current) => {
       if (!prev[current.topic]) {
-        prev[current.topic] = { lag: 0, offsets: [] };
+        prev[current.topic] = [];
       }
-      prev[current.topic].lag += current.last_offset - current.offset;
-      prev[current.topic].offsets.push({ offset: current.offset, partition: current.partition_id });
+      prev[current.topic].push({ offset: current.offset, partition: current.partition_id });
       return prev;
-    }, {} as Record<string, { lag: number; offsets: { partition: number; offset: number }[] }>);
+    }, {} as Record<string, { partition: number; offset: number }[]>);
     return Object.entries(map).sort();
-  }, [data]);
+  }, [consumerGroupInfo]);
 
   return (
     <Container>
@@ -49,7 +44,7 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
           loading={isLoading}
           disabled={isRefetching}
           clusterId={clusterId}
-          data={data}
+          data={consumerGroupInfo}
           refresh={refetch}
         />
 
@@ -58,57 +53,12 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
             <Loader />
           </Center>
         )}
-        {!isLoading && data && topicOffsetMap && (
+        {!isLoading && topicOffsetMap && (
           <>
             <Container sx={{ overflowX: "hidden", overflowY: "scroll", width: "100%", height: "calc(100vh - 180px)" }}>
               <Accordion chevronPosition="left" variant="contained" defaultValue="customization">
                 {topicOffsetMap.map(([topic, details]) => (
-                  <Accordion.Item key={topic} value={topic}>
-                    <Accordion.Control>
-                      <Group position="apart">
-                        <Text weight={"bold"} size={"md"}>
-                          {topic}
-                        </Text>
-                        <Text italic size={"md"}>
-                          Lag: {details.lag}
-                        </Text>
-                      </Group>
-                    </Accordion.Control>
-                    <Accordion.Panel>
-                      <Grid>
-                        <Grid.Col span={6}>
-                          <Text align="left" weight={"bold"}>
-                            Topic
-                          </Text>
-                        </Grid.Col>
-                        <Grid.Col span={3}>
-                          <Text align="left" weight={"bold"}>
-                            Partition
-                          </Text>
-                        </Grid.Col>
-                        <Grid.Col span={3}>
-                          <Text align="left" weight={"bold"}>
-                            Offset
-                          </Text>
-                        </Grid.Col>
-                        {details.offsets.map(({ offset, partition }) => (
-                          <>
-                            <Grid.Col span={6}>
-                              <Text sx={{ overflowWrap: "break-word" }} key={`topic-${partition}`}>
-                                {topic}
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={3}>
-                              <Text key={`partition-${partition}`}>{partition}</Text>
-                            </Grid.Col>
-                            <Grid.Col span={3}>
-                              <Text key={`offset-${partition}`}>{offset}</Text>
-                            </Grid.Col>
-                          </>
-                        ))}
-                      </Grid>
-                    </Accordion.Panel>
-                  </Accordion.Item>
+                  <ConsumerGroupTopicDetails key={topic} clusterId={clusterId} topicName={topic} offsets={details} />
                 ))}
               </Accordion>
             </Container>
@@ -116,6 +66,81 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
         )}
       </Stack>
     </Container>
+  );
+};
+
+const ConsumerGroupTopicDetails = ({
+  clusterId,
+  topicName,
+  offsets,
+}: {
+  clusterId: string;
+  topicName: string;
+  offsets: { partition: number; offset: number }[];
+}) => {
+  const { data } = useQuery(["getLastOffsets", clusterId, topicName, offsets], async () => {
+    const lastOffsets = (await getLastOffsets(clusterId, [topicName]))[topicName];
+    const sumLastOffsets = lastOffsets.map((po) => po.offset).reduce((a, b) => a + b, 0);
+    const sumOffsets = offsets.map((o) => o.offset).reduce((a, b) => a + b, 0);
+    console.log(lastOffsets);
+    return {
+      lastOffsets,
+      totalLag: sumLastOffsets - sumOffsets,
+    };
+  });
+  return (
+    <Accordion.Item key={topicName} value={topicName}>
+      <Accordion.Control>
+        <Group position="apart">
+          <Text weight={"bold"} size={"md"}>
+            {topicName}
+          </Text>
+          <Text italic size={"md"}>
+            Lag: {data?.totalLag ?? "..."}
+          </Text>
+        </Group>
+      </Accordion.Control>
+      <Accordion.Panel>
+        <Grid>
+          <Grid.Col span={6}>
+            <Text align="left" weight={"bold"}>
+              Topic
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={2}>
+            <Text align="left" weight={"bold"}>
+              Partition
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={2}>
+            <Text align="left" weight={"bold"}>
+              Offset
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={2}>
+            <Text align="left" weight={"bold"}>
+              Lag
+            </Text>
+          </Grid.Col>
+          {offsets.map(({ offset, partition }) => (
+            <React.Fragment key={`${topicName}-${partition}`}>
+              <Grid.Col span={6}>
+                <Text sx={{ overflowWrap: "break-word" }}>{topicName}</Text>
+              </Grid.Col>
+              <Grid.Col span={2}>
+                <Text>{partition}</Text>
+              </Grid.Col>
+              <Grid.Col span={2}>
+                <Text>{offset}</Text>
+              </Grid.Col>
+              <Grid.Col span={2}>
+                <Text>{(data?.lastOffsets.find((po) => po.partitionId === partition)?.offset ?? 0) - offset}</Text>
+              </Grid.Col>
+            </React.Fragment>
+          ))}
+        </Grid>
+      </Accordion.Panel>
+    </Accordion.Item>
   );
 };
 
