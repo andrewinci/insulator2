@@ -1,9 +1,8 @@
-import { Button, Text, Container, Divider, Paper, Stack, Title, Group, ScrollArea, TextInput } from "@mantine/core";
+import { Button, Text, Container, Divider, Paper, Stack, Title, Group, ScrollArea } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
-import { IconSearch } from "@tabler/icons";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { PageHeader } from "../../components";
+import { PageHeader, SearchInput } from "../../components";
 import { Cluster } from "../../models";
 import { useUserSettings } from "../../providers";
 
@@ -24,17 +23,7 @@ export const ClusterList = () => {
     <Container>
       <Group position={"apart"}>
         <PageHeader title="Clusters" subtitle={`Total: ${userSettings.clusters.length}`} />
-        <TextInput
-          size="xs"
-          style={{ width: "40%" }}
-          icon={<IconSearch />}
-          placeholder={"Search"}
-          value={state.search}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onChange={(v: any) => {
-            if (v) setState({ ...state, search: v.target.value.toLowerCase() });
-          }}
-        />
+        <SearchInput showShortcut={true} value={state.search} onChange={(v) => setState({ ...state, search: v })} />
         <Button component={Link} to="/cluster/new">
           Add Cluster
         </Button>

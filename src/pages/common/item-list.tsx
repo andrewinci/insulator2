@@ -10,14 +10,13 @@ import {
   Text,
   Tabs,
   Badge,
-  TextInput,
   Grid,
 } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
-import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconSearch, IconStar } from "@tabler/icons";
+import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconStar } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList } from "react-window";
-import { PageHeader } from "../../components";
+import { PageHeader, SearchInput } from "../../components";
 import { useUserSettings } from "../../providers";
 
 const getWindowSize = () => {
@@ -149,16 +148,10 @@ export const ItemList = (props: ItemListProps) => {
     <Container>
       <Group align={"center"} position={"apart"}>
         <PageHeader title={title} subtitle={`Total: ${props.items.length}`} />
-        <TextInput
-          size="xs"
-          style={{ width: "40%" }}
-          icon={<IconSearch />}
+        <SearchInput
           placeholder={userSettings.useRegex ? "Search (regex)" : "Search"}
           value={state.search}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onChange={(v: any) => {
-            if (v) setState({ ...state, search: v.target.value.toLowerCase() });
-          }}
+          onChange={(v) => setState({ ...state, search: v })}
         />
         <Group>
           <Tooltip label="Create a new item">
