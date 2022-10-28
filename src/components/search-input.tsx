@@ -30,7 +30,7 @@ export const SearchInput = (props: SearchInputProps) => {
       ref={ref}
       size="xs"
       style={{ width: "40%" }}
-      icon={<IconSearch />}
+      icon={<IconSearch style={{ margin: 0 }} size={15} />}
       placeholder={placeholder ?? "Search"}
       value={value}
       rightSectionWidth={showShortcut ? 90 : undefined}

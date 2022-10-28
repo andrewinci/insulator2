@@ -12,6 +12,8 @@ type RecordsListProps = {
   fetchRecord: (rowIndex: number) => Promise<KafkaRecord>;
 };
 
+const RECORD_PAGE_HEIGHT = 135;
+
 export const RecordsList = (props: RecordsListProps) => {
   const { itemCount, heightOffset, fetchRecord } = props;
   const [state, setState] = useState<{ windowHeight: number }>({ windowHeight: window.innerHeight });
@@ -26,7 +28,7 @@ export const RecordsList = (props: RecordsListProps) => {
   const rowVirtualizer = useVirtualizer({
     count: itemCount,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 125,
+    estimateSize: () => RECORD_PAGE_HEIGHT,
   });
 
   return (
@@ -66,10 +68,10 @@ export const RecordsList = (props: RecordsListProps) => {
 
 const LabelValue = ({ label, value }: { label: string; value: string | number }) => (
   <>
-    <Text size={13} ml={10} italic>
+    <Text size={10} italic>
       {label}
     </Text>
-    <Text size={13} weight={"bold"}>
+    <Text size={10} weight={"bold"} mr={10}>
       {value}
     </Text>
   </>
@@ -85,8 +87,8 @@ const KafkaRecordCard = ({
   fetchRecord: (rowIndex: number) => Promise<KafkaRecord>;
 }) => {
   const [record, setRecord] = useState<KafkaRecord>({
-    key: "N/A",
-    payload: "N/A",
+    key: "...",
+    payload: "...",
     partition: -1,
     offset: -1,
     timestamp: undefined,
@@ -97,12 +99,15 @@ const KafkaRecordCard = ({
   }, [fetchRecord, index]);
   const timestamp = record?.timestamp ? dayjs(record.timestamp).toISOString() : "N/A";
   return (
-    <Paper shadow="xs" p={5} withBorder style={{ ...style, maxHeight: 120, width: "calc(100% - 20px)" }}>
-      <Group spacing={0} noWrap={true} style={{ height: 20 }}>
-        <Text size={13} italic>
-          {index}
-        </Text>
-        <LabelValue label="key: " value={record?.key} />
+    <Paper
+      shadow="xs"
+      p={5}
+      withBorder
+      style={{ ...style, maxHeight: RECORD_PAGE_HEIGHT - 5, width: "calc(100% - 20px)" }}>
+      <Text weight={"bold"} size={12}>
+        {record?.key}
+      </Text>
+      <Group spacing={0} noWrap={true} style={{ height: 12 }}>
         <LabelValue label="partition: " value={record?.partition} />
         <LabelValue label="offset: " value={record?.offset} />
         <LabelValue label="timestamp: " value={timestamp} />

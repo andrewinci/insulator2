@@ -55,17 +55,20 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
       )}
       {!isLoading && data && (
         <>
-          <Button
-            mb={10}
-            size="xs"
-            onClick={toggleConsumerRunning}
-            rightIcon={
-              <Badge variant="filled" color={"red"}>
-                {data.recordCount}
-              </Badge>
-            }>
-            {data.isRunning ? "Stop" : "Consume"}
-          </Button>
+          <Group position="apart">
+            <Button
+              mb={10}
+              size="xs"
+              onClick={toggleConsumerRunning}
+              rightIcon={
+                <Badge variant="filled" color={"red"}>
+                  {data.recordCount}
+                </Badge>
+              }>
+              {data.isRunning ? "Stop" : "Consume"}
+            </Button>
+            {/* <SearchInput/> */}
+          </Group>
           <RecordsList
             heightOffset={140}
             itemCount={data.recordCount}
