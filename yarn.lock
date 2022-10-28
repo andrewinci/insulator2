@@ -770,17 +770,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/modals@npm:^5.6.2":
-  version: 5.6.2
-  resolution: "@mantine/modals@npm:5.6.2"
+"@mantine/modals@npm:^5.6.3":
+  version: 5.6.3
+  resolution: "@mantine/modals@npm:5.6.3"
   dependencies:
-    "@mantine/utils": 5.6.2
+    "@mantine/utils": 5.6.3
   peerDependencies:
-    "@mantine/core": 5.6.2
-    "@mantine/hooks": 5.6.2
+    "@mantine/core": 5.6.3
+    "@mantine/hooks": 5.6.3
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: 10d73254a26653362c3d3e39341a5f99fcd72c8d9c17af1b3c972912c2b4b6d129a0e8ada68143e6dae25095447a58d5a52e5ce5f4f9548f7d5725b89abbf886
+  checksum: 4b00d177c772d8ae6cd562d1f61f93674fd9236b6146be05ae93509c719aadb12e2a66ff73081ead64b54e0f7d510d30dc1993a09cad02ddd9a58c7bd94c683d
   languageName: node
   linkType: hard
 
@@ -4573,7 +4573,7 @@ __metadata:
     "@mantine/dates": ^5.6.3
     "@mantine/form": ^5.6.2
     "@mantine/hooks": ^5.6.3
-    "@mantine/modals": ^5.6.2
+    "@mantine/modals": ^5.6.3
     "@mantine/notifications": ^5.6.3
     "@mantine/prism": ^5.6.2
     "@semantic-release/changelog": ^6.0.1
