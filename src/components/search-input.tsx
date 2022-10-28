@@ -10,10 +10,11 @@ type SearchInputProps = {
   placeholder?: string;
   showShortcut?: boolean;
   onChange?: (_: string) => void;
+  onEnter?: () => void;
 };
 
 export const SearchInput = (props: SearchInputProps) => {
-  const { placeholder, value, showShortcut, onChange } = props;
+  const { placeholder, value, showShortcut, onChange, onEnter } = props;
   const { data: isDarwin } = useQuery(["currentPlatform"], () => platform().then((p) => p === "darwin"));
   const rightSection = (
     <div style={{ display: "flex", alignItems: "center" }}>
@@ -38,6 +39,11 @@ export const SearchInput = (props: SearchInputProps) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onChange={(v: any) => {
         if (v && onChange) onChange(v.target.value.toLowerCase());
+      }}
+      onKeyUp={(e) => {
+        if (e.code == "Enter" && onEnter) {
+          onEnter();
+        }
       }}
     />
   );
