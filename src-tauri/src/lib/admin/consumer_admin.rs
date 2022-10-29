@@ -21,7 +21,7 @@ pub trait ConsumerGroupAdmin {
         config: &ConsumerOffsetConfiguration,
     ) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
-    fn describe_consumer_group(&self, consumer_group_name: &str, ignore_cache: bool) -> Result<ConsumerGroupInfo>;
+    async fn describe_consumer_group(&self, consumer_group_name: &str, ignore_cache: bool) -> Result<ConsumerGroupInfo>;
     fn get_consumer_group_state(&self, consumer_group_name: &str) -> Result<String>;
 }
 
@@ -62,7 +62,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
         Ok(group_names)
     }
 
-    fn describe_consumer_group(&self, consumer_group_name: &str, ignore_cache: bool) -> Result<ConsumerGroupInfo> {
+    async fn describe_consumer_group(&self, consumer_group_name: &str, ignore_cache: bool) -> Result<ConsumerGroupInfo> {
         // create a consumer with the defined consumer_group_name.
         // NOTE: the consumer shouldn't join the consumer group, otherwise it'll cause a re-balance
         debug!("Build the consumer for the consumer group {}", consumer_group_name);
@@ -71,7 +71,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
             .expect("Unable to build the consumer");
 
         debug!("Build the topic/partition list");
-        let topic_partition_lst = self.get_all_topic_partition_list(ignore_cache)?;
+        let topic_partition_lst = self.get_all_topic_partition_list(ignore_cache).await?;
 
         debug!("Retrieve any committed offset to the consumer group");
         // allow up to 1 minute of tmo for big clusters and slow connections

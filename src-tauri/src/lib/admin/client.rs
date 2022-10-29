@@ -1,9 +1,10 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Duration;
 
 use super::{ConsumerGroupAdmin, TopicAdmin};
 use crate::lib::configuration::{build_kafka_client_config, ClusterConfig};
 use crate::lib::error::Result;
+use futures::lock::Mutex;
 use log::debug;
 use rdkafka::admin::AdminClient;
 use rdkafka::{client::DefaultClientContext, consumer::StreamConsumer};
@@ -36,8 +37,8 @@ impl KafkaAdmin {
         }
     }
 
-    pub(super) fn get_all_topic_partition_list(&self, ignore_cache: bool) -> Result<TopicPartitionList> {
-        let mut topic_partition_list = self.all_topic_partition_list.lock().unwrap();
+    pub(super) async fn get_all_topic_partition_list(&self, ignore_cache: bool) -> Result<TopicPartitionList> {
+        let mut topic_partition_list = self.all_topic_partition_list.lock().await;
         if ignore_cache || topic_partition_list.count() == 0 {
             // clear before setting values
             *topic_partition_list = TopicPartitionList::new();

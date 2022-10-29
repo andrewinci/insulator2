@@ -58,7 +58,8 @@ pub async fn describe_consumer_group(
     let cluster = state.get_cluster(cluster_id).await;
     Ok(cluster
         .admin_client
-        .describe_consumer_group(consumer_group_name, ignore_cache.unwrap_or(false))?)
+        .describe_consumer_group(consumer_group_name, ignore_cache.unwrap_or(false))
+        .await?)
 }
 
 #[tauri::command]
@@ -96,5 +97,5 @@ pub async fn get_last_offsets(
 ) -> Result<HashMap<String, Vec<PartitionOffset>>> {
     debug!("Get last offset for topics {:?}", topic_names);
     let cluster = state.get_cluster(cluster_id).await;
-    Ok(cluster.admin_client.get_last_offsets(&topic_names)?)
+    Ok(cluster.admin_client.get_last_offsets(&topic_names).await?)
 }

@@ -20,7 +20,7 @@ pub trait TopicAdmin {
     fn get_topic(&self, topic_name: &str) -> Result<Topic>;
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
-    fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, Vec<PartitionOffset>>>;
+    async fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, Vec<PartitionOffset>>>;
 }
 
 #[async_trait]
@@ -69,8 +69,8 @@ impl TopicAdmin for KafkaAdmin {
     }
 
     // return a list in which the index is the partition id and the value is the offset
-    fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, Vec<PartitionOffset>>> {
-        let all_partitions = self.get_all_topic_partition_list(false)?;
+    async fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, Vec<PartitionOffset>>> {
+        let all_partitions = self.get_all_topic_partition_list(false).await?;
         let mut topic_partition_list = TopicPartitionList::new();
         for topic in topic_names {
             all_partitions.elements_for_topic(topic).iter().for_each(|tpo| {
@@ -108,7 +108,7 @@ impl TopicAdmin for KafkaAdmin {
             .create_topics(vec![&new_topic], &AdminOptions::default())
             .await?;
         // delete cache of topics/partitions map
-        *self.all_topic_partition_list.lock().unwrap() = TopicPartitionList::new();
+        *self.all_topic_partition_list.lock().await = TopicPartitionList::new();
         let res = res.get(0).expect("Create topic: missing result");
         match res {
             Ok(_) => {
