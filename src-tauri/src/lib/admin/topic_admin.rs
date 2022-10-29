@@ -16,7 +16,7 @@ use rdkafka::{
 #[async_trait]
 pub trait TopicAdmin {
     // topics
-    fn list_topics(&self) -> Result<Vec<Topic>>;
+    async fn list_topics(&self) -> Result<Vec<Topic>>;
     fn get_topic(&self, topic_name: &str) -> Result<Topic>;
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
@@ -25,7 +25,11 @@ pub trait TopicAdmin {
 
 #[async_trait]
 impl TopicAdmin for KafkaAdmin {
-    fn list_topics(&self) -> Result<Vec<Topic>> {
+    async fn list_topics(&self) -> Result<Vec<Topic>> {
+        {
+            // delete cache of topics/partitions map
+            *self.all_topic_partition_list.lock().await = TopicPartitionList::new()
+        }
         self.internal_list_topics(None)
     }
 
@@ -107,8 +111,6 @@ impl TopicAdmin for KafkaAdmin {
             .admin_client
             .create_topics(vec![&new_topic], &AdminOptions::default())
             .await?;
-        // delete cache of topics/partitions map
-        *self.all_topic_partition_list.lock().await = TopicPartitionList::new();
         let res = res.get(0).expect("Create topic: missing result");
         match res {
             Ok(_) => {

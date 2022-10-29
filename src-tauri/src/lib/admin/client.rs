@@ -38,21 +38,26 @@ impl KafkaAdmin {
     }
 
     pub(super) async fn get_all_topic_partition_list(&self, ignore_cache: bool) -> Result<TopicPartitionList> {
-        let mut topic_partition_list = self.all_topic_partition_list.lock().await;
-        if ignore_cache || topic_partition_list.count() == 0 {
-            // clear before setting values
-            *topic_partition_list = TopicPartitionList::new();
-            debug!("Retrieve the list of all topics/partition");
-            let topics = self.list_topics()?;
-            debug!("Build the topic/partition list");
-            topics.iter().for_each(|topic| {
-                topic.partitions.iter().for_each(|partition| {
-                    topic_partition_list
-                        .add_partition_offset(&topic.name, partition.id, Offset::End)
-                        .expect("Unable to add the partition offset");
-                })
-            });
+        {
+            let topic_partition_list = self.all_topic_partition_list.lock().await;
+            if !ignore_cache && topic_partition_list.count() > 0 {
+                return Ok(topic_partition_list.clone());
+            }
         }
-        Ok(topic_partition_list.clone())
+        let mut topic_partition_list = TopicPartitionList::new();
+        debug!("Retrieve the list of all topics/partition");
+        let topics = self.list_topics().await?;
+        debug!("Build the topic/partition list");
+        topics.iter().for_each(|topic| {
+            topic.partitions.iter().for_each(|partition| {
+                topic_partition_list
+                    .add_partition_offset(&topic.name, partition.id, Offset::End)
+                    .expect("Unable to add the partition offset");
+            })
+        });
+        {
+            *self.all_topic_partition_list.lock().await = topic_partition_list.clone();
+        }
+        Ok(topic_partition_list)
     }
 }

@@ -13,7 +13,7 @@ use super::{error::Result, AppState};
 pub async fn list_topics(cluster_id: &str, state: tauri::State<'_, AppState>) -> Result<Vec<Topic>> {
     debug!("Retrieve the list of topics");
     let cluster = state.get_cluster(cluster_id).await;
-    Ok(cluster.admin_client.list_topics()?)
+    Ok(cluster.admin_client.list_topics().await?)
 }
 
 #[tauri::command]
