@@ -20,6 +20,7 @@ use tauri::async_runtime::JoinHandle;
 pub trait Consumer {
     async fn start(&self, offset_config: &ConsumerOffsetConfiguration) -> Result<()>;
     async fn stop(&self) -> Result<()>;
+    async fn get_page(&self, page: usize) -> Vec<RawKafkaRecord>;
     async fn get_record(&self, index: usize) -> Option<RawKafkaRecord>;
     async fn get_consumer_state(&self) -> ConsumerState;
 }
@@ -102,6 +103,19 @@ impl Consumer for KafkaConsumer {
 
     async fn get_record(&self, index: usize) -> Option<RawKafkaRecord> {
         self.records.clone().lock().await.get(index).cloned()
+    }
+
+    async fn get_page(&self, page: usize) -> Vec<RawKafkaRecord> {
+        const PAGE_SIZE: usize = 100;
+        self.records
+            .clone()
+            .lock()
+            .await
+            .iter()
+            .skip(PAGE_SIZE * page)
+            .take(PAGE_SIZE)
+            .map(|r| r.to_owned())
+            .collect()
     }
 
     async fn get_consumer_state(&self) -> ConsumerState {

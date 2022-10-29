@@ -1,22 +1,36 @@
 import styled from "@emotion/styled";
 import { Paper, Text, Group } from "@mantine/core";
 import { Prism } from "@mantine/prism";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { KafkaRecord } from "../../models/kafka";
+import { getRecordsPage } from "../../tauri/consumer";
 
 type RecordsListProps = {
-  itemCount: number;
+  clusterId: string;
+  topic: string;
+  totalRecordsCount: number;
   heightOffset?: number;
-  fetchRecord: (rowIndex: number) => Promise<KafkaRecord>;
 };
 
 const RECORD_PAGE_HEIGHT = 135;
 
 export const RecordsList = (props: RecordsListProps) => {
-  const { itemCount, heightOffset, fetchRecord } = props;
+  const { clusterId, topic, heightOffset, totalRecordsCount } = props;
   const [state, setState] = useState<{ windowHeight: number }>({ windowHeight: window.innerHeight });
+
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery(
+    ["fetchRecords", clusterId, topic, totalRecordsCount],
+    async ({ pageParam = 0 }) => await getRecordsPage(clusterId, topic, pageParam ?? 0),
+    {
+      getNextPageParam: (lastPage, _) => lastPage.nextPage,
+      getPreviousPageParam: (firstPage, _) => firstPage.prevPage,
+    }
+  );
+
+  const allRecords = data ? data.pages.flatMap((d) => d.records) : [];
 
   useEffect(() => {
     const handleWindowResize = () => setState((s) => ({ ...s, windowHeight: window.innerHeight }));
@@ -26,9 +40,17 @@ export const RecordsList = (props: RecordsListProps) => {
 
   const parentRef = React.useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
-    count: itemCount,
+    count: hasNextPage ? allRecords.length + 1 : allRecords.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => RECORD_PAGE_HEIGHT,
+    overscan: 10,
+  });
+
+  useEffect(() => {
+    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
+    if (lastItem && lastItem.index >= allRecords.length - 1 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
   });
 
   return (
@@ -45,21 +67,25 @@ export const RecordsList = (props: RecordsListProps) => {
             width: "100%",
             position: "relative",
           }}>
-          {rowVirtualizer.getVirtualItems().map((virtualItem) => (
-            <KafkaRecordCard
-              key={virtualItem.index}
-              index={virtualItem.index}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: `${virtualItem.size}px`,
-                transform: `translateY(${virtualItem.start}px)`,
-              }}
-              fetchRecord={fetchRecord}
-            />
-          ))}
+          {rowVirtualizer.getVirtualItems().map((virtualItem) =>
+            allRecords[virtualItem.index] ? (
+              <KafkaRecordCard
+                key={virtualItem.index}
+                index={virtualItem.index}
+                record={allRecords[virtualItem.index]}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: `${virtualItem.size}px`,
+                  transform: `translateY(${virtualItem.start}px)`,
+                }}
+              />
+            ) : (
+              <Text key={`load-more-${virtualItem.index}`}>Load more {virtualItem.index}</Text>
+            )
+          )}
         </div>
       </div>
     </>
@@ -68,35 +94,22 @@ export const RecordsList = (props: RecordsListProps) => {
 
 const LabelValue = ({ label, value }: { label: string; value: string | number }) => (
   <>
-    <Text size={10} italic>
-      {label}
-    </Text>
-    <Text size={10} weight={"bold"} mr={10}>
+    <Text size={12}>{label}</Text>
+    <Text size={12} weight={"bold"} mr={8}>
       {value}
     </Text>
   </>
 );
 
 const KafkaRecordCard = ({
+  record,
   index,
   style,
-  fetchRecord,
 }: {
+  record: KafkaRecord;
   index: number;
   style: React.CSSProperties;
-  fetchRecord: (rowIndex: number) => Promise<KafkaRecord>;
 }) => {
-  const [record, setRecord] = useState<KafkaRecord>({
-    key: "...",
-    payload: "...",
-    partition: -1,
-    offset: -1,
-    timestamp: undefined,
-  });
-
-  useEffect(() => {
-    fetchRecord(index).then((r) => setRecord(r));
-  }, [fetchRecord, index]);
   const timestamp = record?.timestamp ? dayjs(record.timestamp).toISOString() : "N/A";
   return (
     <Paper
@@ -104,8 +117,8 @@ const KafkaRecordCard = ({
       p={5}
       withBorder
       style={{ ...style, maxHeight: RECORD_PAGE_HEIGHT - 5, width: "calc(100% - 20px)" }}>
-      <Text weight={"bold"} size={12}>
-        {record?.key}
+      <Text weight={"bold"} size={13}>
+        {index} - {record?.key}
       </Text>
       <Group spacing={0} noWrap={true} style={{ height: 12 }}>
         <LabelValue label="partition: " value={record?.partition} />

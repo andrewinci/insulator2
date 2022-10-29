@@ -1,7 +1,7 @@
 import { ActionIcon, Badge, Button, Center, Container, Divider, Group, Loader, Tooltip } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons";
 import { RecordsList } from "./record-list";
-import { getConsumerState, getRecord, stopConsumer } from "../../tauri/consumer";
+import { getConsumerState, stopConsumer } from "../../tauri/consumer";
 import { PageHeader } from "../../components";
 import { openConsumerModal } from "./consumer-modal";
 import { useQuery } from "@tanstack/react-query";
@@ -11,7 +11,7 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
   const { data, isLoading } = useQuery(
     ["getConsumerState", clusterId, topicName],
     () => getConsumerState(clusterId, topicName),
-    { refetchInterval: 200 }
+    { refetchInterval: 500 }
   );
 
   const { data: estimatedRecord } = useQuery(["getLastOffsets", clusterId, topicName], () =>
@@ -70,9 +70,10 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
             {/* <SearchInput/> */}
           </Group>
           <RecordsList
+            clusterId={clusterId}
+            topic={topicName}
             heightOffset={140}
-            itemCount={data.recordCount}
-            fetchRecord={(index) => getRecord(index, clusterId, topicName)}
+            totalRecordsCount={data.recordCount}
           />
         </>
       )}

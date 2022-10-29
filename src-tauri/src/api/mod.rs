@@ -5,6 +5,7 @@ mod error;
 mod notification;
 pub mod schema_registry;
 mod state;
+mod types;
 
 // pub use notification::notify_error;
 pub use state::AppState;

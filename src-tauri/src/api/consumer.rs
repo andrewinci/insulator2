@@ -1,12 +1,14 @@
-use log::warn;
+use futures::future::join_all;
+use log::{debug, warn};
 
 use crate::lib::{
     consumer::{types::ConsumerState, Consumer, ConsumerOffsetConfiguration},
     parser::{Parser, ParserMode},
-    types::ParsedKafkaRecord,
+    types::{ParsedKafkaRecord, RawKafkaRecord},
+    Cluster,
 };
 
-use super::{error::Result, AppState};
+use super::{error::Result, types::GetPageResponse, AppState};
 
 #[tauri::command]
 pub async fn start_consumer(
@@ -57,5 +59,50 @@ pub async fn get_record(
             Ok(Some(parsed))
         }
         None => Ok(None),
+    }
+}
+
+#[tauri::command]
+pub async fn get_records_page(
+    cluster_id: &str,
+    topic: &str,
+    page_number: usize,
+    state: tauri::State<'_, AppState>,
+) -> Result<GetPageResponse> {
+    debug!("Get records page");
+    const PAGE_SIZE: usize = 100;
+    let cluster = state.get_cluster(cluster_id).await;
+    let consumer = cluster.get_consumer(topic).await;
+    let consumer_state = consumer.get_consumer_state().await;
+
+    //todo: pages should be handled upstream in the consumer
+    let page = consumer.get_page(page_number).await;
+    let parsed: Vec<_> = page
+        .iter()
+        .map(|r| async { to_parsed_record(&cluster, r).await })
+        .collect();
+    debug!("Retrieved and parsed {} records", parsed.len());
+    Ok(GetPageResponse {
+        records: join_all(parsed).await,
+        next_page: if (consumer_state.record_count - PAGE_SIZE * page_number) > 0 {
+            Some(page_number + 1)
+        } else {
+            None
+        },
+        prev_page: if page_number >= 1 { Some(page_number - 1) } else { None },
+    })
+}
+
+async fn to_parsed_record(cluster: &Cluster, r: &RawKafkaRecord) -> ParsedKafkaRecord {
+    let avro_record = cluster.parser.parse_record(r, ParserMode::Avro).await;
+    match avro_record {
+        Ok(res) => res,
+        Err(_) => {
+            warn!(
+                "Unable to parse record with avro. Topic: {}, Partition: {}, Offset : {}",
+                r.topic, r.partition, r.offset
+            );
+            cluster.parser.parse_record(r, ParserMode::String).await.unwrap()
+        }
     }
 }
