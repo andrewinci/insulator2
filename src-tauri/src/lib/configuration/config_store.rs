@@ -28,11 +28,11 @@ impl ConfigStore {
 
     pub fn write_configuration(&self, configuration: &InsulatorConfig) -> Result<()> {
         // validate input
-        configuration.clusters.iter().for_each(|c|{
-            assert!(c.endpoint.len() > 0);
+        configuration.clusters.iter().for_each(|c| {
+            assert!(c.endpoint.is_empty());
             match &c.schema_registry {
-                Some(c) => assert!(c.endpoint.len() > 0),
-                None => {},
+                Some(c) => assert!(c.endpoint.is_empty()),
+                None => {}
             };
         });
         let config_path = config_path();
