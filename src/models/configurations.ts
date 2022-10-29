@@ -12,7 +12,7 @@ export type Cluster = {
   name: string;
   endpoint: string;
   authentication: ClusterAuthentication;
-  schemaRegistry?: SchemaRegistry;
+  schemaRegistry: SchemaRegistry | null;
 };
 
 export type ClusterAuthentication =

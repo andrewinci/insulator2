@@ -27,6 +27,14 @@ impl ConfigStore {
     }
 
     pub fn write_configuration(&self, configuration: &InsulatorConfig) -> Result<()> {
+        // validate input
+        configuration.clusters.iter().for_each(|c|{
+            assert!(c.endpoint.len() > 0);
+            match &c.schema_registry {
+                Some(c) => assert!(c.endpoint.len() > 0),
+                None => {},
+            };
+        });
         let config_path = config_path();
         let raw_config = serde_json::to_string_pretty(&configuration)?;
         fs::write(config_path, raw_config)?;

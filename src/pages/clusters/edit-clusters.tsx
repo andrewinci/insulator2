@@ -88,10 +88,11 @@ function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
   const schemaRegistry = cluster.schemaRegistry ?? { endpoint: "", password: "", username: "" };
   let type: AuthenticationFormType = "None";
   let sasl: SaslFormType = { username: "", password: "", scram: false };
-  let ssl: SslFormType | undefined;
+  let ssl: SslFormType = { ca: "", certificate: "", key: "", keyPassword: undefined };
   if (authentication == "None") type = "None";
   else if ("Sasl" in authentication) {
     type = "SASL";
+
     sasl = authentication.Sasl;
   } else if ("Ssl" in authentication) {
     type = "SSL";
@@ -119,11 +120,19 @@ function mapFormToCluster(c: ClusterFormType): Cluster {
     default:
       throw "Not supported";
   }
+  const nonEmptyOrUndefined = (v: string | undefined): string | undefined => ((v?.length ?? 0) > 0 ? v : undefined);
   return {
     id: uuid(),
     name: c.name,
     endpoint: c.endpoint,
     authentication,
-    schemaRegistry: c.schemaRegistry,
+    schemaRegistry:
+      c.schemaRegistry && c.schemaRegistry.endpoint
+        ? {
+            ...c.schemaRegistry,
+            username: nonEmptyOrUndefined(c.schemaRegistry.username),
+            password: nonEmptyOrUndefined(c.schemaRegistry.password),
+          }
+        : null,
   };
 }
