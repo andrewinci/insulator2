@@ -107,6 +107,8 @@ impl TopicAdmin for KafkaAdmin {
             .admin_client
             .create_topics(vec![&new_topic], &AdminOptions::default())
             .await?;
+        // delete cache of topics/partitions map
+        *self.all_topic_partition_list.lock().unwrap() = TopicPartitionList::new();
         let res = res.get(0).expect("Create topic: missing result");
         match res {
             Ok(_) => {
