@@ -57,8 +57,11 @@ const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; clo
       <TextInput
         required
         value={state.name}
-        onChange={(event) => setState((s) => ({ ...s, name: event.currentTarget.value }))}
-        label="Consumer group name"></TextInput>
+        onChange={(event) => {
+          if (event && event.target) setState((s) => ({ ...s, name: event?.target?.value }));
+        }}
+        label="Consumer group name"
+      />
       <Text mt={10} size={15}>
         Set offset
       </Text>
