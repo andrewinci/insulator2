@@ -84,7 +84,7 @@ pub async fn get_records_page(
     debug!("Retrieved and parsed {} records", parsed.len());
     Ok(GetPageResponse {
         records: join_all(parsed).await,
-        next_page: if (consumer_state.record_count - PAGE_SIZE * page_number) > 0 {
+        next_page: if (consumer_state.record_count as i64 - (PAGE_SIZE * page_number) as i64) > 0 {
             Some(page_number + 1)
         } else {
             None
