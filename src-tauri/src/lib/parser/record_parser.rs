@@ -52,18 +52,20 @@ where
             partition,
             offset,
         } = record.clone();
-        let avro_parser = self.avro_parser.as_ref().ok_or(Error::AvroParse {
-            message: "Missing avro parser".into(),
-        })?;
         let (key, payload) = match mode {
             ParserMode::String => (key.map(|v| parse_string(&v)), payload.map(|v| parse_string(&v))),
-            ParserMode::Avro => (
-                key.map(|v| parse_string(&v)),
-                match payload {
-                    Some(v) => Some(avro_parser.parse_payload(&v).await?),
-                    None => None,
-                },
-            ),
+            ParserMode::Avro => {
+                let avro_parser = self.avro_parser.as_ref().ok_or(Error::AvroParse {
+                    message: "Missing avro parser".into(),
+                })?;
+                (
+                    key.map(|v| parse_string(&v)),
+                    match payload {
+                        Some(v) => Some(avro_parser.parse_payload(&v).await?),
+                        None => None,
+                    },
+                )
+            }
         };
         Ok(ParsedKafkaRecord {
             key,

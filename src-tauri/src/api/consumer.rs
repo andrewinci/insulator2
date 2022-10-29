@@ -94,15 +94,19 @@ pub async fn get_records_page(
 }
 
 async fn to_parsed_record(cluster: &Cluster, r: &RawKafkaRecord) -> ParsedKafkaRecord {
-    let avro_record = cluster.parser.parse_record(r, ParserMode::Avro).await;
-    match avro_record {
-        Ok(res) => res,
-        Err(_) => {
-            warn!(
-                "Unable to parse record with avro. Topic: {}, Partition: {}, Offset : {}",
-                r.topic, r.partition, r.offset
-            );
-            cluster.parser.parse_record(r, ParserMode::String).await.unwrap()
+    if cluster.schema_registry_client.is_some() {
+        let avro_record = cluster.parser.parse_record(r, ParserMode::Avro).await;
+        match avro_record {
+            Ok(res) => res,
+            Err(_) => {
+                warn!(
+                    "Unable to parse record with avro. Topic: {}, Partition: {}, Offset : {}",
+                    r.topic, r.partition, r.offset
+                );
+                cluster.parser.parse_record(r, ParserMode::String).await.unwrap()
+            }
         }
+    } else {
+        cluster.parser.parse_record(r, ParserMode::String).await.unwrap()
     }
 }
