@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { Paper, Text, Group } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { KafkaRecord } from "../../models/kafka";
 
