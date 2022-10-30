@@ -1,8 +1,8 @@
-use super::{types::ParsedKafkaRecord, Result};
-use rusqlite::{named_params, Connection, Error as SqlError, ToSql};
-use std::{fmt::format, sync::Arc};
+use crate::lib::{types::ParsedKafkaRecord, Result};
+use rusqlite::{named_params, Connection};
+use std::sync::Arc;
 
-struct RawStore {
+pub struct RawStore {
     conn: Arc<Connection>,
 }
 
@@ -50,7 +50,6 @@ impl RawStore {
             )
             .as_str(),
             named_params! {
-                //":topicName": &RecordStore::get_table_name(cluster_id, topic_name),
                 ":partition": &record.partition,
                 ":offset": &record.offset,
                 ":timestamp": &record.timestamp,
@@ -95,7 +94,9 @@ impl RawStore {
 
 #[cfg(test)]
 mod tests {
-    use crate::lib::record_store::RawStore;
+    use crate::lib::types::ParsedKafkaRecord;
+
+    use super::RawStore;
 
     #[test]
     fn test_create_table() {
@@ -108,7 +109,7 @@ mod tests {
     fn test_insert_record() {
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = RawStore::new();
-        let test_record = crate::lib::types::ParsedKafkaRecord {
+        let test_record = ParsedKafkaRecord {
             payload: Some("example payload".to_string()),
             key: Some("key".into()),
             topic: topic_name.into(),
