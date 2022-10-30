@@ -26,6 +26,7 @@ env_logger = { version = "0.9.0" }
 async-trait = "0.1.58"
 num-bigint = "0.4"
 rust_decimal = "1.26"
+rusqlite = { version = "0.28.0", features = ["bundled"] }
 
 [target.'cfg(windows)'.dependencies]
 rdkafka = { version = "0.27", features = ["cmake-build", "ssl-vendored"] } #todo: add "gssapi" to use scram on windows
