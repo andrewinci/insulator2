@@ -69,12 +69,7 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
             </Button>
             {/* <SearchInput/> */}
           </Group>
-          <RecordsList
-            clusterId={clusterId}
-            topic={topicName}
-            heightOffset={140}
-            totalRecordsCount={data.recordCount}
-          />
+          <RecordsList clusterId={clusterId} topic={topicName} heightOffset={140} />
         </>
       )}
     </Container>

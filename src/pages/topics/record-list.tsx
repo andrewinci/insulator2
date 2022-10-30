@@ -11,25 +11,24 @@ import { getRecordsPage } from "../../tauri/consumer";
 type RecordsListProps = {
   clusterId: string;
   topic: string;
-  totalRecordsCount: number;
   heightOffset?: number;
 };
 
 const RECORD_PAGE_HEIGHT = 135;
 
 export const RecordsList = (props: RecordsListProps) => {
-  const { clusterId, topic, heightOffset, totalRecordsCount } = props;
+  const { clusterId, topic, heightOffset } = props;
   const [state, setState] = useState<{ windowHeight: number }>({ windowHeight: window.innerHeight });
 
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery(
-    ["fetchRecords", clusterId, topic, totalRecordsCount],
+    ["fetchRecords", clusterId, topic],
     async ({ pageParam = 0 }) => await getRecordsPage(clusterId, topic, pageParam ?? 0),
     {
       getNextPageParam: (lastPage, _) => lastPage.nextPage,
       getPreviousPageParam: (firstPage, _) => firstPage.prevPage,
+      refetchInterval: 500,
     }
   );
-
   const allRecords = data ? data.pages.flatMap((d) => d.records) : [];
 
   useEffect(() => {
