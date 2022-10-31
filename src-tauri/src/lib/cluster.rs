@@ -41,20 +41,17 @@ impl Clone for Cluster<CachedSchemaRegistry> {
 
 impl Cluster {
     pub fn new(config: &ClusterConfig) -> Self {
-        let (schema_registry_client, parser) = if let Some(SchemaRegistryConfig {
-            endpoint,
-            username,
-            password,
-        }) = &config.schema_registry
-        {
-            let ptr = Arc::new(CachedSchemaRegistry::new(
-                endpoint,
-                username.as_deref(),
-                password.as_deref(),
-            ));
-            (Some(ptr.clone()), RecordParser::new(Some(ptr)))
-        } else {
-            (None, RecordParser::new(None))
+        let (schema_registry_client, parser) = {
+            if let Some(s_config) = &config.schema_registry {
+                let ptr = Arc::new(CachedSchemaRegistry::new(
+                    s_config.endpoint.as_str(),
+                    s_config.username.as_deref(),
+                    s_config.password.as_deref(),
+                ));
+                (Some(ptr.clone()), RecordParser::new(Some(ptr)))
+            } else {
+                (None, RecordParser::new(None))
+            }
         };
         Cluster {
             config: config.clone(),

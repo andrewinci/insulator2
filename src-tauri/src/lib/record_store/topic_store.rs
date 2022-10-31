@@ -1,5 +1,5 @@
+use crate::lib::{types::ParsedKafkaRecord, Result};
 use std::sync::Arc;
-use crate::lib::{Result, types::ParsedKafkaRecord};
 
 use super::raw_store::RawStore;
 
