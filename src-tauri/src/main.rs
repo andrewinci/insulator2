@@ -9,7 +9,7 @@ use crate::api::{
         list_consumer_groups, list_topics, set_consumer_group,
     },
     configuration::{get_configuration, write_configuration},
-    consumer::{get_consumer_state, get_record, get_records_page, start_consumer, stop_consumer},
+    consumer::{get_consumer_state, get_records_page, start_consumer, stop_consumer},
     schema_registry::{get_subject, list_subjects},
 };
 use api::AppState;
@@ -22,7 +22,6 @@ fn main() {
             // consumer
             start_consumer,
             stop_consumer,
-            get_record,
             get_consumer_state,
             get_records_page,
             // schema

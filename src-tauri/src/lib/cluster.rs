@@ -5,9 +5,10 @@ use log::debug;
 
 use crate::lib::{
     admin::{Admin, KafkaAdmin},
-    configuration::{ClusterConfig, SchemaRegistryConfig},
+    configuration::ClusterConfig,
     consumer::{Consumer, KafkaConsumer},
     parser::{Parser, RecordParser},
+    record_store::TopicRecordStore,
     schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
 };
 
@@ -26,6 +27,7 @@ where
     pub schema_registry_client: Option<Arc<SR>>,
     pub admin_client: Arc<A>,
     pub parser: Arc<P>,
+    pub store: Arc<RawStore>,
     consumers: Arc<Mutex<HashMap<TopicName, Arc<C>>>>,
 }
 
@@ -37,6 +39,7 @@ impl Clone for Cluster<CachedSchemaRegistry> {
             consumers: self.consumers.clone(),
             admin_client: self.admin_client.clone(),
             parser: self.parser.clone(),
+            store: self.store.clone(),
         }
     }
 }
@@ -61,23 +64,21 @@ impl Cluster {
             consumers: Arc::new(Mutex::new(HashMap::new())),
             admin_client: Arc::new(KafkaAdmin::new(config)),
             parser: Arc::new(parser),
+            store: Arc::new(RawStore::new()),
         }
     }
 
-    pub async fn build_consumer(&self, topic_name: &str) -> Arc<KafkaConsumer> {
-        //todo: inject
-        let store = RawStore::new();
+    pub async fn get_consumer(&self, topic_name: &str) -> Arc<KafkaConsumer> {
         let mut consumers = self.consumers.lock().await;
         if consumers.get(topic_name).is_none() {
             debug!("Create consumer for topic {}", topic_name);
             // create a new table for the consumer
-            store
-                .create_topic_table(&self.config.id, topic_name)
-                .await
-                .expect("Unable to create the table for the new consumer");
+            let topic_store =
+                TopicRecordStore::from_raw_store(self.store.clone(), self.parser.clone(), &self.config.id, topic_name)
+                    .await;
             consumers.insert(
                 topic_name.to_string(),
-                Arc::new(KafkaConsumer::new(&self.config, topic_name, Arc::new(store))),
+                Arc::new(KafkaConsumer::new(&self.config, topic_name, topic_store)),
             );
         }
         consumers.get(topic_name).expect("the consumer must exists").clone()

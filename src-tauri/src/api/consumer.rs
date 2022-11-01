@@ -1,12 +1,6 @@
-use futures::future::join_all;
-use log::{debug, warn};
+use log::trace;
 
-use crate::lib::{
-    consumer::{types::ConsumerState, Consumer, ConsumerOffsetConfiguration},
-    parser::{Parser, ParserMode},
-    types::{ParsedKafkaRecord, RawKafkaRecord},
-    Cluster,
-};
+use crate::lib::consumer::{types::ConsumerState, Consumer, ConsumerOffsetConfiguration};
 
 use super::{error::Result, types::GetPageResponse, AppState};
 
@@ -17,7 +11,7 @@ pub async fn start_consumer(
     offset_config: ConsumerOffsetConfiguration,
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
-    let consumer = state.get_cluster(cluster_id).await.build_consumer(topic).await;
+    let consumer = state.get_cluster(cluster_id).await.get_consumer(topic).await;
     Ok(consumer.start(&offset_config).await?)
 }
 
@@ -27,39 +21,14 @@ pub async fn get_consumer_state(
     topic: &str,
     state: tauri::State<'_, AppState>,
 ) -> Result<ConsumerState> {
-    let consumer = state.get_cluster(cluster_id).await.build_consumer(topic).await;
-    Ok(consumer.get_consumer_state().await)
+    let consumer = state.get_cluster(cluster_id).await.get_consumer(topic).await;
+    Ok(consumer.get_consumer_state().await?)
 }
 
 #[tauri::command]
 pub async fn stop_consumer(cluster_id: &str, topic: &str, state: tauri::State<'_, AppState>) -> Result<()> {
-    let consumer = state.get_cluster(cluster_id).await.build_consumer(topic).await;
+    let consumer = state.get_cluster(cluster_id).await.get_consumer(topic).await;
     Ok(consumer.stop().await?)
-}
-
-#[tauri::command]
-pub async fn get_record(
-    index: usize,
-    cluster_id: &str,
-    topic: &str,
-    state: tauri::State<'_, AppState>,
-) -> Result<Option<ParsedKafkaRecord>> {
-    let cluster = state.get_cluster(cluster_id).await;
-    let consumer = cluster.build_consumer(topic).await;
-    match consumer.get_record(index).await {
-        Some(r) => {
-            let avro_record = cluster.parser.parse_record(&r, ParserMode::Avro).await;
-            let parsed = match avro_record {
-                Ok(res) => res,
-                Err(_) => {
-                    warn!("Unable to parse record with avro. Topic: {} Index : {}", topic, index);
-                    cluster.parser.parse_record(&r, ParserMode::String).await?
-                }
-            };
-            Ok(Some(parsed))
-        }
-        None => Ok(None),
-    }
 }
 
 #[tauri::command]
@@ -69,44 +38,21 @@ pub async fn get_records_page(
     page_number: usize,
     state: tauri::State<'_, AppState>,
 ) -> Result<GetPageResponse> {
-    debug!("Get records page");
+    trace!("Get records page");
     const PAGE_SIZE: usize = 100;
     let cluster = state.get_cluster(cluster_id).await;
-    let consumer = cluster.build_consumer(topic).await;
-    let consumer_state = consumer.get_consumer_state().await;
-
-    //todo: pages should be handled upstream in the consumer
-    let page = consumer.get_page(page_number).await;
-    let parsed: Vec<_> = page
-        .iter()
-        .map(|r| async { to_parsed_record(&cluster, r).await })
-        .collect();
-    debug!("Retrieved and parsed {} records", parsed.len());
+    let consumer = cluster.get_consumer(topic).await;
+    let topic_store = consumer.records_store.clone();
+    let records_count = topic_store.get_size().await?;
     Ok(GetPageResponse {
-        records: join_all(parsed).await,
-        next_page: if (consumer_state.record_count as i64 - (PAGE_SIZE * page_number) as i64) > 0 {
+        records: topic_store
+            .get_records((page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64)
+            .await?,
+        next_page: if (records_count as i64 - (PAGE_SIZE * page_number) as i64) > 0 {
             Some(page_number + 1)
         } else {
             None
         },
         prev_page: if page_number >= 1 { Some(page_number - 1) } else { None },
     })
-}
-
-async fn to_parsed_record(cluster: &Cluster, r: &RawKafkaRecord) -> ParsedKafkaRecord {
-    if cluster.schema_registry_client.is_some() {
-        let avro_record = cluster.parser.parse_record(r, ParserMode::Avro).await;
-        match avro_record {
-            Ok(res) => res,
-            Err(_) => {
-                warn!(
-                    "Unable to parse record with avro. Topic: {}, Partition: {}, Offset : {}",
-                    r.topic, r.partition, r.offset
-                );
-                cluster.parser.parse_record(r, ParserMode::String).await.unwrap()
-            }
-        }
-    } else {
-        cluster.parser.parse_record(r, ParserMode::String).await.unwrap()
-    }
 }

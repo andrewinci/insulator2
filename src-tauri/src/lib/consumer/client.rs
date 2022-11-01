@@ -1,11 +1,11 @@
-use std::{ops::Not, os::macos::raw, sync::Arc, time::Duration};
+use std::{ops::Not, sync::Arc, time::Duration};
 
 use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     consumer::types::{ConsumerOffsetConfiguration, ConsumerState},
     error::{Error, Result},
-    record_store::{RawStore, TopicRecordStore},
-    types::{ParsedKafkaRecord, RawKafkaRecord},
+    record_store::TopicRecordStore,
+    types::RawKafkaRecord,
 };
 use async_trait::async_trait;
 use futures::{lock::Mutex, StreamExt};
@@ -21,21 +21,18 @@ use tauri::async_runtime::JoinHandle;
 pub trait Consumer {
     async fn start(&self, offset_config: &ConsumerOffsetConfiguration) -> Result<()>;
     async fn stop(&self) -> Result<()>;
-    async fn get_page(&self, page: usize) -> Vec<RawKafkaRecord>;
-    async fn get_record(&self, index: usize) -> Option<RawKafkaRecord>;
-    async fn get_consumer_state(&self) -> ConsumerState;
+    async fn get_consumer_state(&self) -> Result<ConsumerState>;
 }
 
 pub struct KafkaConsumer {
     topic: String,
     consumer: Arc<Mutex<StreamConsumer>>,
     loop_handle: Arc<Mutex<Vec<JoinHandle<()>>>>,
-    records: Arc<Mutex<Vec<RawKafkaRecord>>>,
-    records_store: Arc<TopicRecordStore>,
+    pub records_store: Arc<TopicRecordStore>,
 }
 
 impl KafkaConsumer {
-    pub fn new(cluster_config: &ClusterConfig, topic: &str, raw_store: Arc<RawStore>) -> Self {
+    pub fn new(cluster_config: &ClusterConfig, topic: &str, records_store: TopicRecordStore) -> Self {
         let consumer: StreamConsumer = build_kafka_client_config(cluster_config, None)
             .create()
             .expect("Unable to create kafka the consumer");
@@ -43,8 +40,7 @@ impl KafkaConsumer {
             consumer: Arc::new(Mutex::new(consumer)),
             topic: topic.to_string(),
             loop_handle: Arc::new(Mutex::new(vec![])),
-            records: Arc::new(Mutex::new(Vec::new())),
-            records_store: Arc::new(TopicRecordStore::new(raw_store, &cluster_config.id, topic)),
+            records_store: Arc::new(records_store),
         }
     }
 }
@@ -62,7 +58,6 @@ impl Consumer for KafkaConsumer {
         // setup the consumer to run from
         self.internal_setup_consumer(offset_config).await?;
         // clone arcs for the closure below
-        let records = self.records.clone();
         let consumer = self.consumer.clone();
         let handle = self.loop_handle.clone();
         let store = self.records_store.clone();
@@ -72,30 +67,16 @@ impl Consumer for KafkaConsumer {
             .lock()
             .await
             .push(tauri::async_runtime::spawn(async move {
-                {
-                    // clear before starting the loop
-                    records.lock().await.clear();
-                }
+                // clear the store before starting the loop
+                store.clear().await.expect("Unable to clear the table");
                 // infinite consumer loop
                 debug!("Start consumer loop");
                 loop {
                     match consumer.lock().await.stream().next().await {
                         Some(Ok(msg)) => {
                             trace!("New record from {}", topic);
-                            records
-                                .clone()
-                                .lock()
-                                .await
-                                .push(KafkaConsumer::map_kafka_record(&msg.detach()));
                             store
-                                .insert_record(&ParsedKafkaRecord {
-                                    payload: Some("example payload".to_string()),
-                                    key: Some("key".into()),
-                                    topic: topic.clone().into(),
-                                    timestamp: Some(321123321),
-                                    partition: 2,
-                                    offset: 123,
-                                })
+                                .insert_record(&KafkaConsumer::map_kafka_record(&msg.detach()))
                                 .await
                                 .expect("Unable to insert the new record in store");
                         }
@@ -118,28 +99,11 @@ impl Consumer for KafkaConsumer {
         KafkaConsumer::_stop(self.loop_handle.clone()).await
     }
 
-    async fn get_record(&self, index: usize) -> Option<RawKafkaRecord> {
-        self.records.clone().lock().await.get(index).cloned()
-    }
-
-    async fn get_page(&self, page: usize) -> Vec<RawKafkaRecord> {
-        const PAGE_SIZE: usize = 100;
-        self.records
-            .clone()
-            .lock()
-            .await
-            .iter()
-            .skip(PAGE_SIZE * page)
-            .take(PAGE_SIZE)
-            .map(|r| r.to_owned())
-            .collect()
-    }
-
-    async fn get_consumer_state(&self) -> ConsumerState {
-        ConsumerState {
+    async fn get_consumer_state(&self) -> Result<ConsumerState> {
+        Ok(ConsumerState {
             is_running: self.loop_handle.clone().lock().await.is_empty().not(),
-            record_count: self.records.lock().await.len(),
-        }
+            record_count: self.records_store.get_size().await?,
+        })
     }
 }
 

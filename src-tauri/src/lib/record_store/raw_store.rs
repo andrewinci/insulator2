@@ -1,4 +1,4 @@
-use crate::lib::{types::ParsedKafkaRecord, Result};
+use crate::lib::{types::ParsedKafkaRecord, Error, Result};
 use futures::lock::Mutex;
 use rusqlite::{named_params, Connection};
 use std::sync::Arc;
@@ -33,7 +33,7 @@ impl RawStore {
                 .as_str(),
                 [],
             )
-            .expect(format!("Unable to create the table for {} {}", cluster_id, topic_name).as_str());
+            .unwrap_or_else(|_| panic!("Unable to create the table for {} {}", cluster_id, topic_name));
         Ok(())
     }
 
@@ -91,6 +91,32 @@ impl RawStore {
         Ok(records)
     }
 
+    pub async fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize> {
+        let connection = self.conn.lock().await;
+        let mut stmt = connection
+            .prepare(format!("SELECT count(*) FROM {}", Self::get_table_name(cluster_id, topic_name)).as_str())?;
+        let rows: Vec<_> = stmt.query_map([], |row| row.get::<_, i64>(0))?.collect();
+        if let Some(Ok(size)) = rows.first() {
+            Ok(*size as usize)
+        } else {
+            Err(Error::SqlError {
+                message: "Unable to get the table size".into(),
+            })
+        }
+    }
+
+    pub async fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
+        self.conn
+            .lock()
+            .await
+            .execute(
+                format!("DELETE FROM {}", Self::get_table_name(cluster_id, topic_name)).as_str(),
+                [],
+            )
+            .unwrap_or_else(|_| panic!("Unable to create the table for {} {}", cluster_id, topic_name));
+        Ok(())
+    }
+
     fn get_table_name(cluster_id: &str, topic_name: &str) -> String {
         format!("\'[{}].[{}]\'", cluster_id, topic_name)
     }
@@ -128,6 +154,24 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_get_size() {
+        // arrange
+        let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
+        let db = RawStore::new();
+        db.create_topic_table(&cluster_id, &topic_name)
+            .await
+            .expect("Unable to create the table");
+        let test_record = get_test_record(topic_name);
+        // act
+        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
+        let table_size = db.get_size(cluster_id, topic_name).await.unwrap();
+        // assert
+        assert_eq!(table_size, 3);
+    }
+
+    #[tokio::test]
     async fn test_use_offset() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
@@ -137,15 +181,9 @@ mod tests {
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name);
         // act
-        db.insert_record(cluster_id, topic_name, &test_record)
-            .await
-            .expect("Unable to insert the test record");
-        db.insert_record(cluster_id, topic_name, &test_record)
-            .await
-            .expect("Unable to insert the test record");
-        db.insert_record(cluster_id, topic_name, &test_record)
-            .await
-            .expect("Unable to insert the test record");
+        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
         let first_1000_res = db.get_records(cluster_id, topic_name, 0, 1000).await.unwrap();
         let first_res = db.get_records(cluster_id, topic_name, 1, 1).await.unwrap();
         let no_res = db.get_records(cluster_id, topic_name, 3, 1000).await.unwrap();
