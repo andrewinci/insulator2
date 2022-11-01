@@ -1501,9 +1501,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tabler/icons@npm:^1.108.0":
-  version: 1.108.0
-  resolution: "@tabler/icons@npm:1.108.0"
+"@tabler/icons@npm:^1.109.0":
+  version: 1.109.0
+  resolution: "@tabler/icons@npm:1.109.0"
   peerDependencies:
     react: ^16.x || 17.x || 18.x
     react-dom: ^16.x || 17.x || 18.x
@@ -1512,7 +1512,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 1756729cfc31a53bafb5a08e3d3073061970e188b2ba48901b16ade23fda4a8bac5508419af64d64a4fa6220cce8fcef7e980892bf7abc5898846b9166d385fb
+  checksum: 920d5f34ea92f360c5cd05d1328f83b333dce630113d4d786a0a7df109e1c96435997d0e26523168320b66e4b41e7583d9ba8133a26dca38a107dcb64833ae9c
   languageName: node
   linkType: hard
 
@@ -4582,7 +4582,7 @@ __metadata:
     "@semantic-release/git": ^10.0.1
     "@semantic-release/github": ^8.0.6
     "@semantic-release/release-notes-generator": ^10.0.3
-    "@tabler/icons": ^1.108.0
+    "@tabler/icons": ^1.109.0
     "@tanstack/react-query": ^4.13.0
     "@tanstack/react-virtual": ^3.0.0-beta.18
     "@tauri-apps/api": ^1.1.0
