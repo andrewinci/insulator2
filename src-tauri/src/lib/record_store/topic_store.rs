@@ -18,9 +18,9 @@ impl TopicRecordStore {
         }
     }
 
-    pub async fn get_records(&self, max: i64) -> Result<Vec<ParsedKafkaRecord>> {
+    pub async fn get_records(&self, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>> {
         self.raw_store
-            .get_records(&self.cluster_id, &self.topic_name, max)
+            .get_records(&self.cluster_id, &self.topic_name, offset, limit)
             .await
     }
 

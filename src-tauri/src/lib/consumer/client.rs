@@ -1,11 +1,11 @@
-use std::{ops::Not, sync::Arc, time::Duration, os::macos::raw};
+use std::{ops::Not, os::macos::raw, sync::Arc, time::Duration};
 
 use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     consumer::types::{ConsumerOffsetConfiguration, ConsumerState},
     error::{Error, Result},
     record_store::{RawStore, TopicRecordStore},
-    types::{RawKafkaRecord, ParsedKafkaRecord},
+    types::{ParsedKafkaRecord, RawKafkaRecord},
 };
 use async_trait::async_trait;
 use futures::{lock::Mutex, StreamExt};
@@ -87,14 +87,17 @@ impl Consumer for KafkaConsumer {
                                 .lock()
                                 .await
                                 .push(KafkaConsumer::map_kafka_record(&msg.detach()));
-                            store.insert_record(&ParsedKafkaRecord {
-                                payload: Some("example payload".to_string()),
-                                key: Some("key".into()),
-                                topic: topic.clone().into(),
-                                timestamp: Some(321123321),
-                                partition: 2,
-                                offset: 123,
-                            }).await.expect("Unable to insert the new record in store");
+                            store
+                                .insert_record(&ParsedKafkaRecord {
+                                    payload: Some("example payload".to_string()),
+                                    key: Some("key".into()),
+                                    topic: topic.clone().into(),
+                                    timestamp: Some(321123321),
+                                    partition: 2,
+                                    offset: 123,
+                                })
+                                .await
+                                .expect("Unable to insert the new record in store");
                         }
                         Some(Err(err)) => {
                             error!("An error occurs consuming from kafka: {}", err);

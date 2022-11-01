@@ -17,15 +17,6 @@ impl RawStore {
     }
 
     pub async fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
-        let query = format!(
-            "CREATE TABLE test (
-                partition   NUMBER,
-                offset      NUMBER,
-                timestamp   NUMBER,
-                key         TEXT,
-                payload     TEXT)"
-        );
-
         self.conn
             .lock()
             .await
@@ -65,13 +56,20 @@ impl RawStore {
         Ok(())
     }
 
-    pub async fn get_records(&self, cluster_id: &str, topic_name: &str, max: i64) -> Result<Vec<ParsedKafkaRecord>> {
+    pub async fn get_records(
+        &self,
+        cluster_id: &str,
+        topic_name: &str,
+        offset: i64,
+        limit: i64,
+    ) -> Result<Vec<ParsedKafkaRecord>> {
         let connection = self.conn.lock().await;
         let mut stmt = connection.prepare(
             format!(
-                "SELECT partition, offset, timestamp, key, payload FROM {} ORDER BY timestamp desc LIMIT {}",
+                "SELECT partition, offset, timestamp, key, payload FROM {} ORDER BY timestamp desc LIMIT {} OFFSET {}",
                 Self::get_table_name(cluster_id, topic_name),
-                max
+                limit,
+                offset
             )
             .as_str(),
         )?;
@@ -112,25 +110,59 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_insert_record() {
+    async fn test_insert_and_get_record() {
+        // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = RawStore::new();
-        let test_record = ParsedKafkaRecord {
+        db.create_topic_table(&cluster_id, &topic_name)
+            .await
+            .expect("Unable to create the table");
+        let test_record = get_test_record(topic_name);
+        // act
+        let res = db.insert_record(cluster_id, topic_name, &test_record).await;
+        let records_back = db.get_records(cluster_id, topic_name, 0, 1000).await.unwrap();
+        // assert
+        assert!(res.is_ok());
+        assert!(records_back.len() == 1);
+        assert_eq!(records_back[0], test_record);
+    }
+
+    #[tokio::test]
+    async fn test_use_offset() {
+        // arrange
+        let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
+        let db = RawStore::new();
+        db.create_topic_table(&cluster_id, &topic_name)
+            .await
+            .expect("Unable to create the table");
+        let test_record = get_test_record(topic_name);
+        // act
+        db.insert_record(cluster_id, topic_name, &test_record)
+            .await
+            .expect("Unable to insert the test record");
+        db.insert_record(cluster_id, topic_name, &test_record)
+            .await
+            .expect("Unable to insert the test record");
+        db.insert_record(cluster_id, topic_name, &test_record)
+            .await
+            .expect("Unable to insert the test record");
+        let first_1000_res = db.get_records(cluster_id, topic_name, 0, 1000).await.unwrap();
+        let first_res = db.get_records(cluster_id, topic_name, 1, 1).await.unwrap();
+        let no_res = db.get_records(cluster_id, topic_name, 3, 1000).await.unwrap();
+        // assert
+        assert_eq!(first_1000_res.len(), 3);
+        assert_eq!(first_res.len(), 1);
+        assert_eq!(no_res.len(), 0);
+    }
+
+    fn get_test_record(topic_name: &str) -> ParsedKafkaRecord {
+        ParsedKafkaRecord {
             payload: Some("example payload".to_string()),
             key: Some("key".into()),
             topic: topic_name.into(),
             timestamp: Some(321123321),
             partition: 2,
             offset: 123,
-        };
-        db.create_topic_table(&cluster_id, &topic_name).await
-            .expect("Unable to create the table");
-
-        let res = db.insert_record(cluster_id, topic_name, &test_record).await;
-        println!("{:?}", res);
-        let records_back = db.get_records(cluster_id, topic_name, 1000).await.unwrap();
-        assert!(res.is_ok());
-        assert!(records_back.len() == 1);
-        assert_eq!(records_back[0], test_record);
+        }
     }
 }
