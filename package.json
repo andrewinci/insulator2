@@ -17,7 +17,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@emotion/react": "^11.10.4",
+    "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@mantine/core": "^5.6.2",
     "@mantine/dates": "^5.6.3",
