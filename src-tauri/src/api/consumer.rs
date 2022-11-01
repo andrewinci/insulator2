@@ -17,7 +17,7 @@ pub async fn start_consumer(
     offset_config: ConsumerOffsetConfiguration,
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
-    let consumer = state.get_cluster(cluster_id).await.get_consumer(topic).await;
+    let consumer = state.get_cluster(cluster_id).await.build_consumer(topic).await;
     Ok(consumer.start(&offset_config).await?)
 }
 
@@ -27,13 +27,13 @@ pub async fn get_consumer_state(
     topic: &str,
     state: tauri::State<'_, AppState>,
 ) -> Result<ConsumerState> {
-    let consumer = state.get_cluster(cluster_id).await.get_consumer(topic).await;
+    let consumer = state.get_cluster(cluster_id).await.build_consumer(topic).await;
     Ok(consumer.get_consumer_state().await)
 }
 
 #[tauri::command]
 pub async fn stop_consumer(cluster_id: &str, topic: &str, state: tauri::State<'_, AppState>) -> Result<()> {
-    let consumer = state.get_cluster(cluster_id).await.get_consumer(topic).await;
+    let consumer = state.get_cluster(cluster_id).await.build_consumer(topic).await;
     Ok(consumer.stop().await?)
 }
 
@@ -45,7 +45,7 @@ pub async fn get_record(
     state: tauri::State<'_, AppState>,
 ) -> Result<Option<ParsedKafkaRecord>> {
     let cluster = state.get_cluster(cluster_id).await;
-    let consumer = cluster.get_consumer(topic).await;
+    let consumer = cluster.build_consumer(topic).await;
     match consumer.get_record(index).await {
         Some(r) => {
             let avro_record = cluster.parser.parse_record(&r, ParserMode::Avro).await;
@@ -72,7 +72,7 @@ pub async fn get_records_page(
     debug!("Get records page");
     const PAGE_SIZE: usize = 100;
     let cluster = state.get_cluster(cluster_id).await;
-    let consumer = cluster.get_consumer(topic).await;
+    let consumer = cluster.build_consumer(topic).await;
     let consumer_state = consumer.get_consumer_state().await;
 
     //todo: pages should be handled upstream in the consumer

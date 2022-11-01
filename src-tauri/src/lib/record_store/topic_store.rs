@@ -18,12 +18,15 @@ impl TopicRecordStore {
         }
     }
 
-    pub fn get_records(&self, max: i64) -> Result<Vec<ParsedKafkaRecord>> {
-        self.raw_store.get_records(&self.cluster_id, &self.topic_name, max)
+    pub async fn get_records(&self, max: i64) -> Result<Vec<ParsedKafkaRecord>> {
+        self.raw_store
+            .get_records(&self.cluster_id, &self.topic_name, max)
+            .await
     }
 
-    pub fn insert_record(&self, record: &ParsedKafkaRecord) -> Result<()> {
+    pub async fn insert_record(&self, record: &ParsedKafkaRecord) -> Result<()> {
         self.raw_store
             .insert_record(&self.cluster_id, &self.topic_name, &record)
+            .await
     }
 }

@@ -1,19 +1,22 @@
 use crate::lib::{types::ParsedKafkaRecord, Result};
+use futures::lock::Mutex;
 use rusqlite::{named_params, Connection};
 use std::sync::Arc;
 
 pub struct RawStore {
-    conn: Arc<Connection>,
+    conn: Arc<Mutex<Connection>>,
 }
 
 impl RawStore {
     pub fn new() -> Self {
         RawStore {
-            conn: Arc::new(Connection::open_in_memory().expect("Unable to initialize the in memory sqlite DB")),
+            conn: Arc::new(Mutex::new(
+                Connection::open_in_memory().expect("Unable to initialize the in memory sqlite DB"),
+            )),
         }
     }
 
-    pub fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
+    pub async fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
         let query = format!(
             "CREATE TABLE test (
                 partition   NUMBER,
@@ -24,6 +27,8 @@ impl RawStore {
         );
 
         self.conn
+            .lock()
+            .await
             .execute(
                 format!(
                     "CREATE TABLE {} (
@@ -41,8 +46,8 @@ impl RawStore {
         Ok(())
     }
 
-    pub fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()> {
-        self.conn.execute(
+    pub async fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()> {
+        self.conn.lock().await.execute(
             format!(
                 "INSERT INTO {} (partition, offset, timestamp, key, payload) 
                 VALUES (:partition, :offset, :timestamp, :key, :payload)",
@@ -60,8 +65,9 @@ impl RawStore {
         Ok(())
     }
 
-    pub fn get_records(&self, cluster_id: &str, topic_name: &str, max: i64) -> Result<Vec<ParsedKafkaRecord>> {
-        let mut stmt = self.conn.prepare(
+    pub async fn get_records(&self, cluster_id: &str, topic_name: &str, max: i64) -> Result<Vec<ParsedKafkaRecord>> {
+        let connection = self.conn.lock().await;
+        let mut stmt = connection.prepare(
             format!(
                 "SELECT partition, offset, timestamp, key, payload FROM {} ORDER BY timestamp desc LIMIT {}",
                 Self::get_table_name(cluster_id, topic_name),
@@ -98,15 +104,15 @@ mod tests {
 
     use super::RawStore;
 
-    #[test]
-    fn test_create_table() {
+    #[tokio::test]
+    async fn test_create_table() {
         let db = RawStore::new();
-        let res = db.create_topic_table("cluster_id_example", "topic_name_example");
+        let res = db.create_topic_table("cluster_id_example", "topic_name_example").await;
         assert!(res.is_ok())
     }
 
-    #[test]
-    fn test_insert_record() {
+    #[tokio::test]
+    async fn test_insert_record() {
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = RawStore::new();
         let test_record = ParsedKafkaRecord {
@@ -117,12 +123,12 @@ mod tests {
             partition: 2,
             offset: 123,
         };
-        db.create_topic_table(&cluster_id, &topic_name)
+        db.create_topic_table(&cluster_id, &topic_name).await
             .expect("Unable to create the table");
 
-        let res = db.insert_record(cluster_id, topic_name, &test_record);
+        let res = db.insert_record(cluster_id, topic_name, &test_record).await;
         println!("{:?}", res);
-        let records_back = db.get_records(cluster_id, topic_name, 1000).unwrap();
+        let records_back = db.get_records(cluster_id, topic_name, 1000).await.unwrap();
         assert!(res.is_ok());
         assert!(records_back.len() == 1);
         assert_eq!(records_back[0], test_record);

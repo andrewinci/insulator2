@@ -11,6 +11,8 @@ use crate::lib::{
     schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
 };
 
+use super::record_store::RawStore;
+
 type TopicName = String;
 
 pub struct Cluster<SR = CachedSchemaRegistry, C = KafkaConsumer, P = RecordParser, A = KafkaAdmin>
@@ -22,9 +24,9 @@ where
 {
     pub config: ClusterConfig,
     pub schema_registry_client: Option<Arc<SR>>,
-    consumers: Arc<Mutex<HashMap<TopicName, Arc<C>>>>,
     pub admin_client: Arc<A>,
     pub parser: Arc<P>,
+    consumers: Arc<Mutex<HashMap<TopicName, Arc<C>>>>,
 }
 
 impl Clone for Cluster<CachedSchemaRegistry> {
@@ -62,13 +64,20 @@ impl Cluster {
         }
     }
 
-    pub async fn get_consumer(&self, topic_name: &str) -> Arc<KafkaConsumer> {
+    pub async fn build_consumer(&self, topic_name: &str) -> Arc<KafkaConsumer> {
+        //todo: inject
+        let store = RawStore::new();
         let mut consumers = self.consumers.lock().await;
         if consumers.get(topic_name).is_none() {
             debug!("Create consumer for topic {}", topic_name);
+            // create a new table for the consumer
+            store
+                .create_topic_table(&self.config.id, topic_name)
+                .await
+                .expect("Unable to create the table for the new consumer");
             consumers.insert(
                 topic_name.to_string(),
-                Arc::new(KafkaConsumer::new(&self.config, topic_name)),
+                Arc::new(KafkaConsumer::new(&self.config, topic_name, Arc::new(store))),
             );
         }
         consumers.get(topic_name).expect("the consumer must exists").clone()
