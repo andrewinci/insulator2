@@ -9,12 +9,6 @@ export const getConsumerState = (clusterId: string, topic: string): Promise<Cons
     throw err;
   });
 
-export const getRecord = (index: number, clusterId: string, topic: string): Promise<KafkaRecord> =>
-  invoke<KafkaRecord>("get_record", { index, clusterId, topic }).catch((err: TauriError) => {
-    addNotification({ type: "error", title: "Get Kafka record", description: format(err) });
-    throw err;
-  });
-
 export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
   invoke<void>("stop_consumer", { clusterId, topic }).catch((err: TauriError) =>
     addNotification({ type: "error", title: "Stop Kafka record", description: format(err) })
