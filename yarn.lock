@@ -718,20 +718,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/core@npm:^5.6.2":
-  version: 5.6.2
-  resolution: "@mantine/core@npm:5.6.2"
+"@mantine/core@npm:^5.6.3":
+  version: 5.6.3
+  resolution: "@mantine/core@npm:5.6.3"
   dependencies:
     "@floating-ui/react-dom-interactions": ^0.10.1
-    "@mantine/styles": 5.6.2
-    "@mantine/utils": 5.6.2
+    "@mantine/styles": 5.6.3
+    "@mantine/utils": 5.6.3
     "@radix-ui/react-scroll-area": 1.0.0
     react-textarea-autosize: 8.3.4
   peerDependencies:
-    "@mantine/hooks": 5.6.2
+    "@mantine/hooks": 5.6.3
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: b5bbe039747b183e1fc6ce9b9bfdd54f57fb5c8b7cc18d65303b1d58df09bc80d281e24d69d4b10fbe8fae755f1254defc839f0d81f86c7cfaaf9bb1ce4920e5
+  checksum: 58badc6009d389d9bbc0e3614cebc4ec31c97b6e43ed65d6f0918e96e8e4d40d45fe13d0f2b7d1970657b6eb6e18b2d29006325bd0b15d6e2423b872ee1e8718
   languageName: node
   linkType: hard
 
@@ -814,9 +814,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/styles@npm:5.6.2":
-  version: 5.6.2
-  resolution: "@mantine/styles@npm:5.6.2"
+"@mantine/styles@npm:5.6.3":
+  version: 5.6.3
+  resolution: "@mantine/styles@npm:5.6.3"
   dependencies:
     clsx: 1.1.1
     csstype: 3.0.9
@@ -824,16 +824,7 @@ __metadata:
     "@emotion/react": ">=11.9.0"
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: afca10958090e268ae63fde1957f2a7a079d9b4173c7a6df89c3b94c6e011032354923130064ee744489fc9ea75598afca82404d27934a49e86b4cb92a0d9630
-  languageName: node
-  linkType: hard
-
-"@mantine/utils@npm:5.6.2":
-  version: 5.6.2
-  resolution: "@mantine/utils@npm:5.6.2"
-  peerDependencies:
-    react: ">=16.8.0"
-  checksum: 14c2f671a268d81cbee2ffbb45e9f41549f68b8fafd8c712955e70e23840db7bde275d4ee03133bf05152537ce0f468db0cb881df24e1946ff9c03676a52630a
+  checksum: 4a205cbc4a363ff829f375563d0275247003b4362daa074cde4e87507d8f031b0e98baed4ef3449c91d653bfb2deb4de22841d02196ef1c6050b95ad8da1dec1
   languageName: node
   linkType: hard
 
@@ -4569,7 +4560,7 @@ __metadata:
   dependencies:
     "@emotion/react": ^11.10.5
     "@emotion/styled": ^11.10.5
-    "@mantine/core": ^5.6.2
+    "@mantine/core": ^5.6.3
     "@mantine/dates": ^5.6.3
     "@mantine/form": ^5.6.3
     "@mantine/hooks": ^5.6.3
