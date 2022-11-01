@@ -4,6 +4,7 @@ use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     consumer::types::{ConsumerOffsetConfiguration, ConsumerState},
     error::{Error, Result},
+    record_store::TopicStore,
     types::RawKafkaRecord,
 };
 use async_trait::async_trait;
@@ -20,20 +21,18 @@ use tauri::async_runtime::JoinHandle;
 pub trait Consumer {
     async fn start(&self, offset_config: &ConsumerOffsetConfiguration) -> Result<()>;
     async fn stop(&self) -> Result<()>;
-    async fn get_page(&self, page: usize) -> Vec<RawKafkaRecord>;
-    async fn get_record(&self, index: usize) -> Option<RawKafkaRecord>;
-    async fn get_consumer_state(&self) -> ConsumerState;
+    async fn get_consumer_state(&self) -> Result<ConsumerState>;
 }
 
 pub struct KafkaConsumer {
     topic: String,
     consumer: Arc<Mutex<StreamConsumer>>,
     loop_handle: Arc<Mutex<Vec<JoinHandle<()>>>>,
-    records: Arc<Mutex<Vec<RawKafkaRecord>>>,
+    pub topic_store: Arc<TopicStore>,
 }
 
 impl KafkaConsumer {
-    pub fn new(cluster_config: &ClusterConfig, topic: &str) -> Self {
+    pub fn new(cluster_config: &ClusterConfig, topic: &str, topic_store: TopicStore) -> Self {
         let consumer: StreamConsumer = build_kafka_client_config(cluster_config, None)
             .create()
             .expect("Unable to create kafka the consumer");
@@ -41,7 +40,7 @@ impl KafkaConsumer {
             consumer: Arc::new(Mutex::new(consumer)),
             topic: topic.to_string(),
             loop_handle: Arc::new(Mutex::new(vec![])),
-            records: Arc::new(Mutex::new(Vec::new())),
+            topic_store: Arc::new(topic_store),
         }
     }
 }
@@ -59,28 +58,27 @@ impl Consumer for KafkaConsumer {
         // setup the consumer to run from
         self.internal_setup_consumer(offset_config).await?;
         // clone arcs for the closure below
-        let records = self.records.clone();
         let consumer = self.consumer.clone();
         let handle = self.loop_handle.clone();
+        let topic_store = self.topic_store.clone();
         // set the handle to the consumer loop
         self.loop_handle
             .clone()
             .lock()
             .await
             .push(tauri::async_runtime::spawn(async move {
-                // clear before starting the loop
-                records.lock().await.clear();
+                // clear the store before starting the loop
+                topic_store.clear().await.expect("Unable to clear the table");
                 // infinite consumer loop
                 debug!("Start consumer loop");
                 loop {
                     match consumer.lock().await.stream().next().await {
                         Some(Ok(msg)) => {
                             trace!("New record from {}", topic);
-                            records
-                                .clone()
-                                .lock()
+                            topic_store
+                                .insert_record(&KafkaConsumer::map_kafka_record(&msg.detach()))
                                 .await
-                                .push(KafkaConsumer::map_kafka_record(&msg.detach()));
+                                .expect("Unable to insert the new record in store");
                         }
                         Some(Err(err)) => {
                             error!("An error occurs consuming from kafka: {}", err);
@@ -101,28 +99,11 @@ impl Consumer for KafkaConsumer {
         KafkaConsumer::_stop(self.loop_handle.clone()).await
     }
 
-    async fn get_record(&self, index: usize) -> Option<RawKafkaRecord> {
-        self.records.clone().lock().await.get(index).cloned()
-    }
-
-    async fn get_page(&self, page: usize) -> Vec<RawKafkaRecord> {
-        const PAGE_SIZE: usize = 100;
-        self.records
-            .clone()
-            .lock()
-            .await
-            .iter()
-            .skip(PAGE_SIZE * page)
-            .take(PAGE_SIZE)
-            .map(|r| r.to_owned())
-            .collect()
-    }
-
-    async fn get_consumer_state(&self) -> ConsumerState {
-        ConsumerState {
+    async fn get_consumer_state(&self) -> Result<ConsumerState> {
+        Ok(ConsumerState {
             is_running: self.loop_handle.clone().lock().await.is_empty().not(),
-            record_count: self.records.lock().await.len(),
-        }
+            record_count: self.topic_store.get_size().await?,
+        })
     }
 }
 

@@ -7,6 +7,7 @@ pub enum Error {
     JSONSerde { message: String },
     Consumer { message: String },
     Kafka { message: String },
+    SqlError { message: String },
 }
 
 pub(super) type Result<T> = core::result::Result<T, Error>;
