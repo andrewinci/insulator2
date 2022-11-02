@@ -1,10 +1,10 @@
 use crate::lib::{types::ParsedKafkaRecord, Error, Result};
-use futures::lock::Mutex;
+use parking_lot::{lock_api::Mutex, FairMutex};
 use rusqlite::{named_params, Connection};
 use std::sync::Arc;
 
 pub struct AppStore {
-    conn: Arc<Mutex<Connection>>,
+    conn: Arc<FairMutex<Connection>>,
 }
 
 impl AppStore {
@@ -19,7 +19,6 @@ impl AppStore {
     pub async fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
         self.conn
             .lock()
-            .await
             .execute(
                 format!(
                     "CREATE TABLE {} (
@@ -38,7 +37,7 @@ impl AppStore {
     }
 
     pub async fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()> {
-        self.conn.lock().await.execute(
+        self.conn.lock().execute(
             format!(
                 "INSERT INTO {} (partition, offset, timestamp, key, payload) 
                 VALUES (:partition, :offset, :timestamp, :key, :payload)",
@@ -63,7 +62,7 @@ impl AppStore {
         offset: i64,
         limit: i64,
     ) -> Result<Vec<ParsedKafkaRecord>> {
-        let connection = self.conn.lock().await;
+        let connection = self.conn.lock();
         let mut stmt = connection.prepare(
             format!(
                 "SELECT partition, offset, timestamp, key, payload FROM {} ORDER BY timestamp desc LIMIT {} OFFSET {}",
@@ -92,7 +91,7 @@ impl AppStore {
     }
 
     pub async fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize> {
-        let connection = self.conn.lock().await;
+        let connection = self.conn.lock();
         let mut stmt = connection
             .prepare(format!("SELECT count(*) FROM {}", Self::get_table_name(cluster_id, topic_name)).as_str())?;
         let rows: Vec<_> = stmt.query_map([], |row| row.get::<_, i64>(0))?.collect();
@@ -108,7 +107,6 @@ impl AppStore {
     pub async fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
         self.conn
             .lock()
-            .await
             .execute(
                 format!("DELETE FROM {}", Self::get_table_name(cluster_id, topic_name)).as_str(),
                 [],

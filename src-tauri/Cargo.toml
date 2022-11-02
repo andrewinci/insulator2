@@ -27,19 +27,27 @@ async-trait = "0.1.58"
 num-bigint = "0.4"
 rust_decimal = "1.26"
 rusqlite = { version = "0.28.0", features = ["bundled"] }
+parking_lot = "0.12.1"
 
 [target.'cfg(windows)'.dependencies]
-rdkafka = { version = "0.27", features = ["cmake-build", "ssl-vendored"] } #todo: add "gssapi" to use scram on windows
+rdkafka = { version = "0.27", features = [
+    "cmake-build",
+    "ssl-vendored",
+] } #todo: add "gssapi" to use scram on windows
 
 [target.'cfg(unix)'.dependencies]
-rdkafka = { version = "0.27", features = ["cmake-build", "ssl-vendored", "gssapi"] }
+rdkafka = { version = "0.27", features = [
+    "cmake-build",
+    "ssl-vendored",
+    "gssapi",
+] }
 
 [patch.crates-io]
 # from: https://github.com/vectordotdev/vector/blob/master/Cargo.toml#L369
 # Enables OpenSSL ENGINE support during cross compilation to musl
 # TODO remove this branch and instead use the openssl-src feature flag once it is available
 #    (see https://github.com/vectordotdev/vector/issues/13695)
-openssl-src = { git = "https://github.com/vectordotdev/openssl-src-rs.git", branch  = "enable_engine"}
+openssl-src = { git = "https://github.com/vectordotdev/openssl-src-rs.git", branch = "enable_engine" }
 
 [dev-dependencies]
 mockall = "0.11.3"
@@ -47,7 +55,7 @@ mockall = "0.11.3"
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
-default = [ "custom-protocol" ]
+default = ["custom-protocol"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
-custom-protocol = [ "tauri/custom-protocol" ]
+custom-protocol = ["tauri/custom-protocol"]
