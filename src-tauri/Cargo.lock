@@ -327,9 +327,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "cmake"
-version = "0.1.48"
+version = "0.1.49"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8ad8cef104ac57b68b89df3208164d228503abbdce70f6880ffa3d970e7443a"
+checksum = "db34956e100b30725f2eb215f90d4871051239535632f84fea3bc92722c66b7c"
 dependencies = [
  "cc",
 ]
@@ -1465,8 +1465,7 @@ dependencies = [
  "log",
  "mockall",
  "num-bigint",
- "rdkafka 0.27.0",
- "rdkafka 0.29.0",
+ "rdkafka",
  "reqwest",
  "rusqlite",
  "rust_decimal",
@@ -2075,8 +2074,9 @@ checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
 
 [[package]]
 name = "openssl-src"
-version = "111.22.0+1.1.1q"
-source = "git+https://github.com/vectordotdev/openssl-src-rs.git?branch=enable_engine#52be5ec9f548ea825f602d514ebf322aa828c932"
+version = "111.24.0+1.1.1s"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3498f259dab01178c6228c6b00dcef0ed2a2d5e20d648c017861227773ea4abd"
 dependencies = [
  "cc",
 ]
@@ -2560,23 +2560,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed7e3d950b66e19e0c372f3fa3fbbcf85b1746b571f74e0c2af6042a5c93420a"
 dependencies = [
  "cty",
-]
-
-[[package]]
-name = "rdkafka"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a22ce72c78b471baba6c75bda6e03511ef2ee1bae3729902d2bb38951db1048"
-dependencies = [
- "futures",
- "libc",
- "log",
- "rdkafka-sys",
- "serde",
- "serde_derive",
- "serde_json",
- "slab",
- "tokio",
 ]
 
 [[package]]
