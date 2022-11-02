@@ -9,7 +9,7 @@ use crate::lib::{
     consumer::{ConsumerOffsetConfiguration, KafkaConsumer},
     error::Result,
 };
-use rdkafka::consumer::{Consumer, StreamConsumer};
+use rdkafka::consumer::{BaseConsumer, Consumer};
 use rdkafka::{consumer::CommitMode, Offset};
 
 #[async_trait]
@@ -33,7 +33,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
         topic_names: &[&str],
         config: &ConsumerOffsetConfiguration,
     ) -> Result<()> {
-        let consumer: StreamConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
+        let consumer: BaseConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
             .create()
             .expect("Unable to build the consumer");
 
@@ -66,7 +66,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
         // create a consumer with the defined consumer_group_name.
         // NOTE: the consumer shouldn't join the consumer group, otherwise it'll cause a re-balance
         debug!("Build the consumer for the consumer group {}", consumer_group_name);
-        let consumer: StreamConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
+        let consumer: BaseConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
             .create()
             .expect("Unable to build the consumer");
 

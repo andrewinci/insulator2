@@ -7,7 +7,7 @@ use crate::lib::error::Result;
 use futures::lock::Mutex;
 use log::debug;
 use rdkafka::admin::AdminClient;
-use rdkafka::{client::DefaultClientContext, consumer::StreamConsumer};
+use rdkafka::{client::DefaultClientContext, consumer::BaseConsumer};
 use rdkafka::{Offset, TopicPartitionList};
 
 pub trait Admin: TopicAdmin + ConsumerGroupAdmin {}
@@ -15,7 +15,7 @@ pub trait Admin: TopicAdmin + ConsumerGroupAdmin {}
 pub struct KafkaAdmin {
     pub(super) config: ClusterConfig,
     pub(super) timeout: Duration,
-    pub(super) consumer: StreamConsumer,
+    pub(super) consumer: BaseConsumer,
     pub(super) admin_client: AdminClient<DefaultClientContext>,
     pub(super) all_topic_partition_list: Arc<Mutex<TopicPartitionList>>,
 }
