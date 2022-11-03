@@ -86,7 +86,7 @@ export const RecordsList = (props: RecordsListProps) => {
                 }}
               />
             ) : (
-              <Text key={`load-more-${virtualItem.index}`}>Load more {virtualItem.index}</Text>
+              <Text key={`load-more-${virtualItem.index}`}>No records to show</Text>
             )
           )}
         </div>

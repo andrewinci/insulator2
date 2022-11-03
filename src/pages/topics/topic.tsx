@@ -8,8 +8,8 @@ import {
   Group,
   Loader,
   Modal,
-  Textarea,
   Tooltip,
+  Text,
 } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons";
 import { RecordsList } from "./record-list";
@@ -19,6 +19,7 @@ import { openConsumerModal } from "./consumer-modal";
 import { useQuery } from "@tanstack/react-query";
 import { getLastOffsets, getTopicInfo } from "../../tauri/admin";
 import { useState } from "react";
+import CodeEditor from "@uiw/react-textarea-code-editor";
 
 export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: string }) => {
   const { data, isLoading } = useQuery(
@@ -46,22 +47,33 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
   };
 
   const defaultQuery =
-    "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+    "SELECT partition, offset, timestamp, key, payload\nFROM {:topic}\nORDER BY timestamp desc\nLIMIT {:limit}\nOFFSET {:offset}";
   const [query, setQuery] = useState<string>(defaultQuery);
   const [modalState, setModalState] = useState<{ opened: boolean; query: string }>({ opened: false, query });
 
   return (
     <>
       <Modal
-        title="Set the query to use to show the data"
+        title="Query the topic with sqlite"
         opened={modalState.opened}
         closeOnEscape={false}
         closeOnClickOutside={false}
         onClose={() => setModalState({ ...modalState, opened: false })}>
-        <Textarea
-          autosize
+        <CodeEditor
           value={modalState.query}
-          onChange={(e) => setModalState({ ...modalState, query: e.currentTarget.value })}></Textarea>
+          onChange={(e) => setModalState({ ...modalState, query: e.currentTarget.value })}
+          language="sql"
+          padding={15}
+          style={{
+            fontSize: 12,
+            backgroundColor: "#000000",
+            borderRadius: "3px",
+            fontFamily: "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
+          }}
+        />
+        <Text size={"sm"}>
+          Note: you can use json syntax to filter by fields in the payload https://www.sqlite.org/json1.html
+        </Text>
         <Group position="right">
           <Button
             mt={10}
