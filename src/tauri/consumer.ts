@@ -29,8 +29,15 @@ type GetRecordsPageResponse = {
   prevPage?: number;
 };
 
-export const getRecordsPage = (clusterId: string, topic: string, pageNumber: number): Promise<GetRecordsPageResponse> =>
-  invoke<GetRecordsPageResponse>("get_records_page", { clusterId, topic, pageNumber }).catch((err: TauriError) => {
-    addNotification({ type: "error", title: "Get Kafka records page", description: format(err) });
-    throw err;
-  });
+export const getRecordsPage = (
+  clusterId: string,
+  topic: string,
+  pageNumber: number,
+  query?: string
+): Promise<GetRecordsPageResponse> =>
+  invoke<GetRecordsPageResponse>("get_records_page", { clusterId, topic, query, pageNumber }).catch(
+    (err: TauriError) => {
+      addNotification({ type: "error", title: "Get Kafka records page", description: format(err) });
+      throw err;
+    }
+  );

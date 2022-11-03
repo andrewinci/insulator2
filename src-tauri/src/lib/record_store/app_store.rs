@@ -62,16 +62,25 @@ impl AppStore {
         offset: i64,
         limit: i64,
     ) -> Result<Vec<ParsedKafkaRecord>> {
+        let query = "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+        self.query_records(cluster_id, topic_name, query, offset, limit).await
+    }
+
+    pub async fn query_records(
+        &self,
+        cluster_id: &str,
+        topic_name: &str,
+        query: &str,
+        offset: i64,
+        limit: i64,
+    ) -> Result<Vec<ParsedKafkaRecord>> {
         let connection = self.conn.lock();
-        let mut stmt = connection.prepare(
-            format!(
-                "SELECT partition, offset, timestamp, key, payload FROM {} ORDER BY timestamp desc LIMIT {} OFFSET {}",
-                Self::get_table_name(cluster_id, topic_name),
-                limit,
-                offset
-            )
-            .as_str(),
-        )?;
+        //todo: validate the query
+        let query = query
+            .replace("{:topic}", Self::get_table_name(cluster_id, topic_name).as_str())
+            .replace("{:limit}", limit.to_string().as_str())
+            .replace("{:offset}", offset.to_string().as_str());
+        let mut stmt = connection.prepare(&query)?;
 
         let records_iter = stmt.query_map([], |row| {
             Ok(ParsedKafkaRecord {

@@ -38,10 +38,16 @@ impl TopicStore {
         }
     }
 
-    pub async fn get_records(&self, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>> {
-        self.app_store
-            .get_records(&self.cluster_id, &self.topic_name, offset, limit)
-            .await
+    pub async fn get_records(&self, query: Option<&str>, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>> {
+        if let Some(query) = query {
+            self.app_store
+                .query_records(&self.cluster_id, &self.topic_name, query, offset, limit)
+                .await
+        } else {
+            self.app_store
+                .get_records(&self.cluster_id, &self.topic_name, offset, limit)
+                .await
+        }
     }
 
     pub async fn insert_record(&self, record: &RawKafkaRecord) -> Result<()> {

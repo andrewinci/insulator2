@@ -36,6 +36,7 @@ pub async fn get_records_page(
     cluster_id: &str,
     topic: &str,
     page_number: usize,
+    query: Option<&str>,
     state: tauri::State<'_, AppState>,
 ) -> Result<GetPageResponse> {
     trace!("Get records page");
@@ -46,7 +47,7 @@ pub async fn get_records_page(
     let records_count = topic_store.get_size().await?;
     Ok(GetPageResponse {
         records: topic_store
-            .get_records((page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64)
+            .get_records(query, (page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64)
             .await?,
         next_page: if (records_count as i64 - (PAGE_SIZE * page_number) as i64) > 0 {
             Some(page_number + 1)
