@@ -28,6 +28,7 @@ pub struct KafkaConsumer {
     cluster_config: ClusterConfig,
     topic: String,
     loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>,
+    is_running: Arc<Mutex<bool>>,
     pub topic_store: Arc<TopicStore>,
 }
 
@@ -38,6 +39,7 @@ impl KafkaConsumer {
             topic: topic.to_string(),
             loop_handle: Arc::new(Mutex::new(None)),
             topic_store: Arc::new(topic_store),
+            is_running: Arc::new(Mutex::new(false)),
         }
     }
 }
@@ -62,6 +64,8 @@ impl Consumer for KafkaConsumer {
             let handle = self.loop_handle.clone();
             let topic_store = self.topic_store.clone();
             let offset_config = offset_config.clone();
+            let is_running = self.is_running.clone();
+            *is_running.lock().await = true;
             async move {
                 KafkaConsumer::setup_consumer(&consumer, &[&topic], &offset_config)
                     .await
@@ -70,7 +74,7 @@ impl Consumer for KafkaConsumer {
                 topic_store.clear().await.expect("Unable to clear the table");
                 // infinite consumer loop
                 debug!("Start consumer loop");
-                loop {
+                while *is_running.lock().await {
                     match consumer.poll(Duration::from_millis(200)) {
                         Some(Ok(msg)) => {
                             trace!("New record from {}", topic);
@@ -96,6 +100,7 @@ impl Consumer for KafkaConsumer {
     }
 
     async fn stop(&self) -> Result<()> {
+        *self.is_running.lock().await = false;
         KafkaConsumer::_stop(self.loop_handle.clone()).await
     }
 
