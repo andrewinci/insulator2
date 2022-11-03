@@ -1,3 +1,29 @@
+# [1.16.0](https://github.com/andrewinci/insulator2/compare/v1.15.0...v1.16.0) (2022-11-03)
+
+### Bug Fixes
+
+- **be:** Invalid assertion on config values ([9c6c5b0](https://github.com/andrewinci/insulator2/commit/9c6c5b0c7ab47e013095e926f463f217c95f945c))
+- **BE:** stop consumer ([dec90c5](https://github.com/andrewinci/insulator2/commit/dec90c59575095e6ed067286c3ef8923e26b5192))
+- **BE:** Use fair mutex ([48af3c9](https://github.com/andrewinci/insulator2/commit/48af3c98e64544fa99da8de201167e8f41227d91))
+- deadlock in topicPartition list cache ([a2afcf1](https://github.com/andrewinci/insulator2/commit/a2afcf1f7d9a7b7470d4f1594cbb714c9556f437))
+- **FE:** avoid to store empty strings for configs ([6939773](https://github.com/andrewinci/insulator2/commit/6939773ccda33efba2717d99f0b86e242bd1334d))
+- **FE:** dayjs call namespace ([9d3dea3](https://github.com/andrewinci/insulator2/commit/9d3dea3bee8edba60a21202270942c0474831329))
+- flickering while consuming a topic ([abbec33](https://github.com/andrewinci/insulator2/commit/abbec337207db51e530ea537c1c86b172cf5d393))
+- Out of range due to difference between usize ([cbbec11](https://github.com/andrewinci/insulator2/commit/cbbec110049546f28b85023c388e54a7645ff044))
+- Reset topics/partitions cache when a new topic is addedd ([894bb3c](https://github.com/andrewinci/insulator2/commit/894bb3ce6f8d7ae2b6599e1aa5715b20dc4eabf1))
+- text input null exception when using currentTarget ([0ed96cf](https://github.com/andrewinci/insulator2/commit/0ed96cfd0763b5bf16db6a38ec667c7d73e4dddf))
+
+### Features
+
+- **FE:** use mod + f to focus the search bar ([1292c70](https://github.com/andrewinci/insulator2/commit/1292c70deb18c365882dcc3080bf64dff45283a0))
+- query records ([8768851](https://github.com/andrewinci/insulator2/commit/8768851b3ee76577ae93651e05e01e89467e1d03))
+- use infinite scroll in records list ([b7ea2e0](https://github.com/andrewinci/insulator2/commit/b7ea2e0215acbf4c4a950d1963115a68b500e0bb))
+- Use sqlite as recors storage ([7a27155](https://github.com/andrewinci/insulator2/commit/7a2715528cccc5ff082d68f5e62c3bd81fb2d280))
+
+### Performance Improvements
+
+- only build a schema registry client if a config is defined ([ec1b4bc](https://github.com/andrewinci/insulator2/commit/ec1b4bc6ca419646a4ab37a95f3da00993b5ba34))
+
 # [1.15.0](https://github.com/andrewinci/insulator2/compare/v1.14.2...v1.15.0) (2022-10-27)
 
 ### Bug Fixes
