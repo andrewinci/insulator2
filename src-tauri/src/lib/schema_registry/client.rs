@@ -34,9 +34,9 @@ where
 
 impl CachedSchemaRegistry<ReqwestClient> {
     pub fn new(endpoint: &str, username: Option<&str>, password: Option<&str>) -> Self {
-        assert!(endpoint.is_empty());
+        assert!(!endpoint.is_empty());
         let auth = if let Some(username) = username {
-            assert!(username.is_empty());
+            assert!(!username.is_empty());
             let auth = BasicAuth {
                 username: username.to_string(),
                 password: password.map(|p| p.to_owned()),
