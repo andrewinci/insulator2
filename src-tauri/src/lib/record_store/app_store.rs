@@ -1,5 +1,5 @@
 use crate::lib::{types::ParsedKafkaRecord, Error, Result};
-use parking_lot::{lock_api::Mutex, FairMutex};
+use parking_lot::{FairMutex};
 use rusqlite::{named_params, Connection};
 use std::sync::Arc;
 
@@ -10,7 +10,7 @@ pub struct AppStore {
 impl AppStore {
     pub fn new() -> Self {
         AppStore {
-            conn: Arc::new(Mutex::new(
+            conn: Arc::new(FairMutex::new(
                 Connection::open_in_memory().expect("Unable to initialize the in memory sqlite DB"),
             )),
         }
