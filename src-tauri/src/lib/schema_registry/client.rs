@@ -8,9 +8,7 @@ use url::Url;
 
 use apache_avro::Schema as AvroSchema;
 
-use crate::lib::Error;
-
-use super::error::Result;
+use super::error::{Result, SchemaRegistryError};
 use super::http_client::{HttpClient, ReqwestClient};
 use super::types::{BasicAuth, Schema, Subject};
 
@@ -97,11 +95,10 @@ where
             trace!("Schema not found in cache, retrieving");
             let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
             let schema: GetSchemaByIdResult = self.http_client.get(url.as_ref()).await?;
-            let schema = AvroSchema::parse_str(schema.schema.as_str())
-                .map_err(|err| Error::AvroParse {
+            let schema =
+                AvroSchema::parse_str(schema.schema.as_str()).map_err(|err| SchemaRegistryError::SchemaParsing {
                     message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
-                })
-                .expect("todo");
+                })?;
             cache.insert(id, schema.clone());
             Ok(schema)
         }
@@ -133,39 +130,5 @@ where
             schemas.push(schema);
         }
         Ok(schemas)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use async_trait::async_trait;
-    use mockall::mock;
-    use serde::de::DeserializeOwned;
-
-    use super::{CachedSchemaRegistry, Result, SchemaRegistryClient};
-    use crate::lib::schema_registry::{client::GetSchemaByIdResult, http_client::HttpClient};
-    use mockall::predicate::*;
-
-    #[tokio::test]
-    async fn test_cache() {
-        mock! {
-            HttpTestClient {}
-
-            #[async_trait]
-            impl HttpClient for HttpTestClient {
-                async fn get<T: 'static + DeserializeOwned>(&self, _url: &str) -> Result<T>;
-            }
-        }
-        let mut mock_http_client = MockHttpTestClient::new();
-        mock_http_client
-            .expect_get::<GetSchemaByIdResult>()
-            .once()
-            .returning(|_| Ok(GetSchemaByIdResult { schema: "123".into() }));
-
-        let sut = CachedSchemaRegistry::new_with_client("https://example.com", mock_http_client);
-        let call_1 = sut.get_schema_by_id(1).await;
-        let call_2 = sut.get_schema_by_id(1).await;
-        assert!(call_1.is_ok());
-        assert!(call_2.is_ok());
     }
 }

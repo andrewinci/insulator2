@@ -1,28 +1,30 @@
 #[derive(Debug)]
 pub enum SchemaRegistryError {
-    HttpClientError { msg: String },
-    UrlError,
+    SchemaParsing { message: String },
+    HttpClient { message: String },
+    InvalidUrl,
 }
 
 pub type Result<T> = core::result::Result<T, SchemaRegistryError>;
 
 impl From<reqwest::Error> for SchemaRegistryError {
     fn from(err: reqwest::Error) -> Self {
-        Self::HttpClientError { msg: err.to_string() }
+        Self::HttpClient { message: err.to_string() }
     }
 }
 
 impl From<url::ParseError> for SchemaRegistryError {
     fn from(_: url::ParseError) -> Self {
-        Self::UrlError
+        Self::InvalidUrl
     }
 }
 
 impl ToString for SchemaRegistryError {
     fn to_string(&self) -> String {
         match self {
-            SchemaRegistryError::HttpClientError { msg } => msg.into(),
-            SchemaRegistryError::UrlError => "Invalid URL".into(),
+            SchemaRegistryError::HttpClient { message: msg } => msg.into(),
+            SchemaRegistryError::InvalidUrl => "Invalid URL".into(),
+            SchemaRegistryError::SchemaParsing { message: msg } => msg.into(),
         }
     }
 }
