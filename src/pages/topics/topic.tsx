@@ -1,14 +1,17 @@
-import { ActionIcon, Badge, Button, Center, Container, Group, Loader, Tooltip, Text } from "@mantine/core";
-import { IconInfoCircle } from "@tabler/icons";
+import { ActionIcon, Badge, Button, Center, Container, Group, Loader, Text, Menu } from "@mantine/core";
+import { IconInfoCircle, IconTool, IconTrash } from "@tabler/icons";
 import { RecordsList } from "./record-list";
 import { getConsumerState, stopConsumer } from "../../tauri/consumer";
 import { PageHeader } from "../../components";
 import { openConsumerModal } from "./consumer-modal";
 import { useQuery } from "@tanstack/react-query";
-import { getLastOffsets, getTopicInfo } from "../../tauri/admin";
+import { deleteTopic, getLastOffsets, getTopicInfo } from "../../tauri/admin";
 import { useState } from "react";
 import CodeEditor from "@uiw/react-textarea-code-editor";
 import { Allotment } from "allotment";
+import { useNavigate } from "react-router-dom";
+import { openConfirmModal } from "@mantine/modals";
+import { useNotifications } from "../../providers";
 
 export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: string }) => {
   const { data, isLoading } = useQuery(
@@ -50,11 +53,7 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
               subtitle={`Estimated Records: ${estimatedRecord ?? "..."}, Cleanup policy: ${
                 topicInfo?.cleanupPolicy ?? "..."
               }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}>
-              <Tooltip position="bottom" label="Topic info">
-                <ActionIcon>
-                  <IconInfoCircle />
-                </ActionIcon>
-              </Tooltip>
+              <Tools clusterId={clusterId} topic={topicName} />
             </PageHeader>
             {isLoading && (
               <Center mt={10}>
@@ -127,5 +126,49 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
         </Allotment.Pane>
       </Allotment>
     </>
+  );
+};
+
+const Tools = ({ clusterId, topic }: { clusterId: string; topic: string }) => {
+  const navigate = useNavigate();
+  const { success } = useNotifications();
+  const openDeleteTopicModal = () =>
+    openConfirmModal({
+      title: "Are you sure to delete this topic?",
+      children: (
+        <>
+          <Text color="red" size="sm">
+            The topic {topic} will be deleted. This action is not reversible!
+          </Text>
+          <Text size="sm">Note: this operation may fail if the ACLs do not allow the deletion.</Text>
+        </>
+      ),
+      labels: { confirm: "Confirm", cancel: "Cancel" },
+      onConfirm: async () =>
+        await deleteTopic(clusterId, topic).then((_) => {
+          success(`Topic ${topic} delete successfully`);
+          navigate(`/cluster/${clusterId}/topics`);
+        }),
+    });
+
+  const openInfoModal = () => console.log("Not implemented yet");
+
+  return (
+    <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
+      <Menu.Target>
+        <ActionIcon size={28} sx={{ marginRight: "10px" }}>
+          <IconTool />
+        </ActionIcon>
+      </Menu.Target>
+      <Menu.Dropdown>
+        <Menu.Label>Tools</Menu.Label>
+        <Menu.Item icon={<IconInfoCircle size={14} />} onClick={openInfoModal}>
+          Topic info
+        </Menu.Item>
+        <Menu.Item color="red" icon={<IconTrash size={14} />} onClick={openDeleteTopicModal}>
+          Delete topic
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
   );
 };

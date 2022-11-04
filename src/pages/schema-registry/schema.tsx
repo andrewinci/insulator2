@@ -46,7 +46,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
     <Container>
       <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
         <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`} />
-        {state?.version && <Tool clusterId={clusterId} subject={schemaName} version={state.version} />}
+        {state?.version && <Tools clusterId={clusterId} subject={schemaName} version={state.version} />}
       </Group>
       <Divider my={10} />
       {!isLoading && subject && (
@@ -81,7 +81,7 @@ const CustomPrism = styled(Prism)`
   }
 `;
 
-const Tool = ({ clusterId, subject, version }: { clusterId: string; subject: string; version: number }) => {
+const Tools = ({ clusterId, subject, version }: { clusterId: string; subject: string; version: number }) => {
   const navigate = useNavigate();
   const { success } = useNotifications();
   const openDeleteSubjectModal = () =>

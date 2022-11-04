@@ -18,6 +18,7 @@ pub trait TopicAdmin {
     // topics
     async fn list_topics(&self) -> Result<Vec<Topic>>;
     fn get_topic(&self, topic_name: &str) -> Result<Topic>;
+    async fn delete_topic(&self, topic_name: &str) -> Result<()>;
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
     async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
     async fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, Vec<PartitionOffset>>>;
@@ -46,6 +47,13 @@ impl TopicAdmin for KafkaAdmin {
                 message: "Topic not found".into(),
             })
         }
+    }
+
+    async fn delete_topic(&self, topic_name: &str) -> Result<()> {
+        self.admin_client
+            .delete_topics(&[topic_name], &AdminOptions::default())
+            .await?;
+        Ok(())
     }
 
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {

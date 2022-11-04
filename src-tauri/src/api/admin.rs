@@ -24,6 +24,13 @@ pub async fn get_topic_info(cluster_id: &str, topic_name: &str, state: tauri::St
 }
 
 #[tauri::command]
+pub async fn delete_topic(cluster_id: &str, topic_name: &str, state: tauri::State<'_, AppState>) -> Result<()> {
+    debug!("Retrieve topic info for {}", topic_name);
+    let cluster = state.get_cluster(cluster_id).await;
+    Ok(cluster.admin_client.delete_topic(topic_name).await?)
+}
+
+#[tauri::command]
 pub async fn create_topic(
     cluster_id: &str,
     topic_name: &str,

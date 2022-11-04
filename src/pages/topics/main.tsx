@@ -9,19 +9,26 @@ export const TopicsPage = () => {
   if (!clusterId) {
     throw Error("Missing clusterId in path!");
   }
-  return (
-    <Allotment>
-      <Allotment.Pane minSize={430} maxSize={topicName ? 600 : undefined}>
-        <TopicList
-          clusterId={clusterId}
-          onTopicSelected={(activeTopic) => navigate(`/cluster/${clusterId}/topic/${activeTopic}`)}
-        />
-      </Allotment.Pane>
-      {topicName && (
-        <Allotment.Pane minSize={520}>
-          <Topic clusterId={clusterId} topicName={topicName} />
-        </Allotment.Pane>
-      )}
-    </Allotment>
+  const topicList = (
+    <TopicList
+      clusterId={clusterId}
+      onTopicSelected={(activeTopic) => navigate(`/cluster/${clusterId}/topic/${activeTopic}`)}
+    />
   );
+  if (topicName) {
+    return (
+      <Allotment>
+        <Allotment.Pane minSize={430} maxSize={topicName ? 600 : undefined}>
+          {topicList}
+        </Allotment.Pane>
+        {topicName && (
+          <Allotment.Pane minSize={520}>
+            <Topic clusterId={clusterId} topicName={topicName} />
+          </Allotment.Pane>
+        )}
+      </Allotment>
+    );
+  } else {
+    return topicList;
+  }
 };
