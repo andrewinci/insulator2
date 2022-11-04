@@ -1,4 +1,17 @@
-import { Container, Group, NavLink, Loader, Center, ActionIcon, Tooltip, Text, Tabs, Badge, Grid } from "@mantine/core";
+import {
+  Container,
+  Group,
+  NavLink,
+  Loader,
+  Center,
+  ActionIcon,
+  Tooltip,
+  Text,
+  Tabs,
+  Badge,
+  Grid,
+  FocusTrap,
+} from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconStar } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
@@ -50,8 +63,8 @@ export const ItemList = (props: ItemListProps) => {
         : (s: string) => s.toLowerCase().includes(state?.search ?? "");
       return {
         all: items.filter((t) => test(t)).sort(),
-        recent: state.recent.filter((t) => test(t)).reverse(),
-        favorites: state.favorites.filter((t) => items.includes(t)).filter((t) => test(t)),
+        recent: state.recent.filter((t) => items.includes(t) && test(t)).reverse(),
+        favorites: state.favorites.filter((t) => items.includes(t) && test(t)),
       };
     } catch {
       return {
@@ -70,13 +83,21 @@ export const ItemList = (props: ItemListProps) => {
   };
 
   const onItemSelectedOnTab = (selectedItem: string) => {
-    // avoid duplicates in the recent list
-    const newRecent = state.recent.filter((i) => i != selectedItem);
-    newRecent.push(selectedItem);
-    setState((s) => ({ ...s, recent: newRecent, selected: selectedItem }));
+    // remove any item in focus
+    setOnFocus(undefined);
+    setState((s) => {
+      // avoid duplicates in the recent list
+      let newState = { ...s, selected: selectedItem };
+      if (!s.recent.includes(selectedItem)) {
+        newState = { ...newState, recent: [selectedItem, ...s.recent] };
+      }
+      return newState;
+    });
+    // forward upstream
     onItemSelected(selectedItem);
   };
 
+  const [focus, setOnFocus] = useState<string | undefined>(undefined);
   return (
     <Container>
       <PageHeader title={title} subtitle={`Total: ${props.items.length}`}>
@@ -84,6 +105,7 @@ export const ItemList = (props: ItemListProps) => {
           placeholder={userSettings.useRegex ? "Search (regex)" : "Search"}
           value={state.search}
           onChange={(v) => setState({ ...state, search: v })}
+          onEnter={() => setOnFocus(filteredItems.all[0])}
         />
         <Group>
           <Tooltip label="Create a new item">
@@ -98,36 +120,31 @@ export const ItemList = (props: ItemListProps) => {
           </Tooltip>
         </Group>
       </PageHeader>
-      <Tabs mt={10} variant="pills" defaultValue="all">
+      <Tabs mt={10} variant="pills" defaultValue={"all"}>
         <Tabs.List grow>
           <TabHeader title="All" icon="all" count={props.items.length} filtered={filteredItems.all.length} />
           <TabHeader title="Favorites" icon="favorites" count={0} filtered={filteredItems.favorites.length} />
           <TabHeader title="Recent" icon="recent" count={state.recent.length} filtered={filteredItems.recent.length} />
         </Tabs.List>
-        <TabPanel
-          title="all"
-          items={filteredItems.all}
-          favorites={state.favorites}
-          isLoading={isLoading}
-          onFavToggled={onFavToggled}
-          onItemSelected={onItemSelectedOnTab}
-        />
-        <TabPanel
-          title="favorites"
-          items={filteredItems.favorites}
-          favorites={state.favorites}
-          isLoading={isLoading}
-          onFavToggled={onFavToggled}
-          onItemSelected={onItemSelectedOnTab}
-        />
-        <TabPanel
-          title="recent"
-          items={filteredItems.recent}
-          favorites={state.favorites}
-          isLoading={isLoading}
-          onFavToggled={onFavToggled}
-          onItemSelected={onItemSelectedOnTab}
-        />
+        {(
+          [
+            ["all", filteredItems.all],
+            ["favorites", filteredItems.favorites],
+            ["recent", filteredItems.recent],
+          ] as [string, string[]][]
+        ).map(([title, items]) => (
+          <TabPanel
+            key={title}
+            title={title}
+            items={items}
+            favorites={state.favorites}
+            isLoading={isLoading}
+            selected={state.selected}
+            focus={focus}
+            onFavToggled={onFavToggled}
+            onItemSelected={onItemSelectedOnTab}
+          />
+        ))}
       </Tabs>
     </Container>
   );
@@ -138,11 +155,22 @@ type TabPanelProps = {
   items: string[];
   favorites: string[];
   isLoading: boolean;
+  selected?: string;
+  focus?: string;
   onItemSelected: (item: string) => void;
   onFavToggled: (item: string) => void;
 };
 
-const TabPanel = ({ title, items, isLoading, favorites, onFavToggled, onItemSelected }: TabPanelProps) => {
+const TabPanel = ({
+  title,
+  items,
+  isLoading,
+  favorites,
+  selected,
+  focus,
+  onFavToggled,
+  onItemSelected,
+}: TabPanelProps) => {
   const [windowSize, setWindowSize] = useState(getWindowSize());
   useEffect(() => {
     const handleWindowResize = () => setWindowSize(getWindowSize());
@@ -166,18 +194,21 @@ const TabPanel = ({ title, items, isLoading, favorites, onFavToggled, onItemSele
                 </ActionIcon>
               </Grid.Col>
               <Grid.Col span={11}>
-                <NavLink
-                  sx={(theme) => ({
-                    "&:hover": {
-                      backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.blue[0],
-                    },
-                    borderRadius: "5px",
-                  })}
-                  onClick={() => onItemSelected(items[index])}
-                  rightSection={<IconChevronRight size={12} stroke={1.5} />}
-                  noWrap
-                  label={<Text sx={{ maxWidth: "300px" }}>{items[index]}</Text>}
-                />
+                <FocusTrap active={focus == items[index]}>
+                  <NavLink
+                    sx={(theme) => ({
+                      "&:hover": {
+                        backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.blue[0],
+                      },
+                      borderRadius: "5px",
+                    })}
+                    active={items[index] == selected}
+                    onClick={() => onItemSelected(items[index])}
+                    rightSection={<IconChevronRight size={12} stroke={1.5} />}
+                    noWrap
+                    label={<Text sx={{ maxWidth: "300px" }}>{items[index]}</Text>}
+                  />
+                </FocusTrap>
               </Grid.Col>
             </Grid>
           )}
