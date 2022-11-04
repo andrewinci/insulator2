@@ -40,15 +40,15 @@ type ItemListProps = {
 export const ItemList = (props: ItemListProps) => {
   const { onItemSelected, onRefreshList, onAddClick } = props;
   const { listId, items, title, isLoading, isFetching } = props;
+  const [searchText, setSearchText] = useState<string>("");
+  const [focus, setOnFocus] = useState<string | undefined>(undefined);
   const [state, setState] = useLocalStorage<{
-    search: string;
     recent: string[];
     favorites: string[];
     selected?: string;
   }>({
     key: listId,
     defaultValue: {
-      search: "",
       favorites: [],
       recent: [],
     },
@@ -57,10 +57,10 @@ export const ItemList = (props: ItemListProps) => {
 
   const filteredItems = useMemo(() => {
     try {
-      const regex = new RegExp(state?.search ?? ".", "i");
+      const regex = new RegExp(searchText ?? ".", "i");
       const test = userSettings.useRegex
         ? (s: string) => regex.test(s)
-        : (s: string) => s.toLowerCase().includes(state?.search ?? "");
+        : (s: string) => s.toLowerCase().includes(searchText ?? "");
       return {
         all: items.filter((t) => test(t)).sort(),
         recent: state.recent.filter((t) => items.includes(t) && test(t)).reverse(),
@@ -73,7 +73,7 @@ export const ItemList = (props: ItemListProps) => {
         favorites: [],
       };
     }
-  }, [items, state.recent, state.search, state.favorites, userSettings.useRegex]);
+  }, [searchText, userSettings.useRegex, items, state.recent, state.favorites]);
 
   const onFavToggled = (newItem: string) => {
     // toggle item from the favorites list
@@ -97,14 +97,13 @@ export const ItemList = (props: ItemListProps) => {
     onItemSelected(selectedItem);
   };
 
-  const [focus, setOnFocus] = useState<string | undefined>(undefined);
   return (
     <Container>
       <PageHeader title={title} subtitle={`Total: ${props.items.length}`}>
         <SearchInput
           placeholder={userSettings.useRegex ? "Search (regex)" : "Search"}
-          value={state.search}
-          onChange={(v) => setState({ ...state, search: v })}
+          value={searchText}
+          onChange={(v) => setSearchText(v)}
           onEnter={() => setOnFocus(filteredItems.all[0])}
         />
         <Group>
