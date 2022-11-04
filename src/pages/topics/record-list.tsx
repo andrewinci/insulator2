@@ -57,21 +57,36 @@ export const RecordsList = (props: RecordsListProps) => {
   });
 
   return (
-    <>
+    <div
+      ref={parentRef}
+      style={{
+        height: state.windowHeight - (heightOffset ?? 0),
+        overflow: "auto", // Make it scroll!
+      }}>
       <div
-        ref={parentRef}
         style={{
-          height: state.windowHeight - (heightOffset ?? 0),
-          overflow: "auto", // Make it scroll!
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: "100%",
+          position: "relative",
         }}>
-        <div
-          style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            width: "100%",
-            position: "relative",
-          }}>
-          {rowVirtualizer.getVirtualItems().map((virtualItem) =>
-            allRecords[virtualItem.index] ? (
+        {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+          if (allRecords.length > 0 && hasNextPage && allRecords.length <= virtualItem.index) {
+            return (
+              <Center
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: `${virtualItem.size}px`,
+                  transform: `translateY(${virtualItem.start}px)`,
+                }}
+                key={`load-more-${virtualItem.index}`}>
+                <Loader></Loader>
+              </Center>
+            );
+          } else {
+            return (
               <KafkaRecordCard
                 key={virtualItem.index}
                 index={virtualItem.index}
@@ -85,15 +100,11 @@ export const RecordsList = (props: RecordsListProps) => {
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               />
-            ) : (
-              <Center key={`load-more-${virtualItem.index}`}>
-                <Loader></Loader>
-              </Center>
-            )
-          )}
-        </div>
+            );
+          }
+        })}
       </div>
-    </>
+    </div>
   );
 };
 
