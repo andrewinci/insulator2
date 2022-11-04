@@ -5,7 +5,7 @@ use crate::lib::{
 };
 use std::sync::Arc;
 
-use super::app_store::AppStore;
+use super::app_store::{AppStore, Query};
 
 pub struct TopicStore {
     cluster_id: String,
@@ -41,7 +41,13 @@ impl TopicStore {
     pub async fn get_records(&self, query: Option<&str>, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>> {
         if let Some(query) = query {
             self.app_store
-                .query_records(&self.cluster_id, &self.topic_name, query, offset, limit)
+                .query_records(&Query {
+                    cluster_id: self.cluster_id.clone(),
+                    topic_name: self.topic_name.clone(),
+                    offset,
+                    limit,
+                    query_template: query.into(),
+                })
                 .await
         } else {
             self.app_store
@@ -65,7 +71,19 @@ impl TopicStore {
         self.app_store.clear(&self.cluster_id, &self.topic_name).await
     }
 
-    pub async fn get_size(&self) -> Result<usize> {
-        self.app_store.get_size(&self.cluster_id, &self.topic_name).await
+    pub async fn get_size(&self, query: Option<&str>) -> Result<usize> {
+        if let Some(query) = query {
+            self.app_store
+                .get_size_with_query(&Query {
+                    cluster_id: self.cluster_id.clone(),
+                    topic_name: self.topic_name.clone(),
+                    offset: -1,
+                    limit: -1,
+                    query_template: query.into(),
+                })
+                .await
+        } else {
+            self.app_store.get_size(&self.cluster_id, &self.topic_name).await
+        }
     }
 }

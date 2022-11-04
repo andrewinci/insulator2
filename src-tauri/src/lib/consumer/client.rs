@@ -107,7 +107,7 @@ impl Consumer for KafkaConsumer {
     async fn get_consumer_state(&self) -> Result<ConsumerState> {
         Ok(ConsumerState {
             is_running: self.loop_handle.clone().lock().await.is_some(),
-            record_count: self.topic_store.get_size().await?,
+            record_count: self.topic_store.get_size(None).await?, //total records in the topic
         })
     }
 }

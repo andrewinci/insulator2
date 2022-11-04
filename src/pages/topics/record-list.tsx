@@ -24,7 +24,7 @@ export const RecordsList = (props: RecordsListProps) => {
     windowHeight: window.innerHeight,
   });
 
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery(
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
     ["fetchRecords", clusterId, topic, query],
     async ({ pageParam = 0 }) => await getRecordsPage(clusterId, topic, pageParam ?? 0, query),
     {
@@ -35,12 +35,6 @@ export const RecordsList = (props: RecordsListProps) => {
   );
   const allRecords = data ? data.pages.flatMap((d) => d.records) : [];
 
-  useEffect(() => {
-    const handleWindowResize = () => setState((s) => ({ ...s, windowHeight: window.innerHeight }));
-    window.addEventListener("resize", handleWindowResize);
-    return () => window.removeEventListener("resize", handleWindowResize);
-  }, []);
-
   const parentRef = React.useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? allRecords.length + 1 : allRecords.length,
@@ -50,6 +44,12 @@ export const RecordsList = (props: RecordsListProps) => {
   });
 
   useEffect(() => {
+    const handleWindowResize = () => setState((s) => ({ ...s, windowHeight: window.innerHeight }));
+    window.addEventListener("resize", handleWindowResize);
+    return () => window.removeEventListener("resize", handleWindowResize);
+  }, []);
+
+  useEffect(() => {
     const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
     if (lastItem && lastItem.index >= allRecords.length - 1 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
@@ -57,54 +57,66 @@ export const RecordsList = (props: RecordsListProps) => {
   });
 
   return (
-    <div
-      ref={parentRef}
-      style={{
-        height: state.windowHeight - (heightOffset ?? 0),
-        overflow: "auto", // Make it scroll!
-      }}>
+    <>
       <div
+        ref={parentRef}
         style={{
-          height: `${rowVirtualizer.getTotalSize()}px`,
-          width: "100%",
-          position: "relative",
+          height: state.windowHeight - (heightOffset ?? 0),
+          overflow: "auto", // Make it scroll!
         }}>
-        {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-          if (allRecords.length > 0 && hasNextPage && allRecords.length <= virtualItem.index) {
-            return (
-              <Center
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: `${virtualItem.size}px`,
-                  transform: `translateY(${virtualItem.start}px)`,
-                }}
-                key={`load-more-${virtualItem.index}`}>
-                <Loader></Loader>
-              </Center>
-            );
-          } else {
-            return (
-              <KafkaRecordCard
-                key={virtualItem.index}
-                index={virtualItem.index}
-                record={allRecords[virtualItem.index]}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: `${virtualItem.size}px`,
-                  transform: `translateY(${virtualItem.start}px)`,
-                }}
-              />
-            );
-          }
-        })}
+        <div
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            width: "100%",
+            position: "relative",
+          }}>
+          <Center
+            style={{
+              position: "absolute",
+              top: 10,
+              left: 0,
+              width: "100%",
+            }}>
+            {isLoading && <Loader></Loader>}
+            {!isLoading && allRecords.length == 0 && <Text>No records querying the consumed records</Text>}
+          </Center>
+          {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+            if (allRecords.length > 0 && hasNextPage && allRecords.length <= virtualItem.index) {
+              return (
+                <Center
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: `${virtualItem.size}px`,
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                  key={`load-more-${virtualItem.index}`}>
+                  <Loader></Loader>
+                </Center>
+              );
+            } else {
+              return (
+                <KafkaRecordCard
+                  key={virtualItem.index}
+                  index={virtualItem.index}
+                  record={allRecords[virtualItem.index]}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: `${virtualItem.size}px`,
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                />
+              );
+            }
+          })}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

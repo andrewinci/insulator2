@@ -44,7 +44,7 @@ pub async fn get_records_page(
     let cluster = state.get_cluster(cluster_id).await;
     let consumer = cluster.get_consumer(topic).await;
     let topic_store = consumer.topic_store.clone();
-    let records_count = topic_store.get_size().await?;
+    let records_count = topic_store.get_size(query).await?;
     Ok(GetPageResponse {
         records: topic_store
             .get_records(query, (page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64)
