@@ -40,14 +40,7 @@ export const ItemList = (props: ItemListProps) => {
       recent: [],
     },
   });
-  const [windowSize, setWindowSize] = useState(getWindowSize());
   const { userSettings } = useUserSettings();
-
-  useEffect(() => {
-    const handleWindowResize = () => setWindowSize(getWindowSize());
-    window.addEventListener("resize", handleWindowResize);
-    return () => window.removeEventListener("resize", handleWindowResize);
-  }, []);
 
   const filteredItems = useMemo(() => {
     try {
@@ -58,7 +51,7 @@ export const ItemList = (props: ItemListProps) => {
       return {
         all: items.filter((t) => test(t)).sort(),
         recent: state.recent.filter((t) => test(t)).reverse(),
-        favorites: state.favorites.filter((t) => test(t)),
+        favorites: state.favorites.filter((t) => items.includes(t)).filter((t) => test(t)),
       };
     } catch {
       return {
@@ -69,67 +62,20 @@ export const ItemList = (props: ItemListProps) => {
     }
   }, [items, state.recent, state.search, state.favorites, userSettings.useRegex]);
 
-  const tabPanel = (title: string, panelItems: string[]) => (
-    <Tabs.Panel value={title} pt="xs">
-      {isLoading && (
-        <Center mt={10}>
-          <Loader />
-        </Center>
-      )}
-      {!isLoading && panelItems.length > 0 ? (
-        <FixedSizeList height={windowSize.innerHeight - 150} itemCount={panelItems.length} itemSize={38} width={"100%"}>
-          {({ index, style }) => (
-            <Grid style={style} grow gutter={0} justify={"flex-start"} align="center">
-              <Grid.Col span="auto" sx={{ maxWidth: "30px" }}>
-                <ActionIcon
-                  color="orange"
-                  radius="xl"
-                  onClick={() => {
-                    // toggle item from the favorites list
-                    const newItem = panelItems[index];
-                    if (state.favorites.includes(newItem))
-                      setState((s) => ({ ...s, favorites: s.favorites.filter((f) => f != newItem) }));
-                    else setState((s) => ({ ...s, favorites: [...s.favorites, newItem] }));
-                  }}>
-                  <IconStar
-                    fill={filteredItems.favorites.includes(panelItems[index]) ? "orange" : undefined}
-                    size={16}
-                    stroke={1.5}
-                  />
-                </ActionIcon>
-              </Grid.Col>
-              <Grid.Col span={11}>
-                <NavLink
-                  sx={(theme) => ({
-                    "&:hover": {
-                      backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.blue[0],
-                    },
-                    borderRadius: "5px",
-                  })}
-                  active={panelItems[index] == state.selected}
-                  onClick={() => {
-                    const selectedItem = panelItems[index];
-                    // avoid duplicates in the recent list
-                    const newRecent = state.recent.filter((i) => i != selectedItem);
-                    newRecent.push(selectedItem);
-                    setState((s) => ({ ...s, recent: newRecent, selected: selectedItem }));
-                    onItemSelected(selectedItem);
-                  }}
-                  rightSection={<IconChevronRight size={12} stroke={1.5} />}
-                  noWrap
-                  label={<Text sx={{ maxWidth: "300px" }}>{panelItems[index]}</Text>}
-                />
-              </Grid.Col>
-            </Grid>
-          )}
-        </FixedSizeList>
-      ) : (
-        <Center mt={20}>
-          <Text>Empty list</Text>
-        </Center>
-      )}
-    </Tabs.Panel>
-  );
+  const onFavToggled = (newItem: string) => {
+    // toggle item from the favorites list
+    if (state.favorites.includes(newItem))
+      setState((s) => ({ ...s, favorites: s.favorites.filter((f) => f != newItem) }));
+    else setState((s) => ({ ...s, favorites: [...s.favorites, newItem] }));
+  };
+
+  const onItemSelectedOnTab = (selectedItem: string) => {
+    // avoid duplicates in the recent list
+    const newRecent = state.recent.filter((i) => i != selectedItem);
+    newRecent.push(selectedItem);
+    setState((s) => ({ ...s, recent: newRecent, selected: selectedItem }));
+    onItemSelected(selectedItem);
+  };
 
   return (
     <Container>
@@ -158,11 +104,90 @@ export const ItemList = (props: ItemListProps) => {
           <TabHeader title="Favorites" icon="favorites" count={0} filtered={filteredItems.favorites.length} />
           <TabHeader title="Recent" icon="recent" count={state.recent.length} filtered={filteredItems.recent.length} />
         </Tabs.List>
-        {tabPanel("all", filteredItems.all)}
-        {tabPanel("favorites", filteredItems.favorites)}
-        {tabPanel("recent", filteredItems.recent)}
+        <TabPanel
+          title="all"
+          items={filteredItems.all}
+          favorites={state.favorites}
+          isLoading={isLoading}
+          onFavToggled={onFavToggled}
+          onItemSelected={onItemSelectedOnTab}
+        />
+        <TabPanel
+          title="favorites"
+          items={filteredItems.favorites}
+          favorites={state.favorites}
+          isLoading={isLoading}
+          onFavToggled={onFavToggled}
+          onItemSelected={onItemSelectedOnTab}
+        />
+        <TabPanel
+          title="recent"
+          items={filteredItems.recent}
+          favorites={state.favorites}
+          isLoading={isLoading}
+          onFavToggled={onFavToggled}
+          onItemSelected={onItemSelectedOnTab}
+        />
       </Tabs>
     </Container>
+  );
+};
+
+type TabPanelProps = {
+  title: string;
+  items: string[];
+  favorites: string[];
+  isLoading: boolean;
+  onItemSelected: (item: string) => void;
+  onFavToggled: (item: string) => void;
+};
+
+const TabPanel = ({ title, items, isLoading, favorites, onFavToggled, onItemSelected }: TabPanelProps) => {
+  const [windowSize, setWindowSize] = useState(getWindowSize());
+  useEffect(() => {
+    const handleWindowResize = () => setWindowSize(getWindowSize());
+    window.addEventListener("resize", handleWindowResize);
+    return () => window.removeEventListener("resize", handleWindowResize);
+  }, []);
+  return (
+    <Tabs.Panel value={title} pt="xs">
+      {isLoading && (
+        <Center mt={10}>
+          <Loader />
+        </Center>
+      )}
+      {!isLoading && items.length > 0 ? (
+        <FixedSizeList height={windowSize.innerHeight - 150} itemCount={items.length} itemSize={38} width={"100%"}>
+          {({ index, style }) => (
+            <Grid style={style} grow gutter={0} justify={"flex-start"} align="center">
+              <Grid.Col span="auto" sx={{ maxWidth: "30px" }}>
+                <ActionIcon color="orange" radius="xl" onClick={() => onFavToggled(items[index])}>
+                  <IconStar fill={favorites.includes(items[index]) ? "orange" : undefined} size={16} stroke={1.5} />
+                </ActionIcon>
+              </Grid.Col>
+              <Grid.Col span={11}>
+                <NavLink
+                  sx={(theme) => ({
+                    "&:hover": {
+                      backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.blue[0],
+                    },
+                    borderRadius: "5px",
+                  })}
+                  onClick={() => onItemSelected(items[index])}
+                  rightSection={<IconChevronRight size={12} stroke={1.5} />}
+                  noWrap
+                  label={<Text sx={{ maxWidth: "300px" }}>{items[index]}</Text>}
+                />
+              </Grid.Col>
+            </Grid>
+          )}
+        </FixedSizeList>
+      ) : (
+        <Center mt={20}>
+          <Text>Empty list</Text>
+        </Center>
+      )}
+    </Tabs.Panel>
   );
 };
 
