@@ -193,6 +193,9 @@ mod tests {
         async fn get_schema_by_id(&self, _: i32) -> Result<ApacheAvroSchema> {
             Ok(ApacheAvroSchema::parse_str(&self.schema).unwrap())
         }
+        async fn delete_subject(&self, _: &str) -> Result<()> {
+            todo!()
+        }
     }
     fn get_sut(schema: String) -> AvroParser<MockSchemaRegistry> {
         AvroParser::new(Arc::new(MockSchemaRegistry { schema }))

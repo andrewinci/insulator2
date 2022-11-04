@@ -10,7 +10,7 @@ use crate::api::{
     },
     configuration::{get_configuration, write_configuration},
     consumer::{get_consumer_state, get_records_page, start_consumer, stop_consumer},
-    schema_registry::{get_subject, list_subjects},
+    schema_registry::{delete_subject, get_subject, list_subjects},
 };
 use api::AppState;
 
@@ -27,6 +27,7 @@ fn main() {
             // schema
             list_subjects,
             get_subject,
+            delete_subject,
             // config
             get_configuration,
             write_configuration,

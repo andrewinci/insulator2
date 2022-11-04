@@ -22,6 +22,7 @@ pub trait SchemaRegistryClient {
     async fn list_subjects(&self) -> Result<Vec<String>>;
     async fn get_subject(&self, subject_name: &str) -> Result<Subject>;
     async fn get_schema_by_id(&self, id: i32) -> Result<AvroSchema>;
+    async fn delete_subject(&self, subject_name: &str) -> Result<()>;
 }
 
 #[derive(Clone)]
@@ -84,6 +85,11 @@ where
             compatibility: self.get_compatibility_level(subject_name).await?,
         })
     }
+    async fn delete_subject(&self, subject_name: &str) -> Result<()> {
+        debug!("Delete subject {}", subject_name);
+        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}", subject_name).as_str())?;
+        Ok(self.http_client.delete(url.as_str()).await?)
+    }
 
     async fn get_schema_by_id(&self, id: i32) -> Result<AvroSchema> {
         let mut cache = self.schema_cache_by_id.lock().await;
@@ -94,7 +100,7 @@ where
         } else {
             trace!("Schema not found in cache, retrieving");
             let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
-            let schema: GetSchemaByIdResult = self.http_client.get(url.as_ref()).await?;
+            let schema: GetSchemaByIdResult = self.http_client.get(url.as_str()).await?;
             let schema =
                 AvroSchema::parse_str(schema.schema.as_str()).map_err(|err| SchemaRegistryError::SchemaParsing {
                     message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),

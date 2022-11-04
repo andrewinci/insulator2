@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use log::error;
 use serde::de::DeserializeOwned;
 
 use super::error::Result;
@@ -7,6 +8,7 @@ use super::BasicAuth;
 #[async_trait]
 pub trait HttpClient {
     async fn get<T: 'static + DeserializeOwned>(&self, url: &str) -> Result<T>;
+    async fn delete(&self, url: &str) -> Result<()>;
 }
 
 pub struct ReqwestClient {
@@ -26,6 +28,23 @@ impl HttpClient for ReqwestClient {
         let response = request.send().await?;
         let res = response.json().await?;
         Ok(res)
+    }
+
+    async fn delete(&self, url: &str) -> Result<()> {
+        let mut request = self.client.delete(url.to_string());
+        request = request.timeout(core::time::Duration::from_secs(self.timeout_seconds));
+        if let Some(auth) = &self.auth {
+            request = request.basic_auth(auth.username.to_owned(), auth.password.to_owned());
+        }
+        let response = request.send().await?;
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            error!("{:?}", response.status());
+            Err(crate::lib::schema_registry::SchemaRegistryError::HttpClient {
+                message: "Error calling the delete".into(),
+            })
+        }
     }
 }
 
