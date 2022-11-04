@@ -1,5 +1,5 @@
 use crate::lib::{types::ParsedKafkaRecord, Error, Result};
-use parking_lot::{FairMutex};
+use parking_lot::FairMutex;
 use rusqlite::{named_params, Connection};
 use std::sync::Arc;
 

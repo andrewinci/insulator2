@@ -6,6 +6,10 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use url::Url;
 
+use apache_avro::Schema as AvroSchema;
+
+use crate::lib::Error;
+
 use super::error::Result;
 use super::http_client::{HttpClient, ReqwestClient};
 use super::types::{BasicAuth, Schema, Subject};
@@ -19,7 +23,7 @@ struct GetSchemaByIdResult {
 pub trait SchemaRegistryClient {
     async fn list_subjects(&self) -> Result<Vec<String>>;
     async fn get_subject(&self, subject_name: &str) -> Result<Subject>;
-    async fn get_schema_by_id(&self, id: i32) -> Result<String>;
+    async fn get_schema_by_id(&self, id: i32) -> Result<AvroSchema>;
 }
 
 #[derive(Clone)]
@@ -29,7 +33,7 @@ where
 {
     http_client: C,
     endpoint: String,
-    schema_cache_by_id: Arc<Mutex<HashMap<i32, String>>>,
+    schema_cache_by_id: Arc<Mutex<HashMap<i32, AvroSchema>>>,
 }
 
 impl CachedSchemaRegistry<ReqwestClient> {
@@ -83,10 +87,9 @@ where
         })
     }
 
-    async fn get_schema_by_id(&self, id: i32) -> Result<String> {
+    async fn get_schema_by_id(&self, id: i32) -> Result<AvroSchema> {
         let mut cache = self.schema_cache_by_id.lock().await;
         trace!("Getting schema {} by id.", id);
-
         if let Some(cached) = cache.get(&id) {
             trace!("Schema found in cache");
             Ok(cached.clone())
@@ -94,8 +97,13 @@ where
             trace!("Schema not found in cache, retrieving");
             let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
             let schema: GetSchemaByIdResult = self.http_client.get(url.as_ref()).await?;
-            cache.insert(id, schema.schema.clone());
-            Ok(schema.schema)
+            let schema = AvroSchema::parse_str(schema.schema.as_str())
+                .map_err(|err| Error::AvroParse {
+                    message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
+                })
+                .expect("todo");
+            cache.insert(id, schema.clone());
+            Ok(schema)
         }
     }
 }

@@ -34,7 +34,7 @@ where
 
         let id = get_schema_id(raw)?;
 
-        let raw_schema = self
+        let schema = self
             .schema_registry_client
             .get_schema_by_id(id)
             .await
@@ -45,9 +45,6 @@ where
                     err.to_string()
                 ),
             })?;
-        let schema = Schema::parse_str(raw_schema.as_str()).map_err(|err| Error::AvroParse {
-            message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
-        })?;
         let mut data = Cursor::new(&raw[5..]);
         let record = from_avro_datum(&schema, &mut data, None).map_err(|err| Error::AvroParse {
             message: format!("{}\n{}", "Unable to parse the avro record", err),
@@ -193,8 +190,8 @@ mod tests {
         async fn get_subject(&self, _: &str) -> Result<Subject> {
             todo!()
         }
-        async fn get_schema_by_id(&self, _: i32) -> Result<String> {
-            Ok(self.schema.clone())
+        async fn get_schema_by_id(&self, _: i32) -> Result<ApacheAvroSchema> {
+            Ok(ApacheAvroSchema::parse_str(&self.schema).unwrap())
         }
     }
     fn get_sut(schema: String) -> AvroParser<MockSchemaRegistry> {
