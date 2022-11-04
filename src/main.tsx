@@ -34,6 +34,9 @@ const App = () => {
               styles={(theme) => ({
                 main: {
                   backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[8] : theme.colors.gray[0],
+                  paddingRight: 0,
+                  // paddingTop: 0 //todo
+                  //paddingBottom: 0,
                 },
               })}>
               <Routing />
