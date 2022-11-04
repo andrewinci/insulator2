@@ -1,3 +1,25 @@
+# [1.17.0](https://github.com/andrewinci/insulator2/compare/v1.16.0...v1.17.0) (2022-11-04)
+
+### Bug Fixes
+
+- **be:** Use fair mutex to syncronise multiple consumers writing to sqlite ([b95b2b2](https://github.com/andrewinci/insulator2/commit/b95b2b2d453ee23454d823f76aa6752f0735044c))
+- **fe:** remove padding in the main page ([7066e7f](https://github.com/andrewinci/insulator2/commit/7066e7fb760585bbdcd5ac6f0cd96cd5a35a33ad))
+- Get result size using the query ([971674a](https://github.com/andrewinci/insulator2/commit/971674a8b66504eee84f2654e6108f22de483618))
+
+### Features
+
+- add button to delete a specific schema version ([b54e0d2](https://github.com/andrewinci/insulator2/commit/b54e0d2a09d024e03528828751dd120c9fb45a80))
+- add button to delete a topic ([d7005e6](https://github.com/andrewinci/insulator2/commit/d7005e6cdb14c75065d0db6b7fe72313508c4010))
+- add delete schema button ([436dd58](https://github.com/andrewinci/insulator2/commit/436dd58c6847c274ab6781189c6b4724de268274))
+- **fe:** click enter to select the first cluster from the search bar ([ff4488c](https://github.com/andrewinci/insulator2/commit/ff4488c57ed979ae1eeee2898efb2ca03084aa4c))
+- **fe:** show loader between pages in records-list ([b1523ae](https://github.com/andrewinci/insulator2/commit/b1523ae781820815172385fe4f4596faa55b9174))
+- **ux:** double enter to select the first item that match the search ([0f756f9](https://github.com/andrewinci/insulator2/commit/0f756f938aff08475849b1246cfa0782afa77b3c))
+- **ux:** show query in an allotment instead of a modal ([4ef8911](https://github.com/andrewinci/insulator2/commit/4ef8911be345a4d51653eaeb2c6153fa51f30f5e))
+
+### Performance Improvements
+
+- **be:** cache parsed avro schema ([b229189](https://github.com/andrewinci/insulator2/commit/b229189b0ea1ad1593c8f9f59d9a9c7ef90f57ba))
+
 # [1.16.0](https://github.com/andrewinci/insulator2/compare/v1.15.0...v1.16.0) (2022-11-03)
 
 ### Bug Fixes
