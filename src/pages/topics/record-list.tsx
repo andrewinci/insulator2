@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Paper, Text, Group } from "@mantine/core";
+import { Paper, Text, Group, Loader, Center } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -86,7 +86,9 @@ export const RecordsList = (props: RecordsListProps) => {
                 }}
               />
             ) : (
-              <Text key={`load-more-${virtualItem.index}`}>No records to show</Text>
+              <Center key={`load-more-${virtualItem.index}`}>
+                <Loader></Loader>
+              </Center>
             )
           )}
         </div>
