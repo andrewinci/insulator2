@@ -1,17 +1,4 @@
-import {
-  Container,
-  Divider,
-  Group,
-  NavLink,
-  Loader,
-  Center,
-  ActionIcon,
-  Tooltip,
-  Text,
-  Tabs,
-  Badge,
-  Grid,
-} from "@mantine/core";
+import { Container, Group, NavLink, Loader, Center, ActionIcon, Tooltip, Text, Tabs, Badge, Grid } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconStar } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
@@ -146,8 +133,7 @@ export const ItemList = (props: ItemListProps) => {
 
   return (
     <Container>
-      <Group align={"center"} position={"apart"}>
-        <PageHeader title={title} subtitle={`Total: ${props.items.length}`} />
+      <PageHeader title={title} subtitle={`Total: ${props.items.length}`}>
         <SearchInput
           placeholder={userSettings.useRegex ? "Search (regex)" : "Search"}
           value={state.search}
@@ -165,8 +151,7 @@ export const ItemList = (props: ItemListProps) => {
             </ActionIcon>
           </Tooltip>
         </Group>
-      </Group>
-      <Divider mt={10} />
+      </PageHeader>
       <Tabs mt={10} variant="pills" defaultValue="all">
         <Tabs.List grow>
           <TabHeader title="All" icon="all" count={props.items.length} filtered={filteredItems.all.length} />

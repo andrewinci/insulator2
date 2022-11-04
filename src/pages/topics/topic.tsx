@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Button, Center, Container, Divider, Group, Loader, Tooltip, Text } from "@mantine/core";
+import { ActionIcon, Badge, Button, Center, Container, Group, Loader, Tooltip, Text } from "@mantine/core";
 import { IconInfoCircle } from "@tabler/icons";
 import { RecordsList } from "./record-list";
 import { getConsumerState, stopConsumer } from "../../tauri/consumer";
@@ -45,20 +45,17 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
       <Allotment vertical>
         <Allotment.Pane minSize={300}>
           <Container style={{ maxWidth: "100%" }}>
-            <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
-              <PageHeader
-                title={topicName}
-                subtitle={`Estimated Records: ${estimatedRecord ?? "..."}, Cleanup policy: ${
-                  topicInfo?.cleanupPolicy ?? "..."
-                }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}
-              />
+            <PageHeader
+              title={topicName}
+              subtitle={`Estimated Records: ${estimatedRecord ?? "..."}, Cleanup policy: ${
+                topicInfo?.cleanupPolicy ?? "..."
+              }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}>
               <Tooltip position="bottom" label="Topic info">
                 <ActionIcon>
                   <IconInfoCircle />
                 </ActionIcon>
               </Tooltip>
-            </Group>
-            <Divider my={10} />
+            </PageHeader>
             {isLoading && (
               <Center mt={10}>
                 <Loader />

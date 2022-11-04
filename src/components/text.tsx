@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Stack, Title, Text } from "@mantine/core";
+import { Stack, Title, Text, Group, Divider } from "@mantine/core";
 
 export const SingleLineTitle = styled(Title)`
   overflow: hidden;
@@ -7,9 +7,23 @@ export const SingleLineTitle = styled(Title)`
   white-space: nowrap;
 `;
 
-export const PageHeader = ({ title, subtitle }: { title: string; subtitle: string }) => (
-  <Stack spacing={0}>
-    <SingleLineTitle size={19}>{title}</SingleLineTitle>
-    <Text size={13}>{subtitle}</Text>
-  </Stack>
+export const PageHeader = ({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children?: React.ReactNode;
+}) => (
+  <>
+    <Group mt={13} align={"center"} position={"apart"} noWrap>
+      <Stack spacing={0}>
+        <SingleLineTitle size={19}>{title}</SingleLineTitle>
+        <Text size={13}>{subtitle}</Text>
+      </Stack>
+      {children}
+    </Group>
+    <Divider my={13} />
+  </>
 );
