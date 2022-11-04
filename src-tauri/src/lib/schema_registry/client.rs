@@ -23,6 +23,7 @@ pub trait SchemaRegistryClient {
     async fn get_subject(&self, subject_name: &str) -> Result<Subject>;
     async fn get_schema_by_id(&self, id: i32) -> Result<AvroSchema>;
     async fn delete_subject(&self, subject_name: &str) -> Result<()>;
+    async fn delete_version(&self, subject_name: &str, version: i32) -> Result<()>;
 }
 
 #[derive(Clone)]
@@ -85,9 +86,17 @@ where
             compatibility: self.get_compatibility_level(subject_name).await?,
         })
     }
+
     async fn delete_subject(&self, subject_name: &str) -> Result<()> {
         debug!("Delete subject {}", subject_name);
         let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}", subject_name).as_str())?;
+        Ok(self.http_client.delete(url.as_str()).await?)
+    }
+
+    async fn delete_version(&self, subject_name: &str, version: i32) -> Result<()> {
+        debug!("Delete subject {} version {}", subject_name, version);
+        let url =
+            Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/{}", subject_name, version).as_str())?;
         Ok(self.http_client.delete(url.as_str()).await?)
     }
 

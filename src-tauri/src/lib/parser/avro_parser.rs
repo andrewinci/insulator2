@@ -196,6 +196,10 @@ mod tests {
         async fn delete_subject(&self, _: &str) -> Result<()> {
             todo!()
         }
+
+        async fn delete_version(&self, _: &str, _: i32) -> Result<()> {
+            todo!()
+        }
     }
     fn get_sut(schema: String) -> AvroParser<MockSchemaRegistry> {
         AvroParser::new(Arc::new(MockSchemaRegistry { schema }))

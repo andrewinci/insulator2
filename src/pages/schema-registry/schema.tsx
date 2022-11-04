@@ -20,7 +20,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "../../components";
 import { useNotifications } from "../../providers";
-import { deleteSubject, getSubject } from "../../tauri/schema-registry";
+import { deleteSubject, deleteSubjectVersion, getSubject } from "../../tauri/schema-registry";
 
 type SchemaProps = {
   schemaName: string;
@@ -46,7 +46,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
     <Container>
       <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
         <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`} />
-        <Tool clusterId={clusterId} subject={schemaName} version={state?.version} />
+        {state?.version && <Tool clusterId={clusterId} subject={schemaName} version={state.version} />}
       </Group>
       <Divider my={10} />
       {!isLoading && subject && (
@@ -81,7 +81,7 @@ const CustomPrism = styled(Prism)`
   }
 `;
 
-const Tool = ({ clusterId, subject, version }: { clusterId: string; subject: string; version?: number }) => {
+const Tool = ({ clusterId, subject, version }: { clusterId: string; subject: string; version: number }) => {
   const navigate = useNavigate();
   const { success } = useNotifications();
   const openDeleteSubjectModal = () =>
@@ -100,7 +100,7 @@ const Tool = ({ clusterId, subject, version }: { clusterId: string; subject: str
         }),
     });
 
-  const _openDeleteVersionModal = () =>
+  const openDeleteVersionModal = () =>
     openConfirmModal({
       title: "Are you sure to delete this version of the schema?",
       children: (
@@ -109,7 +109,11 @@ const Tool = ({ clusterId, subject, version }: { clusterId: string; subject: str
         </Text>
       ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: () => navigate(`/cluster/${clusterId}/schemas`),
+      onConfirm: async () =>
+        await deleteSubjectVersion(clusterId, subject, version).then((_) => {
+          success(`Schema version ${version} deleted successfully`);
+          navigate(`/cluster/${clusterId}/schemas`);
+        }),
     });
 
   return (
@@ -121,9 +125,9 @@ const Tool = ({ clusterId, subject, version }: { clusterId: string; subject: str
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Tools</Menu.Label>
-        {/* <Menu.Item color="red" icon={<IconTrash size={14} />} onClick={openDeleteVersionModal}>
+        <Menu.Item color="red" icon={<IconTrash size={14} />} onClick={openDeleteVersionModal}>
           Delete selected version
-        </Menu.Item> */}
+        </Menu.Item>
         <Menu.Item color="red" icon={<IconTrash size={14} />} onClick={openDeleteSubjectModal}>
           Delete subject
         </Menu.Item>
