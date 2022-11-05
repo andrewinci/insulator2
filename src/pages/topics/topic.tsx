@@ -146,7 +146,7 @@ const Tools = ({ clusterId, topic }: { clusterId: string; topic: string }) => {
       labels: { confirm: "Confirm", cancel: "Cancel" },
       onConfirm: async () =>
         await deleteTopic(clusterId, topic).then((_) => {
-          success(`Topic ${topic} delete successfully`);
+          success(`Topic ${topic} deleted successfully`);
           navigate(`/cluster/${clusterId}/topics`);
         }),
     });

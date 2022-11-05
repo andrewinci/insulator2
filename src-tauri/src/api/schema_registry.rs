@@ -28,7 +28,7 @@ pub async fn get_subject(subject_name: &str, cluster_id: &str, state: tauri::Sta
 
 #[tauri::command]
 pub async fn delete_subject(subject_name: &str, cluster_id: &str, state: tauri::State<'_, AppState>) -> Result<()> {
-    debug!("Delete subject {}", subject_name);
+    debug!("Deleting subject {}", subject_name);
     let client = state.get_schema_reg_client(cluster_id).await.ok_or(TauriError {
         error_type: "Configuration error".into(),
         message: "Missing schema registry configuration".into(),
@@ -43,7 +43,7 @@ pub async fn delete_subject_version(
     cluster_id: &str,
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
-    debug!("Delete subject {} version {}", subject_name, version);
+    debug!("Deleting subject {} version {}", subject_name, version);
     let client = state.get_schema_reg_client(cluster_id).await.ok_or(TauriError {
         error_type: "Configuration error".into(),
         message: "Missing schema registry configuration".into(),

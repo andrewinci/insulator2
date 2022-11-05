@@ -1,14 +1,21 @@
 import { Text, Container, Group, Stack, Grid, Center, Loader, Menu, Accordion, ActionIcon } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
 import { openConfirmModal } from "@mantine/modals";
-import { IconFlag, IconPlayerPlay, IconRefresh, IconTool } from "@tabler/icons";
+import { IconFlag, IconPlayerPlay, IconRefresh, IconTool, IconTrash } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { PageHeader } from "../../components";
 import { ConsumerGroupInfo, ConsumerSettingsFrom } from "../../models";
 import { useNotifications } from "../../providers";
-import { describeConsumerGroup, getConsumerGroupState, getLastOffsets, setConsumerGroup } from "../../tauri/admin";
+import {
+  deleteConsumerGroup,
+  describeConsumerGroup,
+  getConsumerGroupState,
+  getLastOffsets,
+  setConsumerGroup,
+} from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
   const { data: consumerGroupState } = useQuery(["getConsumerGroupState", clusterId, name], () =>
@@ -38,13 +45,15 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
   return (
     <Container>
       <PageHeader title={name} subtitle={`topics: ${topicOffsetMap?.length}, status: ${consumerGroupState ?? "..."}`}>
-        <Tools
-          loading={isLoading}
-          disabled={isRefetching}
-          clusterId={clusterId}
-          data={consumerGroupInfo}
-          refresh={refetch}
-        />
+        {consumerGroupInfo && (
+          <Tools
+            loading={isLoading}
+            disabled={isRefetching}
+            clusterId={clusterId}
+            data={consumerGroupInfo}
+            refresh={refetch}
+          />
+        )}
       </PageHeader>
       <Stack m={10} align={"stretch"} justify={"flex-start"}>
         {isLoading && (
@@ -147,15 +156,15 @@ const Tools = (props: {
   loading: boolean;
   disabled: boolean;
   clusterId: string;
-  data: ConsumerGroupInfo | undefined;
+  data: ConsumerGroupInfo;
   refresh: () => void;
 }) => {
   const { clusterId, loading, disabled, data, refresh } = props;
   const [state, setState] = useSetState<{ isResetting: boolean }>({ isResetting: false });
+  const navigate = useNavigate();
   const { success } = useNotifications();
 
   const resetOffset = async (offset: ConsumerSettingsFrom) => {
-    if (!data) return;
     setState({ isResetting: true });
     try {
       await setConsumerGroup(
@@ -173,7 +182,6 @@ const Tools = (props: {
   };
 
   const showResetOffsetModal = (offset: ConsumerSettingsFrom) => {
-    if (!data) return;
     openConfirmModal({
       title: "Reset consumer group to the beginning",
       children: (
@@ -192,6 +200,25 @@ const Tools = (props: {
       onConfirm: async () => await resetOffset(offset),
     });
   };
+
+  const openDeleteGroupModal = () =>
+    openConfirmModal({
+      title: "Are you sure to delete this consumer group?",
+      children: (
+        <>
+          <Text color="red" size="sm">
+            The consumer group {data.name} will be deleted. This action is not reversible!
+          </Text>
+          <Text size="sm">Note: this operation may fail if the ACLs do not allow the deletion.</Text>
+        </>
+      ),
+      labels: { confirm: "Confirm", cancel: "Cancel" },
+      onConfirm: async () =>
+        await deleteConsumerGroup(clusterId, data.name).then((_) => {
+          success(`Consumer group ${data.name} deleted successfully`);
+          navigate(`/cluster/${clusterId}/consumers`);
+        }),
+    });
 
   return (
     <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
@@ -216,6 +243,10 @@ const Tools = (props: {
           Reset to end
         </Menu.Item>
         {/* <Menu.Item icon={<IconClock size={14} />}>Reset to a point in time</Menu.Item> */}
+        <Menu.Label>Danger</Menu.Label>
+        <Menu.Item color={"red"} icon={<IconTrash size={14} />} onClick={() => openDeleteGroupModal()}>
+          Delete
+        </Menu.Item>
       </Menu.Dropdown>
     </Menu>
   );

@@ -9,19 +9,25 @@ export const ConsumerGroupsPage = () => {
     throw Error("Invalid path. Missing clusterId.");
   }
   const navigate = useNavigate();
-  return (
-    <Allotment>
-      <Allotment.Pane minSize={430} maxSize={consumerName ? 600 : undefined}>
-        <ConsumerGroupsList
-          clusterId={clusterId}
-          onConsumerSelected={(selectedConsumer) => navigate(`/cluster/${clusterId}/consumer/${selectedConsumer}`)}
-        />
-      </Allotment.Pane>
-      {consumerName && (
+  const consumerGroupList = (
+    <ConsumerGroupsList
+      clusterId={clusterId}
+      onConsumerSelected={(selectedConsumer) => navigate(`/cluster/${clusterId}/consumer/${selectedConsumer}`)}
+    />
+  );
+  if (consumerName) {
+    return (
+      <Allotment>
+        <Allotment.Pane minSize={430} maxSize={consumerName ? 600 : undefined}>
+          {consumerGroupList}
+        </Allotment.Pane>
+
         <Allotment.Pane minSize={300}>
           <ConsumerGroup name={consumerName} clusterId={clusterId} />
         </Allotment.Pane>
-      )}
-    </Allotment>
-  );
+      </Allotment>
+    );
+  } else {
+    return consumerGroupList;
+  }
 };

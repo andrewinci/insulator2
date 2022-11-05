@@ -50,10 +50,18 @@ impl TopicAdmin for KafkaAdmin {
     }
 
     async fn delete_topic(&self, topic_name: &str) -> Result<()> {
-        self.admin_client
+        debug!("Deleting topic {}", topic_name);
+        let res = self
+            .admin_client
             .delete_topics(&[topic_name], &AdminOptions::default())
             .await?;
-        Ok(())
+        assert_eq!(res.len(), 1);
+        match res.first().unwrap() {
+            Ok(_) => Ok(()),
+            Err(err) => Err(Error::Kafka {
+                message: format!("Unable to delete the topic {}. Error {}", err.0, err.1),
+            }),
+        }
     }
 
     async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {

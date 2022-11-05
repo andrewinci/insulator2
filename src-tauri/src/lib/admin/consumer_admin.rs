@@ -8,8 +8,12 @@ use crate::lib::{
     configuration::build_kafka_client_config,
     consumer::{ConsumerOffsetConfiguration, KafkaConsumer},
     error::Result,
+    Error,
 };
-use rdkafka::consumer::{BaseConsumer, Consumer};
+use rdkafka::{
+    admin::AdminOptions,
+    consumer::{BaseConsumer, Consumer},
+};
 use rdkafka::{consumer::CommitMode, Offset};
 
 #[async_trait]
@@ -23,10 +27,26 @@ pub trait ConsumerGroupAdmin {
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
     async fn describe_consumer_group(&self, consumer_group_name: &str, ignore_cache: bool) -> Result<ConsumerGroupInfo>;
     fn get_consumer_group_state(&self, consumer_group_name: &str) -> Result<String>;
+    async fn delete_consumer_group(&self, consumer_group_name: &str) -> Result<()>;
 }
 
 #[async_trait]
 impl ConsumerGroupAdmin for KafkaAdmin {
+    async fn delete_consumer_group(&self, consumer_group_name: &str) -> Result<()> {
+        debug!("Deleting consumer group {}", consumer_group_name);
+        let res = self
+            .admin_client
+            .delete_groups(&[consumer_group_name], &AdminOptions::default())
+            .await?;
+        assert_eq!(res.len(), 1);
+        match res.first().unwrap() {
+            Ok(_) => Ok(()),
+            Err(err) => Err(Error::Kafka {
+                message: format!("Unable to delete the group {}. Error {}", err.0, err.1),
+            }),
+        }
+    }
+
     async fn set_consumer_group(
         &self,
         consumer_group_name: &str,
@@ -91,7 +111,6 @@ impl ConsumerGroupAdmin for KafkaAdmin {
             })
             .collect();
         debug!("Retrieve completed");
-        debug!("{:?}", offsets);
         Ok(ConsumerGroupInfo {
             name: consumer_group_name.into(),
             offsets,

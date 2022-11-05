@@ -88,13 +88,13 @@ where
     }
 
     async fn delete_subject(&self, subject_name: &str) -> Result<()> {
-        debug!("Delete subject {}", subject_name);
+        debug!("Deleting subject {}", subject_name);
         let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}", subject_name).as_str())?;
         Ok(self.http_client.delete(url.as_str()).await?)
     }
 
     async fn delete_version(&self, subject_name: &str, version: i32) -> Result<()> {
-        debug!("Delete subject {} version {}", subject_name, version);
+        debug!("Deleting subject {} version {}", subject_name, version);
         let url =
             Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/{}", subject_name, version).as_str())?;
         Ok(self.http_client.delete(url.as_str()).await?)

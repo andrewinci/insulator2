@@ -25,7 +25,7 @@ pub async fn get_topic_info(cluster_id: &str, topic_name: &str, state: tauri::St
 
 #[tauri::command]
 pub async fn delete_topic(cluster_id: &str, topic_name: &str, state: tauri::State<'_, AppState>) -> Result<()> {
-    debug!("Retrieve topic info for {}", topic_name);
+    debug!("Deleting topic {}", topic_name);
     let cluster = state.get_cluster(cluster_id).await;
     Ok(cluster.admin_client.delete_topic(topic_name).await?)
 }
@@ -105,4 +105,15 @@ pub async fn get_last_offsets(
     debug!("Get last offset for topics {:?}", topic_names);
     let cluster = state.get_cluster(cluster_id).await;
     Ok(cluster.admin_client.get_last_offsets(&topic_names).await?)
+}
+
+#[tauri::command]
+pub async fn delete_consumer_group(
+    cluster_id: &str,
+    consumer_group_name: &str,
+    state: tauri::State<'_, AppState>,
+) -> Result<()> {
+    debug!("Deleting consumer group {}", consumer_group_name);
+    let cluster = state.get_cluster(cluster_id).await;
+    Ok(cluster.admin_client.delete_consumer_group(consumer_group_name).await?)
 }

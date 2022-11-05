@@ -108,11 +108,22 @@ export const deleteTopic = (clusterId: string, topicName: string): Promise<void>
     });
     throw err;
   });
+
 export const getLastOffsets = (clusterId: string, topicNames: [string]): Promise<Record<string, [PartitionOffset]>> =>
   invoke<Record<string, [PartitionOffset]>>("get_last_offsets", { clusterId, topicNames }).catch((err: TauriError) => {
     addNotification({
       type: "error",
       title: `Unable to retrieve the last offset`,
+      description: format(err),
+    });
+    throw err;
+  });
+
+export const deleteConsumerGroup = (clusterId: string, consumerGroupName: string): Promise<void> =>
+  invoke<void>("delete_consumer_group", { clusterId, consumerGroupName }).catch((err: TauriError) => {
+    addNotification({
+      type: "error",
+      title: `Unable to delete the consumer group`,
       description: format(err),
     });
     throw err;
