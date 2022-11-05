@@ -1,4 +1,4 @@
-import { Text, Button, Container, Divider, Group, Stack, Grid, Center, Loader, Menu, Accordion } from "@mantine/core";
+import { Text, Button, Container, Group, Stack, Grid, Center, Loader, Menu, Accordion } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
 import { openConfirmModal } from "@mantine/modals";
 import { IconFlag, IconPlayerPlay, IconRefresh, IconTool } from "@tabler/icons";
@@ -37,8 +37,6 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
   return (
     <Container>
       <PageHeader title={name} subtitle={`topics: ${topicOffsetMap?.length}, status: ${consumerGroupState ?? "..."}`} />
-      <Divider my={10} />
-
       <Stack m={10} align={"stretch"} justify={"flex-start"}>
         <ResetOffsetMenu
           loading={isLoading}
