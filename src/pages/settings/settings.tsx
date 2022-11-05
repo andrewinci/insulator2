@@ -1,6 +1,7 @@
-import { Button, Checkbox, Container, Divider, Select, Stack, Title, Text, Center } from "@mantine/core";
+import { Button, Checkbox, Container, Select, Stack, Text, Center } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { IconTrash } from "@tabler/icons";
+import { PageHeader } from "../../components";
 import { AppTheme } from "../../models";
 import { useNotifications } from "../../providers";
 import { useUserSettings } from "../../providers/user-settings-provider";
@@ -24,8 +25,7 @@ export const Settings = () => {
 
   return (
     <Container>
-      <Title mb={10}>Settings</Title>
-      <Divider mb={10}></Divider>
+      <PageHeader title={"Settings"} subtitle={"Customize insulator"} />
       <Center>
         <Stack sx={{ width: "400px" }}>
           <Select
