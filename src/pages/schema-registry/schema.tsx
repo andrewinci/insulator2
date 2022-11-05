@@ -1,17 +1,5 @@
 import styled from "@emotion/styled";
-import {
-  ActionIcon,
-  Center,
-  Container,
-  Divider,
-  Group,
-  Loader,
-  Menu,
-  ScrollArea,
-  Select,
-  Tooltip,
-  Text,
-} from "@mantine/core";
+import { ActionIcon, Center, Container, Group, Loader, Menu, ScrollArea, Select, Tooltip, Text } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { Prism } from "@mantine/prism";
 import { IconTool, IconTrash, IconVersions } from "@tabler/icons";
@@ -44,11 +32,9 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
 
   return (
     <Container>
-      <Group noWrap style={{ maxHeight: 50 }} position={"apart"}>
-        <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`} />
+      <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`}>
         {state?.version && <Tools clusterId={clusterId} subject={schemaName} version={state.version} />}
-      </Group>
-      <Divider my={10} />
+      </PageHeader>
       {!isLoading && subject && (
         <Group>
           <Tooltip position="right" label="Schema version">
@@ -61,6 +47,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
           </Tooltip>
         </Group>
       )}
+
       <ScrollArea mt={20}>
         <Center hidden={!isLoading} mt={10}>
           <Loader />
