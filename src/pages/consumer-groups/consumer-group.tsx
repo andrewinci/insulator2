@@ -1,4 +1,4 @@
-import { Text, Button, Container, Group, Stack, Grid, Center, Loader, Menu, Accordion } from "@mantine/core";
+import { Text, Container, Group, Stack, Grid, Center, Loader, Menu, Accordion, ActionIcon } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
 import { openConfirmModal } from "@mantine/modals";
 import { IconFlag, IconPlayerPlay, IconRefresh, IconTool } from "@tabler/icons";
@@ -7,6 +7,7 @@ import React from "react";
 import { useMemo } from "react";
 import { PageHeader } from "../../components";
 import { ConsumerGroupInfo, ConsumerSettingsFrom } from "../../models";
+import { useNotifications } from "../../providers";
 import { describeConsumerGroup, getConsumerGroupState, getLastOffsets, setConsumerGroup } from "../../tauri/admin";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {
@@ -36,16 +37,16 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
 
   return (
     <Container>
-      <PageHeader title={name} subtitle={`topics: ${topicOffsetMap?.length}, status: ${consumerGroupState ?? "..."}`} />
-      <Stack m={10} align={"stretch"} justify={"flex-start"}>
-        <ResetOffsetMenu
+      <PageHeader title={name} subtitle={`topics: ${topicOffsetMap?.length}, status: ${consumerGroupState ?? "..."}`}>
+        <Tools
           loading={isLoading}
           disabled={isRefetching}
           clusterId={clusterId}
           data={consumerGroupInfo}
           refresh={refetch}
         />
-
+      </PageHeader>
+      <Stack m={10} align={"stretch"} justify={"flex-start"}>
         {isLoading && (
           <Center mt={10}>
             <Loader />
@@ -142,7 +143,7 @@ const ConsumerGroupTopicDetails = ({
   );
 };
 
-const ResetOffsetMenu = (props: {
+const Tools = (props: {
   loading: boolean;
   disabled: boolean;
   clusterId: string;
@@ -151,23 +152,34 @@ const ResetOffsetMenu = (props: {
 }) => {
   const { clusterId, loading, disabled, data, refresh } = props;
   const [state, setState] = useSetState<{ isResetting: boolean }>({ isResetting: false });
+  const { success } = useNotifications();
 
-  const resetOffset = (offset: ConsumerSettingsFrom) => {
+  const resetOffset = async (offset: ConsumerSettingsFrom) => {
+    if (!data) return;
+    setState({ isResetting: true });
+    try {
+      await setConsumerGroup(
+        clusterId,
+        data.name,
+        data.offsets.map((o) => o.topic),
+        offset
+      ).then((_) => {
+        success("Consumer group updated successfully");
+        refresh();
+      });
+    } finally {
+      setState({ isResetting: false });
+    }
+  };
+
+  const showResetOffsetModal = (offset: ConsumerSettingsFrom) => {
     if (!data) return;
     openConfirmModal({
-      title: "Reset offset",
+      title: "Reset consumer group to the beginning",
       children: (
         <>
           <Text size="sm">
-            Are you sure to reset the offset of the consumer group{" "}
-            <Text component="span" weight={"bold"}>
-              {data.name}
-            </Text>{" "}
-            to{" "}
-            <Text component="span" weight={"bold"}>
-              {offset.toString()}
-            </Text>
-            ?
+            {`Are you sure to reset the offset of ALL topics in the consumer group ${data.name} to the ${offset}?`}
           </Text>
           <Text my={10} size="sm" color={"red"}>
             This action is irreversible.
@@ -175,46 +187,36 @@ const ResetOffsetMenu = (props: {
         </>
       ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
-      onCancel: () => console.log("Cancel"),
-      onConfirm: async () => {
-        if (!data) return;
-        setState({ isResetting: true });
-        try {
-          await setConsumerGroup(
-            clusterId,
-            data.name,
-            data.offsets.map((o) => o.topic),
-            offset
-          ).then((_) => refresh());
-        } finally {
-          setState({ isResetting: false });
-        }
-      },
+      closeOnEscape: false,
+      closeOnClickOutside: false,
+      onConfirm: async () => await resetOffset(offset),
     });
   };
 
   return (
-    <Group>
-      <Button mb={10} size="xs" leftIcon={<IconRefresh />} onClick={() => refresh()} loading={loading || disabled}>
-        Refresh
-      </Button>
-
-      <Menu shadow="md" width={200}>
-        <Menu.Target>
-          <Button mb={10} size="xs" leftIcon={<IconTool />} disabled={loading || disabled} loading={state.isResetting}>
-            Reset offset
-          </Button>
-        </Menu.Target>
-        <Menu.Dropdown>
-          <Menu.Item onClick={() => resetOffset("Beginning")} icon={<IconPlayerPlay size={14} />}>
-            Reset to the beginning
-          </Menu.Item>
-          <Menu.Item onClick={() => resetOffset("End")} icon={<IconFlag size={14} />}>
-            Reset to end
-          </Menu.Item>
-          {/* <Menu.Item icon={<IconClock size={14} />}>Reset to a point in time</Menu.Item> */}
-        </Menu.Dropdown>
-      </Menu>
-    </Group>
+    <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
+      <Menu.Target>
+        <ActionIcon size={28} sx={{ marginRight: "10px" }}>
+          {state.isResetting || loading || disabled ? <Loader /> : <IconTool />}
+        </ActionIcon>
+      </Menu.Target>
+      <Menu.Dropdown>
+        <Menu.Label>Tools</Menu.Label>
+        <Menu.Item icon={<IconRefresh size={14} />} onClick={() => refresh()} disabled={loading || disabled}>
+          Refresh
+        </Menu.Item>
+        <Menu.Label>Reset offset</Menu.Label>
+        <Menu.Item
+          color={"orange"}
+          onClick={() => showResetOffsetModal("Beginning")}
+          icon={<IconPlayerPlay size={14} />}>
+          Reset to the beginning
+        </Menu.Item>
+        <Menu.Item color={"orange"} onClick={() => showResetOffsetModal("End")} icon={<IconFlag size={14} />}>
+          Reset to end
+        </Menu.Item>
+        {/* <Menu.Item icon={<IconClock size={14} />}>Reset to a point in time</Menu.Item> */}
+      </Menu.Dropdown>
+    </Menu>
   );
 };

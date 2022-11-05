@@ -30,7 +30,12 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
         onItemSelected={onConsumerSelected}
         onRefreshList={refetch}
       />
-      <Modal opened={opened} onClose={() => setOpened(false)} title={<Title order={3}>Create consumer group</Title>}>
+      <Modal
+        closeOnEscape={false}
+        closeOnClickOutside={false}
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title={<Title order={3}>Create consumer group</Title>}>
         <CreateConsumerGroupModal
           clusterId={clusterId}
           close={() => {
