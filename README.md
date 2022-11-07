@@ -1,6 +1,23 @@
-# Insulator2
+<h1 align="center">
+  <br>
+  <img src="src-tauri/icons/icon.png" alt="Insulator" width="200">
+  <br>
+  Insulator 2
+  <br>
+</h1>
 
-Insulator on Tauri.
+<h4 align="center">A tool for devs to debug Kafka based applications and services</h4>
+<br/>
+<p align="center">
+
+<a href="https://github.com/andrewinci/insulator2/actions/workflows/ci.yml">
+    <img src="https://github.com/andrewinci/insulator2/actions/workflows/ci.yml/badge.svg"
+         alt="CI"/>
+  </a>
+  
+
+</p>
+
 
 ## Dev
 
