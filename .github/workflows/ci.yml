@@ -70,11 +70,18 @@ jobs:
           mkdir dist
           yarn lint && yarn test && yarn tauri build -b msi
 
-      - name: (Linux) Test and build
+      - name: (Linux) Coverage and build
         if: matrix.os == 'ubuntu-latest' && !startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir dist
-          yarn lint && yarn test && yarn tauri build -b deb appimage
+          cargo install cargo-tarpaulin
+          yarn lint && yarn coverage && yarn tauri build -b deb appimage
+          # upload coverage
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov
+        env: 
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Build release artifact
         if: startsWith(github.ref, 'refs/tags/v')
