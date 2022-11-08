@@ -19,7 +19,21 @@
   <img src="https://codecov.io/github/andrewinci/insulator2/branch/main/graph/badge.svg?token=pGmWpeLba1" alt="Coverage"/> 
  </a>
 
+ <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/andrewinci/insulator2?style=plastic">
+
+<a href="https://app.fossa.com/projects/custom%2B19254%2Fgithub.com%2Fandrewinci%2Finsulator2?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.com/api/projects/custom%2B19254%2Fgithub.com%2Fandrewinci%2Finsulator2.svg?type=shield"/></a>
+
 </p>
+
+## Installation
+
+Download the artifact for your operative system from the [last release](https://github.com/andrewinci/insulator2/releases/latest/).
+
+### Supported OSs:
+
+- MacOS
+- Windows 10
+- Debian/Ubuntu
 
 ## Dev
 
