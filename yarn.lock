@@ -206,7 +206,7 @@
     "@babel/plugin-syntax-jsx" "^7.18.6"
     "@babel/types" "^7.19.0"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.10.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.13.10", "@babel/runtime@^7.16.7", "@babel/runtime@^7.18.3", "@babel/runtime@^7.18.6", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.7":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.10.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.13.10", "@babel/runtime@^7.18.3", "@babel/runtime@^7.18.6", "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.7":
   version "7.20.1"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.20.1.tgz#1148bb33ab252b165a06698fde7576092a78b4a9"
   integrity sha512-mrzLkl6U9YLF8qpqI7TB82PESyEGjm/0Ly91jG575eVxMMlb8fYfOXFZIJ8XfLrJZQbm7dlKry2bJmXBUEkdFg==
@@ -947,11 +947,6 @@
   dependencies:
     "@babel/runtime" "^7.13.10"
 
-"@reach/observe-rect@^1.1.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@reach/observe-rect/-/observe-rect-1.2.0.tgz#d7a6013b8aafcc64c778a0ccb83355a11204d3b2"
-  integrity sha512-Ba7HmkFgfQxZqqaeIWWkNK0rEhpxVQHIoVyW1YDSkGsGIXzcaW4deC8B0pZrNSSyLTdIk7y+5olKt5+g0GmFIQ==
-
 "@remix-run/router@1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.0.3.tgz#953b88c20ea00d0eddaffdc1b115c08474aa295d"
@@ -1086,13 +1081,17 @@
     "@tanstack/query-core" "4.14.5"
     use-sync-external-store "^1.2.0"
 
-"@tanstack/react-virtual@^3.0.0-alpha.0":
-  version "3.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.0.0-alpha.0.tgz#2ca5a75fa609eca2b2ba622024d3aa3ee097bc30"
-  integrity sha512-WpHU/dt34NwZZ8qtiE05TF+nX/b1W6qrWZarO+s8jJFpPVicrTbJKp5Bjt4eSJuk7aYw272oEfsH3ABBRgj+3A==
+"@tanstack/react-virtual@^3.0.0-beta.21":
+  version "3.0.0-beta.21"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.0.0-beta.21.tgz#ad1a619aa57f5a150169fd7f39f1f79fe6b70645"
+  integrity sha512-GVLzOK/AX0ddGLeMlTaZBpqXeNcqhp7VUlMm+9ef5ecHLEwFR1vl5PISgIeUyrsipTOMoq1JP/U61sZeCgyjkw==
   dependencies:
-    "@babel/runtime" "^7.16.7"
-    "@reach/observe-rect" "^1.1.0"
+    "@tanstack/virtual-core" "3.0.0-beta.21"
+
+"@tanstack/virtual-core@3.0.0-beta.21":
+  version "3.0.0-beta.21"
+  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.0.0-beta.21.tgz#e4d826aaf5ab1741c4fe5348ea2eacadc5eff84b"
+  integrity sha512-knThjuCrDlTAd9xvYnl+RhYMbJ7N/lYYE5V02KASgWmofBZO5sHPoTV74926JEOHzZZ7yZzotNYzG51kA3hjoQ==
 
 "@tauri-apps/api@^1.1.0":
   version "1.1.0"
