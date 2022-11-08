@@ -44,7 +44,9 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
 
   return (
     <Container>
-      <PageHeader title={name} subtitle={`topics: ${topicOffsetMap?.length}, status: ${consumerGroupState ?? "..."}`}>
+      <PageHeader
+        title={name}
+        subtitle={`topics: ${topicOffsetMap?.length ?? "..."}, status: ${consumerGroupState ?? "..."}`}>
         {consumerGroupInfo && (
           <Tools
             loading={isLoading}
