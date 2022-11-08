@@ -18,10 +18,21 @@
  <a href="https://codecov.io/github/andrewinci/insulator2" > 
   <img src="https://codecov.io/github/andrewinci/insulator2/branch/main/graph/badge.svg?token=pGmWpeLba1" alt="Coverage"/> 
  </a>
+ 
+ <a href="https://snyk.io/test/github/andrewinci/insulator2">
+    <img src="https://snyk.io/test/github/andrewinci/insulator2/badge.svg"
+         alt="Snyk"/>
+  </a>
 
+
+<a href="https://app.fossa.com/projects/custom%2B19254%2Fgithub.com%2Fandrewinci%2Finsulator2?ref=badge_shield" alt="FOSSA Status">
+  <img src="https://app.fossa.com/api/projects/custom%2B19254%2Fgithub.com%2Fandrewinci%2Finsulator2.svg?type=shield"/>
+</a>
+
+<a href="https://github.com/andrewinci/insulator2/releases/latest/" > 
  <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/andrewinci/insulator2?style=plastic">
-
-<a href="https://app.fossa.com/projects/custom%2B19254%2Fgithub.com%2Fandrewinci%2Finsulator2?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.com/api/projects/custom%2B19254%2Fgithub.com%2Fandrewinci%2Finsulator2.svg?type=shield"/></a>
+ </a>
+ 
 
 </p>
 
