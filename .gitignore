@@ -17,6 +17,8 @@ dist/*
 coverage
 dist-ssr
 *.local
+*.profraw
+cobertura.xml
 
 # Editor directories and files
 .vscode/*
