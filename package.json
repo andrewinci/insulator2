@@ -7,7 +7,7 @@
     "postinstall": "husky install",
     "release": "semantic-release --repositoryUrl=\"https://github.com/andrewinci/insulator2.git\" --ci false",
     "lint:rust": "cd src-tauri && cargo fmt && cargo clippy",
-    "lint:ts": "prettier --write . && yarn eslint src/ --fix && yarn tsc --noemit",
+    "lint:ts": "prettier --write . && yarn eslint webapp/ --fix && yarn tsc --noemit",
     "lint": "yarn lint:rust && yarn lint:ts",
     "test:ts": "vitest run --dom --coverage",
     "test:rust": "cd src-tauri && cargo test",
