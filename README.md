@@ -14,10 +14,12 @@
     <img src="https://github.com/andrewinci/insulator2/actions/workflows/ci.yml/badge.svg"
          alt="CI"/>
   </a>
-  
+ 
+ <a href="https://codecov.io/github/andrewinci/insulator2" > 
+  <img src="https://codecov.io/github/andrewinci/insulator2/branch/main/graph/badge.svg?token=pGmWpeLba1" alt="Coverage"/> 
+ </a>
 
 </p>
-
 
 ## Dev
 

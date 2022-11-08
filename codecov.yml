@@ -1,0 +1,2 @@
+fixes:
+  - "src/::src-tauri/src/"

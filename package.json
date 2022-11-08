@@ -9,9 +9,12 @@
     "lint:rust": "cd src-tauri && cargo fmt && cargo clippy",
     "lint:ts": "prettier --write . && yarn eslint webapp/ --fix && yarn tsc --noemit",
     "lint": "yarn lint:rust && yarn lint:ts",
-    "test:ts": "vitest run --dom --coverage",
+    "test:ts": "vitest run --dom",
     "test:rust": "cd src-tauri && cargo test",
     "test": "yarn test:rust && yarn test:ts",
+    "coverage:rust": "cargo tarpaulin --root=src-tauri",
+    "coverage:ts": "vitest run --dom --coverage",
+    "coverage": "yarn coverage:rust && yarn coverage:ts",
     "dev": "vite",
     "build": "tsc && vite build",
     "tauri": "tauri"
