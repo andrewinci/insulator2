@@ -5,18 +5,28 @@ use std::path::PathBuf;
 use std::{fs, path::Path};
 
 #[derive(Default)]
-pub struct ConfigStore {}
+pub struct ConfigStore {
+    config_path: PathBuf,
+}
 
 impl ConfigStore {
     //todo: cache?
     pub fn new() -> Self {
-        ConfigStore {}
+        let mut config_path = home_dir().expect("Unable to retrieve the home directory");
+        config_path.push(".insulator2.config");
+        ConfigStore { config_path }
     }
+
+    fn from_config_path(config_path: &str) -> Self {
+        ConfigStore {
+            config_path: PathBuf::from(config_path),
+        }
+    }
+
     pub fn get_configuration(&self) -> Result<InsulatorConfig> {
-        let config_path = config_path();
-        let raw_config = (match Path::exists(&config_path) {
+        let raw_config = (match Path::exists(&self.config_path) {
             // read file content
-            true => fs::read_to_string(config_path),
+            true => fs::read_to_string(&self.config_path),
             // if the file doesn't exists return an empty string
             false => Ok("".to_owned()),
         })?;
@@ -35,15 +45,20 @@ impl ConfigStore {
                 None => {}
             };
         });
-        let config_path = config_path();
         let raw_config = serde_json::to_string_pretty(&configuration)?;
-        fs::write(config_path, raw_config)?;
+        fs::write(&self.config_path, raw_config)?;
         Ok(())
     }
 }
 
-fn config_path() -> PathBuf {
-    let mut config_path = home_dir().expect("Unable to retrieve the home directory");
-    config_path.push(".insulator2.config");
-    config_path
+#[cfg(test)]
+mod test_configuration {
+    use super::ConfigStore;
+
+    #[test]
+    fn retrieve_empty_config() {
+        let sut = ConfigStore::from_config_path("/tmp/insulator_test/config");
+        let res = sut.get_configuration();
+        assert!(res.is_ok())
+    }
 }
