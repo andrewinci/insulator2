@@ -12,7 +12,7 @@
     "test:ts": "vitest run --dom",
     "test:rust": "cd src-tauri && cargo test",
     "test": "yarn test:rust && yarn test:ts",
-    "coverage:rust": "cargo tarpaulin --root=src-tauri",
+    "coverage:rust": "cargo tarpaulin --root=src-tauri --out Xml",
     "coverage:ts": "vitest run --dom --coverage",
     "coverage": "yarn coverage:rust && yarn coverage:ts",
     "dev": "vite",

@@ -77,10 +77,8 @@ jobs:
           cargo install cargo-tarpaulin
           yarn lint && yarn coverage && yarn tauri build -b deb appimage
           # upload coverage
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
-          ./codecov
-        env: 
+          bash <(curl -s https://codecov.io/bash)
+        env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Build release artifact
