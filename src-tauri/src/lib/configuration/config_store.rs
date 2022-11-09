@@ -32,7 +32,7 @@ impl ConfigStore {
         })?;
         match raw_config.as_str() {
             "" => Ok(InsulatorConfig::default()),
-            _ => Ok(serde_json::from_str::<InsulatorConfig>(&raw_config)?),
+            _ => Ok(toml::from_str::<InsulatorConfig>(&raw_config)?),
         }
     }
 
@@ -45,7 +45,7 @@ impl ConfigStore {
                 None => {}
             };
         });
-        let raw_config = serde_json::to_string_pretty(&configuration)?;
+        let raw_config = toml::to_string_pretty(&configuration)?;
         fs::write(&self.config_path, raw_config)?;
         Ok(())
     }

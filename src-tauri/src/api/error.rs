@@ -14,7 +14,7 @@ impl From<Error> for TauriError {
         let (error_type, message) = match err {
             Error::AvroParse { message } => ("Avro parser error", message),
             Error::IO { message } => ("IO error", message),
-            Error::JSONSerde { message } => ("JSON Serde error", message),
+            Error::TOMLSerde { message } => ("TOML Serde error", message),
             Error::Consumer { message } => ("Kafka Consumer error", message),
             Error::Kafka { message } => ("Kafka error", message),
             Error::SqlError { message } => ("SQLite error", message),
