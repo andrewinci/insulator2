@@ -67,11 +67,12 @@ mod test_configuration {
 
     #[test]
     fn test_retrieve_config() {
-        let sut = ConfigStore::from_config_path(&get_test_config_path());
+        let tmp_config_file = get_test_config_path();
+        let sut = ConfigStore::from_config_path(&tmp_config_file);
 
         // retrieve config the first time returns the default
         {
-            fs::remove_file(&get_test_config_path()).ok();
+            fs::remove_file(&tmp_config_file).ok();
             let res = sut.get_configuration();
             assert!(res.is_ok());
             assert_eq!(res.unwrap(), InsulatorConfig::default());
@@ -79,7 +80,7 @@ mod test_configuration {
 
         // retrieve an invalid config returns an error
         {
-            fs::write(&get_test_config_path(), b"123321").expect("Unable to create the fake file");
+            fs::write(&tmp_config_file, b"123321").expect("Unable to create the fake file");
             let res = sut.get_configuration();
             assert!(res.is_err());
         }
