@@ -54,6 +54,7 @@ rdkafka = { git = "https://github.com/andrewinci/rust-rdkafka.git", rev = "0793d
 
 [dev-dependencies]
 mockall = "0.11.3"
+httpmock = "0.6"
 
 [features]
 # by default Tauri runs in production mode
