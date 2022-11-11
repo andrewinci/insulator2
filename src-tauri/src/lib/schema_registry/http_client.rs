@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use reqwest::{RequestBuilder, Response};
+use reqwest::RequestBuilder;
 use serde::de::DeserializeOwned;
 
 use super::BasicAuth;
@@ -17,7 +17,7 @@ type Result<T> = std::result::Result<T, HttpClientError>;
 pub trait HttpClient {
     async fn get<T: 'static + DeserializeOwned>(&self, url: &str) -> Result<T>;
     async fn delete(&self, url: &str) -> Result<()>;
-    async fn post(&self, url: &str, data: &'static str) -> Result<()>;
+    async fn post(&self, url: &str, data: &str) -> Result<()>;
 }
 
 pub struct ReqwestClient {
@@ -28,8 +28,9 @@ pub struct ReqwestClient {
 
 #[async_trait]
 impl HttpClient for ReqwestClient {
-    async fn post(&self, url: &str, data: &'static str) -> Result<()> {
-        let request = self.client.post(url.to_string());
+    async fn post(&self, url: &str, data: &str) -> Result<()> {
+        let mut request = self.client.post(url.to_string());
+        request = request.body(data.to_string());
         let response = self.send_request(request).await?;
         if response.status().is_success() {
             Ok(())

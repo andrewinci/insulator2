@@ -1,4 +1,4 @@
-use super::http_client::{HttpClient, HttpClientError};
+use super::http_client::HttpClientError;
 
 #[derive(Debug)]
 pub enum SchemaRegistryError {

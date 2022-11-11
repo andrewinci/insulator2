@@ -8,8 +8,6 @@ use url::Url;
 
 use apache_avro::Schema as AvroSchema;
 
-use crate::lib::Error;
-
 use super::error::{Result, SchemaRegistryError};
 use super::http_client::{HttpClient, ReqwestClient};
 use super::types::{BasicAuth, Schema, Subject};
@@ -26,7 +24,7 @@ pub trait SchemaRegistryClient {
     async fn get_schema_by_id(&self, id: i32) -> Result<AvroSchema>;
     async fn delete_subject(&self, subject_name: &str) -> Result<()>;
     async fn delete_version(&self, subject_name: &str, version: i32) -> Result<()>;
-    async fn post_schema(&self, subject_name: &str, schema: &'static str) -> Result<()>;
+    async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()>;
 }
 
 #[derive(Clone)]
@@ -75,13 +73,13 @@ impl<C> SchemaRegistryClient for CachedSchemaRegistry<C>
 where
     C: HttpClient + Sync + Send,
 {
-    async fn post_schema(&self, subject_name: &str, schema: &'static str) -> Result<()> {
+    async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()> {
         let url = Url::parse(&self.endpoint)?
             .join("subjects")?
             .join(subject_name)?
             .join("versions")?;
         match AvroSchema::parse_str(schema) {
-            Ok(_) => Ok(self.http_client.post(url.as_str(), &schema).await?),
+            Ok(_) => Ok(self.http_client.post(url.as_str(), schema).await?),
             Err(err) => Err(SchemaRegistryError::SchemaParsing {
                 message: format!("Invalid schema {}", err),
             }),
