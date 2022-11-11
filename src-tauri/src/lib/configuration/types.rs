@@ -2,16 +2,17 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
 pub struct InsulatorConfig {
-    pub clusters: Vec<ClusterConfig>,
-    pub theme: Option<Theme>,
+    pub theme: Theme,
     #[serde(rename = "showNotifications")]
     pub show_notifications: Option<bool>,
     #[serde(rename = "useRegex")]
     pub use_regex: Option<bool>,
+    pub clusters: Vec<ClusterConfig>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default)]
 pub enum Theme {
+    #[default]
     Dark,
     Light,
 }
