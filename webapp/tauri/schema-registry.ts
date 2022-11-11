@@ -26,3 +26,9 @@ export const deleteSubjectVersion = (clusterId: string, subjectName: string, ver
     addNotification({ type: "error", title: "Delete schema version", description: format(err) });
     throw err;
   });
+
+export const postSchema = (clusterId: string, subjectName: string, schema: string): Promise<void> =>
+  invoke<void>("post_schema", { clusterId, subjectName, schema }).catch((err: TauriError) => {
+    addNotification({ type: "error", title: "Post schema", description: format(err) });
+    throw err;
+  });

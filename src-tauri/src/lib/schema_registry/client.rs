@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use futures::lock::Mutex;
 use log::{debug, trace};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use url::Url;
@@ -74,12 +74,14 @@ where
     C: HttpClient + Sync + Send,
 {
     async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()> {
-        let url = Url::parse(&self.endpoint)?
-            .join("subjects")?
-            .join(subject_name)?
-            .join("versions")?;
+        #[derive(Serialize)]
+        struct PostRequest {
+            schema: String,
+        }
+        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions", subject_name).as_str())?;
+        let request = PostRequest { schema: schema.into() };
         match AvroSchema::parse_str(schema) {
-            Ok(_) => Ok(self.http_client.post(url.as_str(), schema).await?),
+            Ok(_) => Ok(self.http_client.post(url.as_str(), request).await?),
             Err(err) => Err(SchemaRegistryError::SchemaParsing {
                 message: format!("Invalid schema {}", err),
             }),

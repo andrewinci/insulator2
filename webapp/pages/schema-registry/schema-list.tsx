@@ -39,7 +39,11 @@ export const SchemaList = (props: SchemaListProps) => {
         onClose={() => setState((s) => ({ ...s, modalOpened: false }))}
         closeOnEscape={false}
         closeOnClickOutside={false}>
-        <AddSchemaModal subjects={subjects ?? []} />
+        <AddSchemaModal
+          onClose={() => refetch().then((_) => setState((s) => ({ ...s, modalOpened: false })))}
+          clusterId={clusterId}
+          subjects={subjects ?? []}
+        />
       </Modal>
     </>
   );
