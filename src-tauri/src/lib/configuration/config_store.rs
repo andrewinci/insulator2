@@ -77,20 +77,44 @@ mod test_configuration {
             assert!(res.is_ok());
             assert_eq!(res.unwrap(), InsulatorConfig::default());
         }
-
-        // retrieve an invalid config returns an error
-        {
-            fs::write(&tmp_config_file, b"123321").expect("Unable to create the fake file");
-            let _res = sut.get_configuration();
-            // TODO: fix test
-            // assert!(res.is_err(), "{:?}", res);
-        }
     }
 
     #[test]
     fn test_write_config() {
-        let sut = ConfigStore::from_config_path(&get_test_config_path());
-        let res = sut.write_configuration(&InsulatorConfig::default());
-        assert!(res.is_ok())
+        // write a default config
+        {
+            let sut = ConfigStore::from_config_path(&get_test_config_path());
+            let res = sut.write_configuration(&InsulatorConfig::default());
+            assert!(res.is_ok())
+        }
+        // write a config with a cluster authentication and schema registry
+        {
+            let mut config = InsulatorConfig::default();
+            config.clusters.push(crate::lib::configuration::ClusterConfig {
+                id: "7213059c-c744-45ef-a380-3f6997b44377".into(),
+                name: "test_cluster".into(),
+                endpoint: "localhost:9092".into(),
+                authentication: crate::lib::configuration::AuthenticationConfig::Sasl {
+                    username: "test".into(),
+                    password: "test".into(),
+                    scram: true,
+                },
+                schema_registry: Some(crate::lib::configuration::SchemaRegistryConfig {
+                    endpoint: "endpoint".into(),
+                    username: Some("username".into()),
+                    password: Some("password".into()),
+                }),
+            });
+            config.clusters.push(crate::lib::configuration::ClusterConfig {
+                id: "1213059c-c744-45ef-a380-3f6997b44377".into(),
+                name: "test_cluster_2".into(),
+                endpoint: "localhost:9092".into(),
+                authentication: crate::lib::configuration::AuthenticationConfig::None,
+                schema_registry: None,
+            });
+            let sut = ConfigStore::from_config_path(&get_test_config_path());
+            let res = sut.write_configuration(&InsulatorConfig::default());
+            assert!(res.is_ok())
+        }
     }
 }
