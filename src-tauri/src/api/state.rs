@@ -38,8 +38,7 @@ impl AppState {
             .expect("Unable to get the configuration");
         let cluster_config = configurations
             .clusters
-            .iter()
-            .find(|c| c.id == cluster_id)
+            .get(cluster_id)
             .expect("Unable to find the cluster config");
         Cluster::new(cluster_config)
     }

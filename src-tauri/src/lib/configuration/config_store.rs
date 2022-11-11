@@ -38,7 +38,7 @@ impl ConfigStore {
 
     pub fn write_configuration(&self, configuration: &InsulatorConfig) -> Result<()> {
         // validate input
-        configuration.clusters.iter().for_each(|c| {
+        configuration.clusters.values().for_each(|c| {
             assert!(!c.endpoint.is_empty());
             match &c.schema_registry {
                 Some(s) => assert!(!s.endpoint.is_empty()),

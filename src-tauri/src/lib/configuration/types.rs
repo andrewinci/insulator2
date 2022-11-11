@@ -1,8 +1,10 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
 pub struct InsulatorConfig {
-    pub clusters: Vec<ClusterConfig>,
+    pub clusters: HashMap<String, ClusterConfig>,
     pub theme: Option<Theme>,
     #[serde(rename = "showNotifications")]
     pub show_notifications: Option<bool>,
@@ -21,12 +23,13 @@ pub struct ClusterConfig {
     pub id: String,
     pub name: String,
     pub endpoint: String,
-    pub authentication: AuthenticationConfig,
+    pub authentication: Option<AuthenticationConfig>,
     #[serde(rename = "schemaRegistry")]
     pub schema_registry: Option<SchemaRegistryConfig>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(tag = "type")]
 pub enum AuthenticationConfig {
     Ssl {
         ca: String,
@@ -39,9 +42,7 @@ pub enum AuthenticationConfig {
         username: String,
         password: String,
         scram: bool,
-    },
-    #[default]
-    None,
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]

@@ -10,17 +10,23 @@ export const ClusterList = () => {
   const { userSettings, setUserSettings } = useUserSettings();
   const [state, setState] = useState<{ search: string }>({ search: "" });
   const navigate = useNavigate();
+  console.dir(userSettings);
 
   const openModal = (cluster: Cluster) =>
     openConfirmModal({
       title: `Are you sure to delete "${cluster.name}"`,
       children: <Text size="sm">If confirmed, it will not be possible to retrieve this configuration.</Text>,
       labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: () => setUserSettings((s) => ({ ...s, clusters: s.clusters.filter((c) => c.id != cluster.id) })),
+      onConfirm: () =>
+        setUserSettings((s) => {
+          const newClusters = s.clusters;
+          delete newClusters[cluster.id];
+          return { ...s, clusters: newClusters };
+        }),
     });
 
   const filteredClusters = useMemo(
-    () => userSettings.clusters.filter((c) => c.name.toLowerCase().includes(state.search ?? "")),
+    () => Object.values(userSettings.clusters).filter((c) => c.name.toLowerCase().includes(state.search ?? "")),
     [state.search, userSettings.clusters]
   );
 
@@ -28,7 +34,7 @@ export const ClusterList = () => {
   return (
     <Container>
       <Group position={"apart"}>
-        <PageHeader title="Clusters" subtitle={`Total: ${userSettings.clusters.length}`} />
+        <PageHeader title="Clusters" subtitle={`Total: ${userSettings.clusters.size}`} />
         <SearchInput
           showShortcut={true}
           value={state.search}
