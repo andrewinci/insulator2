@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use futures::lock::Mutex;
 use log::{debug, trace};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use url::Url;
@@ -24,6 +24,7 @@ pub trait SchemaRegistryClient {
     async fn get_schema_by_id(&self, id: i32) -> Result<AvroSchema>;
     async fn delete_subject(&self, subject_name: &str) -> Result<()>;
     async fn delete_version(&self, subject_name: &str, version: i32) -> Result<()>;
+    async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()>;
 }
 
 #[derive(Clone)]
@@ -72,6 +73,21 @@ impl<C> SchemaRegistryClient for CachedSchemaRegistry<C>
 where
     C: HttpClient + Sync + Send,
 {
+    async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()> {
+        #[derive(Serialize)]
+        struct PostRequest {
+            schema: String,
+        }
+        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions", subject_name).as_str())?;
+        let request = PostRequest { schema: schema.into() };
+        match AvroSchema::parse_str(schema) {
+            Ok(_) => Ok(self.http_client.post(url.as_str(), request).await?),
+            Err(err) => Err(SchemaRegistryError::SchemaParsing {
+                message: format!("Invalid schema {}", err),
+            }),
+        }
+    }
+
     async fn list_subjects(&self) -> Result<Vec<String>> {
         let url = Url::parse(&self.endpoint)?.join("subjects")?;
         let res = self.http_client.get(url.as_ref()).await?;
