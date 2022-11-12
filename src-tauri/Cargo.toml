@@ -28,6 +28,7 @@ num-bigint = "0.4"
 rust_decimal = "1.26"
 rusqlite = { version = "0.28.0", features = ["bundled"] }
 parking_lot = "0.12.1"
+rust-jks = { git = "https://github.com/andrewinci/rust-jks" }
 
 [target.'cfg(windows)'.dependencies]
 rdkafka = { version = "0.29", features = [
