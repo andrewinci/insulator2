@@ -1819,7 +1819,7 @@ dependencies = [
  "rdkafka",
  "reqwest",
  "rusqlite",
- "rust-jks",
+ "rust-keystore",
  "rust_decimal",
  "serde",
  "serde_json",
@@ -3222,11 +3222,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-jks"
-version = "0.1.0"
-source = "git+https://github.com/andrewinci/rust-jks#71f53c2badfabeb5a0928861712c2c7d8eeb6596"
+name = "rust-keystore"
+version = "0.1.1"
+source = "git+https://github.com/andrewinci/rust-keystore?tag=v0.1.1#0c26e805bdeb4f384a8cdcabc8566230789dc3c9"
 dependencies = [
  "base64",
+ "openssl",
  "sha1",
  "simple_asn1",
 ]

@@ -1,5 +1,5 @@
 use super::{AuthenticationConfig, ClusterConfig, InsulatorConfig, SchemaRegistryConfig, Theme};
-use crate::lib::Result;
+use crate::lib::{Error, Result};
 use log::{debug, warn};
 use serde::Deserialize;
 
@@ -112,32 +112,23 @@ fn map_sasl_config(legacy: SaslConfigurationLegacy) -> Result<AuthenticationConf
 }
 
 fn map_ssl_config(legacy: SslConfigurationLegacy) -> Result<AuthenticationConfig> {
-    let jks_parser = rust_jks::KeyStoreParser::new();
     if let (Some(truststore_location), Some(keystore_location)) =
         (legacy.ssl_truststore_location, legacy.ssl_keystore_location)
     {
         debug!("Parsing truststore {}", &truststore_location);
-        let truststore = jks_parser.load(&truststore_location, legacy.ssl_truststore_password.as_deref());
+        let ca_certificate = &rust_keystore::KeyStore::try_load(&truststore_location)?
+            .certificates(legacy.ssl_truststore_password.as_deref())?[0];
+
         debug!("Parsing keystore {}", &keystore_location);
-        let keystore = jks_parser.load(&keystore_location, legacy.ssl_keystore_password.as_deref());
-        if let (Ok(truststore), Ok(keystore)) = (&truststore, &keystore) {
-            Ok(AuthenticationConfig::Ssl {
-                ca: truststore.certs[0].pem.clone(),
-                certificate: keystore.private_keys[0].cert_chain[0].pem.clone(),
-                key: keystore.private_keys[0].pem.clone(),
-                key_password: None,
-            })
-        } else {
-            if keystore.is_err() {
-                warn!("Unable to parse the keystore {:?}", &keystore);
-            }
-            if truststore.is_err() {
-                warn!("Unable to parse the truststore {:?}", &truststore);
-            }
-            Err(crate::lib::Error::LegacyConfig {
-                message: "Unable to parse legacy keystores".into(),
-            })
-        }
+        let user_certificate = &rust_keystore::KeyStore::try_load(&keystore_location)?
+            .certificates(legacy.ssl_keystore_password.as_deref())?[0];
+
+        Ok(AuthenticationConfig::Ssl {
+            ca: ca_certificate.pem.clone(),
+            certificate: user_certificate.pem.clone(),
+            key: user_certificate.private_key.as_ref().unwrap().pkcs8_pem.clone(),
+            key_password: None,
+        })
     } else {
         Err(crate::lib::Error::LegacyConfig {
             message: "Invalid ssl configuration found. truststore and keystore locations are required".into(),
@@ -154,5 +145,13 @@ fn map_schema_registry(legacy: SchemaRegistryConfigurationLegacy) -> Option<Sche
         })
     } else {
         None
+    }
+}
+
+impl From<rust_keystore::error::Error> for Error {
+    fn from(err: rust_keystore::error::Error) -> Self {
+        Self::LegacyConfig {
+            message: format!("{:?}", err),
+        }
     }
 }
