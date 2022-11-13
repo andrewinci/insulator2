@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 pub struct InsulatorConfig {
     pub theme: Theme,
     #[serde(rename = "showNotifications")]
-    pub show_notifications: Option<bool>,
+    pub show_notifications: bool,
     #[serde(rename = "useRegex")]
-    pub use_regex: Option<bool>,
+    pub use_regex: bool,
     pub clusters: Vec<ClusterConfig>,
 }
 
