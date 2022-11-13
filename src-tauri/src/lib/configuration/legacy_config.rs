@@ -1,5 +1,6 @@
 use super::{AuthenticationConfig, ClusterConfig, InsulatorConfig, SchemaRegistryConfig, Theme};
 use crate::lib::Result;
+use log::{debug, warn};
 use serde::Deserialize;
 
 // insulator v1 config
@@ -62,28 +63,34 @@ impl TryFrom<LegacyConfiguration> for InsulatorConfig {
     type Error = crate::lib::Error;
 
     fn try_from(legacy: LegacyConfiguration) -> std::result::Result<Self, Self::Error> {
-        let mut config = InsulatorConfig::default();
-        config.theme = legacy.theme;
-        config.use_regex = false;
-        config.show_notifications = true;
+        let mut config = InsulatorConfig {
+            theme: legacy.theme,
+            show_notifications: true,
+            use_regex: false,
+            clusters: vec![], //populated below
+        };
         let mut clusters = Vec::new();
         for c in legacy.clusters {
-            let schema_registry = c.schema_registry_config.and_then(|s| map_schema_registry(s));
+            debug!("Parsing cluster {}", c.name);
+            let schema_registry = c.schema_registry_config.and_then(map_schema_registry);
             let authentication = if c.use_sasl && c.sasl_configuration.is_some() {
                 map_sasl_config(c.sasl_configuration.unwrap())
             } else if c.use_ssl && c.ssl_configuration.is_some() {
                 map_ssl_config(c.ssl_configuration.unwrap())
             } else {
                 Ok(AuthenticationConfig::None)
-            }?;
-
-            clusters.push(ClusterConfig {
-                id: c.guid.clone(),
-                name: c.name.clone(),
-                endpoint: c.endpoint.clone(),
-                authentication,
-                schema_registry,
-            })
+            };
+            if let Ok(authentication) = authentication {
+                clusters.push(ClusterConfig {
+                    id: c.guid.clone(),
+                    name: c.name.clone(),
+                    endpoint: c.endpoint.clone(),
+                    authentication,
+                    schema_registry,
+                })
+            } else {
+                warn!("Unable to parse cluster config. {:?}", authentication);
+            }
         }
         config.clusters = clusters;
         Ok(config)
@@ -109,18 +116,28 @@ fn map_ssl_config(legacy: SslConfigurationLegacy) -> Result<AuthenticationConfig
     if let (Some(truststore_location), Some(keystore_location)) =
         (legacy.ssl_truststore_location, legacy.ssl_keystore_location)
     {
-        let truststore = jks_parser
-            .load(&truststore_location, legacy.ssl_truststore_password.as_deref())
-            .unwrap();
-        let keystore = jks_parser
-            .load(&keystore_location, legacy.ssl_truststore_password.as_deref())
-            .unwrap();
-        Ok(AuthenticationConfig::Ssl {
-            ca: truststore.certs[0].pem.clone(),
-            certificate: keystore.private_keys[0].cert_chain[0].pem.clone(),
-            key: keystore.private_keys[0].pem.clone(),
-            key_password: None,
-        })
+        debug!("Parsing truststore {}", &truststore_location);
+        let truststore = jks_parser.load(&truststore_location, legacy.ssl_truststore_password.as_deref());
+        debug!("Parsing keystore {}", &keystore_location);
+        let keystore = jks_parser.load(&keystore_location, legacy.ssl_keystore_password.as_deref());
+        if let (Ok(truststore), Ok(keystore)) = (&truststore, &keystore) {
+            Ok(AuthenticationConfig::Ssl {
+                ca: truststore.certs[0].pem.clone(),
+                certificate: keystore.private_keys[0].cert_chain[0].pem.clone(),
+                key: keystore.private_keys[0].pem.clone(),
+                key_password: None,
+            })
+        } else {
+            if keystore.is_err() {
+                warn!("Unable to parse the keystore {:?}", &keystore);
+            }
+            if truststore.is_err() {
+                warn!("Unable to parse the truststore {:?}", &truststore);
+            }
+            Err(crate::lib::Error::LegacyConfig {
+                message: "Unable to parse legacy keystores".into(),
+            })
+        }
     } else {
         Err(crate::lib::Error::LegacyConfig {
             message: "Invalid ssl configuration found. truststore and keystore locations are required".into(),

@@ -3224,7 +3224,7 @@ dependencies = [
 [[package]]
 name = "rust-jks"
 version = "0.1.0"
-source = "git+https://github.com/andrewinci/rust-jks#3e79470deea22decd434dd5e31641136a503cdb0"
+source = "git+https://github.com/andrewinci/rust-jks#71f53c2badfabeb5a0928861712c2c7d8eeb6596"
 dependencies = [
  "base64",
  "sha1",
