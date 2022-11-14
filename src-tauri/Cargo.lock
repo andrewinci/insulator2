@@ -3224,7 +3224,7 @@ dependencies = [
 [[package]]
 name = "rust-keystore"
 version = "0.1.1"
-source = "git+https://github.com/andrewinci/rust-keystore?tag=v0.1.1#0c26e805bdeb4f384a8cdcabc8566230789dc3c9"
+source = "git+https://github.com/andrewinci/rust-keystore?tag=v0.1.2#fbbf2ba943bb778b1c06f5e1cc9ceb889d724ed3"
 dependencies = [
  "base64",
  "openssl",
