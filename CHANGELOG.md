@@ -1,3 +1,18 @@
+# [1.18.0](https://github.com/andrewinci/insulator2/compare/v1.17.0...v1.18.0) (2022-11-14)
+
+### Bug Fixes
+
+- **fe:** divider misaligned in schema registry ([a30b2ac](https://github.com/andrewinci/insulator2/commit/a30b2ac065795302b8f2ad7e6d4e04b22463ec89))
+- **fe:** divider misaligned in the settings page ([e3abf6a](https://github.com/andrewinci/insulator2/commit/e3abf6a114eee67c2a836d3eddb3ec5e201c8d8e))
+- **FE:** replace undefined with ... ([f0a8731](https://github.com/andrewinci/insulator2/commit/f0a8731f33e5ebf86d5a8effecd74cb4eb717ae8))
+- remove duplidate divider in the consumer group page ([ae6773a](https://github.com/andrewinci/insulator2/commit/ae6773a4bce081d235a7aef4ef31722d0670e7c6))
+
+### Features
+
+- add delete consumer group tool ([7cddb2f](https://github.com/andrewinci/insulator2/commit/7cddb2fe57a10bec52a7762d5cc787b88461a8cb))
+- Allow users to create a new schema ([#132](https://github.com/andrewinci/insulator2/issues/132)) ([574169c](https://github.com/andrewinci/insulator2/commit/574169c904ac28917e8f750f3f55c8fb40bb3bf5))
+- read insulator v1 config at first startup ([#137](https://github.com/andrewinci/insulator2/issues/137)) ([6d06698](https://github.com/andrewinci/insulator2/commit/6d06698e623ade257645c82d5ac4081e5753ca8f))
+
 # [1.17.0](https://github.com/andrewinci/insulator2/compare/v1.16.0...v1.17.0) (2022-11-04)
 
 ### Bug Fixes
