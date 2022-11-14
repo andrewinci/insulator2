@@ -1,3 +1,4 @@
+use super::legacy_config::LegacyConfiguration;
 use super::InsulatorConfig;
 use crate::lib::error::Result;
 use dirs::home_dir;
@@ -7,32 +8,48 @@ use std::{fs, path::Path};
 #[derive(Default)]
 pub struct ConfigStore {
     config_path: PathBuf,
+    legacy_config_path: PathBuf,
 }
 
 impl ConfigStore {
     pub fn new() -> Self {
         let mut config_path = home_dir().expect("Unable to retrieve the home directory");
+        let mut legacy_config_path = config_path.clone();
         config_path.push(".insulator2.config");
-        ConfigStore { config_path }
+        legacy_config_path.push(".insulator.config");
+        ConfigStore {
+            config_path,
+            legacy_config_path,
+        }
     }
 
     #[cfg(test)]
     fn from_config_path(config_path: &str) -> Self {
         ConfigStore {
             config_path: PathBuf::from(config_path),
+            legacy_config_path: PathBuf::from(config_path),
         }
     }
 
     pub fn get_configuration(&self) -> Result<InsulatorConfig> {
-        let raw_config = (match Path::exists(&self.config_path) {
+        match Path::exists(&self.config_path) {
             // read file content
-            true => fs::read_to_string(&self.config_path),
-            // if the file doesn't exists return an empty string
-            false => Ok("".to_owned()),
-        })?;
-        match raw_config.as_str() {
-            "" => Ok(InsulatorConfig::default()),
-            _ => Ok(serde_json::from_str::<InsulatorConfig>(&raw_config)?),
+            true => {
+                let raw_config = fs::read_to_string(&self.config_path)?;
+                Ok(serde_json::from_str::<InsulatorConfig>(&raw_config)?)
+            }
+            // if the file doesn't exists return the default
+            false => {
+                match Path::exists(&self.legacy_config_path) {
+                    true => {
+                        // try to import the legacy config
+                        let raw_config = fs::read_to_string(&self.legacy_config_path)?;
+                        let legacy_config = serde_json::from_str::<LegacyConfiguration>(&raw_config)?;
+                        Ok(InsulatorConfig::try_from(legacy_config)?)
+                    }
+                    false => Ok(InsulatorConfig::default()),
+                }
+            }
         }
     }
 

@@ -18,6 +18,7 @@ impl From<Error> for TauriError {
             Error::Consumer { message } => ("Kafka Consumer error", message),
             Error::Kafka { message } => ("Kafka error", message),
             Error::SqlError { message } => ("SQLite error", message),
+            Error::LegacyConfig { message } => ("Import legacy config error", message),
         };
         TauriError {
             error_type: error_type.into(),

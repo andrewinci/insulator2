@@ -1,5 +1,6 @@
 mod config_store;
 mod kafka_client_config;
+mod legacy_config;
 mod types;
 
 pub use config_store::ConfigStore;
