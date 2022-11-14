@@ -8,6 +8,7 @@ pub enum Error {
     Consumer { message: String },
     Kafka { message: String },
     SqlError { message: String },
+    LegacyConfig { message: String },
 }
 
 pub(super) type Result<T> = core::result::Result<T, Error>;
