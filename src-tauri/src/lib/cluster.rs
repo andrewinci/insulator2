@@ -1,7 +1,6 @@
+use log::{debug, trace};
 use std::{collections::HashMap, sync::Arc};
-
-use futures::lock::Mutex;
-use log::debug;
+use tokio::sync::RwLock;
 
 use crate::lib::{
     admin::{Admin, KafkaAdmin},
@@ -28,7 +27,7 @@ where
     pub admin_client: Arc<A>,
     pub parser: Arc<P>,
     pub app_store: Arc<AppStore>,
-    consumers: Arc<Mutex<HashMap<TopicName, Arc<C>>>>,
+    consumers: Arc<RwLock<HashMap<TopicName, Arc<C>>>>,
 }
 
 impl Clone for Cluster<CachedSchemaRegistry> {
@@ -61,7 +60,7 @@ impl Cluster {
         Cluster {
             config: config.clone(),
             schema_registry_client,
-            consumers: Arc::new(Mutex::new(HashMap::new())),
+            consumers: Arc::new(RwLock::new(HashMap::new())),
             admin_client: Arc::new(KafkaAdmin::new(config)),
             parser: Arc::new(parser),
             app_store: Arc::new(AppStore::new()),
@@ -69,18 +68,24 @@ impl Cluster {
     }
 
     pub async fn get_consumer(&self, topic_name: &str) -> Arc<KafkaConsumer> {
-        let mut consumers = self.consumers.lock().await;
-        if consumers.get(topic_name).is_none() {
+        {
+            if let Some(consumer) = self.consumers.read().await.get(topic_name) {
+                trace!("Consumer for {} found in cache", topic_name);
+                return consumer.clone();
+            }
+        }
+        {
             debug!("Create consumer for topic {}", topic_name);
             // create a new table for the consumer
             let topic_store =
                 TopicStore::from_app_store(self.app_store.clone(), self.parser.clone(), &self.config.id, topic_name)
                     .await;
-            consumers.insert(
-                topic_name.to_string(),
-                Arc::new(KafkaConsumer::new(&self.config, topic_name, topic_store)),
-            );
+            let consumer = Arc::new(KafkaConsumer::new(&self.config, topic_name, topic_store));
+            self.consumers
+                .write()
+                .await
+                .insert(topic_name.to_string(), consumer.clone());
+            consumer
         }
-        consumers.get(topic_name).expect("the consumer must exists").clone()
     }
 }

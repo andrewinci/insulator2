@@ -53,7 +53,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
         topic_names: &[&str],
         config: &ConsumerOffsetConfiguration,
     ) -> Result<()> {
-        let consumer: BaseConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
+        let consumer = build_kafka_client_config(&self.config, Some(consumer_group_name))
             .create()
             .expect("Unable to build the consumer");
 

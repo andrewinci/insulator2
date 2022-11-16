@@ -29,7 +29,7 @@ impl TopicAdmin for KafkaAdmin {
     async fn list_topics(&self) -> Result<Vec<Topic>> {
         {
             // delete cache of topics/partitions map
-            *self.all_topic_partition_list.lock().await = TopicPartitionList::new()
+            *self.all_topic_partition_list.write().await = TopicPartitionList::new()
         }
         self.internal_list_topics(None)
     }

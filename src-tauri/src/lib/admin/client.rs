@@ -4,11 +4,11 @@ use std::time::Duration;
 use super::{ConsumerGroupAdmin, TopicAdmin};
 use crate::lib::configuration::{build_kafka_client_config, ClusterConfig};
 use crate::lib::error::Result;
-use futures::lock::Mutex;
 use log::debug;
 use rdkafka::admin::AdminClient;
 use rdkafka::{client::DefaultClientContext, consumer::BaseConsumer};
 use rdkafka::{Offset, TopicPartitionList};
+use tokio::sync::RwLock;
 
 pub trait Admin: TopicAdmin + ConsumerGroupAdmin {}
 
@@ -17,7 +17,7 @@ pub struct KafkaAdmin {
     pub(super) timeout: Duration,
     pub(super) consumer: BaseConsumer,
     pub(super) admin_client: AdminClient<DefaultClientContext>,
-    pub(super) all_topic_partition_list: Arc<Mutex<TopicPartitionList>>,
+    pub(super) all_topic_partition_list: Arc<RwLock<TopicPartitionList>>,
 }
 
 impl Admin for KafkaAdmin {}
@@ -33,13 +33,13 @@ impl KafkaAdmin {
             admin_client: build_kafka_client_config(config, None)
                 .create()
                 .expect("Unable to build the admin client"),
-            all_topic_partition_list: Arc::new(Mutex::new(TopicPartitionList::new())),
+            all_topic_partition_list: Arc::new(RwLock::new(TopicPartitionList::new())),
         }
     }
 
     pub(super) async fn get_all_topic_partition_list(&self, ignore_cache: bool) -> Result<TopicPartitionList> {
         {
-            let topic_partition_list = self.all_topic_partition_list.lock().await;
+            let topic_partition_list = self.all_topic_partition_list.read().await;
             if !ignore_cache && topic_partition_list.count() > 0 {
                 return Ok(topic_partition_list.clone());
             }
@@ -56,7 +56,7 @@ impl KafkaAdmin {
             })
         });
         {
-            *self.all_topic_partition_list.lock().await = topic_partition_list.clone();
+            *self.all_topic_partition_list.write().await = topic_partition_list.clone();
         }
         Ok(topic_partition_list)
     }

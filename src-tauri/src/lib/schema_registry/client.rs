@@ -1,9 +1,9 @@
 use async_trait::async_trait;
-use futures::lock::Mutex;
 use log::{debug, trace};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use url::Url;
 
 use apache_avro::Schema as AvroSchema;
@@ -34,7 +34,7 @@ where
 {
     http_client: C,
     endpoint: String,
-    schema_cache_by_id: Arc<Mutex<HashMap<i32, AvroSchema>>>,
+    schema_cache_by_id: Arc<RwLock<HashMap<i32, AvroSchema>>>,
 }
 
 impl CachedSchemaRegistry<ReqwestClient> {
@@ -63,7 +63,7 @@ where
         Self {
             http_client,
             endpoint: endpoint.into(),
-            schema_cache_by_id: Arc::new(Mutex::new(HashMap::new())),
+            schema_cache_by_id: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 }
@@ -117,12 +117,14 @@ where
     }
 
     async fn get_schema_by_id(&self, id: i32) -> Result<AvroSchema> {
-        let mut cache = self.schema_cache_by_id.lock().await;
         trace!("Getting schema {} by id.", id);
-        if let Some(cached) = cache.get(&id) {
-            trace!("Schema found in cache");
-            Ok(cached.clone())
-        } else {
+        {
+            if let Some(cached) = self.schema_cache_by_id.read().await.get(&id) {
+                trace!("Schema found in cache");
+                return Ok(cached.clone());
+            }
+        }
+        {
             trace!("Schema not found in cache, retrieving");
             let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
             let schema: GetSchemaByIdResult = self.http_client.get(url.as_str()).await?;
@@ -130,8 +132,8 @@ where
                 AvroSchema::parse_str(schema.schema.as_str()).map_err(|err| SchemaRegistryError::SchemaParsing {
                     message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
                 })?;
-            cache.insert(id, schema.clone());
-            Ok(schema)
+            self.schema_cache_by_id.write().await.insert(id, schema.clone());
+            return Ok(schema);
         }
     }
 }

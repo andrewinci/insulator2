@@ -15,7 +15,7 @@ pub enum HttpClientError {
     Code(u16),
 }
 
-type Result<T> = std::result::Result<T, HttpClientError>;
+pub(super) type Result<T> = std::result::Result<T, HttpClientError>;
 
 #[async_trait]
 pub trait HttpClient {
