@@ -8,10 +8,10 @@ use crate::lib::{
     types::RawKafkaRecord,
 };
 use async_trait::async_trait;
-use futures::lock::Mutex;
+use futures::{lock::Mutex, StreamExt};
 use log::{debug, error, trace, warn};
 use rdkafka::{
-    consumer::{BaseConsumer, Consumer as ApacheKafkaConsumer},
+    consumer::{Consumer as ApacheKafkaConsumer, StreamConsumer},
     message::OwnedMessage,
     Message, Offset, TopicPartitionList,
 };
@@ -28,7 +28,6 @@ pub struct KafkaConsumer {
     cluster_config: ClusterConfig,
     topic: String,
     loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>,
-    is_running: Arc<Mutex<bool>>,
     pub topic_store: Arc<TopicStore>,
 }
 
@@ -39,7 +38,6 @@ impl KafkaConsumer {
             topic: topic.to_string(),
             loop_handle: Arc::new(Mutex::new(None)),
             topic_store: Arc::new(topic_store),
-            is_running: Arc::new(Mutex::new(false)),
         }
     }
 }
@@ -57,25 +55,25 @@ impl Consumer for KafkaConsumer {
         // set the handle to the consumer loop
         *self.loop_handle.clone().lock().await = Some(tauri::async_runtime::spawn({
             // clone arcs for the closure below
-            let consumer: BaseConsumer = build_kafka_client_config(&self.cluster_config, None)
+            let consumer: StreamConsumer = build_kafka_client_config(&self.cluster_config, None)
                 .create()
                 .expect("Unable to create kafka the consumer");
 
             let handle = self.loop_handle.clone();
             let topic_store = self.topic_store.clone();
             let offset_config = offset_config.clone();
-            let is_running = self.is_running.clone();
-            *is_running.lock().await = true;
+
             async move {
                 KafkaConsumer::setup_consumer(&consumer, &[&topic], &offset_config)
                     .await
                     .expect("Unable to setup the consumer");
                 // clear the store before starting the loop
                 topic_store.clear().await.expect("Unable to clear the table");
+
                 // infinite consumer loop
                 debug!("Start consumer loop");
-                while *is_running.lock().await {
-                    match consumer.poll(Duration::from_millis(200)) {
+                loop {
+                    match consumer.stream().next().await {
                         Some(Ok(msg)) => {
                             trace!("New record from {}", topic);
                             topic_store
@@ -91,7 +89,10 @@ impl Consumer for KafkaConsumer {
                                 .expect("Unable to stop the consumer");
                             break;
                         }
-                        None => (),
+                        None => {
+                            error!("Consumer unexpectedly returned no messages");
+                            break;
+                        }
                     }
                 }
             }
@@ -100,7 +101,6 @@ impl Consumer for KafkaConsumer {
     }
 
     async fn stop(&self) -> Result<()> {
-        *self.is_running.lock().await = false;
         KafkaConsumer::_stop(self.loop_handle.clone()).await
     }
 
@@ -134,7 +134,7 @@ impl KafkaConsumer {
     }
 
     pub async fn setup_consumer(
-        consumer: &rdkafka::consumer::BaseConsumer,
+        consumer: &rdkafka::consumer::StreamConsumer,
         topics: &[&str],
         config: &ConsumerOffsetConfiguration,
     ) -> Result<()> {
