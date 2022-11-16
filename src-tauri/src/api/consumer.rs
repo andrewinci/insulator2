@@ -40,7 +40,7 @@ pub async fn get_records_page(
     state: tauri::State<'_, AppState>,
 ) -> Result<GetPageResponse> {
     trace!("Get records page");
-    const PAGE_SIZE: usize = 100;
+    const PAGE_SIZE: usize = 20;
     let cluster = state.get_cluster(cluster_id).await;
     let consumer = cluster.get_consumer(topic).await;
     let topic_store = consumer.topic_store.clone();

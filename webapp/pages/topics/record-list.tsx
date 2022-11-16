@@ -40,7 +40,7 @@ export const RecordsList = (props: RecordsListProps) => {
     count: hasNextPage ? allRecords.length + 1 : allRecords.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => RECORD_PAGE_HEIGHT,
-    overscan: 10,
+    overscan: 2,
   });
 
   useEffect(() => {
