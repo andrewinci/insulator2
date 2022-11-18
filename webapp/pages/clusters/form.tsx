@@ -11,7 +11,6 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { Link } from "react-router-dom";
 
 export type AuthenticationFormType = "None" | "SSL" | "SASL";
 export type SaslFormType = {
@@ -99,7 +98,7 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
       {/* padding required to avoid to have the scroll bar on top of the password eye  */}
-      <ScrollArea px={15} style={{ height: "calc(100vh - 150px)" }}>
+      <ScrollArea>
         <Stack>
           <TextInput label="Custer name" placeholder="My cool cluster" {...form.getInputProps("name")} />
           <TextInput label="Endpoint" placeholder="localhost:9092" {...form.getInputProps("endpoint")} />
@@ -149,15 +148,12 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
             </>
           )}
           <Title order={3}>Schema registry</Title>
-          <TextInput label="Endpoint" placeholder="localhost:9092" {...form.getInputProps("schemaRegistry.endpoint")} />
+          <TextInput label="Endpoint" placeholder="localhost:9091" {...form.getInputProps("schemaRegistry.endpoint")} />
           <TextInput label="Username" placeholder="username" {...form.getInputProps("schemaRegistry.username")} />
           <PasswordInput label="Password" placeholder="password" {...form.getInputProps("schemaRegistry.password")} />
         </Stack>
       </ScrollArea>
-      <Group mt={10} position="apart">
-        <Button component={Link} to="/clusters" color={"red"}>
-          Back
-        </Button>
+      <Group my={20} position="right">
         <Button type="submit">Save</Button>
       </Group>
     </form>

@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { Settings, TopicsPage, SchemasPage, ConsumerGroupsPage } from "./pages";
 import "allotment/dist/style.css";
-import { ClusterList, AddNewCluster, EditCluster } from "./pages/clusters";
+import { ClusterList } from "./pages/clusters";
 
 export const Routing = () => (
   <Routes>
@@ -9,8 +9,6 @@ export const Routing = () => (
     <Route index element={<ClusterList />} />
     <Route path="/clusters" element={<ClusterList />} />
     <Route path="/cluster/:clusterId/clusters" element={<ClusterList />} />
-    <Route path="cluster/new" element={<AddNewCluster />} />
-    <Route path="cluster/edit/:clusterId" element={<EditCluster />} />
     {/* Topics */}
     <Route path="/cluster/:clusterId/topics" element={<TopicsPage />} />
     <Route path="/cluster/:clusterId/topic/:topicName" element={<TopicsPage />} />

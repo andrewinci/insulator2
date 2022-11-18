@@ -1,5 +1,3 @@
-import { Container, Divider, Title } from "@mantine/core";
-import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 import { useUserSettings, useNotifications } from "../../providers";
 import { Cluster, ClusterAuthentication, UserSettings } from "../../models";
@@ -15,11 +13,9 @@ const upsertCluster = (s: UserSettings, cluster: Cluster): UserSettings => {
   }
 };
 
-export const EditCluster = () => {
+export const EditCluster = ({ onSubmit, clusterId }: { onSubmit: () => void; clusterId: string }) => {
   const { alert } = useNotifications();
   const { userSettings, setUserSettings } = useUserSettings();
-  const navigate = useNavigate();
-  const { clusterId } = useParams();
   const cluster = userSettings.clusters.find((c) => c.id == clusterId);
   if (!cluster) {
     alert("Something went wrong", "Missing clusterId in navigation.");
@@ -35,21 +31,15 @@ export const EditCluster = () => {
     }
   };
 
-  const onSubmit = async (c: ClusterFormType) => {
+  const onFormSubmit = async (c: ClusterFormType) => {
     const newCluster = mapFormToCluster(c);
-    await editCluster(cluster.id, newCluster).then((_) => navigate("/clusters"));
+    await editCluster(cluster.id, newCluster).then((_) => onSubmit());
   };
 
-  return (
-    <Container>
-      <Title>Edit cluster</Title>
-      <Divider my={10} />
-      <ClusterForm initialValues={mapClusterToForm(cluster)} onSubmit={onSubmit} />
-    </Container>
-  );
+  return <ClusterForm initialValues={mapClusterToForm(cluster)} onSubmit={onFormSubmit} />;
 };
 
-export const AddNewCluster = () => {
+export const AddNewCluster = ({ onSubmit }: { onSubmit: () => void }) => {
   const { alert } = useNotifications();
   const { userSettings, setUserSettings } = useUserSettings();
 
@@ -65,21 +55,12 @@ export const AddNewCluster = () => {
     }
   };
 
-  const navigate = useNavigate();
-  const onSubmit = async (c: ClusterFormType) => {
-    console.log("Add new cluster", c);
+  const onFormSubmit = async (c: ClusterFormType) => {
     const newCluster = mapFormToCluster(c);
-    console.log("Add new cluster", newCluster);
-    await addCluster(newCluster).then((_) => navigate("/clusters"));
+    await addCluster(newCluster).then((_) => onSubmit());
   };
 
-  return (
-    <Container>
-      <Title>Add new cluster</Title>
-      <Divider my={10} />
-      <ClusterForm onSubmit={onSubmit} />
-    </Container>
-  );
+  return <ClusterForm onSubmit={onFormSubmit} />;
 };
 
 function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
