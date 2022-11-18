@@ -12,10 +12,10 @@ export const SideBar = () => {
   const { userSettings: appState } = useUserSettings();
   const location = useLocation();
   const { data: appVersion } = useQuery(["insulatorVersion"], getVersion);
-  const { clusterName, clusterId } = useMemo(() => {
-    const { clusterId } = matchPath("/cluster/:clusterId/*", location.pathname)?.params ?? {};
+  const { clusterName, clusterId, activeItem } = useMemo(() => {
+    const { clusterId, activeItem } = matchPath("/cluster/:clusterId/:activeItem/*", location.pathname)?.params ?? {};
     const clusterName = appState.clusters.find((c) => c.id == clusterId)?.name;
-    return { clusterName, clusterId };
+    return { clusterName, clusterId, activeItem };
   }, [location, appState]);
   return (
     <Navbar width={{ base: 220 }} p="xs">
@@ -42,6 +42,7 @@ export const SideBar = () => {
         <Box py="md">
           <SidebarItem
             url={clusterId ? `/cluster/${clusterId}/clusters` : "/clusters/"}
+            active={activeItem == "clusters"}
             icon={<IconServer size={16} />}
             color={"blue"}
             label={"Clusters"}
@@ -51,18 +52,21 @@ export const SideBar = () => {
             <>
               <SidebarItem
                 url={`/cluster/${clusterId}/topics/`}
+                active={activeItem == "topics"}
                 icon={<IconLine size={16} />}
                 color={"orange"}
                 label={"Topics"}
               />
               <SidebarItem
                 url={`/cluster/${clusterId}/schemas`}
+                active={activeItem == "schemas"}
                 icon={<IconSatellite size={16} />}
                 color={"green"}
                 label={"Schema Registry"}
               />
               <SidebarItem
                 url={`/cluster/${clusterId}/consumers`}
+                active={activeItem == "consumers"}
                 icon={<IconCircleDashed size={16} />}
                 color={"violet"}
                 label={"Consumer groups"}
@@ -71,6 +75,7 @@ export const SideBar = () => {
           )}
           <SidebarItem
             url={clusterId ? `/cluster/${clusterId}/settings` : `/settings`}
+            active={activeItem == "settings"}
             icon={<IconSettings size={16} />}
             color={"red"}
             label={"Settings"}

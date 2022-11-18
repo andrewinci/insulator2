@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Routing } from "./Routing";
+import { Routing } from "./routing";
 import { UserSettingsProvider, useNotifications } from "./providers";
 import { AppShell, MantineProvider } from "@mantine/core";
 import { useUserSettings } from "./providers/user-settings-provider";

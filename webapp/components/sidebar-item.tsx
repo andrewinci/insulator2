@@ -8,9 +8,10 @@ interface SidebarItemProps {
   color: string;
   label: string;
   url: string;
+  active?: boolean;
 }
 
-export const SidebarItem = ({ icon, color, label, url }: SidebarItemProps) => {
+export const SidebarItem = ({ icon, color, label, url, active }: SidebarItemProps) => {
   return (
     <UnstyledButton
       component={Link}
@@ -21,7 +22,7 @@ export const SidebarItem = ({ icon, color, label, url }: SidebarItemProps) => {
         padding: theme.spacing.xs,
         borderRadius: theme.radius.sm,
         color: theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.black,
-
+        backgroundColor: !active ? "unset" : theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.colors.gray[0],
         "&:hover": {
           backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.colors.gray[0],
         },
