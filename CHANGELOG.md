@@ -1,3 +1,13 @@
+## [1.18.1](https://github.com/andrewinci/insulator2/compare/v1.18.0...v1.18.1) (2022-11-18)
+
+### Bug Fixes
+
+- dead lock consuming multiple topics ([3c6fb3a](https://github.com/andrewinci/insulator2/commit/3c6fb3a166c29c1ef3dbc2cc7a794d0cb72163ec))
+
+### Performance Improvements
+
+- reduce records page size to 20 ([4b605be](https://github.com/andrewinci/insulator2/commit/4b605beb59f97fe709d41732d913c7b6bf1e861a))
+
 # [1.18.0](https://github.com/andrewinci/insulator2/compare/v1.17.0...v1.18.0) (2022-11-14)
 
 ### Bug Fixes
