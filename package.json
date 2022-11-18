@@ -24,7 +24,7 @@
     "@emotion/styled": "^11.10.5",
     "@mantine/core": "^5.6.4",
     "@mantine/dates": "^5.6.4",
-    "@mantine/form": "^5.6.4",
+    "@mantine/form": "^5.8.0",
     "@mantine/hooks": "^5.6.4",
     "@mantine/modals": "^5.6.4",
     "@mantine/notifications": "^5.6.4",
