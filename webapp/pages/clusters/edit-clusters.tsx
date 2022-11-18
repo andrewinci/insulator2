@@ -6,7 +6,13 @@ import { Cluster, ClusterAuthentication, UserSettings } from "../../models";
 import { AuthenticationFormType, ClusterForm, ClusterFormType, SaslFormType, SslFormType } from "./form";
 
 const upsertCluster = (s: UserSettings, cluster: Cluster): UserSettings => {
-  return { ...s, clusters: Object.assign(s.clusters, { [cluster.id]: cluster }) };
+  if (s.clusters.find((c) => c.id == cluster.id)) {
+    // update
+    return { ...s, clusters: s.clusters.map((c) => (c.id != cluster.id ? c : cluster)) };
+  } else {
+    // insert
+    return { ...s, clusters: [...s.clusters, cluster] };
+  }
 };
 
 export const EditCluster = () => {
@@ -14,15 +20,14 @@ export const EditCluster = () => {
   const { userSettings, setUserSettings } = useUserSettings();
   const navigate = useNavigate();
   const { clusterId } = useParams();
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const cluster = userSettings.clusters[clusterId!];
+  const cluster = userSettings.clusters.find((c) => c.id == clusterId);
   if (!cluster) {
     alert("Something went wrong", "Missing clusterId in navigation.");
     return <></>;
   }
 
   const editCluster = (clusterId: string, cluster: Cluster) => {
-    if (!userSettings.clusters[clusterId]) {
+    if (!userSettings.clusters.find((c) => c.id == clusterId)) {
       alert("Cluster configuration not found", `Unable to update ${cluster.name}.`);
       return Promise.reject();
     } else {
@@ -49,7 +54,7 @@ export const AddNewCluster = () => {
   const { userSettings, setUserSettings } = useUserSettings();
 
   const addCluster = (cluster: Cluster) => {
-    if (Object.values(userSettings.clusters).find((c) => c.name == cluster.name)) {
+    if (userSettings.clusters.find((c) => c.name == cluster.name)) {
       alert(
         "Cluster configuration already exists",
         `A cluster with the name "${cluster.name}" already exists. Try with another name.`
@@ -84,14 +89,14 @@ function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
   let type: AuthenticationFormType = "None";
   let sasl: SaslFormType = { username: "", password: "", scram: false };
   let ssl: SslFormType = { ca: "", certificate: "", key: "", keyPassword: undefined };
-  if (authentication == undefined) type = "None";
+  if (authentication == "None") type = "None";
   else if ("Sasl" in authentication) {
     type = "SASL";
 
-    sasl = authentication;
+    sasl = authentication.Sasl;
   } else if ("Ssl" in authentication) {
     type = "SSL";
-    ssl = authentication;
+    ssl = authentication.Ssl;
   }
 
   return { name, endpoint, authentication: { type, sasl, ssl }, schemaRegistry };
@@ -99,18 +104,18 @@ function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
 
 function mapFormToCluster(c: ClusterFormType): Cluster {
   console.log("Add new cluster", c);
-  let authentication: ClusterAuthentication | undefined = undefined;
+  let authentication: ClusterAuthentication = "None";
   switch (c.authentication.type) {
     case "None":
-      authentication = undefined;
+      authentication = "None";
       break;
     case "SASL":
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      authentication = { type: "Sasl", ...c.authentication.sasl! };
+      authentication = { Sasl: { ...c.authentication.sasl! } };
       break;
     case "SSL":
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      authentication = { type: "Ssl", ...c.authentication.ssl! };
+      authentication = { Ssl: { ...c.authentication.ssl! } };
       break;
     default:
       throw "Not supported";

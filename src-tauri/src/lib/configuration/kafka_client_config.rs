@@ -16,14 +16,14 @@ pub fn build_kafka_client_config(cluster: &ClusterConfig, group_id: Option<&str>
         .set("api.version.request", "true")
         .set("debug", "all");
     match &cluster.authentication {
-        None => {
+        AuthenticationConfig::None => {
             config.set("security.protocol", "PLAINTEXT");
         }
-        Some(AuthenticationConfig::Sasl {
+        AuthenticationConfig::Sasl {
             username,
             password,
             scram,
-        }) => {
+        } => {
             config
                 .set("security.protocol", "SASL_SSL")
                 .set("sasl.mechanisms", if *scram { "SCRAM-SHA-256" } else { "PLAIN" })
@@ -32,12 +32,12 @@ pub fn build_kafka_client_config(cluster: &ClusterConfig, group_id: Option<&str>
                 .set("sasl.password", password);
         }
 
-        Some(AuthenticationConfig::Ssl {
+        AuthenticationConfig::Ssl {
             ca,
             certificate,
             key,
             key_password,
-        }) => {
+        } => {
             config
                 .set("security.protocol", "ssl")
                 .set("ssl.ca.pem", ca)
