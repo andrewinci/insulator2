@@ -1,9 +1,7 @@
 use crate::lib::{types::ParsedKafkaRecord, Error, Result};
-use parking_lot::FairMutex;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::{named_params, Connection, OpenFlags};
-use std::sync::Arc;
+use rusqlite::{named_params, OpenFlags};
 
 pub struct Query {
     pub cluster_id: String,
@@ -13,50 +11,35 @@ pub struct Query {
     pub query_template: String,
 }
 pub struct AppStore {
-    _file_name: String,
-    write_connection: Arc<FairMutex<Connection>>,
-    read_connection_pool: Pool<SqliteConnectionManager>,
+    pool: Pool<SqliteConnectionManager>,
 }
 
 impl AppStore {
     pub fn new() -> Self {
-        //todo: try in memory with shared cache "file::memory:?cache=shared&mode=memory";
-        let file_name = "file::memory:?cache=shared&mode=memory"; //"/tmp/temp.db";//todo: use a temporary file to delete on drop 
-        let flags_w = OpenFlags::SQLITE_OPEN_READ_WRITE
-            | OpenFlags::SQLITE_OPEN_CREATE
-            | OpenFlags::SQLITE_OPEN_NO_MUTEX
-            | OpenFlags::SQLITE_OPEN_URI;
-        let conn_w =
-            Connection::open_with_flags(&file_name, flags_w).expect("Unable to initialize the in memory sqlite DB");
-        conn_w.pragma_update(None, "journal_mode", &"OFF").unwrap();
-        conn_w.pragma_update(None, "synchronous", &"OFF").unwrap();
-        conn_w.pragma_update(None, "page_size", &"4096").unwrap();
-        conn_w.pragma_update(None, "cache_size", &"16384").unwrap();
-        conn_w.pragma_update(None, "locking_mode", &"NORMAL").unwrap();
-        conn_w.pragma_update(None, "read_uncommitted", &"ON").unwrap();
-        
-        let flags_r = OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NO_MUTEX | OpenFlags::SQLITE_OPEN_URI;
-        let manager = SqliteConnectionManager::file(file_name).with_flags(flags_r).with_init(|conn| {
-            conn.pragma_update(None, "journal_mode", &"OFF").unwrap();
-            conn.pragma_update(None, "synchronous", &"OFF").unwrap();
-            conn.pragma_update(None, "page_size", &"4096").unwrap();
-            conn.pragma_update(None, "cache_size", &"16384").unwrap();
-            conn.pragma_update(None, "locking_mode", &"NORMAL").unwrap();
-            conn.pragma_update(None, "read_uncommitted", &"ON").unwrap();
-            conn.pragma_update(None, "query_only", &"ON").unwrap();
-            Ok(())
-        });
-
-        AppStore {
-            _file_name: file_name.to_owned(),
-            write_connection: Arc::new(FairMutex::new(conn_w)),
-            read_connection_pool: r2d2::Pool::builder().max_size(20).build(manager).expect("Unable to initialize the read only connection pool to the db"),
-        }
+        let file_name = "file::memory:?cache=shared&mode=memory";
+        let flags_r = OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX | OpenFlags::SQLITE_OPEN_URI;
+        let manager = SqliteConnectionManager::file(file_name)
+            .with_flags(flags_r)
+            .with_init(|conn| {
+                conn.pragma_update(None, "journal_mode", &"OFF").unwrap();
+                conn.pragma_update(None, "synchronous", &"OFF").unwrap();
+                conn.pragma_update(None, "page_size", &"4096").unwrap();
+                conn.pragma_update(None, "cache_size", &"16384").unwrap();
+                conn.pragma_update(None, "locking_mode", &"NORMAL").unwrap();
+                conn.pragma_update(None, "read_uncommitted", &"ON").unwrap();
+                Ok(())
+            });
+        let pool = r2d2::Pool::builder()
+            .max_size(20)
+            .build(manager)
+            .expect("Unable to initialize the read only connection pool to the db");
+        //todo: destroy db on Drop
+        AppStore { pool }
     }
 
     pub async fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
-        self.write_connection
-            .lock()
+        let connection = self.pool.get().unwrap();
+        connection
             .execute(
                 format!(
                     "CREATE TABLE IF NOT EXISTS {} (
@@ -75,7 +58,8 @@ impl AppStore {
     }
 
     pub async fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()> {
-        self.write_connection.lock().execute(
+        let connection = self.pool.get().unwrap();
+        connection.execute(
             format!(
                 "INSERT INTO {} (partition, offset, timestamp, key, payload) 
                 VALUES (:partition, :offset, :timestamp, :key, :payload)",
@@ -111,7 +95,7 @@ impl AppStore {
     }
 
     pub async fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>> {
-        let connection = self.read_connection_pool.get().unwrap();
+        let connection = self.pool.get().unwrap();
         let parsed_query = Self::parse_query(query);
         let mut stmt = connection.prepare(&parsed_query)?;
 
@@ -145,7 +129,7 @@ impl AppStore {
 
     pub async fn get_size_with_query(&self, query: &Query) -> Result<usize> {
         // let connection = self.write_connection.lock();
-        let connection = self.read_connection_pool.get().unwrap();
+        let connection = self.pool.get().unwrap();
         let mut stmt = connection.prepare(format!("SELECT count(*) FROM ({})", Self::parse_query(query)).as_str())?;
         let rows: Vec<_> = stmt.query_map([], |row| row.get::<_, i64>(0))?.collect();
         if let Some(Ok(size)) = rows.first() {
@@ -158,8 +142,8 @@ impl AppStore {
     }
 
     pub async fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
-        self.write_connection
-            .lock()
+        let connection = self.pool.get().unwrap();
+        connection
             .execute(
                 format!("DELETE FROM {}", Self::get_table_name(cluster_id, topic_name)).as_str(),
                 [],
@@ -301,15 +285,14 @@ mod tests {
         assert_eq!(no_res.len(), 0);
     }
 
-    #[tokio::test] //73 seconds sqlite, 70 seconds tokio-rusqlite
+    #[ignore]
+    #[tokio::test]
     async fn bench_insert_and_get_record() {
         use futures::executor::block_on;
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
+        let topic_name2 = "topic_name_example2";
         let db = Arc::new(AppStore::new());
-        db.create_topic_table(&cluster_id, &topic_name)
-            .await
-            .expect("Unable to create the table");
 
         async fn write(id: i32, db: Arc<AppStore>, cluster_id: &str, topic_name: &str) {
             let start = Instant::now();
@@ -335,6 +318,10 @@ mod tests {
         }
 
         // act
+        // topic1
+        db.create_topic_table(&cluster_id, &topic_name)
+            .await
+            .expect("Unable to create the table");
         let write1 = spawn({
             let db = db.clone();
             move || block_on(write(1, db.clone(), cluster_id, topic_name))
@@ -345,26 +332,37 @@ mod tests {
             move || block_on(read(1, db.clone(), cluster_id, topic_name))
         });
 
-        let write2 = spawn({
-            let db = db.clone();
-            move || block_on(write(2, db.clone(), cluster_id, topic_name))
-        });
-
-        let write3 = spawn({
-            let db = db.clone();
-            move || block_on(write(3, db.clone(), cluster_id, topic_name))
-        });
-
         let read2 = spawn({
             let db = db.clone();
             move || block_on(read(2, db.clone(), cluster_id, topic_name))
+        });
+
+        // topic2
+        db.create_topic_table(&cluster_id, &topic_name2)
+            .await
+            .expect("Unable to create the table");
+
+        let write2 = spawn({
+            let db = db.clone();
+            move || block_on(write(2, db.clone(), cluster_id, topic_name2))
+        });
+
+        let read3 = spawn({
+            let db = db.clone();
+            move || block_on(read(2, db.clone(), cluster_id, topic_name2))
+        });
+
+        let read4 = spawn({
+            let db = db.clone();
+            move || block_on(read(2, db.clone(), cluster_id, topic_name2))
         });
 
         assert!(write1.join().is_ok());
         assert!(read1.join().is_ok());
         assert!(read2.join().is_ok());
         assert!(write2.join().is_ok());
-        assert!(write3.join().is_ok());
+        assert!(read3.join().is_ok());
+        assert!(read4.join().is_ok());
     }
 
     fn get_test_record(topic_name: &str, offset: i64) -> ParsedKafkaRecord {

@@ -1815,7 +1815,6 @@ dependencies = [
  "log",
  "mockall",
  "num-bigint",
- "parking_lot",
  "r2d2",
  "r2d2_sqlite",
  "rdkafka",

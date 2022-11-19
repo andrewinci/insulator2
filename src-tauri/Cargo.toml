@@ -27,7 +27,6 @@ async-trait = "0.1.58"
 num-bigint = "0.4"
 rust_decimal = "1.26"
 rusqlite = { version = "0.28.0", features = ["bundled"] }
-parking_lot = "0.12.1"
 rust-keystore = { git = "https://github.com/andrewinci/rust-keystore", features = [
     "p12",
 ], tag = "v0.1.2" }
