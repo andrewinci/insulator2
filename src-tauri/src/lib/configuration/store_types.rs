@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use super::{AuthenticationConfig, ClusterConfig, InsulatorConfig, SchemaRegistryConfig, Theme};
@@ -9,12 +11,11 @@ pub struct StoreConfig {
     pub show_notifications: bool,
     #[serde(rename = "useRegex")]
     pub use_regex: bool,
-    pub clusters: Vec<StoreCluster>,
+    pub clusters: HashMap<String, StoreCluster>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
 pub struct StoreCluster {
-    pub id: String,
     pub name: String,
     pub endpoint: String,
     pub authentication: StoreAuthentication,
@@ -69,23 +70,13 @@ impl From<StoreAuthentication> for AuthenticationConfig {
     }
 }
 
-impl From<StoreCluster> for ClusterConfig {
-    fn from(
-        StoreCluster {
-            id,
-            name,
-            endpoint,
-            authentication,
-            schema_registry,
-        }: StoreCluster,
-    ) -> Self {
-        ClusterConfig {
-            id: id,
-            name: name,
-            endpoint: endpoint,
-            authentication: authentication.into(),
-            schema_registry: schema_registry,
-        }
+fn store_cluster_to_config(id: String, store: StoreCluster) -> ClusterConfig {
+    ClusterConfig {
+        id: id,
+        name: store.name,
+        endpoint: store.endpoint,
+        authentication: store.authentication.into(),
+        schema_registry: store.schema_registry,
     }
 }
 
@@ -98,7 +89,10 @@ impl From<StoreConfig> for InsulatorConfig {
             clusters,
         }: StoreConfig,
     ) -> Self {
-        let converted_clusters = clusters.into_iter().map(|c| c.into()).collect();
+        let converted_clusters = clusters
+            .into_iter()
+            .map(|(id, c)| store_cluster_to_config(id, c))
+            .collect();
         InsulatorConfig {
             theme: theme,
             show_notifications: show_notifications,
@@ -139,7 +133,6 @@ impl Into<StoreAuthentication> for AuthenticationConfig {
 impl Into<StoreCluster> for ClusterConfig {
     fn into(self) -> StoreCluster {
         StoreCluster {
-            id: self.id,
             name: self.name,
             endpoint: self.endpoint,
             authentication: self.authentication.into(),
@@ -155,7 +148,12 @@ impl Into<StoreConfig> for &InsulatorConfig {
             theme: conf.theme,
             show_notifications: conf.show_notifications,
             use_regex: conf.use_regex,
-            clusters: conf.clusters.clone().into_iter().map(|c| c.into()).collect(),
+            clusters: conf
+                .clusters
+                .clone()
+                .into_iter()
+                .map(|c| (c.id.clone(), c.into()))
+                .collect(),
         }
     }
 }
