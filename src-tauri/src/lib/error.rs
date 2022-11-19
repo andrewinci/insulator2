@@ -5,6 +5,7 @@ pub enum Error {
     AvroParse { message: String },
     IO { message: String },
     JSONSerde { message: String },
+    TOMLSerde { message: String},
     Consumer { message: String },
     Kafka { message: String },
     SqlError { message: String },
@@ -24,6 +25,22 @@ impl From<std::io::Error> for Error {
 impl From<serde_json::Error> for Error {
     fn from(error: serde_json::Error) -> Self {
         Error::JSONSerde {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<toml::de::Error> for Error {
+    fn from(error: toml::de::Error) -> Self {
+        Error::TOMLSerde {
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<toml::ser::Error> for Error {
+    fn from(error: toml::ser::Error) -> Self {
+        Error::TOMLSerde {
             message: error.to_string(),
         }
     }

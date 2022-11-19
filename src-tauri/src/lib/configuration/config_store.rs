@@ -1,5 +1,6 @@
 use super::legacy_config::LegacyConfiguration;
 use super::InsulatorConfig;
+use super::store_types::StoreConfig;
 use crate::lib::error::Result;
 use dirs::home_dir;
 use std::path::PathBuf;
@@ -15,7 +16,7 @@ impl ConfigStore {
     pub fn new() -> Self {
         let mut config_path = home_dir().expect("Unable to retrieve the home directory");
         let mut legacy_config_path = config_path.clone();
-        config_path.push(".insulator2.config");
+        config_path.push(".insulator2.toml");
         legacy_config_path.push(".insulator.config");
         ConfigStore {
             config_path,
@@ -36,7 +37,8 @@ impl ConfigStore {
             // read file content
             true => {
                 let raw_config = fs::read_to_string(&self.config_path)?;
-                Ok(serde_json::from_str::<InsulatorConfig>(&raw_config)?)
+                let conf = toml::from_str::<StoreConfig>(&raw_config)?;
+                Ok(InsulatorConfig::from(conf))//FIXME implement froms
             }
             // if the file doesn't exists return the default
             false => {
@@ -62,7 +64,8 @@ impl ConfigStore {
                 None => {}
             };
         });
-        let raw_config = serde_json::to_string_pretty(&configuration)?;
+        let as_store: StoreConfig = configuration.into();
+        let raw_config = toml::to_string_pretty(&as_store)?;
         fs::write(&self.config_path, raw_config)?;
         Ok(())
     }
