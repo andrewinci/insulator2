@@ -38,7 +38,7 @@ impl ConfigStore {
             true => {
                 let raw_config = fs::read_to_string(&self.config_path)?;
                 let conf = toml::from_str::<StoreConfig>(&raw_config)?;
-                Ok(InsulatorConfig::from(conf))//FIXME implement froms
+                Ok(InsulatorConfig::from(conf))
             }
             // if the file doesn't exists return the default
             false => {
