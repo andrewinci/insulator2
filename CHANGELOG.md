@@ -1,3 +1,9 @@
+## [2.0.1](https://github.com/andrewinci/insulator2/compare/v2.0.0...v2.0.1) (2022-11-20)
+
+### Bug Fixes
+
+- broken icon in mac os ([b6a2c40](https://github.com/andrewinci/insulator2/commit/b6a2c409090c75e3cd3db47a1a373d5d964cc42a))
+
 # [2.0.0](https://github.com/andrewinci/insulator2/compare/v1.18.1...v2.0.0) (2022-11-20)
 
 - feat!: Switch to TOML for config format (again) (#159) ([84a2d10](https://github.com/andrewinci/insulator2/commit/84a2d10224c3cbd46ebd3080b21a6970d247ae25)), closes [#159](https://github.com/andrewinci/insulator2/issues/159)
