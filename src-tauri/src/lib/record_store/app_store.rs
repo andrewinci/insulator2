@@ -16,7 +16,7 @@ pub struct AppStore {
 
 impl AppStore {
     pub fn new() -> Self {
-        let file_name = "file::memory:?cache=shared&mode=memory";
+        let file_name = format!("file::memory{}:?cache=shared&mode=memory", rand::random::<usize>());
         let flags_r = OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX | OpenFlags::SQLITE_OPEN_URI;
         let manager = SqliteConnectionManager::file(file_name)
             .with_flags(flags_r)
@@ -33,7 +33,6 @@ impl AppStore {
             .max_size(20)
             .build(manager)
             .expect("Unable to initialize the read only connection pool to the db");
-        //todo: destroy db on Drop
         AppStore { pool }
     }
 
@@ -42,7 +41,7 @@ impl AppStore {
         connection
             .execute(
                 format!(
-                    "CREATE TABLE IF NOT EXISTS {} (
+                    "CREATE TABLE {} (
                         partition   NUMBER,
                         offset      NUMBER,
                         timestamp   NUMBER,
@@ -179,22 +178,6 @@ impl AppStore {
     }
 }
 
-impl Drop for AppStore {
-    fn drop(&mut self) {
-        self.pool
-            .get()
-            .unwrap()
-            .execute_batch(
-                "
-        PRAGMA writable_schema = 1;
-        delete from sqlite_master where type in ('table', 'index', 'trigger');
-        PRAGMA writable_schema = 0;
-        ",
-            )
-            .unwrap();
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::{sync::Arc, thread::spawn, time::Instant};
@@ -215,7 +198,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
-        db.create_topic_table(&cluster_id, &topic_name)
+        db.create_topic_table(cluster_id, topic_name)
             .await
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
@@ -233,7 +216,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
-        db.create_topic_table(&cluster_id, &topic_name)
+        db.create_topic_table(cluster_id, topic_name)
             .await
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
@@ -251,7 +234,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
-        db.create_topic_table(&cluster_id, &topic_name)
+        db.create_topic_table(cluster_id, topic_name)
             .await
             .expect("Unable to create the table");
         // act
@@ -284,7 +267,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
-        db.create_topic_table(&cluster_id, &topic_name)
+        db.create_topic_table(cluster_id, topic_name)
             .await
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
@@ -335,7 +318,7 @@ mod tests {
 
         // act
         // topic1
-        db.create_topic_table(&cluster_id, &topic_name)
+        db.create_topic_table(cluster_id, topic_name)
             .await
             .expect("Unable to create the table");
         let write1 = spawn({
@@ -354,7 +337,7 @@ mod tests {
         });
 
         // topic2
-        db.create_topic_table(&cluster_id, &topic_name2)
+        db.create_topic_table(cluster_id, topic_name2)
             .await
             .expect("Unable to create the table");
 
