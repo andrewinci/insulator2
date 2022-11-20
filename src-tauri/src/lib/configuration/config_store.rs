@@ -1,6 +1,6 @@
 use super::legacy_config::LegacyConfiguration;
-use super::InsulatorConfig;
 use super::store_types::StoreConfig;
+use super::InsulatorConfig;
 use crate::lib::error::Result;
 use dirs::home_dir;
 use std::path::PathBuf;
@@ -64,7 +64,7 @@ impl ConfigStore {
                 None => {}
             };
         });
-        let as_store: StoreConfig = configuration.into();
+        let as_store = StoreConfig::from(configuration);
         let raw_config = toml::to_string_pretty(&as_store)?;
         fs::write(&self.config_path, raw_config)?;
         Ok(())
@@ -72,7 +72,7 @@ impl ConfigStore {
 }
 
 #[cfg(test)]
-mod test_configuration {
+mod test {
     use std::{env::temp_dir, fs};
 
     use crate::lib::configuration::InsulatorConfig;

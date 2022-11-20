@@ -51,19 +51,19 @@ impl From<StoreAuthentication> for AuthenticationConfig {
                 key,
                 key_password,
             } => AuthenticationConfig::Ssl {
-                ca: ca,
-                certificate: certificate,
-                key: key,
-                key_password: key_password,
+                ca,
+                certificate,
+                key,
+                key_password,
             },
             StoreAuthentication::Sasl {
                 username,
                 password,
                 scram,
             } => AuthenticationConfig::Sasl {
-                username: username,
-                password: password,
-                scram: scram,
+                username,
+                password,
+                scram,
             },
             StoreAuthentication::None => AuthenticationConfig::None,
         }
@@ -72,7 +72,7 @@ impl From<StoreAuthentication> for AuthenticationConfig {
 
 fn store_cluster_to_config(id: String, store: StoreCluster) -> ClusterConfig {
     ClusterConfig {
-        id: id,
+        id,
         name: store.name,
         endpoint: store.endpoint,
         authentication: store.authentication.into(),
@@ -94,61 +94,60 @@ impl From<StoreConfig> for InsulatorConfig {
             .map(|(id, c)| store_cluster_to_config(id, c))
             .collect();
         InsulatorConfig {
-            theme: theme,
-            show_notifications: show_notifications,
-            use_regex: use_regex,
+            theme,
+            show_notifications,
+            use_regex,
             clusters: converted_clusters,
         }
     }
 }
 
-impl Into<StoreAuthentication> for AuthenticationConfig {
-    fn into(self) -> StoreAuthentication {
-        match self {
+impl From<AuthenticationConfig> for StoreAuthentication {
+    fn from(authentication_config: AuthenticationConfig) -> Self {
+        match authentication_config {
             AuthenticationConfig::Ssl {
                 ca,
                 certificate,
                 key,
                 key_password,
             } => StoreAuthentication::Ssl {
-                ca: ca,
-                certificate: certificate,
-                key: key,
-                key_password: key_password,
+                ca,
+                certificate,
+                key,
+                key_password,
             },
             AuthenticationConfig::Sasl {
                 username,
                 password,
                 scram,
             } => StoreAuthentication::Sasl {
-                username: username,
-                password: password,
-                scram: scram,
+                username,
+                password,
+                scram,
             },
             AuthenticationConfig::None => StoreAuthentication::None,
         }
     }
 }
 
-impl Into<StoreCluster> for ClusterConfig {
-    fn into(self) -> StoreCluster {
+impl From<ClusterConfig> for StoreCluster {
+    fn from(config: ClusterConfig) -> Self {
         StoreCluster {
-            name: self.name,
-            endpoint: self.endpoint,
-            authentication: self.authentication.into(),
-            schema_registry: self.schema_registry,
+            name: config.name,
+            endpoint: config.endpoint,
+            authentication: config.authentication.into(),
+            schema_registry: config.schema_registry,
         }
     }
 }
 
-impl Into<StoreConfig> for &InsulatorConfig {
-    fn into(self) -> StoreConfig {
-        let conf = self.clone();
+impl From<&InsulatorConfig> for StoreConfig {
+    fn from(config: &InsulatorConfig) -> Self {
         StoreConfig {
-            theme: conf.theme,
-            show_notifications: conf.show_notifications,
-            use_regex: conf.use_regex,
-            clusters: conf
+            theme: config.theme,
+            show_notifications: config.show_notifications,
+            use_regex: config.use_regex,
+            clusters: config
                 .clusters
                 .clone()
                 .into_iter()

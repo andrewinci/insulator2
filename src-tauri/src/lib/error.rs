@@ -5,7 +5,7 @@ pub enum Error {
     AvroParse { message: String },
     IO { message: String },
     JSONSerde { message: String },
-    TOMLSerde { message: String},
+    TOMLSerde { message: String },
     Consumer { message: String },
     Kafka { message: String },
     SqlError { message: String },

@@ -3,7 +3,6 @@ use rdkafka::ClientConfig;
 use crate::lib::configuration::{AuthenticationConfig, ClusterConfig};
 
 pub fn build_kafka_client_config(cluster: &ClusterConfig, group_id: Option<&str>) -> ClientConfig {
-    //todo: try to use as less threads as possible for each consumer created
     let mut config = ClientConfig::new();
     let group_id = group_id.unwrap_or("insulator-2");
     config
