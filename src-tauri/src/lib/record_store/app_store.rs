@@ -1,7 +1,7 @@
 use crate::lib::{types::ParsedKafkaRecord, Error, Result};
-use parking_lot::FairMutex;
-use rusqlite::{named_params, Connection};
-use std::sync::Arc;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
+use rusqlite::{named_params, OpenFlags};
 
 pub struct Query {
     pub cluster_id: String,
@@ -11,21 +11,34 @@ pub struct Query {
     pub query_template: String,
 }
 pub struct AppStore {
-    conn: Arc<FairMutex<Connection>>,
+    pool: Pool<SqliteConnectionManager>,
 }
 
 impl AppStore {
     pub fn new() -> Self {
-        AppStore {
-            conn: Arc::new(FairMutex::new(
-                Connection::open_in_memory().expect("Unable to initialize the in memory sqlite DB"),
-            )),
-        }
+        let file_name = format!("file::memory{}:?cache=shared&mode=memory", rand::random::<usize>());
+        let flags_r = OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX | OpenFlags::SQLITE_OPEN_URI;
+        let manager = SqliteConnectionManager::file(file_name)
+            .with_flags(flags_r)
+            .with_init(|conn| {
+                conn.pragma_update(None, "journal_mode", &"OFF").unwrap();
+                conn.pragma_update(None, "synchronous", &"OFF").unwrap();
+                conn.pragma_update(None, "page_size", &"4096").unwrap();
+                conn.pragma_update(None, "cache_size", &"16384").unwrap();
+                conn.pragma_update(None, "locking_mode", &"NORMAL").unwrap();
+                conn.pragma_update(None, "read_uncommitted", &"ON").unwrap();
+                Ok(())
+            });
+        let pool = r2d2::Pool::builder()
+            .max_size(20)
+            .build(manager)
+            .expect("Unable to initialize the read only connection pool to the db");
+        AppStore { pool }
     }
 
     pub async fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
-        self.conn
-            .lock()
+        let connection = self.pool.get().unwrap();
+        connection
             .execute(
                 format!(
                     "CREATE TABLE {} (
@@ -39,12 +52,13 @@ impl AppStore {
                 .as_str(),
                 [],
             )
-            .unwrap_or_else(|_| panic!("Unable to create the table for {} {}", cluster_id, topic_name));
+            .unwrap_or_else(|e| panic!("Unable to create the table for {} {} {:?}", cluster_id, topic_name, e));
         Ok(())
     }
 
     pub async fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()> {
-        self.conn.lock().execute(
+        let connection = self.pool.get().unwrap();
+        connection.execute(
             format!(
                 "INSERT INTO {} (partition, offset, timestamp, key, payload) 
                 VALUES (:partition, :offset, :timestamp, :key, :payload)",
@@ -80,7 +94,7 @@ impl AppStore {
     }
 
     pub async fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>> {
-        let connection = self.conn.lock();
+        let connection = self.pool.get().unwrap();
         let parsed_query = Self::parse_query(query);
         let mut stmt = connection.prepare(&parsed_query)?;
 
@@ -113,7 +127,8 @@ impl AppStore {
     }
 
     pub async fn get_size_with_query(&self, query: &Query) -> Result<usize> {
-        let connection = self.conn.lock();
+        // let connection = self.write_connection.lock();
+        let connection = self.pool.get().unwrap();
         let mut stmt = connection.prepare(format!("SELECT count(*) FROM ({})", Self::parse_query(query)).as_str())?;
         let rows: Vec<_> = stmt.query_map([], |row| row.get::<_, i64>(0))?.collect();
         if let Some(Ok(size)) = rows.first() {
@@ -126,8 +141,8 @@ impl AppStore {
     }
 
     pub async fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
-        self.conn
-            .lock()
+        let connection = self.pool.get().unwrap();
+        connection
             .execute(
                 format!("DELETE FROM {}", Self::get_table_name(cluster_id, topic_name)).as_str(),
                 [],
@@ -165,6 +180,8 @@ impl AppStore {
 
 #[cfg(test)]
 mod tests {
+    use std::{sync::Arc, thread::spawn, time::Instant};
+
     use crate::lib::{record_store::app_store::Query, types::ParsedKafkaRecord};
 
     use super::AppStore;
@@ -181,7 +198,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
-        db.create_topic_table(&cluster_id, &topic_name)
+        db.create_topic_table(cluster_id, topic_name)
             .await
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
@@ -190,7 +207,7 @@ mod tests {
         let records_back = db.get_records(cluster_id, topic_name, 0, 1000).await.unwrap();
         // assert
         assert!(res.is_ok());
-        assert!(records_back.len() == 1);
+        assert_eq!(records_back.len(), 1);
         assert_eq!(records_back[0], test_record);
     }
 
@@ -199,7 +216,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
-        db.create_topic_table(&cluster_id, &topic_name)
+        db.create_topic_table(cluster_id, topic_name)
             .await
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
@@ -217,7 +234,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
-        db.create_topic_table(&cluster_id, &topic_name)
+        db.create_topic_table(cluster_id, topic_name)
             .await
             .expect("Unable to create the table");
         // act
@@ -250,7 +267,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
-        db.create_topic_table(&cluster_id, &topic_name)
+        db.create_topic_table(cluster_id, topic_name)
             .await
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
@@ -265,6 +282,86 @@ mod tests {
         assert_eq!(first_1000_res.len(), 3);
         assert_eq!(first_res.len(), 1);
         assert_eq!(no_res.len(), 0);
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn bench_insert_and_get_record() {
+        use futures::executor::block_on;
+        // arrange
+        let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
+        let topic_name2 = "topic_name_example2";
+        let db = Arc::new(AppStore::new());
+
+        async fn write(id: i32, db: Arc<AppStore>, cluster_id: &str, topic_name: &str) {
+            let start = Instant::now();
+            let test_record = get_test_record(topic_name, 0);
+            for i in 0..10_000 {
+                let res = db.insert_record(cluster_id, topic_name, &test_record).await;
+                if res.is_err() {
+                    println!("write-{} {} {:?}", id, i, res);
+                }
+            }
+            println!("write-{} Time elapsed: {:?}", id, start.elapsed());
+        }
+
+        async fn read(id: i32, db: Arc<AppStore>, cluster_id: &str, topic_name: &str) {
+            let start = Instant::now();
+            for i in 0..10_000 {
+                let res = db.get_records(cluster_id, topic_name, 0, 1000).await;
+                if res.is_err() {
+                    println!("read-{} {} {:?}", id, i, res);
+                }
+            }
+            println!("read-{} Time elapsed: {:?}", id, start.elapsed());
+        }
+
+        // act
+        // topic1
+        db.create_topic_table(cluster_id, topic_name)
+            .await
+            .expect("Unable to create the table");
+        let write1 = spawn({
+            let db = db.clone();
+            move || block_on(write(1, db.clone(), cluster_id, topic_name))
+        });
+
+        let read1 = spawn({
+            let db = db.clone();
+            move || block_on(read(1, db.clone(), cluster_id, topic_name))
+        });
+
+        let read2 = spawn({
+            let db = db.clone();
+            move || block_on(read(2, db.clone(), cluster_id, topic_name))
+        });
+
+        // topic2
+        db.create_topic_table(cluster_id, topic_name2)
+            .await
+            .expect("Unable to create the table");
+
+        let write2 = spawn({
+            let db = db.clone();
+            move || block_on(write(2, db.clone(), cluster_id, topic_name2))
+        });
+
+        let read3 = spawn({
+            let db = db.clone();
+            move || block_on(read(2, db.clone(), cluster_id, topic_name2))
+        });
+
+        let read4 = spawn({
+            let db = db.clone();
+            move || block_on(read(2, db.clone(), cluster_id, topic_name2))
+        });
+
+        assert!(write1.join().is_ok());
+        assert!(read1.join().is_ok());
+        assert!(read2.join().is_ok());
+        assert!(write2.join().is_ok());
+        assert!(read3.join().is_ok());
+        assert!(read4.join().is_ok());
     }
 
     fn get_test_record(topic_name: &str, offset: i64) -> ParsedKafkaRecord {

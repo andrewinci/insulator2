@@ -27,11 +27,11 @@ async-trait = "0.1.58"
 num-bigint = "0.4"
 rust_decimal = "1.26"
 rusqlite = { version = "0.28.0", features = ["bundled"] }
-parking_lot = "0.12.1"
-rust-keystore = { git = "https://github.com/andrewinci/rust-keystore", features = [
-    "p12",
-], tag = "v0.1.2" }
+rust-keystore = { git = "https://github.com/andrewinci/rust-keystore", features = ["p12"], tag = "v0.1.2" }
+r2d2 = "0.8.10"
+r2d2_sqlite = "0.21.0"
 toml = "0.5"
+rand = "0.8.5"
 
 [target.'cfg(windows)'.dependencies]
 rdkafka = { version = "0.29", features = [
