@@ -179,6 +179,22 @@ impl AppStore {
     }
 }
 
+impl Drop for AppStore {
+    fn drop(&mut self) {
+        self.pool
+            .get()
+            .unwrap()
+            .execute_batch(
+                "
+        PRAGMA writable_schema = 1;
+        delete from sqlite_master where type in ('table', 'index', 'trigger');
+        PRAGMA writable_schema = 0;
+        ",
+            )
+            .unwrap();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::{sync::Arc, thread::spawn, time::Instant};
