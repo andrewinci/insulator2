@@ -10,7 +10,7 @@ pub struct InsulatorConfig {
     pub clusters: Vec<ClusterConfig>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone, Copy)]
 pub enum Theme {
     #[default]
     Dark,
