@@ -1,11 +1,11 @@
 {
-  "version": "v1.18.1",
-  "notes": "## [1.18.1](https://github.com/andrewinci/insulator2/compare/v1.18.0...v1.18.1) (2022-11-18)\n\n\n### Bug Fixes\n\n* dead lock consuming multiple topics ([3c6fb3a](https://github.com/andrewinci/insulator2/commit/3c6fb3a166c29c1ef3dbc2cc7a794d0cb72163ec))\n\n\n### Performance Improvements\n\n* reduce records page size to 20 ([4b605be](https://github.com/andrewinci/insulator2/commit/4b605beb59f97fe709d41732d913c7b6bf1e861a))\n\n\n\n",
-  "pub_date": "2022-11-18T07:50:03Z",
+  "version": "v2.0.0",
+  "notes": "# [2.0.0](https://github.com/andrewinci/insulator2/compare/v1.18.1...v2.0.0) (2022-11-20)\n\n\n* feat!: Switch to TOML for config format (again) (#159) ([84a2d10](https://github.com/andrewinci/insulator2/commit/84a2d10224c3cbd46ebd3080b21a6970d247ae25)), closes [#159](https://github.com/andrewinci/insulator2/issues/159)\n\n\n### Performance Improvements\n\n* Use connection pool to interact with the DB ([#160](https://github.com/andrewinci/insulator2/issues/160)) ([636a025](https://github.com/andrewinci/insulator2/commit/636a025a60096dbb1d3ea667d70cc19c17af9230))\n\n\n### BREAKING CHANGES\n\n* use toml for configurations instead of json\n\n\n\n",
+  "pub_date": "2022-11-20T10:40:05Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v1.18.1/insulator-2_1.18.1_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.0.0/insulator-2_2.0.0_amd64.AppImage.tar.gz"
     }
   }
 }

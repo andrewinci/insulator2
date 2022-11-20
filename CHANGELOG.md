@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/andrewinci/insulator2/compare/v1.18.1...v2.0.0) (2022-11-20)
+
+- feat!: Switch to TOML for config format (again) (#159) ([84a2d10](https://github.com/andrewinci/insulator2/commit/84a2d10224c3cbd46ebd3080b21a6970d247ae25)), closes [#159](https://github.com/andrewinci/insulator2/issues/159)
+
+### Performance Improvements
+
+- Use connection pool to interact with the DB ([#160](https://github.com/andrewinci/insulator2/issues/160)) ([636a025](https://github.com/andrewinci/insulator2/commit/636a025a60096dbb1d3ea667d70cc19c17af9230))
+
+### BREAKING CHANGES
+
+- use toml for configurations instead of json
+
 ## [1.18.1](https://github.com/andrewinci/insulator2/compare/v1.18.0...v1.18.1) (2022-11-18)
 
 ### Bug Fixes
