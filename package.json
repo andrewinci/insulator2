@@ -10,7 +10,7 @@
     "lint:rust:check": "cd src-tauri && cargo fmt --check && cargo clippy",
     "lint:ts": "prettier --write . && yarn eslint webapp/ --fix && yarn tsc --noemit",
     "lint:ts:check": "prettier --check . && yarn eslint webapp/ && yarn tsc --noemit",
-    "lint": "yarn lint:rust && yarn lint:ts",
+    "lint": "yarn lint:ts && yarn lint:rust",
     "lint:check": "yarn lint:rust:check && yarn lint:ts:check",
     "test:ts": "vitest run --dom",
     "test:rust": "cd src-tauri && cargo test",

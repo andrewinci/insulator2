@@ -1,34 +1,32 @@
+import { useLocalStorage } from "@mantine/hooks";
 import { Allotment } from "allotment";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Topic } from "./topic";
 import { TopicList } from "./topic-list";
 
 export const TopicsPage = () => {
-  const navigate = useNavigate();
   const { clusterId, topicName } = useParams();
+  const [state, setState] = useLocalStorage({
+    key: `topic-main-${clusterId}`,
+    defaultValue: {
+      topicName,
+    },
+  });
+
   if (!clusterId) {
     throw Error("Missing clusterId in path!");
   }
-  const topicList = (
-    <TopicList
-      clusterId={clusterId}
-      onTopicSelected={(activeTopic) => navigate(`/cluster/${clusterId}/topic/${activeTopic}`)}
-    />
-  );
-  if (topicName) {
-    return (
-      <Allotment>
-        <Allotment.Pane minSize={430} maxSize={topicName ? 600 : undefined}>
-          {topicList}
+
+  return (
+    <Allotment>
+      <Allotment.Pane minSize={430} maxSize={state.topicName ? 600 : undefined}>
+        <TopicList clusterId={clusterId} onTopicSelected={(activeTopic) => setState({ topicName: activeTopic })} />
+      </Allotment.Pane>
+      {state.topicName && (
+        <Allotment.Pane minSize={520}>
+          <Topic clusterId={clusterId} topicName={state.topicName} />
         </Allotment.Pane>
-        {topicName && (
-          <Allotment.Pane minSize={520}>
-            <Topic clusterId={clusterId} topicName={topicName} />
-          </Allotment.Pane>
-        )}
-      </Allotment>
-    );
-  } else {
-    return topicList;
-  }
+      )}
+    </Allotment>
+  );
 };
