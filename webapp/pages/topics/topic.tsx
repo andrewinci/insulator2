@@ -2,12 +2,11 @@ import { ActionIcon, Badge, Button, Center, Container, Group, Loader, Text, Menu
 import { IconInfoCircle, IconTool, IconTrash } from "@tabler/icons";
 import { RecordsList } from "./record-list";
 import { getConsumerState, stopConsumer } from "../../tauri/consumer";
-import { PageHeader } from "../../components";
+import { CodeEditor, PageHeader } from "../../components";
 import { openConsumerModal } from "./consumer-modal";
 import { useQuery } from "@tanstack/react-query";
 import { deleteTopic, getLastOffsets, getTopicInfo } from "../../tauri/admin";
 import { useState } from "react";
-import CodeEditor from "@uiw/react-textarea-code-editor";
 import { Allotment } from "allotment";
 import { useNavigate } from "react-router-dom";
 import { openConfirmModal } from "@mantine/modals";
@@ -100,15 +99,10 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
                 overflowY: "auto",
               }}>
               <CodeEditor
-                value={modalState.query}
-                onChange={(e) => setModalState({ ...modalState, query: e.currentTarget.value })}
+                height={80}
                 language="sql"
-                minHeight={80}
-                style={{
-                  fontSize: 12,
-                  backgroundColor: "#000000",
-                  fontFamily: "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
-                }}
+                value={modalState.query}
+                onChange={(v) => setModalState({ ...modalState, query: v ?? "" })}
               />
             </div>
             <Text size={"sm"}>

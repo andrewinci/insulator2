@@ -1,8 +1,8 @@
 import { Autocomplete, Button, Group, Input, Stack, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import CodeEditor from "@uiw/react-textarea-code-editor";
 import { useState } from "react";
 import { Form } from "react-router-dom";
+import { CodeEditor } from "../../components";
 import { useNotifications } from "../../providers";
 import { postSchema } from "../../tauri/schema-registry";
 
@@ -74,17 +74,7 @@ export const AddSchemaModal = ({
               height: "100%",
               overflowY: "auto",
             }}>
-            <CodeEditor
-              id="schema-input"
-              {...form.getInputProps("avroSchema")}
-              language="json"
-              minHeight={200}
-              style={{
-                fontSize: 12,
-                backgroundColor: "#000000",
-                fontFamily: "ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace",
-              }}
-            />
+            <CodeEditor id="schema-input" {...form.getInputProps("avroSchema")} language="json" height="400px" />
           </div>
         </Input.Wrapper>
         <Group position="apart">

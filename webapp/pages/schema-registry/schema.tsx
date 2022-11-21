@@ -1,22 +1,10 @@
-import {
-  ActionIcon,
-  Center,
-  Container,
-  Group,
-  Loader,
-  Menu,
-  Select,
-  Tooltip,
-  Text,
-  useMantineTheme,
-} from "@mantine/core";
+import { ActionIcon, Center, Container, Group, Loader, Menu, Select, Tooltip, Text } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
-import Editor from "@monaco-editor/react";
 import { IconTool, IconTrash, IconVersions } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageHeader } from "../../components";
+import { CodeEditor, PageHeader } from "../../components";
 import { useNotifications } from "../../providers";
 import { deleteSubject, deleteSubjectVersion, getSubject } from "../../tauri/schema-registry";
 
@@ -39,7 +27,6 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
       setState({ version: lastSchemaVersion });
     }
   }, [subject]);
-  const mantineTheme = useMantineTheme();
   return (
     <Container>
       <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`}>
@@ -62,29 +49,11 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
         <Center hidden={!isLoading} mt={10}>
           <Loader />
         </Center>
-        <Editor
+        <CodeEditor
           height="calc(100vh - 155px)"
-          defaultLanguage="json"
+          language="json"
           value={pretty(subject?.versions?.find((s) => s.version == state?.version)?.schema ?? "")}
-          options={{
-            minimap: {
-              enabled: false,
-            },
-            contextmenu: false,
-            readOnly: true,
-            theme: "custom",
-            scrollBeyondLastLine: false,
-          }}
-          beforeMount={(monaco) => {
-            monaco.editor.defineTheme("custom", {
-              base: mantineTheme.colorScheme == "dark" ? "vs-dark" : "vs",
-              inherit: true,
-              rules: [],
-              colors: {
-                "editor.background": mantineTheme.colorScheme == "dark" ? "#141517" : "#F8F9FA",
-              },
-            });
-          }}
+          readOnly={true}
         />
       </Container>
     </Container>
