@@ -1,7 +1,17 @@
-import styled from "@emotion/styled";
-import { ActionIcon, Center, Container, Group, Loader, Menu, ScrollArea, Select, Tooltip, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  Center,
+  Container,
+  Group,
+  Loader,
+  Menu,
+  Select,
+  Tooltip,
+  Text,
+  useMantineTheme,
+} from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
-import { Prism } from "@mantine/prism";
+import Editor from "@monaco-editor/react";
 import { IconTool, IconTrash, IconVersions } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -29,7 +39,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
       setState({ version: lastSchemaVersion });
     }
   }, [subject]);
-
+  const mantineTheme = useMantineTheme();
   return (
     <Container>
       <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`}>
@@ -48,25 +58,38 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
         </Group>
       )}
 
-      <ScrollArea mt={20}>
+      <Container mt={20} p={0}>
         <Center hidden={!isLoading} mt={10}>
           <Loader />
         </Center>
-        <CustomPrism hidden={isLoading} style={{ height: "calc(100vh - 155px)" }} language="json">
-          {pretty(subject?.versions?.find((s) => s.version == state?.version)?.schema ?? "")}
-        </CustomPrism>
-      </ScrollArea>
+        <Editor
+          height="calc(100vh - 155px)"
+          defaultLanguage="json"
+          value={pretty(subject?.versions?.find((s) => s.version == state?.version)?.schema ?? "")}
+          options={{
+            minimap: {
+              enabled: false,
+            },
+            contextmenu: false,
+            readOnly: true,
+            theme: "custom",
+            scrollBeyondLastLine: false,
+          }}
+          beforeMount={(monaco) => {
+            monaco.editor.defineTheme("custom", {
+              base: mantineTheme.colorScheme == "dark" ? "vs-dark" : "vs",
+              inherit: true,
+              rules: [],
+              colors: {
+                "editor.background": mantineTheme.colorScheme == "dark" ? "#141517" : "#F8F9FA",
+              },
+            });
+          }}
+        />
+      </Container>
     </Container>
   );
 };
-
-const CustomPrism = styled(Prism)`
-  code[class*="language-"],
-  pre[class*="language-"] {
-    white-space: pre-wrap !important;
-    word-break: normal !important;
-  }
-`;
 
 const Tools = ({ clusterId, subject, version }: { clusterId: string; subject: string; version: number }) => {
   const navigate = useNavigate();

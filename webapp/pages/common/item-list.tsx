@@ -11,6 +11,7 @@ import {
   Badge,
   Grid,
   FocusTrap,
+  useMantineTheme,
 } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconStar } from "@tabler/icons";
@@ -176,6 +177,7 @@ const TabPanel = ({
     window.addEventListener("resize", handleWindowResize);
     return () => window.removeEventListener("resize", handleWindowResize);
   }, []);
+  const backgroundColor = useMantineTheme().colorScheme == "light" ? "white" : "black";
   return (
     <Tabs.Panel value={title} pt="xs">
       {isLoading && (
@@ -189,7 +191,11 @@ const TabPanel = ({
             <Grid style={style} grow gutter={0} justify={"flex-start"} align="center">
               <Grid.Col span="auto" sx={{ maxWidth: "30px" }}>
                 <ActionIcon color="orange" radius="xl" onClick={() => onFavToggled(items[index])}>
-                  <IconStar fill={favorites.includes(items[index]) ? "orange" : undefined} size={16} stroke={1.5} />
+                  <IconStar
+                    fill={favorites.includes(items[index]) ? "orange" : backgroundColor}
+                    size={16}
+                    stroke={1.5}
+                  />
                 </ActionIcon>
               </Grid.Col>
               <Grid.Col span={11}>
