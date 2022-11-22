@@ -1,5 +1,18 @@
-import { ActionIcon, Badge, Button, Center, Container, Group, Loader, Text, Menu } from "@mantine/core";
-import { IconInfoCircle, IconTool, IconTrash } from "@tabler/icons";
+import {
+  ActionIcon,
+  Badge,
+  Button,
+  Center,
+  Container,
+  Group,
+  Loader,
+  Text,
+  Menu,
+  Anchor,
+  Divider,
+  Tooltip,
+} from "@mantine/core";
+import { IconArrowBarToDown, IconArrowBarToUp, IconInfoCircle, IconSearch, IconTool, IconTrash } from "@tabler/icons";
 import { RecordsList } from "./record-list";
 import { getConsumerState, stopConsumer } from "../../tauri/consumer";
 import { CodeEditor, PageHeader } from "../../components";
@@ -38,9 +51,12 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
   };
 
   const defaultQuery =
-    "SELECT partition, offset, timestamp, key, payload FROM {:topic}\nORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
-  const [query, setQuery] = useState<string>(defaultQuery);
-  const [modalState, setModalState] = useState<{ opened: boolean; query: string }>({ opened: false, query });
+    "SELECT partition, offset, timestamp, key, payload\nFROM {:topic}\nORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+  const [query, setQuery] = useState<string>();
+  const [modalState, setModalState] = useState<{ opened: boolean; query: string }>({
+    opened: false,
+    query: defaultQuery,
+  });
 
   return (
     <>
@@ -61,62 +77,60 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
             )}
             {!isLoading && data && (
               <>
-                <Group>
+                <Text my={5} size={"xs"}>
+                  Note: use json syntax to filter by field in the payload{" "}
+                  <Anchor href="https://www.sqlite.org/json1.html" target="tauri">
+                    https://www.sqlite.org/json1.html
+                  </Anchor>
+                </Text>
+                <CodeEditor
+                  height={80}
+                  language="sql"
+                  value={modalState.query}
+                  onChange={(v) => setModalState({ ...modalState, query: v ?? "" })}
+                />
+                <Group mt={5} position="apart">
+                  <Group>
+                    <Button
+                      size="xs"
+                      onClick={toggleConsumerRunning}
+                      rightIcon={
+                        <Tooltip label="Total records consumed internally and queryable">
+                          <Badge variant="filled" color={"red"}>
+                            {data.recordCount}
+                          </Badge>
+                        </Tooltip>
+                      }>
+                      {data.isRunning ? "Stop" : "Consume"}
+                    </Button>
+
+                    <Button leftIcon={<IconSearch size={14} />} size="xs" onClick={() => setQuery(modalState.query)}>
+                      Query
+                    </Button>
+                    <Button
+                      leftIcon={<IconArrowBarToDown size={14} />}
+                      disabled
+                      size="xs"
+                      onClick={() => setQuery(modalState.query)}>
+                      Export
+                    </Button>
+                  </Group>
                   <Button
-                    mb={10}
+                    leftIcon={<IconArrowBarToUp size={14} />}
+                    disabled
+                    color={"orange"}
                     size="xs"
-                    onClick={toggleConsumerRunning}
-                    rightIcon={
-                      <Badge variant="filled" color={"red"}>
-                        {data.recordCount}
-                      </Badge>
-                    }>
-                    {data.isRunning ? "Stop" : "Consume"}
-                  </Button>
-                  <Button
-                    mb={10}
-                    size="xs"
-                    onClick={() => setModalState({ ...modalState, opened: !modalState.opened })}>
-                    {modalState.opened ? "Hide query" : "Edit query"}
+                    onClick={() => setQuery(modalState.query)}>
+                    Produce
                   </Button>
                 </Group>
+
+                <Divider my={10} />
+
                 <RecordsList clusterId={clusterId} topic={topicName} heightOffset={140} query={query} />
               </>
             )}
           </Container>
-        </Allotment.Pane>
-        <Allotment.Pane visible={modalState.opened} minSize={200} maxSize={250} preferredSize={200}>
-          <div style={{ padding: "10px", display: "flex", flexDirection: "column", flexGrow: 1, height: "100%" }}>
-            <Text mb={10} size="sm">
-              Query consumed records
-            </Text>
-            <div
-              style={{
-                backgroundColor: "#000000",
-                borderRadius: "3px",
-                height: "100%",
-                maxHeight: "135px",
-                overflowY: "auto",
-              }}>
-              <CodeEditor
-                height={80}
-                language="sql"
-                value={modalState.query}
-                onChange={(v) => setModalState({ ...modalState, query: v ?? "" })}
-              />
-            </div>
-            <Text size={"sm"}>
-              Note: use json syntax to filter by fields in the payload https://www.sqlite.org/json1.html
-            </Text>
-            <Button
-              style={{ width: "80px" }}
-              mt={10}
-              size="xs"
-              disabled={modalState.query.length < 64 || modalState.query == query} //this is the len of the minimal statement (select ... from ...)
-              onClick={() => setQuery(modalState.query)}>
-              Apply
-            </Button>
-          </div>
         </Allotment.Pane>
       </Allotment>
     </>

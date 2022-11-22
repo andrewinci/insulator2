@@ -11,7 +11,7 @@ import { getRecordsPage } from "../../tauri/consumer";
 type RecordsListProps = {
   clusterId: string;
   topic: string;
-  query: string;
+  query?: string;
   heightOffset?: number;
 };
 
@@ -26,11 +26,19 @@ export const RecordsList = (props: RecordsListProps) => {
 
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
     ["fetchRecords", clusterId, topic, query],
-    async ({ pageParam = 0 }) => await getRecordsPage(clusterId, topic, pageParam ?? 0, query),
+    async ({ pageParam = 0 }) => {
+      if (query) {
+        return await getRecordsPage(clusterId, topic, pageParam ?? 0, query);
+      } else
+        return {
+          nextPage: null,
+          prevPage: null,
+          records: [],
+        };
+    },
     {
       getNextPageParam: (lastPage, _) => lastPage.nextPage,
       getPreviousPageParam: (firstPage, _) => firstPage.prevPage,
-      refetchInterval: 500,
     }
   );
   const allRecords = data ? data.pages.flatMap((d) => d.records) : [];
@@ -78,7 +86,12 @@ export const RecordsList = (props: RecordsListProps) => {
               width: "100%",
             }}>
             {isLoading && <Loader></Loader>}
-            {!isLoading && allRecords.length == 0 && <Text>No records querying the consumed records</Text>}
+            {!isLoading && allRecords.length == 0 && (
+              <Text size={"xs"} align="center">
+                No records to show.
+                <br /> Click the Query button to refresh this table{" "}
+              </Text>
+            )}
           </Center>
           {rowVirtualizer.getVirtualItems().map((virtualItem) => {
             if (allRecords.length > 0 && hasNextPage && allRecords.length <= virtualItem.index) {
