@@ -1,11 +1,11 @@
 import { Chip, Stack, Title, Text, Group, Checkbox, Button, Divider } from "@mantine/core";
 import { openModal, useModals } from "@mantine/modals";
 import { DateRangePicker, DatePicker, TimeRangeInput, TimeInput } from "@mantine/dates";
-import { ConsumerSettingsFrom } from "../../models/kafka";
+import { ConsumerSettingsFrom } from "../../../models/kafka";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { startConsumer } from "../../tauri/consumer";
+import { startConsumer } from "../../../tauri/consumer";
 
 dayjs.extend(utc);
 

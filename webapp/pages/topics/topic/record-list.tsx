@@ -4,9 +4,9 @@ import { Prism } from "@mantine/prism";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
-import { KafkaRecord } from "../../models/kafka";
-import { getRecordsPage } from "../../tauri/consumer";
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
+import { KafkaRecord } from "../../../models/kafka";
+import { getRecordsPage } from "../../../tauri/consumer";
 
 type RecordsListProps = {
   clusterId: string;
@@ -15,20 +15,33 @@ type RecordsListProps = {
   heightOffset?: number;
 };
 
+export type RecordsListRef = {
+  executeQuery: (query: string) => Promise<void>;
+};
+
 const RECORD_PAGE_HEIGHT = 135;
 
-export const RecordsList = (props: RecordsListProps) => {
-  const { clusterId, topic, heightOffset, query } = props;
+export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, ref) => {
+  const { clusterId, topic, heightOffset } = props;
 
-  const [state, setState] = useState<{ windowHeight: number }>({
+  const [state, setState] = useState<{ windowHeight: number; query: string | null; isLoading: boolean }>({
     windowHeight: window.innerHeight,
+    query: null,
+    isLoading: true,
   });
 
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
-    ["fetchRecords", clusterId, topic, query],
+  const {
+    data,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    isLoading: reactQueryLoading,
+    refetch,
+  } = useInfiniteQuery(
+    ["fetchRecords", clusterId, topic, state.query],
     async ({ pageParam = 0 }) => {
-      if (query) {
-        return await getRecordsPage(clusterId, topic, pageParam ?? 0, query);
+      if (state.query) {
+        return await getRecordsPage(clusterId, topic, pageParam ?? 0, state.query);
       } else
         return {
           nextPage: null,
@@ -41,6 +54,16 @@ export const RecordsList = (props: RecordsListProps) => {
       getPreviousPageParam: (firstPage, _) => firstPage.prevPage,
     }
   );
+
+  useMemo(() => setState((s) => ({ ...s, isLoading: reactQueryLoading })), [reactQueryLoading]);
+  // allow parent to execute the query
+  useImperativeHandle(ref, () => ({
+    async executeQuery(query: string) {
+      setState((s) => ({ ...s, query, isLoading: true }));
+      await refetch();
+      setState((s) => ({ ...s, isLoading: false }));
+    },
+  }));
   const allRecords = data ? data.pages.flatMap((d) => d.records) : [];
 
   const parentRef = React.useRef<HTMLDivElement>(null);
@@ -85,8 +108,8 @@ export const RecordsList = (props: RecordsListProps) => {
               left: 0,
               width: "100%",
             }}>
-            {isLoading && <Loader></Loader>}
-            {!isLoading && allRecords.length == 0 && (
+            {state.isLoading && <Loader></Loader>}
+            {!state.isLoading && allRecords.length == 0 && (
               <Text size={"xs"} align="center">
                 No records to show.
                 <br /> Click the Query button to refresh this table{" "}
@@ -131,7 +154,8 @@ export const RecordsList = (props: RecordsListProps) => {
       </div>
     </>
   );
-};
+});
+RecordsList.displayName = "RecordsList";
 
 const LabelValue = ({ label, value }: { label: string; value: string | number }) => (
   <>
