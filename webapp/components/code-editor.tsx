@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import { useMantineTheme } from "@mantine/core";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import { useEffect } from "react";
@@ -30,7 +31,7 @@ export const CodeEditor = ({ height, language: defaultLanguage, value, readOnly,
   };
 
   return (
-    <Editor
+    <StyledEditor
       saveViewState={false}
       height={height}
       defaultLanguage={defaultLanguage}
@@ -54,3 +55,9 @@ export const CodeEditor = ({ height, language: defaultLanguage, value, readOnly,
     />
   );
 };
+
+const StyledEditor = styled(Editor)`
+  margin-left: -20px;
+  margin-right: -20px;
+  width: 100%;
+`;
