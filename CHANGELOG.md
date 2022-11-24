@@ -1,3 +1,15 @@
+# [2.1.0](https://github.com/andrewinci/insulator2/compare/v2.0.1...v2.1.0) (2022-11-24)
+
+### Bug Fixes
+
+- store last view ([ebe1fc5](https://github.com/andrewinci/insulator2/commit/ebe1fc56ab7ec1a0e47b629d268449e963cb26b9))
+
+### Features
+
+- **FE:** add tools to schema registry view via monaco js ([16acd78](https://github.com/andrewinci/insulator2/commit/16acd785440cbf46ca9b54dbcdc1c75b48c0525b))
+- **FE:** redesign records view page ([#161](https://github.com/andrewinci/insulator2/issues/161)) ([bb5924b](https://github.com/andrewinci/insulator2/commit/bb5924b41c105ca963a1f58ff5c5947bf80b3314))
+- validate json in add schema modal ([48d711e](https://github.com/andrewinci/insulator2/commit/48d711ef61b43fd25a9ca2dd498095345a3e1f65))
+
 ## [2.0.1](https://github.com/andrewinci/insulator2/compare/v2.0.0...v2.0.1) (2022-11-20)
 
 ### Bug Fixes

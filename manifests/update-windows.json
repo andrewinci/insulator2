@@ -1,11 +1,11 @@
 {
-  "version": "v2.0.1",
-  "notes": "## [2.0.1](https://github.com/andrewinci/insulator2/compare/v2.0.0...v2.0.1) (2022-11-20)\n\n\n### Bug Fixes\n\n* broken icon in mac os ([b6a2c40](https://github.com/andrewinci/insulator2/commit/b6a2c409090c75e3cd3db47a1a373d5d964cc42a))\n\n\n\n",
-  "pub_date": "2022-11-20T17:18:17Z",
+  "version": "v2.1.0",
+  "notes": "# [2.1.0](https://github.com/andrewinci/insulator2/compare/v2.0.1...v2.1.0) (2022-11-24)\n\n\n### Bug Fixes\n\n* store last view ([ebe1fc5](https://github.com/andrewinci/insulator2/commit/ebe1fc56ab7ec1a0e47b629d268449e963cb26b9))\n\n\n### Features\n\n* **FE:** add tools to schema registry view via monaco js ([16acd78](https://github.com/andrewinci/insulator2/commit/16acd785440cbf46ca9b54dbcdc1c75b48c0525b))\n* **FE:** redesign records view page ([#161](https://github.com/andrewinci/insulator2/issues/161)) ([bb5924b](https://github.com/andrewinci/insulator2/commit/bb5924b41c105ca963a1f58ff5c5947bf80b3314))\n* validate json in add schema modal ([48d711e](https://github.com/andrewinci/insulator2/commit/48d711ef61b43fd25a9ca2dd498095345a3e1f65))\n\n\n\n",
+  "pub_date": "2022-11-24T07:58:19Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.0.1/Insulator.2_2.0.1_x64_en-US.msi.zip"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.1.0/Insulator.2_2.1.0_x64_en-US.msi.zip"
     }
   }
 }
