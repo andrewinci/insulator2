@@ -1,4 +1,4 @@
-import { Center, Container, Loader, Divider } from "@mantine/core";
+import { Center, Container, Loader } from "@mantine/core";
 import { RecordsList, RecordsListRef } from "./record-list";
 import { getConsumerState, stopConsumer } from "../../../tauri/consumer";
 import { PageHeader } from "../../../components";
@@ -8,7 +8,7 @@ import { getLastOffsets, getTopicInfo } from "../../../tauri/admin";
 import { Allotment } from "allotment";
 import { Tools } from "./tools";
 import { TopicPageMenu } from "./topic-menu";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: string }) => {
   const { data, isLoading } = useQuery(
@@ -30,6 +30,8 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
     };
   });
 
+  const [paneHeight, setPaneHeight] = useState({ headerHeight: 10, recordsHeight: 10 });
+
   const toggleConsumerRunning = async () => {
     if (!data) return;
     data.isRunning ? await stopConsumer(clusterId, topicName) : openConsumerModal({ clusterId, topicName });
@@ -38,37 +40,37 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
   const ref = useRef<RecordsListRef>(null);
 
   return (
-    <>
-      <Allotment vertical>
-        <Allotment.Pane minSize={300}>
-          <Container style={{ maxWidth: "100%" }}>
-            <PageHeader
-              title={topicName}
-              subtitle={`Estimated Records: ${estimatedRecord ?? "..."}, Cleanup policy: ${
-                topicInfo?.cleanupPolicy ?? "..."
-              }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}>
-              <Tools clusterId={clusterId} topic={topicName} />
-            </PageHeader>
-            {isLoading && (
-              <Center mt={10}>
-                <Loader />
-              </Center>
-            )}
-            {!isLoading && data && (
-              <>
-                <TopicPageMenu
-                  onConsumerToggle={toggleConsumerRunning}
-                  consumedRecords={data.recordCount}
-                  isConsumerRunning={data.isRunning}
-                  onQuery={(query: string) => ref.current?.executeQuery(query)}
-                />
-                <Divider my={10} />
-                <RecordsList ref={ref} clusterId={clusterId} topic={topicName} heightOffset={260} />
-              </>
-            )}
-          </Container>
-        </Allotment.Pane>
-      </Allotment>
-    </>
+    <Allotment vertical onChange={([s1, s2]) => setPaneHeight({ headerHeight: s1, recordsHeight: s2 })}>
+      <Allotment.Pane preferredSize={230} minSize={230}>
+        <Container style={{ maxWidth: "100%" }}>
+          <PageHeader
+            title={topicName}
+            subtitle={`Estimated Records: ${estimatedRecord ?? "..."}, Cleanup policy: ${
+              topicInfo?.cleanupPolicy ?? "..."
+            }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}>
+            <Tools clusterId={clusterId} topic={topicName} />
+          </PageHeader>
+          {isLoading && (
+            <Center mt={10}>
+              <Loader />
+            </Center>
+          )}
+          {!isLoading && data && (
+            <TopicPageMenu
+              height={paneHeight.headerHeight - 150}
+              onConsumerToggle={toggleConsumerRunning}
+              consumedRecords={data.recordCount}
+              isConsumerRunning={data.isRunning}
+              onQuery={(query: string) => ref.current?.executeQuery(query)}
+            />
+          )}
+        </Container>
+      </Allotment.Pane>
+      <Allotment.Pane minSize={400}>
+        <Container mt={10} style={{ maxWidth: "100%" }}>
+          <RecordsList ref={ref} clusterId={clusterId} topic={topicName} height={paneHeight.recordsHeight - 20} />
+        </Container>
+      </Allotment.Pane>
+    </Allotment>
   );
 };

@@ -6,6 +6,7 @@ import { useState } from "react";
 type TopicPageMenuProps = {
   consumedRecords?: number;
   isConsumerRunning?: boolean;
+  height?: number;
   onConsumerToggle: () => void;
   onQuery: (query: string) => void;
 };
@@ -13,11 +14,12 @@ type TopicPageMenuProps = {
 export const TopicPageMenu = ({
   consumedRecords,
   isConsumerRunning,
+  height,
   onConsumerToggle,
   onQuery,
 }: TopicPageMenuProps) => {
   const defaultQuery =
-    "SELECT partition, offset, timestamp, key, payload\nFROM {:topic}\nORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+    "SELECT partition, offset, timestamp, key, payload\nFROM {:topic}\nORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}\n";
   const [queryState, setQueryState] = useState<{ opened: boolean; query: string }>({
     opened: false,
     query: defaultQuery,
@@ -31,7 +33,7 @@ export const TopicPageMenu = ({
         </Anchor>
       </Text>
       <CodeEditor
-        height={80}
+        height={height}
         language="sql"
         value={queryState.query}
         onChange={(v) => setQueryState({ ...queryState, query: v ?? "" })}

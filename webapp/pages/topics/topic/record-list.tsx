@@ -12,7 +12,7 @@ type RecordsListProps = {
   clusterId: string;
   topic: string;
   query?: string;
-  heightOffset?: number;
+  height?: number;
 };
 
 export type RecordsListRef = {
@@ -22,10 +22,9 @@ export type RecordsListRef = {
 const RECORD_PAGE_HEIGHT = 135;
 
 export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, ref) => {
-  const { clusterId, topic, heightOffset } = props;
+  const { clusterId, topic, height } = props;
 
-  const [state, setState] = useState<{ windowHeight: number; query: string | null; isLoading: boolean }>({
-    windowHeight: window.innerHeight,
+  const [state, setState] = useState<{ query: string | null; isLoading: boolean }>({
     query: null,
     isLoading: true,
   });
@@ -75,12 +74,6 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
   });
 
   useEffect(() => {
-    const handleWindowResize = () => setState((s) => ({ ...s, windowHeight: window.innerHeight }));
-    window.addEventListener("resize", handleWindowResize);
-    return () => window.removeEventListener("resize", handleWindowResize);
-  }, []);
-
-  useEffect(() => {
     const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
     if (lastItem && lastItem.index >= allRecords.length - 1 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
@@ -92,7 +85,7 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
       <div
         ref={parentRef}
         style={{
-          height: state.windowHeight - (heightOffset ?? 0),
+          height: height,
           overflow: "auto", // Make it scroll!
         }}>
         <div
