@@ -13,7 +13,7 @@ import {
   FocusTrap,
   useMantineTheme,
 } from "@mantine/core";
-import { useLocalStorage } from "@mantine/hooks";
+import { useSessionStorage } from "@mantine/hooks";
 import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconStar } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList } from "react-window";
@@ -43,9 +43,9 @@ export const ItemList = (props: ItemListProps) => {
   const { listId, items, title, isLoading, isFetching } = props;
   const [searchText, setSearchText] = useState<string>("");
   const [focus, setOnFocus] = useState<string | undefined>(undefined);
-  const [state, setState] = useLocalStorage<{
+  const [state, setState] = useSessionStorage<{
     recent: string[];
-    favorites: string[];
+    favorites: string[]; //todo: this should be in config
     selected?: string;
   }>({
     key: listId,

@@ -1,4 +1,4 @@
-import { useLocalStorage } from "@mantine/hooks";
+import { useSessionStorage } from "@mantine/hooks";
 import { Allotment } from "allotment";
 import { useParams } from "react-router-dom";
 import { ConsumerGroup } from "./consumer-group";
@@ -6,7 +6,7 @@ import { ConsumerGroupsList } from "./consumer-groups-list";
 
 export const ConsumerGroupsPage = () => {
   const { clusterId, consumerName: navConsumerName } = useParams();
-  const [state, setState] = useLocalStorage({
+  const [state, setState] = useSessionStorage({
     key: `consumer-main-${clusterId}`,
     defaultValue: {
       consumerName: navConsumerName,
