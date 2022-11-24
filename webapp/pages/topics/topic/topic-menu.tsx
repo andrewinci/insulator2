@@ -1,4 +1,4 @@
-import { Badge, Button, Group, Text, Anchor, Tooltip } from "@mantine/core";
+import { Badge, Button, Group, Text, Anchor, Tooltip, Loader } from "@mantine/core";
 import { IconArrowBarToDown, IconArrowBarToUp, IconSearch } from "@tabler/icons";
 import { CodeEditor } from "../../../components";
 import { useState } from "react";
@@ -43,6 +43,7 @@ export const TopicPageMenu = ({
           <Button
             size="xs"
             onClick={onConsumerToggle}
+            leftIcon={isConsumerRunning && <Loader color={"red"} size={"xs"}></Loader>}
             rightIcon={
               <Tooltip label="Total records consumed internally and queryable">
                 <Badge variant="filled" color={"red"}>
