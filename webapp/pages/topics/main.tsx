@@ -1,12 +1,12 @@
-import { useLocalStorage } from "@mantine/hooks";
+import { useSessionStorage } from "@mantine/hooks";
 import { Allotment } from "allotment";
 import { useParams } from "react-router-dom";
-import { Topic } from "./topic";
+import { Topic } from "./topic/topic";
 import { TopicList } from "./topic-list";
 
 export const TopicsPage = () => {
   const { clusterId, topicName } = useParams();
-  const [state, setState] = useLocalStorage({
+  const [state, setState] = useSessionStorage({
     key: `topic-main-${clusterId}`,
     defaultValue: {
       topicName,

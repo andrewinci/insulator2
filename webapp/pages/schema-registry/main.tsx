@@ -1,5 +1,5 @@
 import { Center, Text } from "@mantine/core";
-import { useLocalStorage } from "@mantine/hooks";
+import { useSessionStorage } from "@mantine/hooks";
 import { Allotment } from "allotment";
 import { useParams } from "react-router-dom";
 import { useUserSettings } from "../../providers";
@@ -8,7 +8,7 @@ import { SchemaList } from "./schema-list";
 
 export const SchemasPage = () => {
   const { clusterId, schemaName: navSchemaName } = useParams();
-  const [state, setState] = useLocalStorage({
+  const [state, setState] = useSessionStorage({
     key: `schema-main-${clusterId}`,
     defaultValue: {
       schemaName: navSchemaName,

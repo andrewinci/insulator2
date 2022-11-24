@@ -36,6 +36,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
         <Group>
           <Tooltip position="right" label="Schema version">
             <Select
+              size="xs"
               icon={<IconVersions />}
               data={subject.versions.map((s) => ({ value: s.version.toString(), label: `v${s.version} - ${s.id}` }))}
               value={state?.version?.toString()}

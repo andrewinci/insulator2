@@ -4,35 +4,65 @@ import { Prism } from "@mantine/prism";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
-import { KafkaRecord } from "../../models/kafka";
-import { getRecordsPage } from "../../tauri/consumer";
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
+import { KafkaRecord } from "../../../models/kafka";
+import { getRecordsPage } from "../../../tauri/consumer";
 
 type RecordsListProps = {
   clusterId: string;
   topic: string;
-  query: string;
-  heightOffset?: number;
+  query?: string;
+  height?: number;
+};
+
+export type RecordsListRef = {
+  executeQuery: (query: string) => Promise<void>;
 };
 
 const RECORD_PAGE_HEIGHT = 135;
 
-export const RecordsList = (props: RecordsListProps) => {
-  const { clusterId, topic, heightOffset, query } = props;
+export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, ref) => {
+  const { clusterId, topic, height } = props;
 
-  const [state, setState] = useState<{ windowHeight: number }>({
-    windowHeight: window.innerHeight,
+  const [state, setState] = useState<{ query: string | null; isLoading: boolean }>({
+    query: null,
+    isLoading: true,
   });
 
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
-    ["fetchRecords", clusterId, topic, query],
-    async ({ pageParam = 0 }) => await getRecordsPage(clusterId, topic, pageParam ?? 0, query),
+  const {
+    data,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    isLoading: reactQueryLoading,
+    refetch,
+  } = useInfiniteQuery(
+    ["fetchRecords", clusterId, topic, state.query],
+    async ({ pageParam = 0 }) => {
+      if (state.query) {
+        return await getRecordsPage(clusterId, topic, pageParam ?? 0, state.query);
+      } else
+        return {
+          nextPage: null,
+          prevPage: null,
+          records: [],
+        };
+    },
     {
       getNextPageParam: (lastPage, _) => lastPage.nextPage,
       getPreviousPageParam: (firstPage, _) => firstPage.prevPage,
-      refetchInterval: 500,
     }
   );
+
+  useMemo(() => setState((s) => ({ ...s, isLoading: reactQueryLoading })), [reactQueryLoading]);
+  // allow parent to execute the query
+  useImperativeHandle(ref, () => ({
+    async executeQuery(query: string) {
+      setState((s) => ({ ...s, query, isLoading: true }));
+      await refetch();
+      setState((s) => ({ ...s, isLoading: false }));
+    },
+  }));
   const allRecords = data ? data.pages.flatMap((d) => d.records) : [];
 
   const parentRef = React.useRef<HTMLDivElement>(null);
@@ -42,12 +72,6 @@ export const RecordsList = (props: RecordsListProps) => {
     estimateSize: () => RECORD_PAGE_HEIGHT,
     overscan: 2,
   });
-
-  useEffect(() => {
-    const handleWindowResize = () => setState((s) => ({ ...s, windowHeight: window.innerHeight }));
-    window.addEventListener("resize", handleWindowResize);
-    return () => window.removeEventListener("resize", handleWindowResize);
-  }, []);
 
   useEffect(() => {
     const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
@@ -61,7 +85,7 @@ export const RecordsList = (props: RecordsListProps) => {
       <div
         ref={parentRef}
         style={{
-          height: state.windowHeight - (heightOffset ?? 0),
+          height: height,
           overflow: "auto", // Make it scroll!
         }}>
         <div
@@ -77,8 +101,13 @@ export const RecordsList = (props: RecordsListProps) => {
               left: 0,
               width: "100%",
             }}>
-            {isLoading && <Loader></Loader>}
-            {!isLoading && allRecords.length == 0 && <Text>No records querying the consumed records</Text>}
+            {state.isLoading && <Loader></Loader>}
+            {!state.isLoading && allRecords.length == 0 && (
+              <Text size={"xs"} align="center">
+                No records to show.
+                <br /> Click the Query button to refresh this table{" "}
+              </Text>
+            )}
           </Center>
           {rowVirtualizer.getVirtualItems().map((virtualItem) => {
             if (allRecords.length > 0 && hasNextPage && allRecords.length <= virtualItem.index) {
@@ -118,7 +147,8 @@ export const RecordsList = (props: RecordsListProps) => {
       </div>
     </>
   );
-};
+});
+RecordsList.displayName = "RecordsList";
 
 const LabelValue = ({ label, value }: { label: string; value: string | number }) => (
   <>
