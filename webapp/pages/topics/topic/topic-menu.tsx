@@ -1,29 +1,26 @@
 import { Badge, Button, Group, Text, Anchor, Tooltip, Loader } from "@mantine/core";
 import { IconArrowBarToDown, IconArrowBarToUp, IconSearch } from "@tabler/icons";
 import { CodeEditor } from "../../../components";
-import { useState } from "react";
 
 type TopicPageMenuProps = {
   consumedRecords?: number;
   isConsumerRunning?: boolean;
   height?: number;
+  query: string;
+  onQueryChange: (query: string) => void;
+  onQuery: () => void;
   onConsumerToggle: () => void;
-  onQuery: (query: string) => void;
 };
 
 export const TopicPageMenu = ({
   consumedRecords,
   isConsumerRunning,
   height,
+  query,
+  onQueryChange,
   onConsumerToggle,
   onQuery,
 }: TopicPageMenuProps) => {
-  const defaultQuery =
-    "SELECT partition, offset, timestamp, key, payload\nFROM {:topic}\nORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}\n";
-  const [queryState, setQueryState] = useState<{ opened: boolean; query: string }>({
-    opened: false,
-    query: defaultQuery,
-  });
   return (
     <>
       <Text my={5} size={"xs"}>
@@ -32,12 +29,7 @@ export const TopicPageMenu = ({
           https://www.sqlite.org/json1.html
         </Anchor>
       </Text>
-      <CodeEditor
-        height={height}
-        language="sql"
-        value={queryState.query}
-        onChange={(v) => setQueryState({ ...queryState, query: v ?? "" })}
-      />
+      <CodeEditor height={height} language="sql" value={query} onChange={(v) => onQueryChange(v)} />
       <Group mt={5} position="apart">
         <Group>
           <Button
@@ -54,7 +46,7 @@ export const TopicPageMenu = ({
             {isConsumerRunning ? "Stop" : "Consume"}
           </Button>
 
-          <Button leftIcon={<IconSearch size={14} />} size="xs" onClick={() => onQuery(queryState.query)}>
+          <Button leftIcon={<IconSearch size={14} />} size="xs" onClick={() => onQuery()}>
             Query
           </Button>
           <Button leftIcon={<IconArrowBarToDown size={14} />} disabled size="xs">

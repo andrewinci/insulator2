@@ -9,6 +9,7 @@ import { Allotment } from "allotment";
 import { Tools } from "./tools";
 import { TopicPageMenu } from "./topic-menu";
 import { useRef, useState } from "react";
+import { useCache } from "../../../hooks";
 
 export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: string }) => {
   const { data, isLoading } = useQuery(
@@ -30,7 +31,21 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
     };
   });
 
-  const [paneHeight, setPaneHeight] = useState({ headerHeight: 10, recordsHeight: 10 });
+  const [query, setQuery] = useCache(
+    {
+      key: `topic-page-${clusterId}-${topicName}`,
+      initialValue: {
+        query:
+          "SELECT partition, offset, timestamp, key, payload\nFROM {:topic}\nORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}\n",
+      },
+    },
+    [clusterId, topicName]
+  );
+
+  const [state, setState] = useState({
+    headerHeight: 10,
+    recordsHeight: 10,
+  });
 
   const toggleConsumerRunning = async () => {
     if (!data) return;
@@ -40,7 +55,7 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
   const ref = useRef<RecordsListRef>(null);
 
   return (
-    <Allotment vertical onChange={([s1, s2]) => setPaneHeight({ headerHeight: s1, recordsHeight: s2 })}>
+    <Allotment vertical onChange={([s1, s2]) => setState((s) => ({ ...s, headerHeight: s1, recordsHeight: s2 }))}>
       <Allotment.Pane preferredSize={230} minSize={230}>
         <Container style={{ maxWidth: "100%" }}>
           <PageHeader
@@ -57,18 +72,20 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
           )}
           {!isLoading && data && (
             <TopicPageMenu
-              height={paneHeight.headerHeight - 150}
+              height={state.headerHeight - 150}
               onConsumerToggle={toggleConsumerRunning}
               consumedRecords={data.recordCount}
               isConsumerRunning={data.isRunning}
-              onQuery={(query: string) => ref.current?.executeQuery(query)}
+              query={query.query}
+              onQueryChange={(query) => setQuery((s) => ({ ...s, query }))}
+              onQuery={() => ref.current?.executeQuery(query.query)}
             />
           )}
         </Container>
       </Allotment.Pane>
       <Allotment.Pane minSize={400}>
         <Container mt={10} style={{ maxWidth: "100%" }}>
-          <RecordsList ref={ref} clusterId={clusterId} topic={topicName} height={paneHeight.recordsHeight - 20} />
+          <RecordsList ref={ref} clusterId={clusterId} topic={topicName} height={state.recordsHeight - 20} />
         </Container>
       </Allotment.Pane>
     </Allotment>
