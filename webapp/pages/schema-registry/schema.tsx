@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CodeEditor, PageHeader } from "../../components";
+import { pretty } from "../../helpers/json";
 import { useNotifications } from "../../providers";
 import { deleteSubject, deleteSubjectVersion, getSubject } from "../../tauri/schema-registry";
 
@@ -12,8 +13,6 @@ type SchemaProps = {
   schemaName: string;
   clusterId: string;
 };
-
-const pretty = (j: string) => (j ? JSON.stringify(JSON.parse(j), null, 2) : "");
 
 export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
   const { data: subject, isLoading } = useQuery(["getSchemaVersions", clusterId, schemaName], () =>
