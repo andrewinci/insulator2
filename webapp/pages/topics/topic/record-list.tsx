@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
-import { Paper, Text, Group, Loader, Center, ActionIcon, Tooltip } from "@mantine/core";
+import { Paper, Text, Group, Loader, Center, ActionIcon, Tooltip, Title } from "@mantine/core";
 import { useClipboard } from "@mantine/hooks";
+import { openModal } from "@mantine/modals";
 import { Prism } from "@mantine/prism";
 import { IconCopy, IconEye } from "@tabler/icons";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } 
 import { pretty } from "../../../helpers/json";
 import { KafkaRecord } from "../../../models/kafka";
 import { getRecordsPage } from "../../../tauri/consumer";
+import { RecordDetailsView } from "./record-view";
 
 type RecordsListProps = {
   clusterId: string;
@@ -133,6 +135,7 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
               return (
                 <KafkaRecordCard
                   key={virtualItem.index}
+                  topic={topic}
                   index={virtualItem.index}
                   record={allRecords[virtualItem.index]}
                   style={{
@@ -165,15 +168,24 @@ const LabelValue = ({ label, value }: { label: string; value: string | number })
 
 const KafkaRecordCard = ({
   record,
+  topic,
   index,
   style,
 }: {
   record: KafkaRecord;
+  topic: string;
   index: number;
   style: React.CSSProperties;
 }) => {
   const timestamp = record?.timestamp ? dayjs(record.timestamp).toISOString() : "N/A";
   const clipboard = useClipboard();
+  const openDetails = (record: KafkaRecord) =>
+    openModal({
+      title: <Title order={3}>Record details</Title>,
+      children: <RecordDetailsView topic={topic} record={record} />,
+      size: 700,
+    });
+
   const [copyState, setCopyState] = useState<{ color?: string }>({ color: undefined });
   return (
     <Paper
@@ -197,7 +209,7 @@ const KafkaRecordCard = ({
             </ActionIcon>
           </Tooltip>
           <Tooltip label="Record details">
-            <ActionIcon disabled>
+            <ActionIcon onClick={() => openDetails(record)}>
               <IconEye size={20}></IconEye>
             </ActionIcon>
           </Tooltip>

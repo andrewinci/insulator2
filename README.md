@@ -94,7 +94,7 @@ yarn tauri dev
 ### Spin up a local kafka (RedPanda) cluster for testing
 
 ```bash
-docker run -d --pull=always --name=redpanda-1 --rm \
+docker run -d --name=redpanda-1 --rm \
     -p 9092:9092 \
     -p 9644:9644 \
     docker.vectorized.io/vectorized/redpanda:latest \
