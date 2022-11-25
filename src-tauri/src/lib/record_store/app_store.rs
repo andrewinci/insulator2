@@ -36,7 +36,7 @@ impl AppStore {
         AppStore { pool }
     }
 
-    pub async fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
+    pub fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
         let connection = self.pool.get().unwrap();
         connection
             .execute(
@@ -56,7 +56,7 @@ impl AppStore {
         Ok(())
     }
 
-    pub async fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()> {
+    pub fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()> {
         let connection = self.pool.get().unwrap();
         connection.execute(
             format!(
@@ -76,7 +76,7 @@ impl AppStore {
         Ok(())
     }
 
-    pub async fn get_records(
+    pub fn get_records(
         &self,
         cluster_id: &str,
         topic_name: &str,
@@ -90,10 +90,9 @@ impl AppStore {
             limit,
             query_template: "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}".into(),
         })
-        .await
     }
 
-    pub async fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>> {
+    pub fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>> {
         let connection = self.pool.get().unwrap();
         let parsed_query = Self::parse_query(query);
         let mut stmt = connection.prepare(&parsed_query)?;
@@ -115,7 +114,7 @@ impl AppStore {
         Ok(records)
     }
 
-    pub async fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize> {
+    pub fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize> {
         self.get_size_with_query(&Query {
             cluster_id: cluster_id.into(),
             topic_name: topic_name.into(),
@@ -123,10 +122,9 @@ impl AppStore {
             limit: 0,
             query_template: "SELECT offset FROM {:topic}".into(),
         })
-        .await
     }
 
-    pub async fn get_size_with_query(&self, query: &Query) -> Result<usize> {
+    pub fn get_size_with_query(&self, query: &Query) -> Result<usize> {
         // let connection = self.write_connection.lock();
         let connection = self.pool.get().unwrap();
         let mut stmt = connection.prepare(format!("SELECT count(*) FROM ({})", Self::parse_query(query)).as_str())?;
@@ -140,7 +138,7 @@ impl AppStore {
         }
     }
 
-    pub async fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
+    pub fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
         let connection = self.pool.get().unwrap();
         connection
             .execute(
@@ -189,7 +187,7 @@ mod tests {
     #[tokio::test]
     async fn test_create_table() {
         let db = AppStore::new();
-        let res = db.create_topic_table("cluster_id_example", "topic_name_example").await;
+        let res = db.create_topic_table("cluster_id_example", "topic_name_example");
         assert!(res.is_ok())
     }
 
@@ -199,12 +197,11 @@ mod tests {
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
         db.create_topic_table(cluster_id, topic_name)
-            .await
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
         // act
-        let res = db.insert_record(cluster_id, topic_name, &test_record).await;
-        let records_back = db.get_records(cluster_id, topic_name, 0, 1000).await.unwrap();
+        let res = db.insert_record(cluster_id, topic_name, &test_record);
+        let records_back = db.get_records(cluster_id, topic_name, 0, 1000).unwrap();
         // assert
         assert!(res.is_ok());
         assert_eq!(records_back.len(), 1);
@@ -217,14 +214,13 @@ mod tests {
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
         db.create_topic_table(cluster_id, topic_name)
-            .await
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
         // act
-        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
-        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
-        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
-        let table_size = db.get_size(cluster_id, topic_name).await.unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).unwrap();
+        let table_size = db.get_size(cluster_id, topic_name).unwrap();
         // assert
         assert_eq!(table_size, 3);
     }
@@ -235,17 +231,13 @@ mod tests {
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
         db.create_topic_table(cluster_id, topic_name)
-            .await
             .expect("Unable to create the table");
         // act
         db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, 1))
-            .await
             .unwrap();
         db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, 0))
-            .await
             .unwrap();
         db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, 0))
-            .await
             .unwrap();
         let table_size = db
             .get_size_with_query(&Query {
@@ -256,7 +248,6 @@ mod tests {
                 query_template:
                     "SELECT * from {:topic} WHERE offset = 0 ORDER BY offset LIMIT {:limit} OFFSET {:offset};".into(),
             })
-            .await
             .unwrap();
         // assert
         assert_eq!(table_size, 2);
@@ -268,16 +259,15 @@ mod tests {
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = AppStore::new();
         db.create_topic_table(cluster_id, topic_name)
-            .await
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
         // act
-        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
-        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
-        db.insert_record(cluster_id, topic_name, &test_record).await.unwrap();
-        let first_1000_res = db.get_records(cluster_id, topic_name, 0, 1000).await.unwrap();
-        let first_res = db.get_records(cluster_id, topic_name, 1, 1).await.unwrap();
-        let no_res = db.get_records(cluster_id, topic_name, 3, 1000).await.unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).unwrap();
+        let first_1000_res = db.get_records(cluster_id, topic_name, 0, 1000).unwrap();
+        let first_res = db.get_records(cluster_id, topic_name, 1, 1).unwrap();
+        let no_res = db.get_records(cluster_id, topic_name, 3, 1000).unwrap();
         // assert
         assert_eq!(first_1000_res.len(), 3);
         assert_eq!(first_res.len(), 1);
@@ -297,7 +287,7 @@ mod tests {
             let start = Instant::now();
             let test_record = get_test_record(topic_name, 0);
             for i in 0..10_000 {
-                let res = db.insert_record(cluster_id, topic_name, &test_record).await;
+                let res = db.insert_record(cluster_id, topic_name, &test_record);
                 if res.is_err() {
                     println!("write-{} {} {:?}", id, i, res);
                 }
@@ -308,7 +298,7 @@ mod tests {
         async fn read(id: i32, db: Arc<AppStore>, cluster_id: &str, topic_name: &str) {
             let start = Instant::now();
             for i in 0..10_000 {
-                let res = db.get_records(cluster_id, topic_name, 0, 1000).await;
+                let res = db.get_records(cluster_id, topic_name, 0, 1000);
                 if res.is_err() {
                     println!("read-{} {} {:?}", id, i, res);
                 }
@@ -319,7 +309,6 @@ mod tests {
         // act
         // topic1
         db.create_topic_table(cluster_id, topic_name)
-            .await
             .expect("Unable to create the table");
         let write1 = spawn({
             let db = db.clone();
@@ -338,7 +327,6 @@ mod tests {
 
         // topic2
         db.create_topic_table(cluster_id, topic_name2)
-            .await
             .expect("Unable to create the table");
 
         let write2 = spawn({
@@ -352,7 +340,7 @@ mod tests {
         });
 
         let read4 = spawn({
-            let db = db.clone();
+            let db = db;
             move || block_on(read(2, db.clone(), cluster_id, topic_name2))
         });
 

@@ -64,11 +64,12 @@ impl Consumer for KafkaConsumer {
             let offset_config = offset_config.clone();
 
             async move {
-                KafkaConsumer::setup_consumer(&consumer, &[&topic], &offset_config)
-                    .await
-                    .expect("Unable to setup the consumer");
+                let topics: &[&str] = &[&topic];
+                let setup_consumer_res = KafkaConsumer::setup_consumer(&consumer, topics, &offset_config);
                 // clear the store before starting the loop
-                topic_store.clear().await.expect("Unable to clear the table");
+                topic_store.clear().expect("Unable to clear the table");
+                // wait the consumer to be configure before starting to consume
+                setup_consumer_res.await.expect("Unable to setup the consumer");
 
                 // infinite consumer loop
                 debug!("Start consumer loop");
@@ -107,7 +108,7 @@ impl Consumer for KafkaConsumer {
     async fn get_consumer_state(&self) -> Result<ConsumerState> {
         Ok(ConsumerState {
             is_running: self.loop_handle.clone().lock().await.is_some(),
-            record_count: self.topic_store.get_size(None).await?, //total records in the topic
+            record_count: self.topic_store.get_size(None)?, //total records in the topic
         })
     }
 }

@@ -78,8 +78,7 @@ impl Cluster {
             debug!("Create consumer for topic {}", topic_name);
             // create a new table for the consumer
             let topic_store =
-                TopicStore::from_app_store(self.app_store.clone(), self.parser.clone(), &self.config.id, topic_name)
-                    .await;
+                TopicStore::from_app_store(self.app_store.clone(), self.parser.clone(), &self.config.id, topic_name);
             let consumer = Arc::new(KafkaConsumer::new(&self.config, topic_name, topic_store));
             self.consumers
                 .write()

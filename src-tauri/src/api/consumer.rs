@@ -44,11 +44,9 @@ pub async fn get_records_page(
     let cluster = state.get_cluster(cluster_id).await;
     let consumer = cluster.get_consumer(topic).await;
     let topic_store = consumer.topic_store.clone();
-    let records_count = topic_store.get_size(query).await?;
+    let records_count = topic_store.get_size(query)?;
     Ok(GetPageResponse {
-        records: topic_store
-            .get_records(query, (page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64)
-            .await?,
+        records: topic_store.get_records(query, (page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64)?,
         next_page: if (records_count as i64 - (PAGE_SIZE * page_number) as i64) > 0 {
             Some(page_number + 1)
         } else {
