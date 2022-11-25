@@ -4,10 +4,8 @@ import { DateRangePicker, DatePicker, TimeRangeInput, TimeInput } from "@mantine
 import { ConsumerSettingsFrom } from "../../../models/kafka";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import { startConsumer } from "../../../tauri/consumer";
-
-dayjs.extend(utc);
+import { dateTimeToUnixTimeMs } from "../../../helpers/date-time";
 
 type ConsumerModalProps = {
   clusterId: string;
@@ -105,14 +103,6 @@ const ModalBody = ({ clusterId, topicName }: ConsumerModalProps) => {
       </Stack>
     </form>
   );
-};
-
-export const dateTimeToUnixTimeMs = (dateUTC: Date, timeUTC: Date): number => {
-  // convert to UTC
-  timeUTC = dayjs(timeUTC).utc().toDate();
-  dateUTC = dayjs(dateUTC).utc().toDate();
-  const dateTime = dateUTC.toISOString().substring(0, 10) + timeUTC.toISOString().substring(10);
-  return dayjs(new Date(dateTime)).unix() * 1000;
 };
 
 type ConsumerForm = {
