@@ -10,89 +10,23 @@ pub struct Query {
     pub limit: i64,
     pub query_template: String,
 }
-pub struct AppStore {
+
+pub trait RecordStore {
+    fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>>;
+    fn get_records(&self, cluster_id: &str, topic_name: &str, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>>;
+    fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
+    fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
+    fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize>;
+    fn get_size_with_query(&self, query: &Query) -> Result<usize>;
+    fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
+}
+
+pub struct SqliteStore {
     pool: Pool<SqliteConnectionManager>,
 }
 
-impl AppStore {
-    pub fn new() -> Self {
-        let file_name = format!("file::memory{}:?cache=shared&mode=memory", rand::random::<usize>());
-        let flags_r = OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX | OpenFlags::SQLITE_OPEN_URI;
-        let manager = SqliteConnectionManager::file(file_name)
-            .with_flags(flags_r)
-            .with_init(|conn| {
-                conn.pragma_update(None, "journal_mode", &"OFF").unwrap();
-                conn.pragma_update(None, "synchronous", &"OFF").unwrap();
-                conn.pragma_update(None, "page_size", &"4096").unwrap();
-                conn.pragma_update(None, "cache_size", &"16384").unwrap();
-                conn.pragma_update(None, "locking_mode", &"NORMAL").unwrap();
-                conn.pragma_update(None, "read_uncommitted", &"ON").unwrap();
-                Ok(())
-            });
-        let pool = r2d2::Pool::builder()
-            .max_size(20)
-            .build(manager)
-            .expect("Unable to initialize the read only connection pool to the db");
-        AppStore { pool }
-    }
-
-    pub fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
-        let connection = self.pool.get().unwrap();
-        connection
-            .execute(
-                format!(
-                    "CREATE TABLE {} (
-                        partition   NUMBER,
-                        offset      NUMBER,
-                        timestamp   NUMBER,
-                        key         TEXT,
-                        payload     TEXT)",
-                    Self::get_table_name(cluster_id, topic_name)
-                )
-                .as_str(),
-                [],
-            )
-            .unwrap_or_else(|e| panic!("Unable to create the table for {} {} {:?}", cluster_id, topic_name, e));
-        Ok(())
-    }
-
-    pub fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()> {
-        let connection = self.pool.get().unwrap();
-        connection.execute(
-            format!(
-                "INSERT INTO {} (partition, offset, timestamp, key, payload) 
-                VALUES (:partition, :offset, :timestamp, :key, :payload)",
-                Self::get_table_name(cluster_id, topic_name)
-            )
-            .as_str(),
-            named_params! {
-                ":partition": &record.partition,
-                ":offset": &record.offset,
-                ":timestamp": &record.timestamp,
-                ":key": &record.key,
-                ":payload": &record.payload,
-            },
-        )?;
-        Ok(())
-    }
-
-    pub fn get_records(
-        &self,
-        cluster_id: &str,
-        topic_name: &str,
-        offset: i64,
-        limit: i64,
-    ) -> Result<Vec<ParsedKafkaRecord>> {
-        self.query_records(&Query {
-            cluster_id: cluster_id.into(),
-            topic_name: topic_name.into(),
-            offset,
-            limit,
-            query_template: "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}".into(),
-        })
-    }
-
-    pub fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>> {
+impl RecordStore for SqliteStore {
+    fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>> {
         let connection = self.pool.get().unwrap();
         let parsed_query = Self::parse_query(query);
         let mut stmt = connection.prepare(&parsed_query)?;
@@ -114,7 +48,57 @@ impl AppStore {
         Ok(records)
     }
 
-    pub fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize> {
+    fn get_records(&self, cluster_id: &str, topic_name: &str, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>> {
+        self.query_records(&Query {
+            cluster_id: cluster_id.into(),
+            topic_name: topic_name.into(),
+            offset,
+            limit,
+            query_template: "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}".into(),
+        })
+    }
+
+    fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
+        let connection = self.pool.get().unwrap();
+        connection
+            .execute(
+                format!(
+                    "CREATE TABLE {} (
+                        partition   NUMBER,
+                        offset      NUMBER,
+                        timestamp   NUMBER,
+                        key         TEXT,
+                        payload     TEXT)",
+                    Self::get_table_name(cluster_id, topic_name)
+                )
+                .as_str(),
+                [],
+            )
+            .unwrap_or_else(|e| panic!("Unable to create the table for {} {} {:?}", cluster_id, topic_name, e));
+        Ok(())
+    }
+
+    fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()> {
+        let connection = self.pool.get().unwrap();
+        connection.execute(
+            format!(
+                "INSERT INTO {} (partition, offset, timestamp, key, payload) 
+                VALUES (:partition, :offset, :timestamp, :key, :payload)",
+                Self::get_table_name(cluster_id, topic_name)
+            )
+            .as_str(),
+            named_params! {
+                ":partition": &record.partition,
+                ":offset": &record.offset,
+                ":timestamp": &record.timestamp,
+                ":key": &record.key,
+                ":payload": &record.payload,
+            },
+        )?;
+        Ok(())
+    }
+
+    fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize> {
         self.get_size_with_query(&Query {
             cluster_id: cluster_id.into(),
             topic_name: topic_name.into(),
@@ -124,7 +108,7 @@ impl AppStore {
         })
     }
 
-    pub fn get_size_with_query(&self, query: &Query) -> Result<usize> {
+    fn get_size_with_query(&self, query: &Query) -> Result<usize> {
         // let connection = self.write_connection.lock();
         let connection = self.pool.get().unwrap();
         let mut stmt = connection.prepare(format!("SELECT count(*) FROM ({})", Self::parse_query(query)).as_str())?;
@@ -138,7 +122,7 @@ impl AppStore {
         }
     }
 
-    pub fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
+    fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
         let connection = self.pool.get().unwrap();
         connection
             .execute(
@@ -147,6 +131,29 @@ impl AppStore {
             )
             .unwrap_or_else(|_| panic!("Unable to create the table for {} {}", cluster_id, topic_name));
         Ok(())
+    }
+}
+
+impl SqliteStore {
+    pub fn new() -> Self {
+        let file_name = format!("file::memory{}:?cache=shared&mode=memory", rand::random::<usize>());
+        let flags_r = OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX | OpenFlags::SQLITE_OPEN_URI;
+        let manager = SqliteConnectionManager::file(file_name)
+            .with_flags(flags_r)
+            .with_init(|conn| {
+                conn.pragma_update(None, "journal_mode", &"OFF").unwrap();
+                conn.pragma_update(None, "synchronous", &"OFF").unwrap();
+                conn.pragma_update(None, "page_size", &"4096").unwrap();
+                conn.pragma_update(None, "cache_size", &"16384").unwrap();
+                conn.pragma_update(None, "locking_mode", &"NORMAL").unwrap();
+                conn.pragma_update(None, "read_uncommitted", &"ON").unwrap();
+                Ok(())
+            });
+        let pool = r2d2::Pool::builder()
+            .max_size(20)
+            .build(manager)
+            .expect("Unable to initialize the read only connection pool to the db");
+        SqliteStore { pool }
     }
 
     fn parse_query(query: &Query) -> String {
@@ -180,13 +187,13 @@ impl AppStore {
 mod tests {
     use std::{sync::Arc, thread::spawn, time::Instant};
 
-    use crate::lib::{record_store::app_store::Query, types::ParsedKafkaRecord};
+    use crate::lib::{record_store::sqlite_store::Query, types::ParsedKafkaRecord};
 
-    use super::AppStore;
+    use super::{RecordStore, SqliteStore};
 
     #[tokio::test]
     async fn test_create_table() {
-        let db = AppStore::new();
+        let db = SqliteStore::new();
         let res = db.create_topic_table("cluster_id_example", "topic_name_example");
         assert!(res.is_ok())
     }
@@ -195,7 +202,7 @@ mod tests {
     async fn test_insert_and_get_record() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
-        let db = AppStore::new();
+        let db = SqliteStore::new();
         db.create_topic_table(cluster_id, topic_name)
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
@@ -212,7 +219,7 @@ mod tests {
     async fn test_get_size() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
-        let db = AppStore::new();
+        let db = SqliteStore::new();
         db.create_topic_table(cluster_id, topic_name)
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
@@ -229,7 +236,7 @@ mod tests {
     async fn test_get_size_with_query() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
-        let db = AppStore::new();
+        let db = SqliteStore::new();
         db.create_topic_table(cluster_id, topic_name)
             .expect("Unable to create the table");
         // act
@@ -257,7 +264,7 @@ mod tests {
     async fn test_use_offset() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
-        let db = AppStore::new();
+        let db = SqliteStore::new();
         db.create_topic_table(cluster_id, topic_name)
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
@@ -281,9 +288,9 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let topic_name2 = "topic_name_example2";
-        let db = Arc::new(AppStore::new());
+        let db = Arc::new(SqliteStore::new());
 
-        async fn write(id: i32, db: Arc<AppStore>, cluster_id: &str, topic_name: &str) {
+        async fn write(id: i32, db: Arc<SqliteStore>, cluster_id: &str, topic_name: &str) {
             let start = Instant::now();
             let test_record = get_test_record(topic_name, 0);
             for i in 0..10_000 {
@@ -295,7 +302,7 @@ mod tests {
             println!("write-{} Time elapsed: {:?}", id, start.elapsed());
         }
 
-        async fn read(id: i32, db: Arc<AppStore>, cluster_id: &str, topic_name: &str) {
+        async fn read(id: i32, db: Arc<SqliteStore>, cluster_id: &str, topic_name: &str) {
             let start = Instant::now();
             for i in 0..10_000 {
                 let res = db.get_records(cluster_id, topic_name, 0, 1000);

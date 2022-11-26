@@ -1,27 +1,38 @@
+use rdkafka::message::ToBytes;
+
 use crate::lib::{
     parser::{Parser, ParserMode, RecordParser},
     types::{ParsedKafkaRecord, RawKafkaRecord},
-    Result,
+    Error, Result,
 };
-use std::sync::Arc;
+use std::{
+    fs::{File},
+    io::Write,
+    path::Path,
+    sync::Arc,
+};
 
-use super::app_store::{AppStore, Query};
+use super::sqlite_store::{Query, RecordStore, SqliteStore};
 
-pub struct TopicStore {
+pub struct TopicStore<S = SqliteStore, P = RecordParser>
+where
+    S: RecordStore,
+    P: Parser,
+{
     cluster_id: String,
     topic_name: String,
-    app_store: Arc<AppStore>,
-    parser: Arc<RecordParser>,
+    store: Arc<S>,
+    parser: Arc<P>,
 }
 
-impl TopicStore {
-    pub fn from_app_store(
-        app_store: Arc<AppStore>,
+impl TopicStore<SqliteStore, RecordParser> {
+    pub fn from_record_store(
+        store: Arc<SqliteStore>,
         parser: Arc<RecordParser>,
         cluster_id: &str,
         topic_name: &str,
     ) -> Self {
-        app_store
+        store
             .create_topic_table(cluster_id, topic_name)
             .unwrap_or_else(|_| {
                 panic!(
@@ -32,14 +43,20 @@ impl TopicStore {
         TopicStore {
             cluster_id: cluster_id.to_string(),
             topic_name: topic_name.to_string(),
-            app_store,
+            store,
             parser,
         }
     }
+}
 
+impl<S, P> TopicStore<S, P>
+where
+    S: RecordStore,
+    P: Parser,
+{
     pub fn get_records(&self, query: Option<&str>, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>> {
         if let Some(query) = query {
-            self.app_store.query_records(&Query {
+            self.store.query_records(&Query {
                 cluster_id: self.cluster_id.clone(),
                 topic_name: self.topic_name.clone(),
                 offset,
@@ -47,7 +64,7 @@ impl TopicStore {
                 query_template: query.into(),
             })
         } else {
-            self.app_store
+            self.store
                 .get_records(&self.cluster_id, &self.topic_name, offset, limit)
         }
     }
@@ -58,17 +75,17 @@ impl TopicStore {
         } else {
             self.parser.parse_record(record, ParserMode::String).await
         }?;
-        self.app_store
+        self.store
             .insert_record(&self.cluster_id, &self.topic_name, &parsed_record)
     }
 
     pub fn clear(&self) -> Result<()> {
-        self.app_store.clear(&self.cluster_id, &self.topic_name)
+        self.store.clear(&self.cluster_id, &self.topic_name)
     }
 
     pub fn get_size(&self, query: Option<&str>) -> Result<usize> {
         if let Some(query) = query {
-            self.app_store.get_size_with_query(&Query {
+            self.store.get_size_with_query(&Query {
                 cluster_id: self.cluster_id.clone(),
                 topic_name: self.topic_name.clone(),
                 offset: -1,
@@ -76,7 +93,7 @@ impl TopicStore {
                 query_template: query.into(),
             })
         } else {
-            self.app_store.get_size(&self.cluster_id, &self.topic_name)
+            self.store.get_size(&self.cluster_id, &self.topic_name)
         }
     }
 }

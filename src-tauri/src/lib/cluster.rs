@@ -11,7 +11,7 @@ use crate::lib::{
     schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
 };
 
-use super::record_store::AppStore;
+use super::record_store::SqliteStore;
 
 type TopicName = String;
 
@@ -26,7 +26,7 @@ where
     pub schema_registry_client: Option<Arc<SR>>,
     pub admin_client: Arc<A>,
     pub parser: Arc<P>,
-    pub app_store: Arc<AppStore>,
+    pub store: Arc<SqliteStore>,
     consumers: Arc<RwLock<HashMap<TopicName, Arc<C>>>>,
 }
 
@@ -38,7 +38,7 @@ impl Clone for Cluster<CachedSchemaRegistry> {
             consumers: self.consumers.clone(),
             admin_client: self.admin_client.clone(),
             parser: self.parser.clone(),
-            app_store: self.app_store.clone(),
+            store: self.store.clone(),
         }
     }
 }
@@ -63,7 +63,7 @@ impl Cluster {
             consumers: Arc::new(RwLock::new(HashMap::new())),
             admin_client: Arc::new(KafkaAdmin::new(config)),
             parser: Arc::new(parser),
-            app_store: Arc::new(AppStore::new()),
+            store: Arc::new(SqliteStore::new()),
         }
     }
 
@@ -78,7 +78,7 @@ impl Cluster {
             debug!("Create consumer for topic {}", topic_name);
             // create a new table for the consumer
             let topic_store =
-                TopicStore::from_app_store(self.app_store.clone(), self.parser.clone(), &self.config.id, topic_name);
+                TopicStore::from_record_store(self.store.clone(), self.parser.clone(), &self.config.id, topic_name);
             let consumer = Arc::new(KafkaConsumer::new(&self.config, topic_name, topic_store));
             self.consumers
                 .write()
