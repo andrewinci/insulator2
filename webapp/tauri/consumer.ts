@@ -41,3 +41,20 @@ export const getRecordsPage = (
       throw err;
     }
   );
+
+type ExportOptions = {
+  query: string;
+  outputPath: string;
+  limit?: number;
+  overwrite: boolean;
+  parseTimestamp: boolean;
+};
+
+export const exportRecords = (clusterId: string, topic: string, options: ExportOptions): Promise<void> =>
+  invoke<void>("export_records", {
+    clusterId,
+    topic,
+    options,
+  }).catch((err: TauriError) =>
+    addNotification({ type: "error", title: "Export records to csv file.", description: format(err) })
+  );

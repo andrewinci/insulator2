@@ -11,10 +11,12 @@
   },
   "tauri": {
     "allowlist": {
-      "app": {
-        "all": false,
-        "hide": false,
-        "show": false
+      "app": {},
+      "os": {
+        "all": true
+      },
+      "dialog": {
+        "save": true
       }
     },
     "bundle": {

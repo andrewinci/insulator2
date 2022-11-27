@@ -5,7 +5,7 @@ pub mod admin;
 pub mod configuration;
 pub mod consumer;
 pub mod parser;
-mod record_store;
+pub mod record_store;
 pub mod schema_registry;
 pub mod types;
 

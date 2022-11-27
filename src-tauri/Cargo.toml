@@ -15,7 +15,7 @@ tauri-build = { version = "1.2", features = [] }
 serde_json = "1.0"
 dirs = "4.0.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.2", features = ["updater"] }
+tauri = { version = "1.2", features = ["dialog-save", "os-all", "updater"] }
 reqwest = { version = "0.11", features = ["json"] }
 url = { version = "2", features = ["serde"] }
 tokio = { version = "1", features = ["full"] }
@@ -32,6 +32,7 @@ r2d2 = "0.8.10"
 r2d2_sqlite = "0.21.0"
 toml = "0.5"
 rand = "0.8.5"
+chrono = "0.4.23"
 
 [target.'cfg(windows)'.dependencies]
 rdkafka = { version = "0.29", features = [

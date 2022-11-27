@@ -130,7 +130,7 @@ impl KafkaConsumer {
             topic: msg.topic().into(),
             partition: msg.partition(),
             offset: msg.offset(),
-            timestamp: msg.timestamp().to_millis(),
+            timestamp: msg.timestamp().to_millis().map(|v| v as u64),
         }
     }
 

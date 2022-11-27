@@ -1,6 +1,9 @@
 use log::trace;
 
-use crate::lib::consumer::{types::ConsumerState, Consumer, ConsumerOffsetConfiguration};
+use crate::lib::{
+    consumer::{types::ConsumerState, Consumer, ConsumerOffsetConfiguration},
+    record_store::types::ExportOptions,
+};
 
 use super::{error::Result, types::GetPageResponse, AppState};
 
@@ -42,8 +45,7 @@ pub async fn get_records_page(
     trace!("Get records page");
     const PAGE_SIZE: usize = 20;
     let cluster = state.get_cluster(cluster_id).await;
-    let consumer = cluster.get_consumer(topic).await;
-    let topic_store = consumer.topic_store.clone();
+    let topic_store = cluster.get_topic_store(topic).await;
     let records_count = topic_store.get_size(query)?;
     Ok(GetPageResponse {
         records: topic_store.get_records(query, (page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64)?,
@@ -54,4 +56,15 @@ pub async fn get_records_page(
         },
         prev_page: if page_number >= 1 { Some(page_number - 1) } else { None },
     })
+}
+
+#[tauri::command]
+pub async fn export_records(
+    cluster_id: &str,
+    topic: &str,
+    options: ExportOptions,
+    state: tauri::State<'_, AppState>,
+) -> Result<()> {
+    let store = state.get_cluster(cluster_id).await.get_topic_store(topic).await;
+    Ok(store.export_records(&options)?)
 }

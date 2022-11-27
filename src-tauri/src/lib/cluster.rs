@@ -87,4 +87,9 @@ impl Cluster {
             consumer
         }
     }
+
+    pub async fn get_topic_store(&self, topic_name: &str) -> Arc<TopicStore> {
+        let consumer = self.get_consumer(topic_name).await;
+        consumer.topic_store.clone()
+    }
 }

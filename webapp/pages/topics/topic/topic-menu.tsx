@@ -10,6 +10,7 @@ type TopicPageMenuProps = {
   onQueryChange: (query: string) => void;
   onQuery: () => void;
   onConsumerToggle: () => void;
+  onExportClick: () => void;
 };
 
 export const TopicPageMenu = ({
@@ -20,6 +21,7 @@ export const TopicPageMenu = ({
   onQueryChange,
   onConsumerToggle,
   onQuery,
+  onExportClick,
 }: TopicPageMenuProps) => {
   return (
     <>
@@ -46,14 +48,14 @@ export const TopicPageMenu = ({
             {isConsumerRunning ? "Stop" : "Consume"}
           </Button>
 
-          <Button leftIcon={<IconSearch size={14} />} size="xs" onClick={() => onQuery()}>
+          <Button leftIcon={<IconSearch size={14} />} size="xs" onClick={onQuery}>
             Query
           </Button>
-          <Button leftIcon={<IconArrowBarToDown size={14} />} disabled size="xs">
+          <Button leftIcon={<IconArrowBarToDown size={14} />} color={"green"} size="xs" onClick={onExportClick}>
             Export
           </Button>
         </Group>
-        <Button leftIcon={<IconArrowBarToUp size={14} />} disabled color={"orange"} size="xs">
+        <Button disabled leftIcon={<IconArrowBarToUp size={14} />} color={"orange"} size="xs">
           Produce
         </Button>
       </Group>
