@@ -1,3 +1,11 @@
+# [2.3.0](https://github.com/andrewinci/insulator2/compare/v2.2.0...v2.3.0) (2022-11-28)
+
+### Features
+
+- active users telemetry ([0a36d3a](https://github.com/andrewinci/insulator2/commit/0a36d3a7c806b99c3f97c054d3ba2e641927785b))
+- emit errors from the kafka consumer to the frontend ([d20def2](https://github.com/andrewinci/insulator2/commit/d20def2bc402468185d9c3bdf4baed45f6d5fca4))
+- pause consumer group when a consumption intervall is specified ([42a5753](https://github.com/andrewinci/insulator2/commit/42a5753e1614aa2273ac43f31de77e56f2612057))
+
 # [2.2.0](https://github.com/andrewinci/insulator2/compare/v2.1.0...v2.2.0) (2022-11-28)
 
 ### Bug Fixes
