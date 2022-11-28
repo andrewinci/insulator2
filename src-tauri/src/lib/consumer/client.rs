@@ -1,4 +1,3 @@
-use std::{sync::Arc, time::Duration};
 use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     consumer::types::{ConsumerOffsetConfiguration, ConsumerState},
@@ -8,12 +7,13 @@ use crate::lib::{
 };
 use async_trait::async_trait;
 use futures::{lock::Mutex, StreamExt};
-use log::{debug, error, trace, warn};
+use log::{debug, error, warn};
 use rdkafka::{
     consumer::{Consumer as ApacheKafkaConsumer, StreamConsumer},
     message::OwnedMessage,
     Message, Offset, TopicPartitionList,
 };
+use std::{sync::Arc, time::Duration};
 use tauri::async_runtime::JoinHandle;
 
 #[async_trait]
@@ -66,27 +66,51 @@ impl Consumer for KafkaConsumer {
             let error_callback = self.error_callback.clone();
 
             async move {
-                let topics: &[&str] = &[&topic];
-                let setup_consumer_res = KafkaConsumer::setup_consumer(&consumer, topics, &offset_config);
-                // clear the store before starting the loop
-                topic_store.clear().expect("Unable to clear the table");
                 // wait the consumer to be configure before starting to consume
-                if let Err(err) = setup_consumer_res.await {
+                if let Err(err) = KafkaConsumer::update_consumer_assignment(&consumer, &[&topic], &offset_config) {
                     error!("{:?}", err);
                     error_callback(err);
                     return;
                 };
+                // retrieve the stop timestamp if specified
+                let stop_at_timestamp = if let ConsumerOffsetConfiguration::Custom {
+                    stop_timestamp: Some(stop),
+                    ..
+                } = &offset_config
+                {
+                    Some(*stop as u64)
+                } else {
+                    None
+                };
+
+                // clear the store before starting the loop
+                topic_store.clear().expect("Unable to clear the table");
 
                 // infinite consumer loop
                 debug!("Start consumer loop");
                 loop {
                     match consumer.stream().next().await {
                         Some(Ok(msg)) => {
-                            trace!("New record from {}", topic);
-                            topic_store
-                                .insert_record(&KafkaConsumer::map_kafka_record(&msg.detach()))
-                                .await
-                                .expect("Unable to insert the new record in store");
+                            let record = KafkaConsumer::map_kafka_record(&msg.detach());
+                            if record.timestamp.unwrap_or(u64::MIN) < stop_at_timestamp.unwrap_or(u64::MAX) {
+                                topic_store
+                                    .insert_record(&record)
+                                    .await
+                                    .unwrap_or_else(|err| error_callback(err));
+                            } else {
+                                // pause consumption on the record partition
+                                let mut tpl = TopicPartitionList::new();
+                                tpl.add_partition(&record.topic, record.partition);
+                                match consumer.pause(&tpl) {
+                                    Ok(_) => {
+                                        debug!("Pause consuming {} partition {}", record.topic, record.partition)
+                                    }
+                                    Err(err) => error!(
+                                        "Unable to pause consuming {} partition {}: {:?}",
+                                        record.topic, record.partition, err
+                                    ),
+                                };
+                            }
                         }
                         Some(Err(err)) => {
                             error!("An error occurs consuming from kafka: {}", err);
@@ -142,13 +166,13 @@ impl KafkaConsumer {
         }
     }
 
-    pub async fn setup_consumer(
+    pub fn update_consumer_assignment(
         consumer: &rdkafka::consumer::StreamConsumer,
         topics: &[&str],
         config: &ConsumerOffsetConfiguration,
     ) -> Result<()> {
         let tmo = Duration::from_secs(60);
-        let metadata = consumer.fetch_metadata(None, tmo)?;
+        let metadata = consumer.fetch_metadata(if !topics.is_empty() { None } else { Some(topics[0]) }, tmo)?;
         let topic_partition: Vec<_> = metadata
             .topics()
             .iter()
@@ -156,26 +180,21 @@ impl KafkaConsumer {
             .flat_map(|t| t.partitions().iter().map(|p| (t.name(), p.id())))
             .collect();
 
+        let mut timestamp_assignment = consumer.assignment()?;
         match config {
             ConsumerOffsetConfiguration::Beginning => {
-                let mut timestamp_assignment = TopicPartitionList::new();
                 topic_partition.iter().for_each(|(t, p)| {
                     timestamp_assignment
                         .add_partition_offset(t, *p, Offset::Beginning)
                         .expect("Unable to configure the consumer to the beginning");
                 });
-                trace!("Assign partitions {:?}", timestamp_assignment);
-                consumer.assign(&consumer.offsets_for_times(timestamp_assignment, tmo)?)?;
             }
             ConsumerOffsetConfiguration::End => {
-                let mut timestamp_assignment = TopicPartitionList::new();
                 topic_partition.iter().for_each(|(t, p)| {
                     timestamp_assignment
                         .add_partition_offset(t, *p, Offset::End)
                         .expect("Unable to configure the consumer to the end");
                 });
-                trace!("Assign partitions {:?}", timestamp_assignment);
-                consumer.assign(&consumer.offsets_for_times(timestamp_assignment, tmo)?)?;
             }
             ConsumerOffsetConfiguration::Custom {
                 start_timestamp,
@@ -184,16 +203,16 @@ impl KafkaConsumer {
                 // note: the offsets_for_times function takes a TopicPartitionList in which the
                 // offset is the timestamp in ms (instead of the actual offset) and returns a
                 // new TopicPartitionList with the actual offset
-                let mut timestamp_assignment = TopicPartitionList::new();
                 topic_partition.iter().for_each(|(t, p)| {
                     timestamp_assignment
                         .add_partition_offset(t, *p, Offset::Offset(*start_timestamp))
                         .expect("Unable to configure the consumer to timestamp");
                 });
-                trace!("Assign partitions {:?}", timestamp_assignment);
-                consumer.assign(&consumer.offsets_for_times(timestamp_assignment, tmo)?)?;
             }
         }
+        let assignment = consumer.offsets_for_times(timestamp_assignment, tmo)?;
+        consumer.assign(&assignment)?;
+        debug!("Partition assigned {:?}", assignment);
         Ok(())
     }
 }

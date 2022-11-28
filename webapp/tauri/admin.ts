@@ -13,7 +13,7 @@ export const setConsumerGroup = (
     (err: TauriError) => {
       addNotification({
         type: "error",
-        title: `Unable to create the consumer group ${consumerGroupName}`,
+        title: `Unable to setup the consumer group ${consumerGroupName}`,
         description: format(err),
       });
       throw err;

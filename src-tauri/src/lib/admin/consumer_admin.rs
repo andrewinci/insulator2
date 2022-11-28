@@ -57,10 +57,10 @@ impl ConsumerGroupAdmin for KafkaAdmin {
             .create()
             .expect("Unable to build the consumer");
 
-        // assign offsets
-        KafkaConsumer::setup_consumer(&consumer, topic_names, config).await?;
+        debug!("assign offsets for each topic");
+        KafkaConsumer::update_consumer_assignment(&consumer, topic_names, config)?;
 
-        // store offset to commit
+        debug!("store offset to commit");
         consumer.assignment()?.elements().iter().for_each(|t| {
             trace!(
                 "Store topic {:?} partition {:?} offset {:?}",
@@ -73,6 +73,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
                 .expect("Unable to store the offset into the consumer group");
         });
 
+        debug!("commit consumer state");
         Ok(consumer.commit_consumer_state(CommitMode::Sync)?)
     }
 
