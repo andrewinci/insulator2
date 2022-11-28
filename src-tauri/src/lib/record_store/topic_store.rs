@@ -247,7 +247,7 @@ mod test {
         let select_all_query = "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
         let options = ExportOptions {
             query: Some(select_all_query.to_string()),
-            output_path: "/tmp/test".into(),
+            output_path: format!("{}/test{}", temp_dir().to_str().unwrap(), rand::random::<usize>()),
             overwrite: true,
             ..Default::default()
         };
