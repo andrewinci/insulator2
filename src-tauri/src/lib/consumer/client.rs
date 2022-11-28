@@ -1,11 +1,10 @@
 use std::{sync::Arc, time::Duration};
-
 use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     consumer::types::{ConsumerOffsetConfiguration, ConsumerState},
     error::{Error, Result},
     record_store::TopicStore,
-    types::RawKafkaRecord,
+    types::{ErrorCallback, RawKafkaRecord},
 };
 use async_trait::async_trait;
 use futures::{lock::Mutex, StreamExt};
@@ -28,12 +27,14 @@ pub struct KafkaConsumer {
     cluster_config: ClusterConfig,
     topic: String,
     loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>,
+    error_callback: ErrorCallback,
     pub topic_store: Arc<TopicStore>,
 }
 
 impl KafkaConsumer {
-    pub fn new(cluster_config: &ClusterConfig, topic: &str, topic_store: TopicStore) -> Self {
+    pub fn new(cluster_config: &ClusterConfig, topic: &str, topic_store: TopicStore, error_cb: ErrorCallback) -> Self {
         KafkaConsumer {
+            error_callback: error_cb,
             cluster_config: cluster_config.clone(),
             topic: topic.to_string(),
             loop_handle: Arc::new(Mutex::new(None)),
@@ -62,6 +63,7 @@ impl Consumer for KafkaConsumer {
             let handle = self.loop_handle.clone();
             let topic_store = self.topic_store.clone();
             let offset_config = offset_config.clone();
+            let error_callback = self.error_callback.clone();
 
             async move {
                 let topics: &[&str] = &[&topic];
@@ -69,7 +71,11 @@ impl Consumer for KafkaConsumer {
                 // clear the store before starting the loop
                 topic_store.clear().expect("Unable to clear the table");
                 // wait the consumer to be configure before starting to consume
-                setup_consumer_res.await.expect("Unable to setup the consumer");
+                if let Err(err) = setup_consumer_res.await {
+                    error!("{:?}", err);
+                    error_callback(err);
+                    return;
+                };
 
                 // infinite consumer loop
                 debug!("Start consumer loop");
@@ -84,7 +90,9 @@ impl Consumer for KafkaConsumer {
                         }
                         Some(Err(err)) => {
                             error!("An error occurs consuming from kafka: {}", err);
-                            //todo: self.notify_error("Consumer error", &err.to_string());
+                            error_callback(Error::Consumer {
+                                message: err.to_string(),
+                            });
                             KafkaConsumer::_stop(handle.clone())
                                 .await
                                 .expect("Unable to stop the consumer");
