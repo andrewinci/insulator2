@@ -2,6 +2,7 @@
 extern crate log;
 mod api;
 mod lib;
+mod telemetry;
 
 use crate::api::{
     admin::{
@@ -13,9 +14,11 @@ use crate::api::{
     schema_registry::{delete_subject, delete_subject_version, get_subject, list_subjects, post_schema},
 };
 use api::AppState;
+use telemetry::log_active_user;
 
 fn main() {
     env_logger::init();
+    log_active_user();
     tauri::Builder::default()
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
