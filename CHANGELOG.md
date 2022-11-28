@@ -1,3 +1,16 @@
+# [2.2.0](https://github.com/andrewinci/insulator2/compare/v2.1.0...v2.2.0) (2022-11-28)
+
+### Bug Fixes
+
+- missing app version in sidebar ([1525533](https://github.com/andrewinci/insulator2/commit/1525533b253b878d2d4eae8094160a494aca8d65))
+- show raw error when unable to parse as TauriError ([482c0d7](https://github.com/andrewinci/insulator2/commit/482c0d7a18cf0b52f1b67f7e641c3197207cd973))
+
+### Features
+
+- add modal to view a single record in monaco ([36bf5c2](https://github.com/andrewinci/insulator2/commit/36bf5c26c2f053f115ea7eff43e173d6d9cfcf22))
+- allow user to export consumed records ([fcff611](https://github.com/andrewinci/insulator2/commit/fcff611a00be62c64d9743c23084174b9a7fbc6f))
+- copy parsed json from the record list ([27d0f47](https://github.com/andrewinci/insulator2/commit/27d0f47a42e3c476665dab0139ea6586c870c927))
+
 # [2.1.0](https://github.com/andrewinci/insulator2/compare/v2.0.1...v2.1.0) (2022-11-24)
 
 ### Bug Fixes
