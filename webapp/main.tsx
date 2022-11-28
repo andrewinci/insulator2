@@ -10,16 +10,19 @@ import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
 import "allotment/dist/style.css";
 import { listen } from "@tauri-apps/api/event";
-import { format, TauriError } from "./tauri/error";
+import { TauriError } from "./tauri/error";
 import { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
+
 const App = () => {
   const { userSettings: appState } = useUserSettings();
   const { alert } = useNotifications();
   const queryClient = new QueryClient();
+  // listen for errors emitted by the backend
   listen<TauriError>("error", (event) => {
-    alert("Generic error", format(event.payload));
+    alert(event.payload.errorType, event.payload.message);
   });
+
   return (
     <MantineProvider
       theme={{ colorScheme: appState.theme == "Dark" ? "dark" : "light" }}

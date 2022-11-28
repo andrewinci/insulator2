@@ -14,13 +14,13 @@ use crate::api::{
     schema_registry::{delete_subject, delete_subject_version, get_subject, list_subjects, post_schema},
 };
 use api::AppState;
+use tauri::Manager;
 use telemetry::log_active_user;
 
 fn main() {
     env_logger::init();
     log_active_user();
     tauri::Builder::default()
-        .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
             // consumer
             start_consumer,
@@ -50,6 +50,10 @@ fn main() {
             set_consumer_group,
             delete_consumer_group,
         ])
+        .setup(|app| {
+            app.manage(AppState::new(app.app_handle()));
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
