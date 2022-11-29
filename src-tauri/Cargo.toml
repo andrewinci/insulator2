@@ -23,7 +23,7 @@ futures = { version = "0.3" }
 apache-avro = { version = "0.14.0" }
 log = { version = "0.4" }
 env_logger = { version = "0.10.0" }
-async-trait = "0.1.58"
+async-trait = "0.1.59"
 num-bigint = "0.4"
 rust_decimal = "1.27"
 rusqlite = { version = "0.28.0", features = ["bundled"] }
