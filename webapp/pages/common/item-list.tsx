@@ -32,6 +32,8 @@ type ItemListProps = {
   items: string[];
   isLoading: boolean;
   isFetching: boolean;
+  favorites: string[];
+  onFavToggled: (item: string) => void;
   onItemSelected: (item: string) => void;
   onRefreshList: () => void;
   onAddClick?: () => void;
@@ -39,18 +41,16 @@ type ItemListProps = {
 
 // Common list page component
 export const ItemList = (props: ItemListProps) => {
-  const { onItemSelected, onRefreshList, onAddClick } = props;
-  const { listId, items, title, isLoading, isFetching } = props;
+  const { onItemSelected, onRefreshList, onAddClick, onFavToggled } = props;
+  const { listId, items, title, isLoading, isFetching, favorites } = props;
   const [searchText, setSearchText] = useState<string>("");
   const [focus, setOnFocus] = useState<string | undefined>(undefined);
   const [state, setState] = useSessionStorage<{
     recent: string[];
-    favorites: string[]; //todo: this should be in config
     selected?: string;
   }>({
     key: listId,
     defaultValue: {
-      favorites: [],
       recent: [],
     },
   });
@@ -65,7 +65,7 @@ export const ItemList = (props: ItemListProps) => {
       return {
         all: items.filter((t) => test(t)).sort(),
         recent: state.recent.filter((t) => items.includes(t) && test(t)).reverse(),
-        favorites: state.favorites.filter((t) => items.includes(t) && test(t)),
+        favorites: favorites,
       };
     } catch {
       return {
@@ -74,14 +74,7 @@ export const ItemList = (props: ItemListProps) => {
         favorites: [],
       };
     }
-  }, [searchText, userSettings.useRegex, items, state.recent, state.favorites]);
-
-  const onFavToggled = (newItem: string) => {
-    // toggle item from the favorites list
-    if (state.favorites.includes(newItem))
-      setState((s) => ({ ...s, favorites: s.favorites.filter((f) => f != newItem) }));
-    else setState((s) => ({ ...s, favorites: [...s.favorites, newItem] }));
-  };
+  }, [searchText, userSettings.useRegex, items, state.recent, favorites]);
 
   const onItemSelectedOnTab = (selectedItem: string) => {
     // remove any item in focus
@@ -137,7 +130,7 @@ export const ItemList = (props: ItemListProps) => {
             key={title}
             title={title}
             items={items}
-            favorites={state.favorites}
+            favorites={favorites}
             isLoading={isLoading}
             selected={state.selected}
             focus={focus}

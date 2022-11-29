@@ -3,6 +3,7 @@ import { IconTrash } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { SingleLineTitle } from "../../components";
+import { useFavorites } from "../../hooks/use-favorites";
 import { ConsumerSettingsFrom } from "../../models";
 import { setConsumerGroup, getConsumerGroups, listTopics } from "../../tauri/admin";
 import { ItemList } from "../common";
@@ -18,6 +19,7 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
   const { isLoading, isFetching, data, refetch } = useQuery(["getConsumerGroups", clusterId], () =>
     getConsumerGroups(clusterId)
   );
+  const { favorites, toggleFavorite } = useFavorites(clusterId, "consumers");
   return (
     <>
       <ItemList
@@ -26,6 +28,8 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
         onAddClick={() => setOpened(true)}
         isFetching={isFetching}
         isLoading={isLoading}
+        favorites={favorites}
+        onFavToggled={toggleFavorite}
         items={data ?? []}
         onItemSelected={onConsumerSelected}
         onRefreshList={refetch}
@@ -120,7 +124,7 @@ const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; clo
           }}
           type="submit"
           loading={state.isCreating}>
-          Create 🚀
+          Create
         </Button>
       </Group>
     </Stack>

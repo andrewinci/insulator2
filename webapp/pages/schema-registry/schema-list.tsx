@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AddSchemaModal } from "./add-schema";
 import { Modal, Title } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
+import { useFavorites } from "../../hooks/use-favorites";
 
 type SchemaListProps = {
   clusterId: string;
@@ -19,7 +20,7 @@ export const SchemaList = (props: SchemaListProps) => {
     refetch,
   } = useQuery(["getSchemaNamesList", clusterId], () => listSubjects(clusterId));
   const [state, setState] = useSetState({ modalOpened: false });
-
+  const { favorites, toggleFavorite } = useFavorites(clusterId, "schemas");
   return (
     <>
       <ItemList
@@ -27,6 +28,8 @@ export const SchemaList = (props: SchemaListProps) => {
         listId={`schemas-${clusterId}`}
         isLoading={isLoading}
         isFetching={isFetching}
+        favorites={favorites}
+        onFavToggled={toggleFavorite}
         items={subjects ?? []}
         onAddClick={() => setState((s) => ({ ...s, modalOpened: !s.modalOpened }))}
         onItemSelected={onSubjectSelected}

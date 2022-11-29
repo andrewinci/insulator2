@@ -87,6 +87,7 @@ impl TryFrom<LegacyConfiguration> for InsulatorConfig {
                     endpoint: c.endpoint.clone(),
                     authentication,
                     schema_registry,
+                    ..Default::default()
                 })
             } else {
                 warn!("Unable to parse cluster config. {:?}", authentication);

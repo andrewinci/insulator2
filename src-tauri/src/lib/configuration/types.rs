@@ -25,6 +25,7 @@ pub struct ClusterConfig {
     pub authentication: AuthenticationConfig,
     #[serde(rename = "schemaRegistry")]
     pub schema_registry: Option<SchemaRegistryConfig>,
+    pub favorites: Favorites,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
@@ -50,4 +51,12 @@ pub struct SchemaRegistryConfig {
     pub endpoint: String,
     pub username: Option<String>,
     pub password: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq, Eq)]
+pub struct Favorites {
+    pub queries: Vec<String>,
+    pub topics: Vec<String>,
+    pub schemas: Vec<String>,
+    pub consumers: Vec<String>,
 }

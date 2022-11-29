@@ -98,7 +98,7 @@ const ModalBody = ({ clusterId, topicName }: ConsumerModalProps) => {
           </Stack>
         </Stack>
         <Group mt={10} position="right">
-          <Button type="submit">Start 🚀</Button>
+          <Button type="submit">Start</Button>
         </Group>
       </Stack>
     </form>

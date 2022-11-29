@@ -13,6 +13,7 @@ export type Cluster = {
   endpoint: string;
   authentication: ClusterAuthentication;
   schemaRegistry: SchemaRegistry | null;
+  favorites: Favorites;
 };
 
 export type ClusterAuthentication =
@@ -31,4 +32,11 @@ export type SchemaRegistry = {
   endpoint: string;
   username?: string;
   password?: string;
+};
+
+export type Favorites = {
+  queries: string[];
+  topics: string[];
+  schemas: string[];
+  consumers: string[];
 };
