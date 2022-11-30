@@ -1,3 +1,9 @@
+## [2.3.1](https://github.com/andrewinci/insulator2/compare/v2.3.0...v2.3.1) (2022-11-30)
+
+### Bug Fixes
+
+- store favorites locally ([056e1af](https://github.com/andrewinci/insulator2/commit/056e1afaf87cbbc53019257988dff85569e1bd5e))
+
 # [2.3.0](https://github.com/andrewinci/insulator2/compare/v2.2.0...v2.3.0) (2022-11-28)
 
 ### Features

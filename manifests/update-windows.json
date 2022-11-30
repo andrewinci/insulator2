@@ -1,11 +1,11 @@
 {
-  "version": "v2.3.0",
-  "notes": "# [2.3.0](https://github.com/andrewinci/insulator2/compare/v2.2.0...v2.3.0) (2022-11-28)\n\n\n### Features\n\n* active users telemetry ([0a36d3a](https://github.com/andrewinci/insulator2/commit/0a36d3a7c806b99c3f97c054d3ba2e641927785b))\n* emit errors from the kafka consumer to the frontend ([d20def2](https://github.com/andrewinci/insulator2/commit/d20def2bc402468185d9c3bdf4baed45f6d5fca4))\n* pause consumer group when a consumption intervall is specified ([42a5753](https://github.com/andrewinci/insulator2/commit/42a5753e1614aa2273ac43f31de77e56f2612057))\n\n\n\n",
-  "pub_date": "2022-11-28T21:47:34Z",
+  "version": "v2.3.1",
+  "notes": "## [2.3.1](https://github.com/andrewinci/insulator2/compare/v2.3.0...v2.3.1) (2022-11-30)\n\n\n### Bug Fixes\n\n* store favorites locally ([056e1af](https://github.com/andrewinci/insulator2/commit/056e1afaf87cbbc53019257988dff85569e1bd5e))\n\n\n\n",
+  "pub_date": "2022-11-30T07:42:58Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.3.0/Insulator.2_2.3.0_x64_en-US.msi.zip"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.3.1/Insulator.2_2.3.1_x64_en-US.msi.zip"
     }
   }
 }
