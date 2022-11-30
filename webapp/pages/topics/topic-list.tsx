@@ -4,6 +4,7 @@ import { Button, Checkbox, Group, NumberInput, Stack, TextInput, Title } from "@
 import { openModal, useModals } from "@mantine/modals";
 import { useForm } from "@mantine/form";
 import { useQuery } from "@tanstack/react-query";
+import { useFavorites } from "../../hooks/use-favorites";
 
 type TopicListProps = {
   clusterId: string;
@@ -21,11 +22,15 @@ export const TopicList = (props: TopicListProps) => {
       closeOnClickOutside: false,
     });
 
+  const { favorites, toggleFavorite } = useFavorites(clusterId, "topics");
+
   return (
     <ItemList
       title="Topics"
       listId={`topic-${clusterId}`}
       isLoading={isLoading}
+      favorites={favorites}
+      onFavToggled={toggleFavorite}
       isFetching={isFetching}
       items={data ?? []}
       onItemSelected={onTopicSelected}
@@ -72,7 +77,7 @@ const CreateTopicModal = ({ clusterId, updateTopicList }: { clusterId: string; u
         <NumberInput min={1} label="In sync replicas" {...form.getInputProps("isr")} />
         <Checkbox label="Compacted" {...form.getInputProps("compacted", { type: "checkbox" })} />
         <Group mt={10} position="right">
-          <Button type="submit">Create 🚀</Button>
+          <Button type="submit">Create</Button>
         </Group>
       </Stack>
     </form>

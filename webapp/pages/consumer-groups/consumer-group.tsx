@@ -92,7 +92,6 @@ const ConsumerGroupTopicDetails = ({
     const lastOffsets = (await getLastOffsets(clusterId, [topicName]))[topicName];
     const sumLastOffsets = lastOffsets.map((po) => po.offset).reduce((a, b) => a + b, 0);
     const sumOffsets = offsets.map((o) => o.offset).reduce((a, b) => a + b, 0);
-    console.log(lastOffsets);
     return {
       lastOffsets,
       totalLag: sumLastOffsets - sumOffsets,

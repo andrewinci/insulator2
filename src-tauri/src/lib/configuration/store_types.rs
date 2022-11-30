@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::{AuthenticationConfig, ClusterConfig, InsulatorConfig, SchemaRegistryConfig, Theme};
+use super::{AuthenticationConfig, ClusterConfig, Favorites, InsulatorConfig, SchemaRegistryConfig, Theme};
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
 pub struct StoreConfig {
@@ -21,6 +21,7 @@ pub struct StoreCluster {
     pub authentication: StoreAuthentication,
     #[serde(rename = "schemaRegistry")]
     pub schema_registry: Option<SchemaRegistryConfig>,
+    pub favorites: Option<Favorites>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
@@ -77,6 +78,7 @@ fn store_cluster_to_config(id: String, store: StoreCluster) -> ClusterConfig {
         endpoint: store.endpoint,
         authentication: store.authentication.into(),
         schema_registry: store.schema_registry,
+        favorites: store.favorites.unwrap_or_default(),
     }
 }
 
@@ -137,6 +139,7 @@ impl From<ClusterConfig> for StoreCluster {
             endpoint: config.endpoint,
             authentication: config.authentication.into(),
             schema_registry: config.schema_registry,
+            favorites: Some(config.favorites),
         }
     }
 }

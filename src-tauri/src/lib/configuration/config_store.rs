@@ -124,6 +124,7 @@ mod test {
                     username: Some("username".into()),
                     password: Some("password".into()),
                 }),
+                ..Default::default()
             });
             config.clusters.push(crate::lib::configuration::ClusterConfig {
                 id: "1213059c-c744-45ef-a380-3f6997b44377".into(),
@@ -131,6 +132,7 @@ mod test {
                 endpoint: "localhost:9092".into(),
                 authentication: crate::lib::configuration::AuthenticationConfig::None,
                 schema_registry: None,
+                ..Default::default()
             });
             let sut = ConfigStore::from_config_path(&get_test_config_path());
             let res = sut.write_configuration(&InsulatorConfig::default());

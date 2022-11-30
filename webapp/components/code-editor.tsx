@@ -3,7 +3,7 @@ import Editor, { useMonaco } from "@monaco-editor/react";
 import { useEffect } from "react";
 
 type CodeEditorProps = {
-  height?: string | number;
+  height: number | string;
   language?: string;
   value?: string;
   readOnly?: boolean;
@@ -32,7 +32,7 @@ export const CodeEditor = ({ height, language: defaultLanguage, value, readOnly,
   return (
     <Editor
       saveViewState={false}
-      height={height}
+      height={height || 0}
       defaultLanguage={defaultLanguage}
       value={value}
       onChange={(v) => {

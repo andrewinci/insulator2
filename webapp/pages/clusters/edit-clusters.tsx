@@ -114,5 +114,10 @@ function mapFormToCluster(c: ClusterFormType): Cluster {
             password: nonEmptyOrUndefined(c.schemaRegistry.password),
           }
         : null,
+    favorites: {
+      consumers: [],
+      schemas: [],
+      topics: [],
+    },
   };
 }
