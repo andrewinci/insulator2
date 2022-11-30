@@ -1,7 +1,10 @@
+use core::time;
+
 use crate::lib::{types::ParsedKafkaRecord, Error, Result};
+use log::debug;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::{named_params, OpenFlags};
+use rusqlite::{backup::Backup, named_params, Connection, OpenFlags};
 
 pub struct Query {
     pub cluster_id: String,
@@ -156,6 +159,23 @@ impl SqliteStore {
         SqliteStore { pool }
     }
 
+    pub fn export_db(&self, output_path: &str) -> Result<()> {
+        let src = self.pool.get().unwrap();
+        let mut dst = Connection::open(output_path)?;
+        let backup = Backup::new(&src, &mut dst)?;
+        backup.run_to_completion(
+            1000,
+            time::Duration::from_millis(100),
+            Some(|p| {
+                debug!(
+                    "Export in progress: {}%",
+                    100f32 * ((p.pagecount - p.remaining) as f32 / p.pagecount as f32)
+                )
+            }),
+        )?;
+        Ok(())
+    }
+
     fn parse_query(query: &Query) -> String {
         let Query {
             cluster_id,
@@ -185,11 +205,33 @@ impl SqliteStore {
 
 #[cfg(test)]
 mod tests {
-    use std::{sync::Arc, thread::spawn, time::Instant};
+    use std::{env::temp_dir, sync::Arc, thread::spawn, time::Instant};
 
     use crate::lib::{record_store::sqlite_store::Query, types::ParsedKafkaRecord};
 
     use super::{RecordStore, SqliteStore};
+
+    fn get_test_db_path() -> String {
+        let mut dir = temp_dir();
+        dir.push("test.db");
+        dir.to_str().unwrap().into()
+    }
+
+    #[tokio::test]
+    async fn test_export_database() {
+        // arrange
+        let test_db_path = get_test_db_path();
+        let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
+        let db = SqliteStore::new();
+        db.create_topic_table(cluster_id, topic_name).unwrap();
+        let test_record = get_test_record(topic_name, 0);
+        db.insert_record(cluster_id, topic_name, &test_record).unwrap();
+        // act
+        let res = db.export_db(&test_db_path);
+        // assert
+        assert!(res.is_ok());
+        //todo: validate DB content
+    }
 
     #[tokio::test]
     async fn test_create_table() {

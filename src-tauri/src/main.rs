@@ -12,6 +12,7 @@ use crate::api::{
     configuration::{get_configuration, write_configuration},
     consumer::{export_records, get_consumer_state, get_records_page, start_consumer, stop_consumer},
     schema_registry::{delete_subject, delete_subject_version, get_subject, list_subjects, post_schema},
+    utils::export_datastore,
 };
 use api::AppState;
 use tauri::Manager;
@@ -22,6 +23,8 @@ fn main() {
     log_active_user();
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            // utils
+            export_datastore,
             // consumer
             start_consumer,
             stop_consumer,
