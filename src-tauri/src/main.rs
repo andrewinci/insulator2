@@ -53,10 +53,10 @@ fn main() {
             set_consumer_group,
             delete_consumer_group,
         ])
-        // .setup(|app| {
-        //     app.manage(AppState::new(app.app_handle()));
-        //     Ok(())
-        // })
+        .setup(|app| {
+            app.manage(AppState::new(app.app_handle()));
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
