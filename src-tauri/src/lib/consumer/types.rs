@@ -1,6 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ConsumerConfiguration {
+    pub compactify: bool,
+    pub interval: ConsumerOffsetConfiguration,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ConsumerOffsetConfiguration {
     Beginning,
     End,

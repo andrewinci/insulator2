@@ -7,7 +7,7 @@ import React from "react";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "../../components";
-import { ConsumerGroupInfo, ConsumerSettingsFrom } from "../../models";
+import { ConsumerOffsetConfiguration, ConsumerGroupInfo } from "../../models";
 import { useNotifications } from "../../providers";
 import {
   deleteConsumerGroup,
@@ -165,7 +165,7 @@ const Tools = (props: {
   const navigate = useNavigate();
   const { success } = useNotifications();
 
-  const resetOffset = async (offset: ConsumerSettingsFrom) => {
+  const resetOffset = async (offset: ConsumerOffsetConfiguration) => {
     setState({ isResetting: true });
     try {
       await setConsumerGroup(
@@ -182,7 +182,7 @@ const Tools = (props: {
     }
   };
 
-  const showResetOffsetModal = (offset: ConsumerSettingsFrom) => {
+  const showResetOffsetModal = (offset: ConsumerOffsetConfiguration) => {
     openConfirmModal({
       title: "Reset consumer group to the beginning",
       children: (

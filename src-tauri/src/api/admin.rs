@@ -4,7 +4,7 @@ use log::debug;
 
 use crate::lib::{
     admin::{ConsumerGroupAdmin, ConsumerGroupInfo, PartitionOffset, Topic, TopicAdmin, TopicInfo},
-    consumer::ConsumerOffsetConfiguration,
+    consumer::types::ConsumerOffsetConfiguration,
 };
 
 use super::{error::Result, AppState};

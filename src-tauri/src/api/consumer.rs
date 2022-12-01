@@ -1,7 +1,7 @@
 use log::trace;
 
 use crate::lib::{
-    consumer::{types::ConsumerState, Consumer, ConsumerOffsetConfiguration},
+    consumer::{types::ConsumerState, Consumer, ConsumerConfiguration},
     record_store::types::ExportOptions,
 };
 
@@ -11,11 +11,11 @@ use super::{error::Result, types::GetPageResponse, AppState};
 pub async fn start_consumer(
     cluster_id: &str,
     topic: &str,
-    offset_config: ConsumerOffsetConfiguration,
+    config: ConsumerConfiguration,
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
     let consumer = state.get_cluster(cluster_id).await.get_consumer(topic).await;
-    Ok(consumer.start(&offset_config).await?)
+    Ok(consumer.start(&config).await?)
 }
 
 #[tauri::command]
