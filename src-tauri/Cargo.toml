@@ -15,7 +15,7 @@ tauri-build = { version = "1.2", features = [] }
 serde_json = "1.0"
 dirs = "4.0.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.1.2", features = ["dialog-save", "os-all", "updater"] }
+tauri = { version = "1.2", features = ["clipboard-all", "dialog-save", "global-shortcut-all", "os-all", "updater"] }
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 url = { version = "2", features = ["serde"] }
 tokio = { version = "1", features = ["full"] }
@@ -27,7 +27,9 @@ async-trait = "0.1.59"
 num-bigint = "0.4"
 rust_decimal = "1.27"
 rusqlite = { version = "0.28.0", features = ["bundled", "backup"] }
-rust-keystore = { git = "https://github.com/andrewinci/rust-keystore", features = ["p12"], tag = "v0.1.2" }
+rust-keystore = { git = "https://github.com/andrewinci/rust-keystore", features = [
+    "p12",
+], tag = "v0.1.2" }
 r2d2 = "0.8.10"
 r2d2_sqlite = "0.21.0"
 toml = "0.5"
