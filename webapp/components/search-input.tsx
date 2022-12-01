@@ -38,7 +38,7 @@ export const SearchInput = (props: SearchInputProps) => {
       rightSection={showShortcut ? rightSection : undefined}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onChange={(v: any) => {
-        if (v && onChange) onChange(v.target.value.toLowerCase());
+        if (v && onChange) onChange(v.target.value);
       }}
       onKeyUp={(e) => {
         if (e.code == "Enter" && onEnter) {

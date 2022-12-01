@@ -38,7 +38,7 @@ export const ClusterList = () => {
     });
 
   const filteredClusters = useMemo(
-    () => userSettings.clusters.filter((c) => c.name.toLowerCase().includes(state.search ?? "")),
+    () => userSettings.clusters.filter((c) => c.name.toLowerCase().includes(state.search.toLowerCase() ?? "")),
     [state.search, userSettings.clusters]
   );
   const ref = useRef<HTMLButtonElement>(null);
