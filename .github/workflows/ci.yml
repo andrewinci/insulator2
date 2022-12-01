@@ -54,7 +54,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             src-tauri/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-v1-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: (MacOS) Test and build
         if: matrix.os == 'macos-latest' && !startsWith(github.ref, 'refs/tags/v')
