@@ -1,3 +1,14 @@
+# [2.4.0](https://github.com/andrewinci/insulator2/compare/v2.3.1...v2.4.0) (2022-12-01)
+
+### Bug Fixes
+
+- allow upper and lower case in search inputs ([aa0d970](https://github.com/andrewinci/insulator2/commit/aa0d9707e818c7ecbc23e07010a75c14d8f4c541))
+
+### Features
+
+- add option to "compactify" consumed records ([#194](https://github.com/andrewinci/insulator2/issues/194)) ([903641a](https://github.com/andrewinci/insulator2/commit/903641a2d683775667c7264d808121aae81c9baf))
+- export internal database ([6a49dae](https://github.com/andrewinci/insulator2/commit/6a49dae9b7f8662ff78555749879dbafe9b797a1))
+
 ## [2.3.1](https://github.com/andrewinci/insulator2/compare/v2.3.0...v2.3.1) (2022-11-30)
 
 ### Bug Fixes
