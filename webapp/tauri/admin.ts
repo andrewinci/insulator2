@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api";
-import { ConsumerGroupInfo, ConsumerSettingsFrom, PartitionOffset, TopicInfo } from "../models/kafka";
+import { ConsumerGroupInfo, ConsumerOffsetConfiguration, PartitionOffset, TopicInfo } from "../models/kafka";
 import { addNotification } from "../providers";
 import { format, TauriError } from "./error";
 
@@ -7,7 +7,7 @@ export const setConsumerGroup = (
   clusterId: string,
   consumerGroupName: string,
   topics: string[],
-  offsetConfig: ConsumerSettingsFrom
+  offsetConfig: ConsumerOffsetConfiguration
 ): Promise<void> => {
   return invoke<void>("set_consumer_group", { clusterId, consumerGroupName, topics, offsetConfig }).catch(
     (err: TauriError) => {

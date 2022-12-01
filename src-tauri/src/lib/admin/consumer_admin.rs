@@ -6,7 +6,7 @@ use super::{ConsumerGroupInfo, KafkaAdmin};
 use crate::lib::{
     admin::TopicPartitionOffset,
     configuration::build_kafka_client_config,
-    consumer::{ConsumerOffsetConfiguration, KafkaConsumer},
+    consumer::{types::ConsumerOffsetConfiguration, KafkaConsumer},
     error::Result,
     Error,
 };

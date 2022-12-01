@@ -18,7 +18,7 @@ export type ConsumerState = {
   recordCount: number;
 };
 
-export type ConsumerSettingsFrom =
+export type ConsumerOffsetConfiguration =
   | "Beginning"
   | "End"
   | {
@@ -27,6 +27,11 @@ export type ConsumerSettingsFrom =
         stop_timestamp?: number; //time in ms
       };
     };
+
+export type ConsumerConfiguration = {
+  compactify: boolean;
+  interval: ConsumerOffsetConfiguration;
+};
 
 export type ConsumerGroupInfo = {
   name: string;

@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api";
-import { ConsumerSettingsFrom, ConsumerState, KafkaRecord } from "../models/kafka";
+import { ConsumerConfiguration, ConsumerState, KafkaRecord } from "../models/kafka";
 import { addNotification } from "../providers";
 import { format, TauriError } from "./error";
 
@@ -14,12 +14,8 @@ export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
     addNotification({ type: "error", title: "Stop Kafka record", description: format(err) })
   );
 
-export const startConsumer = (clusterId: string, topic: string, offsetConfig: ConsumerSettingsFrom): Promise<void> =>
-  invoke<void>("start_consumer", {
-    clusterId,
-    offsetConfig,
-    topic,
-  }).catch((err: TauriError) =>
+export const startConsumer = (clusterId: string, topic: string, config: ConsumerConfiguration): Promise<void> =>
+  invoke<void>("start_consumer", { clusterId, topic, config }).catch((err: TauriError) =>
     addNotification({ type: "error", title: "Start Kafka record", description: format(err) })
   );
 

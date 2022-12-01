@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { SingleLineTitle } from "../../components";
 import { useFavorites } from "../../hooks/use-favorites";
-import { ConsumerSettingsFrom } from "../../models";
+import { ConsumerOffsetConfiguration } from "../../models";
 import { setConsumerGroup, getConsumerGroups, listTopics } from "../../tauri/admin";
 import { ItemList } from "../common";
 
@@ -118,7 +118,7 @@ const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; clo
         <Button
           onClick={async () => {
             setState((s) => ({ ...s, isCreating: true }));
-            await setConsumerGroup(clusterId, state.name, state.topics, state.offset as ConsumerSettingsFrom);
+            await setConsumerGroup(clusterId, state.name, state.topics, state.offset as ConsumerOffsetConfiguration);
             setState((s) => ({ ...s, isCreating: false }));
             close();
           }}

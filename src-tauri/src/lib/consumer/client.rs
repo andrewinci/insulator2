@@ -1,6 +1,6 @@
 use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
-    consumer::types::{ConsumerOffsetConfiguration, ConsumerState},
+    consumer::types::{ConsumerConfiguration, ConsumerOffsetConfiguration, ConsumerState},
     error::{Error, Result},
     record_store::TopicStore,
     types::{ErrorCallback, RawKafkaRecord},
@@ -18,7 +18,7 @@ use tauri::async_runtime::JoinHandle;
 
 #[async_trait]
 pub trait Consumer {
-    async fn start(&self, offset_config: &ConsumerOffsetConfiguration) -> Result<()>;
+    async fn start(&self, offset_config: &ConsumerConfiguration) -> Result<()>;
     async fn stop(&self) -> Result<()>;
     async fn get_consumer_state(&self) -> Result<ConsumerState>;
 }
@@ -45,7 +45,7 @@ impl KafkaConsumer {
 
 #[async_trait]
 impl Consumer for KafkaConsumer {
-    async fn start(&self, offset_config: &ConsumerOffsetConfiguration) -> Result<()> {
+    async fn start(&self, consumer_config: &ConsumerConfiguration) -> Result<()> {
         let topic = self.topic.clone();
         if self.loop_handle.lock().await.is_some() {
             warn!("Try to start an already running consumer");
@@ -62,12 +62,14 @@ impl Consumer for KafkaConsumer {
 
             let handle = self.loop_handle.clone();
             let topic_store = self.topic_store.clone();
-            let offset_config = offset_config.clone();
+            let consumer_config = consumer_config.clone();
             let error_callback = self.error_callback.clone();
 
             async move {
                 // wait the consumer to be configure before starting to consume
-                if let Err(err) = KafkaConsumer::update_consumer_assignment(&consumer, &[&topic], &offset_config) {
+                if let Err(err) =
+                    KafkaConsumer::update_consumer_assignment(&consumer, &[&topic], &consumer_config.interval)
+                {
                     error!("{:?}", err);
                     error_callback(err);
                     return;
@@ -76,7 +78,7 @@ impl Consumer for KafkaConsumer {
                 let stop_at_timestamp = if let ConsumerOffsetConfiguration::Custom {
                     stop_timestamp: Some(stop),
                     ..
-                } = &offset_config
+                } = &consumer_config.interval
                 {
                     Some(*stop as u64)
                 } else {
@@ -92,6 +94,10 @@ impl Consumer for KafkaConsumer {
                     match consumer.stream().next().await {
                         Some(Ok(msg)) => {
                             let record = KafkaConsumer::map_kafka_record(&msg.detach());
+                            //todo: upsert if consumer_config.compactify
+                            if consumer_config.compactify {
+                                debug!("UPSERT");
+                            }
                             if record.timestamp.unwrap_or(u64::MIN) < stop_at_timestamp.unwrap_or(u64::MAX) {
                                 topic_store
                                     .insert_record(&record)

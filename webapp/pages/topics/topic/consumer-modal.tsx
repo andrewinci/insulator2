@@ -1,7 +1,7 @@
-import { Chip, Stack, Title, Text, Group, Checkbox, Button, Divider } from "@mantine/core";
+import { Chip, Stack, Title, Text, Group, Checkbox, Button } from "@mantine/core";
 import { openModal, useModals } from "@mantine/modals";
 import { DateRangePicker, DatePicker, TimeRangeInput, TimeInput } from "@mantine/dates";
-import { ConsumerSettingsFrom } from "../../../models/kafka";
+import { ConsumerOffsetConfiguration } from "../../../models/kafka";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
 import { startConsumer } from "../../../tauri/consumer";
@@ -27,6 +27,7 @@ const ModalBody = ({ clusterId, topicName }: ConsumerModalProps) => {
   const form = useForm<ConsumerForm>({
     initialValues: {
       from: "End",
+      compactify: false,
       dateInterval: [nowUTC, nowUTC],
       onlyBeginning: false,
       timeInterval: [zeroUTC, zeroUTC],
@@ -36,7 +37,7 @@ const ModalBody = ({ clusterId, topicName }: ConsumerModalProps) => {
     validate: {}, //todo
   });
 
-  const getConsumerSettingFrom = (f: ConsumerForm): ConsumerSettingsFrom => {
+  const getConsumerSettings = (f: ConsumerForm): ConsumerOffsetConfiguration => {
     if (f.from == "Beginning") return "Beginning";
     else if (f.from == "End") return "End";
     else {
@@ -60,7 +61,7 @@ const ModalBody = ({ clusterId, topicName }: ConsumerModalProps) => {
     }
   };
   const onSubmit = async (f: ConsumerForm) => {
-    await startConsumer(clusterId, topicName, getConsumerSettingFrom(f));
+    await startConsumer(clusterId, topicName, { compactify: f.compactify, interval: getConsumerSettings(f) });
     closeAll();
   };
 
@@ -69,14 +70,22 @@ const ModalBody = ({ clusterId, topicName }: ConsumerModalProps) => {
       <Stack>
         <Stack spacing={0}>
           <Text weight={"normal"} size={15}>
-            Topic
-          </Text>
-          <Text color="red" weight={"bold"} component="span">
-            {topicName}
+            Consuming topic{" "}
+            <Text span inherit color="red" weight={"bold"}>
+              {topicName}
+            </Text>
           </Text>
         </Stack>
-        <Divider />
-        <Title size={15}>Start consuming from</Title>
+        <div>
+          <Text size={"sm"}>
+            Check the Compactify option to upsert into the internal storage by key.
+            <br />
+            i.e. If multiple records with the same keys exists, only last consumed will be visible in insulator.
+          </Text>
+          <Checkbox mt={10} label="Compactify" {...form.getInputProps("compactify", { type: "checkbox" })} />
+        </div>
+
+        <Text size={15}>Start consuming from</Text>
         <Chip.Group position="left" multiple={false} {...form.getInputProps("from")}>
           <Chip value="End">End</Chip>
           <Chip value="Beginning">Beginning</Chip>
@@ -112,4 +121,5 @@ type ConsumerForm = {
   onlyBeginning: boolean;
   dateFrom: Date;
   timeFrom: Date;
+  compactify: boolean;
 };
