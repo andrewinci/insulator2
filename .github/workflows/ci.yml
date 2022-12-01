@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-12, ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v3
 
@@ -57,7 +57,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: (MacOS) Test and build
-        if: matrix.os == 'macos-latest' && !startsWith(github.ref, 'refs/tags/v')
+        if: matrix.os == 'macos-12' && !startsWith(github.ref, 'refs/tags/v')
         run: |
           # clean up cached bundle
           yarn rimraf src-tauri/target/release/bundle/
@@ -100,7 +100,7 @@ jobs:
           retention-days: 1
 
       - name: (MacOS) Update manifest
-        if: matrix.os == 'macos-latest' && startsWith(github.ref, 'refs/tags/v')
+        if: matrix.os == 'macOS-12' && startsWith(github.ref, 'refs/tags/v')
         run: |
           python3 ./scripts/update-manifest.py --target darwin
           # remove unused manifests
