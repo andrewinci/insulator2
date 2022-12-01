@@ -17,11 +17,11 @@ pub struct Query {
 pub trait RecordStore {
     fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>>;
     fn get_records(&self, cluster_id: &str, topic_name: &str, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>>;
-    fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
+    fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()>;
     fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
     fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize>;
     fn get_size_with_query(&self, query: &Query) -> Result<usize>;
-    fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
+    fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
 }
 
 pub struct SqliteStore {
@@ -61,8 +61,9 @@ impl RecordStore for SqliteStore {
         })
     }
 
-    fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
+    fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()> {
         let connection = self.pool.get().unwrap();
+        self.destroy(cluster_id, topic_name)?;
         connection
             .execute(
                 format!(
@@ -70,9 +71,14 @@ impl RecordStore for SqliteStore {
                         partition   NUMBER,
                         offset      NUMBER,
                         timestamp   NUMBER,
-                        key         TEXT,
-                        payload     TEXT)",
-                    Self::get_table_name(cluster_id, topic_name)
+                        key         TEXT {},
+                        payload     TEXT,
+                        PRIMARY KEY (partition, offset))",
+                    Self::get_table_name(cluster_id, topic_name),
+                    match compacted {
+                        true => "UNIQUE",
+                        false => "",
+                    }
                 )
                 .as_str(),
                 [],
@@ -85,7 +91,7 @@ impl RecordStore for SqliteStore {
         let connection = self.pool.get().unwrap();
         connection.execute(
             format!(
-                "INSERT INTO {} (partition, offset, timestamp, key, payload) 
+                "INSERT OR REPLACE INTO {} (partition, offset, timestamp, key, payload) 
                 VALUES (:partition, :offset, :timestamp, :key, :payload)",
                 Self::get_table_name(cluster_id, topic_name)
             )
@@ -125,11 +131,11 @@ impl RecordStore for SqliteStore {
         }
     }
 
-    fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
+    fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
         let connection = self.pool.get().unwrap();
         connection
             .execute(
-                format!("DELETE FROM {}", Self::get_table_name(cluster_id, topic_name)).as_str(),
+                format!("DROP TABLE IF EXISTS {}", Self::get_table_name(cluster_id, topic_name)).as_str(),
                 [],
             )
             .unwrap_or_else(|_| panic!("Unable to create the table for {} {}", cluster_id, topic_name));
@@ -223,7 +229,7 @@ mod tests {
         let test_db_path = get_test_db_path();
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = SqliteStore::new();
-        db.create_topic_table(cluster_id, topic_name).unwrap();
+        db.create_or_replace_topic_table(cluster_id, topic_name, false).unwrap();
         let test_record = get_test_record(topic_name, 0);
         db.insert_record(cluster_id, topic_name, &test_record).unwrap();
         // act
@@ -236,7 +242,7 @@ mod tests {
     #[tokio::test]
     async fn test_create_table() {
         let db = SqliteStore::new();
-        let res = db.create_topic_table("cluster_id_example", "topic_name_example");
+        let res = db.create_or_replace_topic_table("cluster_id_example", "topic_name_example", false);
         assert!(res.is_ok())
     }
 
@@ -245,7 +251,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = SqliteStore::new();
-        db.create_topic_table(cluster_id, topic_name)
+        db.create_or_replace_topic_table(cluster_id, topic_name, false)
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
         // act
@@ -258,11 +264,48 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_insert_and_get_records() {
+        // arrange
+        let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
+        let db = SqliteStore::new();
+        let test_record1 = get_test_record(topic_name, 0);
+        let test_record2 = ParsedKafkaRecord {
+            offset: 1,
+            payload: Some("latest-test".into()),
+            ..test_record1.clone()
+        };
+        // compacted table should replace old records with same key
+        {
+            db.create_or_replace_topic_table(cluster_id, topic_name, true)
+                .expect("Unable to create the table");
+            // act
+            db.insert_record(cluster_id, topic_name, &test_record1).unwrap();
+            db.insert_record(cluster_id, topic_name, &test_record2).unwrap();
+            let records_back = db.get_records(cluster_id, topic_name, 0, 1000).unwrap();
+            // assert
+            assert_eq!(records_back.len(), 1);
+            assert_eq!(records_back[0], test_record2);
+        }
+        // non compacted table should persist all the data
+        {
+            db.create_or_replace_topic_table(cluster_id, topic_name, false)
+                .expect("Unable to create the table");
+            // act
+            db.insert_record(cluster_id, topic_name, &test_record1).unwrap();
+            db.insert_record(cluster_id, topic_name, &test_record2).unwrap();
+            let records_back = db.get_records(cluster_id, topic_name, 0, 1000).unwrap();
+            // assert
+            assert_eq!(records_back.len(), 2);
+            assert_eq!(records_back[1], test_record2);
+        }
+    }
+
+    #[tokio::test]
     async fn test_get_size() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = SqliteStore::new();
-        db.create_topic_table(cluster_id, topic_name)
+        db.create_or_replace_topic_table(cluster_id, topic_name, false)
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
         // act
@@ -279,7 +322,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = SqliteStore::new();
-        db.create_topic_table(cluster_id, topic_name)
+        db.create_or_replace_topic_table(cluster_id, topic_name, false)
             .expect("Unable to create the table");
         // act
         db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, 1))
@@ -307,7 +350,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = SqliteStore::new();
-        db.create_topic_table(cluster_id, topic_name)
+        db.create_or_replace_topic_table(cluster_id, topic_name, false)
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
         // act
@@ -357,7 +400,7 @@ mod tests {
 
         // act
         // topic1
-        db.create_topic_table(cluster_id, topic_name)
+        db.create_or_replace_topic_table(cluster_id, topic_name, false)
             .expect("Unable to create the table");
         let write1 = spawn({
             let db = db.clone();
@@ -375,7 +418,7 @@ mod tests {
         });
 
         // topic2
-        db.create_topic_table(cluster_id, topic_name2)
+        db.create_or_replace_topic_table(cluster_id, topic_name2, false)
             .expect("Unable to create the table");
 
         let write2 = spawn({

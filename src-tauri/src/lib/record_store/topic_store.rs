@@ -34,18 +34,26 @@ where
     P: Parser,
 {
     pub fn from_record_store(store: Arc<S>, parser: Arc<P>, cluster_id: &str, topic_name: &str) -> Self {
-        store.create_topic_table(cluster_id, topic_name).unwrap_or_else(|_| {
-            panic!(
-                "Unable to create the table to store the records from topic {}",
-                topic_name
-            )
-        });
+        store
+            .create_or_replace_topic_table(cluster_id, topic_name, false)
+            .unwrap_or_else(|_| {
+                panic!(
+                    "Unable to create the table to store the records from topic {}",
+                    topic_name
+                )
+            });
         TopicStore {
             cluster_id: cluster_id.to_string(),
             topic_name: topic_name.to_string(),
             store,
             parser,
         }
+    }
+
+    pub fn setup(&self, compactify: bool) -> Result<()> {
+        self
+            .store
+            .create_or_replace_topic_table(&self.cluster_id, &self.topic_name, compactify)
     }
 
     pub fn get_records(&self, query: Option<&str>, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>> {
@@ -73,21 +81,16 @@ where
             .insert_record(&self.cluster_id, &self.topic_name, &parsed_record)
     }
 
-    pub fn clear(&self) -> Result<()> {
-        self.store.clear(&self.cluster_id, &self.topic_name)
-    }
-
     pub fn get_size(&self, query: Option<&str>) -> Result<usize> {
-        if let Some(query) = query {
-            self.store.get_size_with_query(&Query {
+        match query {
+            Some(query) => self.store.get_size_with_query(&Query {
                 cluster_id: self.cluster_id.clone(),
                 topic_name: self.topic_name.clone(),
                 offset: -1,
                 limit: -1,
                 query_template: query.into(),
-            })
-        } else {
-            self.store.get_size(&self.cluster_id, &self.topic_name)
+            }),
+            None => self.store.get_size(&self.cluster_id, &self.topic_name),
         }
     }
 
@@ -158,11 +161,11 @@ mod test {
         impl RecordStore for Store {
             fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>>;
             fn get_records(&self, cluster_id: &str, topic_name: &str, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>>;
-            fn create_topic_table(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
+            fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()>;
             fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
             fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize>;
             fn get_size_with_query(&self, query: &Query) -> Result<usize>;
-            fn clear(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
+            fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
         }
     }
 
@@ -171,7 +174,9 @@ mod test {
         // arrange
         let mut mock_record_store = MockStore::new();
         let parser_mock = MockParser::new();
-        mock_record_store.expect_create_topic_table().returning(|_, _| Ok(()));
+        mock_record_store
+            .expect_create_or_replace_topic_table()
+            .returning(|_, _, _| Ok(()));
         mock_record_store
             .expect_query_records()
             .returning(|_| Ok(vec![create_test_record(0), create_test_record(1)]));
@@ -208,7 +213,9 @@ mod test {
         let mut mock_record_store = MockStore::new();
         let parser_mock = MockParser::new();
         mock_record_store.expect_query_records().returning(|_| Ok(vec![]));
-        mock_record_store.expect_create_topic_table().returning(|_, _| Ok(()));
+        mock_record_store
+            .expect_create_or_replace_topic_table()
+            .returning(|_, _, _| Ok(()));
         let sut = TopicStore::from_record_store(
             Arc::new(mock_record_store),
             Arc::new(parser_mock),
@@ -236,7 +243,9 @@ mod test {
     fn test_overwrite_files() {
         let mut mock_record_store = MockStore::new();
         let parser_mock = MockParser::new();
-        mock_record_store.expect_create_topic_table().returning(|_, _| Ok(()));
+        mock_record_store
+            .expect_create_or_replace_topic_table()
+            .returning(|_, _, _| Ok(()));
         mock_record_store.expect_query_records().returning(|_| Ok(vec![]));
         let sut = TopicStore::from_record_store(
             Arc::new(mock_record_store),

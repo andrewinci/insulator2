@@ -85,8 +85,10 @@ impl Consumer for KafkaConsumer {
                     None
                 };
 
-                // clear the store before starting the loop
-                topic_store.clear().expect("Unable to clear the table");
+                // setup a new store
+                topic_store
+                    .setup(consumer_config.compactify)
+                    .expect("Unable to create the internal store");
 
                 // infinite consumer loop
                 debug!("Start consumer loop");
@@ -146,7 +148,7 @@ impl Consumer for KafkaConsumer {
     async fn get_consumer_state(&self) -> Result<ConsumerState> {
         Ok(ConsumerState {
             is_running: self.loop_handle.clone().lock().await.is_some(),
-            record_count: self.topic_store.get_size(None)?, //total records in the topic
+            record_count: self.topic_store.get_size(None)?, //total records consumed
         })
     }
 }
