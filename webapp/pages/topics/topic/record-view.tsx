@@ -26,7 +26,7 @@ export const RecordDetailsView = ({ record, topic }: RecordDetailsViewProps) => 
         <Text mb={2} weight={500} size={14}>
           Value
         </Text>
-        <CodeEditor language="json" height={400} value={pretty(record.payload)} readOnly />
+        <CodeEditor path={topic} language="json" height={400} value={pretty(record.payload)} readOnly />
       </div>
     </Stack>
   );

@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./init-monaco";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Routing } from "./routing";
 import { UserSettingsProvider, useNotifications } from "./providers";

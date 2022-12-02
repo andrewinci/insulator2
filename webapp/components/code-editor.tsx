@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 type CodeEditorProps = {
   height: number | string;
+  path: string;
   language?: string;
   value?: string;
   readOnly?: boolean;
@@ -39,7 +40,6 @@ export const CodeEditor = ({
 
   return (
     <Editor
-      saveViewState={false}
       height={height || 0}
       defaultLanguage={defaultLanguage}
       value={value}
@@ -52,12 +52,14 @@ export const CodeEditor = ({
         minimap: {
           enabled: false,
         },
+
         contextmenu: false,
         readOnly,
         theme: "custom",
+        automaticLayout: true,
         scrollBeyondLastLine: false,
         lineNumbersMinChars: hideLineNumbers ? 0 : 4,
-        lineNumbers: hideLineNumbers ? false : true,
+        lineNumbers: hideLineNumbers ? "off" : "on",
         glyphMargin: false,
         folding: hideLineNumbers ? false : true,
         lineDecorationsWidth: hideLineNumbers ? 0 : 10,

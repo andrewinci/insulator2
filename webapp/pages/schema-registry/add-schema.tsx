@@ -80,7 +80,7 @@ export const AddSchemaModal = ({
         <Group position="apart">
           <Text color={"red"}></Text>
           <Button loading={state.isUploading} type="submit" size="sm">
-            Validate and create
+            Validate and submit
           </Button>
         </Group>
       </Stack>

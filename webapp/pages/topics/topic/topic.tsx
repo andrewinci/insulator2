@@ -82,6 +82,7 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
             )}
             {!isLoading && consumerState && (
               <TopicPageMenu
+                topicName={topicName}
                 height={paneHeights.headerHeight - 150}
                 onConsumerToggle={toggleConsumerRunning}
                 consumedRecords={consumerState.recordCount}

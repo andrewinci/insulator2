@@ -213,8 +213,6 @@ impl SqliteStore {
 mod tests {
     use std::{env::temp_dir, sync::Arc, thread::spawn, time::Instant};
 
-    
-
     use crate::lib::{record_store::sqlite_store::Query, types::ParsedKafkaRecord};
 
     use super::{RecordStore, SqliteStore};

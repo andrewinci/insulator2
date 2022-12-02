@@ -50,6 +50,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
           <Loader />
         </Center>
         <CodeEditor
+          path={schemaName}
           height="calc(100vh - 155px)"
           language="json"
           value={pretty(subject?.versions?.find((s) => s.version == state?.version)?.schema ?? "")}

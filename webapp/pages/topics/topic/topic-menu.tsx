@@ -3,10 +3,11 @@ import { IconArrowBarToDown, IconArrowBarToUp, IconSearch } from "@tabler/icons"
 import { CodeEditor } from "../../../components";
 
 type TopicPageMenuProps = {
+  topicName: string;
+  query: string;
   consumedRecords?: number;
   isConsumerRunning?: boolean;
   height?: number;
-  query: string;
   onQueryChange: (query: string) => void;
   onQuery: () => void;
   onConsumerToggle: () => void;
@@ -18,6 +19,7 @@ export const TopicPageMenu = ({
   isConsumerRunning,
   height,
   query,
+  topicName,
   onQueryChange,
   onConsumerToggle,
   onQuery,
@@ -32,6 +34,7 @@ export const TopicPageMenu = ({
         </Anchor>
       </Text>
       <CodeEditor
+        path={topicName}
         hideLineNumbers={true}
         height={height ?? 20}
         language="sql"
