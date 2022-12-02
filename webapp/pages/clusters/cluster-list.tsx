@@ -58,33 +58,37 @@ export const ClusterList = () => {
             </ActionIcon>
           </Tooltip>
         </PageHeader>
-        <ScrollArea px={15} style={{ height: "calc(100vh - 100px)" }}>
+        <ScrollArea px={20} style={{ height: "calc(100vh - 100px)" }}>
           <Stack mt={10}>
-            {filteredClusters.map((c, i) => (
-              <Paper key={c.name} shadow="md" p="md" withBorder>
-                <Stack>
-                  <Title order={3}>{c.name}</Title>
-                  <Text size={13}>{c.endpoint}</Text>
-                  <Group position="right">
-                    <Button.Group>
-                      <Button onClick={() => openModal(c)} color={"red"}>
-                        Delete
-                      </Button>
-                      <Button onClick={() => setState((s) => ({ ...s, editClusterId: c.id }))} color={"teal"}>
-                        Edit
-                      </Button>
-                      <Button
-                        ref={i == 0 ? ref : null}
-                        onClick={() => {
-                          navigate(`/cluster/${c.id}/topics`);
-                        }}>
-                        Use
-                      </Button>
-                    </Button.Group>
+            {filteredClusters
+              .sort((c1, c2) => c1.name.localeCompare(c2.name))
+              .map((c, i) => (
+                <Paper key={c.name} shadow="md" p="md" withBorder>
+                  <Group position="apart">
+                    <div>
+                      <Title order={3}>{c.name}</Title>
+                      <Text size={13}>{c.endpoint}</Text>
+                    </div>
+                    <Group position="right">
+                      <Button.Group>
+                        <Button onClick={() => openModal(c)} color={"red"}>
+                          Delete
+                        </Button>
+                        <Button onClick={() => setState((s) => ({ ...s, editClusterId: c.id }))} color={"teal"}>
+                          Edit
+                        </Button>
+                        <Button
+                          ref={i == 0 ? ref : null}
+                          onClick={() => {
+                            navigate(`/cluster/${c.id}/topics`);
+                          }}>
+                          Use
+                        </Button>
+                      </Button.Group>
+                    </Group>
                   </Group>
-                </Stack>
-              </Paper>
-            ))}
+                </Paper>
+              ))}
           </Stack>
         </ScrollArea>
       </Container>

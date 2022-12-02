@@ -96,10 +96,6 @@ impl Consumer for KafkaConsumer {
                     match consumer.stream().next().await {
                         Some(Ok(msg)) => {
                             let record = KafkaConsumer::map_kafka_record(&msg.detach());
-                            //todo: upsert if consumer_config.compactify
-                            if consumer_config.compactify {
-                                debug!("UPSERT");
-                            }
                             if record.timestamp.unwrap_or(u64::MIN) < stop_at_timestamp.unwrap_or(u64::MAX) {
                                 topic_store
                                     .insert_record(&record)
