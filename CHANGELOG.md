@@ -1,3 +1,10 @@
+## [2.4.1](https://github.com/andrewinci/insulator2/compare/v2.4.0...v2.4.1) (2022-12-02)
+
+### Bug Fixes
+
+- code editor margins ([4df10f7](https://github.com/andrewinci/insulator2/commit/4df10f7d1cf8b3b5b88e2ab22949070d161d28ec))
+- shortcuts on mac os ([#201](https://github.com/andrewinci/insulator2/issues/201)) ([a8e19e4](https://github.com/andrewinci/insulator2/commit/a8e19e4122e33dba51a0c0f0459a1e8e36e96623))
+
 # [2.4.0](https://github.com/andrewinci/insulator2/compare/v2.3.1...v2.4.0) (2022-12-01)
 
 ### Bug Fixes

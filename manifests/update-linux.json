@@ -1,11 +1,11 @@
 {
-  "version": "v2.4.0",
-  "notes": "# [2.4.0](https://github.com/andrewinci/insulator2/compare/v2.3.1...v2.4.0) (2022-12-01)\n\n\n### Bug Fixes\n\n* allow upper and lower case in search inputs ([aa0d970](https://github.com/andrewinci/insulator2/commit/aa0d9707e818c7ecbc23e07010a75c14d8f4c541))\n\n\n### Features\n\n* add option to compactify consumed records ([#194](https://github.com/andrewinci/insulator2/issues/194)) ([903641a](https://github.com/andrewinci/insulator2/commit/903641a2d683775667c7264d808121aae81c9baf))\n* export internal database ([6a49dae](https://github.com/andrewinci/insulator2/commit/6a49dae9b7f8662ff78555749879dbafe9b797a1))\n\n\n\n",
-  "pub_date": "2022-12-01T07:46:42Z",
+  "version": "v2.4.1",
+  "notes": "## [2.4.1](https://github.com/andrewinci/insulator2/compare/v2.4.0...v2.4.1) (2022-12-02)\n\n\n### Bug Fixes\n\n* code editor margins ([4df10f7](https://github.com/andrewinci/insulator2/commit/4df10f7d1cf8b3b5b88e2ab22949070d161d28ec))\n* shortcuts on mac os ([#201](https://github.com/andrewinci/insulator2/issues/201)) ([a8e19e4](https://github.com/andrewinci/insulator2/commit/a8e19e4122e33dba51a0c0f0459a1e8e36e96623))\n\n\n\n",
+  "pub_date": "2022-12-02T06:47:09Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.4.0/insulator-2_2.4.0_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.4.1/insulator-2_2.4.1_amd64.AppImage.tar.gz"
     }
   }
 }
