@@ -45,7 +45,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
         </Group>
       )}
 
-      <Container mt={20} p={0}>
+      <Container mt={20} p={0} ml={0}>
         <Center hidden={!isLoading} mt={10}>
           <Loader />
         </Center>

@@ -31,7 +31,13 @@ export const TopicPageMenu = ({
           https://www.sqlite.org/json1.html
         </Anchor>
       </Text>
-      <CodeEditor height={height ?? 20} language="sql" value={query} onChange={(v) => onQueryChange(v)} />
+      <CodeEditor
+        hideLineNumbers={true}
+        height={height ?? 20}
+        language="sql"
+        value={query}
+        onChange={(v) => onQueryChange(v)}
+      />
       <Group mt={5} position="apart">
         <Group>
           <Button

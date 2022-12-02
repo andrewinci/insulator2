@@ -7,10 +7,18 @@ type CodeEditorProps = {
   language?: string;
   value?: string;
   readOnly?: boolean;
+  hideLineNumbers?: boolean;
   onChange?: (value: string) => void;
 };
 
-export const CodeEditor = ({ height, language: defaultLanguage, value, readOnly, onChange }: CodeEditorProps) => {
+export const CodeEditor = ({
+  height,
+  language: defaultLanguage,
+  value,
+  readOnly,
+  hideLineNumbers,
+  onChange,
+}: CodeEditorProps) => {
   const mantineTheme = useMantineTheme();
   const monaco = useMonaco();
 
@@ -48,7 +56,11 @@ export const CodeEditor = ({ height, language: defaultLanguage, value, readOnly,
         readOnly,
         theme: "custom",
         scrollBeyondLastLine: false,
-        lineNumbersMinChars: 2,
+        lineNumbersMinChars: hideLineNumbers ? 0 : 4,
+        lineNumbers: hideLineNumbers ? false : true,
+        glyphMargin: false,
+        folding: hideLineNumbers ? false : true,
+        lineDecorationsWidth: hideLineNumbers ? 0 : 10,
       }}
       beforeMount={(monaco) => setTheme(monaco)}
       onMount={(_, monaco) => setTheme(monaco)}
