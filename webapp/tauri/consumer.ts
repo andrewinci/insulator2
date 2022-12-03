@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api";
 import { ConsumerConfiguration, ConsumerState, KafkaRecord } from "../models/kafka";
 import { addNotification } from "../providers";
 import { format, TauriError } from "./error";
+import { waitEvent } from "./event_listeners";
 
 export const getConsumerState = (clusterId: string, topic: string): Promise<ConsumerState> =>
   invoke<ConsumerState>("get_consumer_state", { clusterId, topic }).catch((err: TauriError) => {
@@ -46,11 +47,16 @@ type ExportOptions = {
   parseTimestamp: boolean;
 };
 
-export const exportRecords = (clusterId: string, topic: string, options: ExportOptions): Promise<void> =>
-  invoke<void>("export_records", {
-    clusterId,
-    topic,
-    options,
-  }).catch((err: TauriError) =>
-    addNotification({ type: "error", title: "Export records to csv file.", description: format(err) })
-  );
+export const exportRecords = async (clusterId: string, topic: string, options: ExportOptions): Promise<void> => {
+  try {
+    const response = waitEvent("export_records", `${clusterId}-${topic}`);
+    await invoke<void>("export_records", {
+      clusterId,
+      topic,
+      options,
+    });
+    await response;
+  } catch (err) {
+    addNotification({ type: "error", title: "Export records to csv file.", description: format(err as TauriError) });
+  }
+};

@@ -33,7 +33,7 @@ const registerHandler = (handler: ActionCompleteHandler<unknown>) => {
   handlers.push(handler);
 };
 
-export function waitEvent<T>(id: string, action: string): Promise<T> {
+export function waitEvent<T>(action: string, id: string): Promise<T> {
   return new Promise((resolve, reject) => {
     registerHandler((event) => {
       if (event.id == id && event.action == action) {

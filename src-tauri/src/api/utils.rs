@@ -12,8 +12,7 @@ pub async fn export_datastore(
     app_handle: tauri::AppHandle,
 ) -> Result<()> {
     debug!("Start export database");
-    let cluster = state.get_cluster(cluster_id).await;
-    let store = cluster.store.to_owned();
+    let store = state.get_cluster(cluster_id).await.store.to_owned();
     let output_path = output_path.to_owned();
     let cluster_id = cluster_id.to_owned();
     spawn({

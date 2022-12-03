@@ -1,11 +1,19 @@
-use log::trace;
+use std::time::Duration;
+
+use log::debug;
+use tokio::spawn;
 
 use crate::lib::{
     consumer::{types::ConsumerState, Consumer, ConsumerConfiguration},
     record_store::types::ExportOptions,
 };
 
-use super::{error::Result, types::GetPageResponse, AppState};
+use super::{
+    error::Result,
+    notification::{notify_action_complete, ActionCompleteEvent},
+    types::GetPageResponse,
+    AppState,
+};
 
 #[tauri::command]
 pub async fn start_consumer(
@@ -42,7 +50,7 @@ pub async fn get_records_page(
     query: Option<&str>,
     state: tauri::State<'_, AppState>,
 ) -> Result<GetPageResponse> {
-    trace!("Get records page");
+    debug!("Get records page");
     const PAGE_SIZE: usize = 20;
     let cluster = state.get_cluster(cluster_id).await;
     let topic_store = cluster.get_topic_store(topic).await;
@@ -64,7 +72,25 @@ pub async fn export_records(
     topic: &str,
     options: ExportOptions,
     state: tauri::State<'_, AppState>,
+    app_handle: tauri::AppHandle,
 ) -> Result<()> {
-    let store = state.get_cluster(cluster_id).await.get_topic_store(topic).await;
-    Ok(store.export_records(&options)?)
+    debug!("Export records");
+    let cluster_id = cluster_id.to_owned();
+    let topic = topic.to_owned();
+    let options = options.to_owned();
+    let store = state.get_cluster(&cluster_id).await.get_topic_store(&topic).await;
+    spawn({
+        async move {
+            tokio::time::sleep(Duration::from_secs(30)).await;
+            notify_action_complete(
+                &ActionCompleteEvent {
+                    action: "export_records".into(),
+                    id: format!("{}-{}", cluster_id, topic),
+                    result: store.export_records(&options).into(),
+                },
+                &app_handle,
+            )
+        }
+    });
+    Ok(())
 }

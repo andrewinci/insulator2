@@ -4,7 +4,7 @@ import { waitEvent } from "./event_listeners";
 
 export const exportDatastore = async (clusterId: string, outputPath: string): Promise<void> => {
   try {
-    const response = waitEvent(`${clusterId}-${outputPath}`, "export_datastore");
+    const response = waitEvent("export_datastore", `${clusterId}-${outputPath}`);
     await invoke<void>("export_datastore", {
       clusterId,
       outputPath,
