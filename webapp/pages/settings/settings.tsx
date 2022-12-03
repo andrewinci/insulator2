@@ -29,12 +29,14 @@ export const Settings = () => {
       filters: [{ name: clusterName ?? "db", extensions: ["db"] }],
     });
     if (!clusterId || !outputPath) return;
-    setExportStatus((_) => ({ inProgress: true }));
+    setExportStatus({ inProgress: true });
     try {
       await exportDatastore(clusterId, outputPath);
       success(`Database for ${clusterName} successfully exported to ${outputPath}`);
+    } catch (err) {
+      console.error(err);
     } finally {
-      setExportStatus((_) => ({ inProgress: false }));
+      setExportStatus({ inProgress: false });
     }
   };
 

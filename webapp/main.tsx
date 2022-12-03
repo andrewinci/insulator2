@@ -3,26 +3,20 @@ import ReactDOM from "react-dom/client";
 import "./init-monaco";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Routing } from "./routing";
-import { UserSettingsProvider, useNotifications } from "./providers";
+import { UserSettingsProvider } from "./providers";
 import { AppShell, MantineProvider } from "@mantine/core";
 import { useUserSettings } from "./providers/user-settings-provider";
 import { SideBar } from "./components";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
 import "allotment/dist/style.css";
-import { listen } from "@tauri-apps/api/event";
-import { TauriError } from "./tauri/error";
 import { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
+import "./tauri/event_listeners";
 
 const App = () => {
   const { userSettings: appState } = useUserSettings();
-  const { alert } = useNotifications();
   const queryClient = new QueryClient();
-  // listen for errors emitted by the backend
-  listen<TauriError>("error", (event) => {
-    alert(event.payload.errorType, event.payload.message);
-  });
 
   return (
     <MantineProvider

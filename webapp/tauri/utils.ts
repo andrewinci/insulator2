@@ -1,15 +1,17 @@
 import { invoke } from "@tauri-apps/api";
 import { addNotification } from "../providers";
+import { waitEvent } from "./event_listeners";
 
 export const exportDatastore = async (clusterId: string, outputPath: string): Promise<void> => {
   try {
-    return await invoke<void>("export_datastore", {
+    const response = waitEvent(`${clusterId}-${outputPath}`, "export_datastore");
+    await invoke<void>("export_datastore", {
       clusterId,
       outputPath,
     });
+    await response;
   } catch (err) {
     addNotification({ type: "error", title: "Database export failed", description: "" });
-    console.log(err);
     throw err;
   }
 };
