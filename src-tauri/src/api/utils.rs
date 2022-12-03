@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use log::debug;
 use serde::Serialize;
 use tauri::{AppHandle, Manager};
@@ -7,19 +9,28 @@ use super::error::{Result, TauriError};
 use super::AppState;
 
 #[derive(Serialize, Clone, Debug)]
-pub enum ActionStatus {
-    Success,
-    Fail(TauriError),
+enum ActionResult<T: Serialize + Clone + Debug> {
+    Ok(T),
+    Err(TauriError),
+}
+
+impl<T: Serialize + Clone + Debug> From<crate::lib::Result<T>> for ActionResult<T> {
+    fn from(r: crate::lib::Result<T>) -> Self {
+        match r {
+            Ok(v) => Self::Ok(v),
+            Err(e) => Self::Err(e.into()),
+        }
+    }
 }
 
 #[derive(Serialize, Clone, Debug)]
-pub struct ActionCompleteEvent {
+pub struct ActionCompleteEvent<T: Serialize + Clone + Debug> {
     action: String,
     id: String,
-    status: ActionStatus,
+    result: ActionResult<T>,
 }
 
-pub fn notify_action_complete(event: ActionCompleteEvent, app_handle: &AppHandle) {
+pub fn notify_action_complete<T: Serialize + Clone + Debug>(event: &ActionCompleteEvent<T>, app_handle: &AppHandle) {
     app_handle
         .app_handle()
         .emit_all("action_status", event)
@@ -40,15 +51,11 @@ pub async fn export_datastore(
         let output_path = output_path.to_owned();
         let cluster_id = cluster_id.to_owned();
         async move {
-            let res = store.export_db(&output_path);
             notify_action_complete(
-                ActionCompleteEvent {
+                &ActionCompleteEvent {
                     action: "export_datastore".into(),
                     id: format!("{}-{}", cluster_id, output_path),
-                    status: match res {
-                        Ok(_) => ActionStatus::Success,
-                        Err(err) => ActionStatus::Fail(err.into()),
-                    },
+                    result: store.export_db(&output_path).into(),
                 },
                 &app_handle,
             )
