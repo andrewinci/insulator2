@@ -13,7 +13,8 @@ use std::{
 };
 
 use super::{
-    sqlite_store::{Query, RecordStore, SqliteStore},
+    query::Query,
+    sqlite_store::{RecordStore, SqliteStore},
     types::ExportOptions,
 };
 
@@ -56,18 +57,17 @@ where
     }
 
     pub fn get_records(&self, query: Option<&str>, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>> {
-        if let Some(query) = query {
-            self.store.query_records(&Query {
-                cluster_id: self.cluster_id.clone(),
-                topic_name: self.topic_name.clone(),
-                offset,
-                limit,
-                query_template: query.into(),
-            })
-        } else {
-            self.store
-                .get_records(&self.cluster_id, &self.topic_name, offset, limit)
-        }
+        self.store.query_records(&Query {
+            cluster_id: self.cluster_id.clone(),
+            topic_name: self.topic_name.clone(),
+            offset,
+            limit,
+            query_template: match query {
+                Some(query) => query,
+                None => Query::SELECT_WITH_OFFSET_LIMIT_QUERY,
+            }
+            .into(),
+        })
     }
 
     pub async fn insert_record(&self, record: &RawKafkaRecord) -> Result<()> {
@@ -81,16 +81,17 @@ where
     }
 
     pub fn get_size(&self, query: Option<&str>) -> Result<usize> {
-        match query {
-            Some(query) => self.store.get_size_with_query(&Query {
-                cluster_id: self.cluster_id.clone(),
-                topic_name: self.topic_name.clone(),
-                offset: -1,
-                limit: -1,
-                query_template: query.into(),
-            }),
-            None => self.store.get_size(&self.cluster_id, &self.topic_name),
-        }
+        self.store.get_size(&Query {
+            cluster_id: self.cluster_id.clone(),
+            topic_name: self.topic_name.clone(),
+            offset: -1,
+            limit: -1,
+            query_template: match query {
+                Some(query) => query,
+                None => Query::SELECT_WITH_OFFSET_LIMIT_QUERY,
+            }
+            .into(),
+        })
     }
 
     pub fn export_records(&self, options: &ExportOptions) -> Result<()> {
@@ -142,7 +143,8 @@ mod test {
 
     use super::TopicStore;
     use crate::lib::parser::{Parser as LibParser, ParserMode};
-    use crate::lib::record_store::sqlite_store::{Query, RecordStore};
+    use crate::lib::record_store::query::Query;
+    use crate::lib::record_store::sqlite_store::RecordStore;
     use crate::lib::record_store::types::ExportOptions;
     use crate::lib::types::{ParsedKafkaRecord, RawKafkaRecord};
     use crate::lib::Result;
@@ -159,11 +161,9 @@ mod test {
         Store {}
         impl RecordStore for Store {
             fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>>;
-            fn get_records(&self, cluster_id: &str, topic_name: &str, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>>;
             fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()>;
             fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
-            fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize>;
-            fn get_size_with_query(&self, query: &Query) -> Result<usize>;
+            fn get_size(&self, query: &Query) -> Result<usize>;
             fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
         }
     }

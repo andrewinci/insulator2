@@ -6,21 +6,13 @@ use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{backup::Backup, named_params, Connection, OpenFlags};
 
-pub struct Query {
-    pub cluster_id: String,
-    pub topic_name: String,
-    pub offset: i64,
-    pub limit: i64,
-    pub query_template: String,
-}
+use super::query::Query;
 
 pub trait RecordStore {
-    fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>>;
-    fn get_records(&self, cluster_id: &str, topic_name: &str, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>>;
     fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()>;
+    fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>>;
     fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
-    fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize>;
-    fn get_size_with_query(&self, query: &Query) -> Result<usize>;
+    fn get_size(&self, query: &Query) -> Result<usize>;
     fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
 }
 
@@ -49,16 +41,6 @@ impl RecordStore for SqliteStore {
             records.push(r?);
         }
         Ok(records)
-    }
-
-    fn get_records(&self, cluster_id: &str, topic_name: &str, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>> {
-        self.query_records(&Query {
-            cluster_id: cluster_id.into(),
-            topic_name: topic_name.into(),
-            offset,
-            limit,
-            query_template: "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}".into(),
-        })
     }
 
     fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()> {
@@ -107,18 +89,7 @@ impl RecordStore for SqliteStore {
         Ok(())
     }
 
-    fn get_size(&self, cluster_id: &str, topic_name: &str) -> Result<usize> {
-        self.get_size_with_query(&Query {
-            cluster_id: cluster_id.into(),
-            topic_name: topic_name.into(),
-            offset: 0,
-            limit: 0,
-            query_template: "SELECT offset FROM {:topic}".into(),
-        })
-    }
-
-    fn get_size_with_query(&self, query: &Query) -> Result<usize> {
-        // let connection = self.write_connection.lock();
+    fn get_size(&self, query: &Query) -> Result<usize> {
         let connection = self.pool.get().unwrap();
         let mut stmt = connection.prepare(format!("SELECT count(*) FROM ({})", Self::parse_query(query)).as_str())?;
         let rows: Vec<_> = stmt.query_map([], |row| row.get::<_, i64>(0))?.collect();
@@ -255,10 +226,11 @@ mod tests {
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
         // act
-        let res = db.insert_record(cluster_id, topic_name, &test_record);
-        let records_back = db.get_records(cluster_id, topic_name, 0, 1000).unwrap();
+        db.insert_record(cluster_id, topic_name, &test_record).unwrap();
+        let records_back = db
+            .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000))
+            .unwrap();
         // assert
-        assert!(res.is_ok());
         assert_eq!(records_back.len(), 1);
         assert_eq!(records_back[0], test_record);
     }
@@ -281,7 +253,9 @@ mod tests {
             // act
             db.insert_record(cluster_id, topic_name, &test_record1).unwrap();
             db.insert_record(cluster_id, topic_name, &test_record2).unwrap();
-            let records_back = db.get_records(cluster_id, topic_name, 0, 1000).unwrap();
+            let records_back = db
+                .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000))
+                .unwrap();
             // assert
             assert_eq!(records_back.len(), 1);
             assert_eq!(records_back[0], test_record2);
@@ -293,7 +267,9 @@ mod tests {
             // act
             db.insert_record(cluster_id, topic_name, &test_record1).unwrap();
             db.insert_record(cluster_id, topic_name, &test_record2).unwrap();
-            let records_back = db.get_records(cluster_id, topic_name, 0, 1000).unwrap();
+            let records_back = db
+                .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000))
+                .unwrap();
             // assert
             assert_eq!(records_back.len(), 2);
             assert_eq!(records_back[1], test_record2);
@@ -314,7 +290,9 @@ mod tests {
             .unwrap();
         db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, 2))
             .unwrap();
-        let table_size = db.get_size(cluster_id, topic_name).unwrap();
+        let table_size = db
+            .get_size(&Query::select_any(cluster_id, topic_name, 0, 1000))
+            .unwrap();
         // assert
         assert_eq!(table_size, 3);
     }
@@ -340,7 +318,7 @@ mod tests {
         db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, 3))
             .unwrap();
         let table_size = db
-            .get_size_with_query(&Query {
+            .get_size(&Query {
                 cluster_id: cluster_id.into(),
                 topic_name: topic_name.into(),
                 limit: -1,
@@ -367,9 +345,15 @@ mod tests {
             .unwrap();
         db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, 2))
             .unwrap();
-        let first_1000_res = db.get_records(cluster_id, topic_name, 0, 1000).unwrap();
-        let first_res = db.get_records(cluster_id, topic_name, 1, 1).unwrap();
-        let no_res = db.get_records(cluster_id, topic_name, 3, 1000).unwrap();
+        let first_1000_res = db
+            .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000))
+            .unwrap();
+        let first_res = db
+            .query_records(&Query::select_any(cluster_id, topic_name, 1, 1))
+            .unwrap();
+        let no_res = db
+            .query_records(&Query::select_any(cluster_id, topic_name, 3, 1000))
+            .unwrap();
         // assert
         assert_eq!(first_1000_res.len(), 3);
         assert_eq!(first_res.len(), 1);
@@ -400,7 +384,7 @@ mod tests {
         async fn read(id: i32, db: Arc<SqliteStore>, cluster_id: &str, topic_name: &str) {
             let start = Instant::now();
             for i in 0..10_000 {
-                let res = db.get_records(cluster_id, topic_name, 0, 1000);
+                let res = db.query_records(&Query::select_any(cluster_id, topic_name, 0, 1000));
                 if res.is_err() {
                     println!("read-{} {} {:?}", id, i, res);
                 }
