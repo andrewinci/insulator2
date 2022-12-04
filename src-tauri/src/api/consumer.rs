@@ -1,4 +1,4 @@
-use log::trace;
+use log::debug;
 
 use crate::lib::{
     consumer::{types::ConsumerState, Consumer, ConsumerConfiguration},
@@ -42,14 +42,15 @@ pub async fn get_records_page(
     query: Option<&str>,
     state: tauri::State<'_, AppState>,
 ) -> Result<GetPageResponse> {
-    trace!("Get records page");
+    debug!("Get records page");
     const PAGE_SIZE: usize = 20;
     let cluster = state.get_cluster(cluster_id).await;
     let topic_store = cluster.get_topic_store(topic).await;
-    let records_count = topic_store.get_size(query)?;
+    let records = topic_store.get_records(query, (page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64)?;
+    let records_count = records.len();
     Ok(GetPageResponse {
-        records: topic_store.get_records(query, (page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64)?,
-        next_page: if (records_count as i64 - (PAGE_SIZE * page_number) as i64) > 0 {
+        records,
+        next_page: if records_count == PAGE_SIZE {
             Some(page_number + 1)
         } else {
             None

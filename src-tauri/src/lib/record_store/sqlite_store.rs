@@ -1,6 +1,6 @@
 use core::time;
 
-use crate::lib::{types::ParsedKafkaRecord, Error, Result};
+use crate::lib::{types::ParsedKafkaRecord, Result};
 use log::debug;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -12,7 +12,6 @@ pub trait RecordStore {
     fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()>;
     fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>>;
     fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
-    fn get_size(&self, query: &Query) -> Result<usize>;
     fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
 }
 
@@ -89,19 +88,6 @@ impl RecordStore for SqliteStore {
         Ok(())
     }
 
-    fn get_size(&self, query: &Query) -> Result<usize> {
-        let connection = self.pool.get().unwrap();
-        let mut stmt = connection.prepare(format!("SELECT count(*) FROM ({})", Self::parse_query(query)).as_str())?;
-        let rows: Vec<_> = stmt.query_map([], |row| row.get::<_, i64>(0))?.collect();
-        if let Some(Ok(size)) = rows.first() {
-            Ok(*size as usize)
-        } else {
-            Err(Error::SqlError {
-                message: "Unable to get the table size".into(),
-            })
-        }
-    }
-
     fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
         let connection = self.pool.get().unwrap();
         connection
@@ -134,6 +120,20 @@ impl SqliteStore {
             .build(manager)
             .expect("Unable to initialize the read only connection pool to the db");
         SqliteStore { pool }
+    }
+
+    #[cfg(test)]
+    fn get_size(&self, query: &Query) -> Result<usize> {
+        let connection = self.pool.get().unwrap();
+        let mut stmt = connection.prepare(format!("SELECT count(*) FROM ({})", Self::parse_query(query)).as_str())?;
+        let rows: Vec<_> = stmt.query_map([], |row| row.get::<_, i64>(0))?.collect();
+        if let Some(Ok(size)) = rows.first() {
+            Ok(*size as usize)
+        } else {
+            Err(Error::SqlError {
+                message: "Unable to get the table size".into(),
+            })
+        }
     }
 
     pub fn export_db(&self, output_path: &str) -> Result<()> {

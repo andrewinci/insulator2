@@ -9,7 +9,7 @@ use crate::lib::{
 use std::{
     fs::OpenOptions,
     io::{LineWriter, Write},
-    sync::Arc,
+    sync::{Arc, RwLock},
 };
 
 use super::{
@@ -27,6 +27,7 @@ where
     topic_name: String,
     store: Arc<S>,
     parser: Arc<P>,
+    records_counter: RwLock<usize>,
 }
 
 impl<S, P> TopicStore<S, P>
@@ -48,10 +49,12 @@ where
             topic_name: topic_name.to_string(),
             store,
             parser,
+            records_counter: Default::default(),
         }
     }
 
     pub fn setup(&self, compactify: bool) -> Result<()> {
+        *self.records_counter.write().unwrap() = 0;
         self.store
             .create_or_replace_topic_table(&self.cluster_id, &self.topic_name, compactify)
     }
@@ -71,6 +74,7 @@ where
     }
 
     pub async fn insert_record(&self, record: &RawKafkaRecord) -> Result<()> {
+        *self.records_counter.write().unwrap() += 1;
         let parsed_record = if let Ok(avro_record) = self.parser.parse_record(record, ParserMode::Avro).await {
             Ok(avro_record)
         } else {
@@ -80,18 +84,8 @@ where
             .insert_record(&self.cluster_id, &self.topic_name, &parsed_record)
     }
 
-    pub fn get_size(&self, query: Option<&str>) -> Result<usize> {
-        self.store.get_size(&Query {
-            cluster_id: self.cluster_id.clone(),
-            topic_name: self.topic_name.clone(),
-            offset: -1,
-            limit: -1,
-            query_template: match query {
-                Some(query) => query,
-                None => Query::SELECT_WITH_OFFSET_LIMIT_QUERY,
-            }
-            .into(),
-        })
+    pub fn get_records_count(&self) -> Result<usize> {
+        Ok(*self.records_counter.read().unwrap())
     }
 
     pub fn export_records(&self, options: &ExportOptions) -> Result<()> {
@@ -163,7 +157,6 @@ mod test {
             fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>>;
             fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()>;
             fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
-            fn get_size(&self, query: &Query) -> Result<usize>;
             fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
         }
     }
