@@ -1,3 +1,20 @@
+# [2.5.0](https://github.com/andrewinci/insulator2/compare/v2.4.1...v2.5.0) (2022-12-04)
+
+### Bug Fixes
+
+- repeated keystroke in input fields ([a24ee3e](https://github.com/andrewinci/insulator2/commit/a24ee3e3f31aa3c89726a5d37837dce9c1cb2d57))
+
+### Features
+
+- Allow to set query timeout ([#211](https://github.com/andrewinci/insulator2/issues/211)) ([ff68093](https://github.com/andrewinci/insulator2/commit/ff68093be9d991df0a5b61584c360acefad8084b))
+- shrink cluster items ([5def932](https://github.com/andrewinci/insulator2/commit/5def932f3f1fff544fd1c3724b67c8bdf44ca188))
+
+### Performance Improvements
+
+- fetch consumer state after stop and disable re-fetching while the consumer is stopped ([9eaed7a](https://github.com/andrewinci/insulator2/commit/9eaed7a6b138957d78bd4bd40ee1deaa78bf7c41))
+- on query only refetch first page ([b52f49b](https://github.com/andrewinci/insulator2/commit/b52f49bbede39948c8eb1e980dd135654340534d))
+- use an instert counter instead of a query to get the table size ([8b6af73](https://github.com/andrewinci/insulator2/commit/8b6af730a06948add4b4a207bed55eabb74a2a0d))
+
 ## [2.4.1](https://github.com/andrewinci/insulator2/compare/v2.4.0...v2.4.1) (2022-12-02)
 
 ### Bug Fixes
