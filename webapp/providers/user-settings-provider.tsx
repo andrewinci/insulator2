@@ -13,6 +13,7 @@ const defaultAppState: AppStateContextType = {
     theme: "Light",
     showNotifications: false,
     useRegex: true,
+    sqlTimeoutSeconds: 5,
   },
 } as unknown as AppStateContextType;
 

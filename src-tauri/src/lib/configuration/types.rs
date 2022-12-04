@@ -7,6 +7,8 @@ pub struct InsulatorConfig {
     pub show_notifications: bool,
     #[serde(rename = "useRegex")]
     pub use_regex: bool,
+    #[serde(rename = "sqlTimeoutSeconds")]
+    pub sql_timeout_secs: u32,
     pub clusters: Vec<ClusterConfig>,
 }
 

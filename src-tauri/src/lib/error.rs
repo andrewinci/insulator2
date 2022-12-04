@@ -1,7 +1,7 @@
 use rdkafka::error::KafkaError;
 use serde::Serialize;
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub enum Error {
     AvroParse { message: String },
     IO { message: String },

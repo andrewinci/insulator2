@@ -45,15 +45,20 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
   } = useInfiniteQuery(
     ["fetchRecords", clusterId, topic, state.query],
     async ({ pageParam = 0 }) => {
+      const empty = {
+        nextPage: null,
+        prevPage: null,
+        records: [],
+      };
       if (state.query) {
         console.log(`Query pageParam ${pageParam}`);
-        return await getRecordsPage(clusterId, topic, pageParam ?? 0, state.query);
-      } else
-        return {
-          nextPage: null,
-          prevPage: null,
-          records: [],
-        };
+        try {
+          return await getRecordsPage(clusterId, topic, pageParam ?? 0, state.query);
+        } catch (err) {
+          console.error(err);
+          return empty;
+        }
+      } else return empty;
     },
     {
       getNextPageParam: (lastPage, _) => lastPage.nextPage,

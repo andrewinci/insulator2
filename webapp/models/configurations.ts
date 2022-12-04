@@ -3,6 +3,7 @@ export type UserSettings = {
   theme: AppTheme;
   showNotifications?: boolean;
   useRegex?: boolean;
+  sqlTimeoutSeconds?: number;
 };
 
 export type AppTheme = "Light" | "Dark";
