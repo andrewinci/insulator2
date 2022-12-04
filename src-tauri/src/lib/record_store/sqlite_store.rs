@@ -130,7 +130,7 @@ impl SqliteStore {
         if let Some(Ok(size)) = rows.first() {
             Ok(*size as usize)
         } else {
-            Err(Error::SqlError {
+            Err(crate::lib::Error::SqlError {
                 message: "Unable to get the table size".into(),
             })
         }
