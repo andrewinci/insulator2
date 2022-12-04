@@ -4,7 +4,7 @@ import { useClipboard } from "@mantine/hooks";
 import { openModal } from "@mantine/modals";
 import { Prism } from "@mantine/prism";
 import { IconCopy, IconEye } from "@tabler/icons";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import dayjs from "dayjs";
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
@@ -34,6 +34,7 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
     isLoading: true,
   });
 
+  const queryClient = useQueryClient();
   const {
     data,
     hasNextPage,
@@ -45,6 +46,7 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
     ["fetchRecords", clusterId, topic, state.query],
     async ({ pageParam = 0 }) => {
       if (state.query) {
+        console.log(`Query pageParam ${pageParam}`);
         return await getRecordsPage(clusterId, topic, pageParam ?? 0, state.query);
       } else
         return {
@@ -60,18 +62,8 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
     }
   );
 
-  useMemo(() => setState((s) => ({ ...s, isLoading: reactQueryLoading })), [reactQueryLoading]);
-  // allow parent to execute the query
-  useImperativeHandle(ref, () => ({
-    async executeQuery(query: string) {
-      setState((s) => ({ ...s, query, isLoading: true }));
-      await refetch();
-      setState((s) => ({ ...s, isLoading: false }));
-    },
-  }));
   const allRecords = data ? data.pages.flatMap((d) => d.records) : [];
 
-  const parentRef = React.useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? allRecords.length + 1 : allRecords.length,
     getScrollElement: () => parentRef.current,
@@ -85,6 +77,24 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
       fetchNextPage();
     }
   });
+
+  useMemo(() => setState((s) => ({ ...s, isLoading: reactQueryLoading })), [reactQueryLoading]);
+
+  // allow parent to execute the query
+  useImperativeHandle(ref, () => ({
+    async executeQuery(query: string) {
+      // avoid to refetch all pages fetched with the previous query
+      queryClient.setQueryData<InfiniteData<unknown>>(["fetchRecords", clusterId, topic, state.query], (data) => ({
+        pages: data?.pages.slice(0, 1) ?? [],
+        pageParams: data?.pageParams.slice(0, 1) ?? [],
+      }));
+      setState((s) => ({ ...s, query, isLoading: true }));
+      await refetch();
+      setState((s) => ({ ...s, isLoading: false }));
+    },
+  }));
+
+  const parentRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <>
