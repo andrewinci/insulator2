@@ -534,12 +534,12 @@
   dependencies:
     "@mantine/utils" "5.9.0"
 
-"@mantine/notifications@^5.6.4":
-  version "5.7.1"
-  resolved "https://registry.yarnpkg.com/@mantine/notifications/-/notifications-5.7.1.tgz#e01750fdd7e33af28f52bc7efa0536c4cf9afb68"
-  integrity sha512-6q9/WSRkp130iRP9Z1H8On2l/TlLLvqwHXv+atK8qIoE8ciZ0TrCwg7Bvm+B3Xsx9RiCajjV7n7RSyjYy0Vyjw==
+"@mantine/notifications@^5.7.2":
+  version "5.9.0"
+  resolved "https://registry.yarnpkg.com/@mantine/notifications/-/notifications-5.9.0.tgz#311708bf6614efc74fbe61f833358f185133bedb"
+  integrity sha512-v95+rRmmdi3SCCR67C9m6+OSxQLkbmpu5sgRx8QvLzc4WBK+xA1X27gRTd1a+eA2MdZFvv7jDAOxKIOqTgmI8g==
   dependencies:
-    "@mantine/utils" "5.7.1"
+    "@mantine/utils" "5.9.0"
     react-transition-group "4.4.2"
 
 "@mantine/prism@^5.6.4":
