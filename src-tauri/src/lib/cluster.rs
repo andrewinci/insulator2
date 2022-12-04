@@ -1,5 +1,5 @@
 use log::{debug, trace};
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
 
 use crate::lib::{
@@ -65,7 +65,7 @@ impl Cluster {
             consumers: Arc::new(RwLock::new(HashMap::new())),
             admin_client: Arc::new(KafkaAdmin::new(config)),
             parser: Arc::new(parser),
-            store: Arc::new(SqliteStore::new()),
+            store: Arc::new(SqliteStore::new(Duration::from_secs(10))), //todo: make timeout configurable by the user
             error_callback,
         }
     }

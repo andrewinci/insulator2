@@ -1,4 +1,5 @@
 use core::time;
+use std::time::{Duration, Instant};
 
 use crate::lib::{types::ParsedKafkaRecord, Result};
 use log::debug;
@@ -17,29 +18,41 @@ pub trait RecordStore {
 
 pub struct SqliteStore {
     pool: Pool<SqliteConnectionManager>,
+    timeout: Duration,
 }
 
 impl RecordStore for SqliteStore {
     fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>> {
-        let connection = self.pool.get().unwrap();
         let parsed_query = Self::parse_query(query);
-        let mut stmt = connection.prepare(&parsed_query)?;
-
-        let records_iter = stmt.query_map([], |row| {
-            Ok(ParsedKafkaRecord {
-                topic: query.topic_name.clone(),
-                partition: row.get(0)?,
-                offset: row.get(1)?,
-                timestamp: row.get(2)?,
-                key: row.get(3)?,
-                payload: row.get(4)?,
-            })
-        })?;
-        let mut records = Vec::new();
-        for r in records_iter {
-            records.push(r?);
-        }
-        Ok(records)
+        // closure that actually execute the query
+        let _get_records = move |connection: &r2d2::PooledConnection<SqliteConnectionManager>| {
+            let mut stmt = connection.prepare(&parsed_query)?;
+            let records_iter = stmt.query_map([], |row| {
+                Ok(ParsedKafkaRecord {
+                    topic: query.topic_name.clone(),
+                    partition: row.get(0)?,
+                    offset: row.get(1)?,
+                    timestamp: row.get(2)?,
+                    key: row.get(3)?,
+                    payload: row.get(4)?,
+                })
+            })?;
+            let mut records = Vec::new();
+            for r in records_iter {
+                records.push(r?);
+            }
+            Ok(records)
+        };
+        let connection = self.pool.get().unwrap();
+        let start_query = Instant::now();
+        let timeout = self.timeout;
+        // setup the progress handler for the connection
+        connection.progress_handler(2500, Some(move || start_query.elapsed() > timeout));
+        // run the query
+        let result = _get_records(&connection);
+        // remove the progress handler attached to the connection before returning the result
+        connection.progress_handler(0, None::<fn() -> bool>);
+        result
     }
 
     fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()> {
@@ -101,7 +114,7 @@ impl RecordStore for SqliteStore {
 }
 
 impl SqliteStore {
-    pub fn new() -> Self {
+    pub fn new(timeout: Duration) -> Self {
         let file_name = format!("file::memory{}:?cache=shared&mode=memory", rand::random::<usize>());
         let flags_r = OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX | OpenFlags::SQLITE_OPEN_URI;
         let manager = SqliteConnectionManager::file(file_name)
@@ -119,7 +132,7 @@ impl SqliteStore {
             .max_size(20)
             .build(manager)
             .expect("Unable to initialize the read only connection pool to the db");
-        SqliteStore { pool }
+        SqliteStore { pool, timeout }
     }
 
     #[cfg(test)]
@@ -182,9 +195,13 @@ impl SqliteStore {
 
 #[cfg(test)]
 mod tests {
-    use std::{env::temp_dir, sync::Arc, thread::spawn, time::Instant};
-
     use crate::lib::{record_store::sqlite_store::Query, types::ParsedKafkaRecord};
+    use std::{
+        env::temp_dir,
+        sync::Arc,
+        thread::spawn,
+        time::{Duration, Instant},
+    };
 
     use super::{RecordStore, SqliteStore};
 
@@ -199,7 +216,7 @@ mod tests {
         // arrange
         let test_db_path = get_test_db_path();
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
-        let db = SqliteStore::new();
+        let db = SqliteStore::new(Duration::from_secs(10));
         db.create_or_replace_topic_table(cluster_id, topic_name, false).unwrap();
         let test_record = get_test_record(topic_name, 0);
         db.insert_record(cluster_id, topic_name, &test_record).unwrap();
@@ -212,7 +229,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_create_table() {
-        let db = SqliteStore::new();
+        let db = SqliteStore::new(Duration::from_secs(10));
         let res = db.create_or_replace_topic_table("cluster_id_example", "topic_name_example", false);
         assert!(res.is_ok())
     }
@@ -221,7 +238,7 @@ mod tests {
     async fn test_insert_and_get_record() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
-        let db = SqliteStore::new();
+        let db = SqliteStore::new(Duration::from_secs(10));
         db.create_or_replace_topic_table(cluster_id, topic_name, false)
             .expect("Unable to create the table");
         let test_record = get_test_record(topic_name, 0);
@@ -236,10 +253,32 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_query_timeout() {
+        // arrange
+        let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
+        let db = SqliteStore::new(Duration::from_micros(1));
+        db.create_or_replace_topic_table(cluster_id, topic_name, false)
+            .expect("Unable to create the table");
+        // act
+        (0..10000).for_each(|i| {
+            db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, i))
+                .unwrap()
+        });
+        let records_back = db.query_records(&Query::select_any(cluster_id, topic_name, 0, 1000));
+        // assert
+        assert_eq!(
+            records_back.err().unwrap(),
+            crate::lib::Error::SqlError {
+                message: "Operation timed out".into()
+            }
+        );
+    }
+
+    #[tokio::test]
     async fn test_insert_and_get_records() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
-        let db = SqliteStore::new();
+        let db = SqliteStore::new(Duration::from_secs(10));
         let test_record1 = get_test_record(topic_name, 0);
         let test_record2 = ParsedKafkaRecord {
             offset: 1,
@@ -280,7 +319,7 @@ mod tests {
     async fn test_get_size() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
-        let db = SqliteStore::new();
+        let db = SqliteStore::new(Duration::from_secs(10));
         db.create_or_replace_topic_table(cluster_id, topic_name, false)
             .expect("Unable to create the table");
         // act
@@ -301,7 +340,7 @@ mod tests {
     async fn test_get_size_with_query() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
-        let db = SqliteStore::new();
+        let db = SqliteStore::new(Duration::from_secs(10));
         db.create_or_replace_topic_table(cluster_id, topic_name, false)
             .expect("Unable to create the table");
         let record1 = ParsedKafkaRecord {
@@ -335,7 +374,7 @@ mod tests {
     async fn test_use_offset() {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
-        let db = SqliteStore::new();
+        let db = SqliteStore::new(Duration::from_secs(10));
         db.create_or_replace_topic_table(cluster_id, topic_name, false)
             .expect("Unable to create the table");
         // act
@@ -367,7 +406,7 @@ mod tests {
         // arrange
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let topic_name2 = "topic_name_example2";
-        let db = Arc::new(SqliteStore::new());
+        let db = Arc::new(SqliteStore::new(Duration::from_secs(10)));
 
         async fn write(id: i32, db: Arc<SqliteStore>, cluster_id: &str, topic_name: &str) {
             let start = Instant::now();
