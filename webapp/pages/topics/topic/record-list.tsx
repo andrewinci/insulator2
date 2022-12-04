@@ -11,7 +11,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } 
 import { pretty } from "../../../helpers/json";
 import { KafkaRecord } from "../../../models/kafka";
 import { getRecordsPage } from "../../../tauri/consumer";
-import { RecordDetailsView } from "./record-view";
+import { RecordDetailsModal } from "./record-view-modal";
 
 type RecordsListProps = {
   clusterId: string;
@@ -182,7 +182,7 @@ const KafkaRecordCard = ({
   const openDetails = (record: KafkaRecord) =>
     openModal({
       title: <Title order={3}>Record details</Title>,
-      children: <RecordDetailsView topic={topic} record={record} />,
+      children: <RecordDetailsModal topic={topic} record={record} />,
       size: 700,
     });
 

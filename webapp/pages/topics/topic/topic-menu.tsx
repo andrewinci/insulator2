@@ -46,10 +46,10 @@ export const TopicPageMenu = ({
           <Button
             size="xs"
             onClick={onConsumerToggle}
-            leftIcon={isConsumerRunning && <Loader color={"red"} size={"xs"}></Loader>}
+            leftIcon={isConsumerRunning && <Loader color={"white"} size={"xs"}></Loader>}
             rightIcon={
               <Tooltip label="Total records consumed internally and queryable">
-                <Badge variant="filled" color={"red"}>
+                <Badge hidden={consumedRecords == 0} variant="filled" color={"orange"}>
                   {consumedRecords}
                 </Badge>
               </Tooltip>

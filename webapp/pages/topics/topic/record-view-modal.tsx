@@ -4,12 +4,12 @@ import { CodeEditor } from "../../../components";
 import { pretty } from "../../../helpers/json";
 import { KafkaRecord } from "../../../models";
 
-type RecordDetailsViewProps = {
+type RecordDetailsModalProps = {
   topic: string;
   record: KafkaRecord;
 };
 
-export const RecordDetailsView = ({ record, topic }: RecordDetailsViewProps) => {
+export const RecordDetailsModal = ({ record, topic }: RecordDetailsModalProps) => {
   const timestamp = record?.timestamp ? dayjs(record.timestamp).toISOString() : "N/A";
   return (
     <Stack spacing={3}>

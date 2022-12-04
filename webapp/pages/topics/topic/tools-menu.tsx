@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { openConfirmModal } from "@mantine/modals";
 import { useNotifications } from "../../../providers";
 
-export const Tools = ({ clusterId, topic }: { clusterId: string; topic: string }) => {
+export const ToolsMenu = ({ clusterId, topic }: { clusterId: string; topic: string }) => {
   const navigate = useNavigate();
   const { success } = useNotifications();
   const openDeleteTopicModal = () =>
