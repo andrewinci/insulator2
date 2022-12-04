@@ -3,8 +3,9 @@ use std::{
     time::{Duration, UNIX_EPOCH},
 };
 
-use chrono::{DateTime, Utc};
+//use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use time::format_description::well_known;
 
 use super::Error;
 
@@ -33,8 +34,7 @@ impl ParsedKafkaRecord {
             // Creates a new SystemTime from the specified number of whole seconds
             let d = UNIX_EPOCH + Duration::from_millis(unix_timestamp);
             // Create DateTime from SystemTime
-            let datetime = DateTime::<Utc>::from(d);
-            datetime.to_rfc3339()
+            time::OffsetDateTime::from(d).format(&well_known::Rfc3339).unwrap()
         } else {
             unix_timestamp.to_string()
         };
