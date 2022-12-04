@@ -1,5 +1,6 @@
-import { Checkbox, Container, Select, Stack, Center, Button } from "@mantine/core";
+import { Checkbox, Container, Select, Stack, Center, Button, NumberInput, Text, Group } from "@mantine/core";
 import { useSessionStorage } from "@mantine/hooks";
+import { IconAlertTriangle, IconDatabaseExport } from "@tabler/icons";
 import { save } from "@tauri-apps/api/dialog";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
@@ -57,6 +58,17 @@ export const Settings = () => {
               }
             }}
           />
+          <NumberInput
+            label="Sql Timeout Seconds"
+            description={
+              <Group spacing={5}>
+                <IconAlertTriangle color={"orange"} size={14} />
+                <Text color={"orange"}>Require app restart to take effect</Text>
+              </Group>
+            }
+            value={userSettings.sqlTimeoutSeconds}
+            onChange={(c) => setUserSettings((s) => ({ ...s, sqlTimeoutSeconds: c }))}
+          />
           <Checkbox
             label="Show notifications"
             checked={userSettings.showNotifications}
@@ -69,7 +81,7 @@ export const Settings = () => {
           />
           {clusterId && (
             <>
-              <Button loading={exportStatus.inProgress} onClick={exportDB}>
+              <Button leftIcon={<IconDatabaseExport />} loading={exportStatus.inProgress} onClick={exportDB}>
                 Export sqlite DB
               </Button>
             </>

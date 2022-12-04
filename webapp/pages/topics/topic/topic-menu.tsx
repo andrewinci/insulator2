@@ -1,5 +1,5 @@
 import { Badge, Button, Group, Text, Anchor, Tooltip, Loader } from "@mantine/core";
-import { IconArrowBarToDown, IconArrowBarToUp, IconSearch } from "@tabler/icons";
+import { IconArrowBarToDown, IconArrowBarToUp, IconFileExport, IconSearch } from "@tabler/icons";
 import { CodeEditor } from "../../../components";
 
 type TopicPageMenuProps = {
@@ -46,7 +46,7 @@ export const TopicPageMenu = ({
           <Button
             size="xs"
             onClick={onConsumerToggle}
-            leftIcon={isConsumerRunning && <Loader color={"white"} size={"xs"}></Loader>}
+            leftIcon={isConsumerRunning ? <Loader color={"white"} size={"xs"} /> : <IconArrowBarToDown size={16} />}
             rightIcon={
               <Tooltip label="Total records consumed internally and queryable">
                 <Badge hidden={consumedRecords == 0} variant="filled" color={"orange"}>
@@ -56,15 +56,14 @@ export const TopicPageMenu = ({
             }>
             {isConsumerRunning ? "Stop" : "Consume"}
           </Button>
-
-          <Button leftIcon={<IconSearch size={14} />} size="xs" onClick={onQuery}>
+          <Button leftIcon={<IconSearch size={16} />} size="xs" onClick={onQuery}>
             Query
           </Button>
-          <Button leftIcon={<IconArrowBarToDown size={14} />} color={"green"} size="xs" onClick={onExportClick}>
+          <Button leftIcon={<IconFileExport size={16} />} color={"green"} size="xs" onClick={onExportClick}>
             Export
           </Button>
         </Group>
-        <Button disabled leftIcon={<IconArrowBarToUp size={14} />} color={"orange"} size="xs">
+        <Button disabled leftIcon={<IconArrowBarToUp size={16} />} color={"orange"} size="xs">
           Produce
         </Button>
       </Group>

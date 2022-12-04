@@ -11,6 +11,8 @@ pub struct StoreConfig {
     pub show_notifications: bool,
     #[serde(rename = "useRegex")]
     pub use_regex: bool,
+    #[serde(rename = "sqlTimeoutSeconds")]
+    pub sql_timeout_secs: Option<u32>,
     pub clusters: HashMap<String, StoreCluster>,
 }
 
@@ -89,6 +91,7 @@ impl From<StoreConfig> for InsulatorConfig {
             show_notifications,
             use_regex,
             clusters,
+            sql_timeout_secs,
         }: StoreConfig,
     ) -> Self {
         let converted_clusters = clusters
@@ -99,6 +102,7 @@ impl From<StoreConfig> for InsulatorConfig {
             theme,
             show_notifications,
             use_regex,
+            sql_timeout_secs: sql_timeout_secs.unwrap_or(10),
             clusters: converted_clusters,
         }
     }
@@ -150,6 +154,7 @@ impl From<&InsulatorConfig> for StoreConfig {
             theme: config.theme,
             show_notifications: config.show_notifications,
             use_regex: config.use_regex,
+            sql_timeout_secs: Some(config.sql_timeout_secs),
             clusters: config
                 .clusters
                 .clone()

@@ -67,6 +67,7 @@ impl TryFrom<LegacyConfiguration> for InsulatorConfig {
             theme: legacy.theme,
             show_notifications: true,
             use_regex: false,
+            sql_timeout_secs: 10,
             clusters: vec![], //populated below
         };
         let mut clusters = Vec::new();

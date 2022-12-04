@@ -46,7 +46,7 @@ impl Clone for Cluster<CachedSchemaRegistry> {
 }
 
 impl Cluster {
-    pub fn new(config: &ClusterConfig, error_callback: ErrorCallback) -> Self {
+    pub fn new(config: &ClusterConfig, error_callback: ErrorCallback, sql_timeout: Duration) -> Self {
         let (schema_registry_client, parser) = {
             if let Some(s_config) = &config.schema_registry {
                 let ptr = Arc::new(CachedSchemaRegistry::new(
@@ -65,7 +65,7 @@ impl Cluster {
             consumers: Arc::new(RwLock::new(HashMap::new())),
             admin_client: Arc::new(KafkaAdmin::new(config)),
             parser: Arc::new(parser),
-            store: Arc::new(SqliteStore::new(Duration::from_secs(10))), //todo: make timeout configurable by the user
+            store: Arc::new(SqliteStore::new(sql_timeout)),
             error_callback,
         }
     }

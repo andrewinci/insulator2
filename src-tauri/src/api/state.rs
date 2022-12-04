@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use log::debug;
 use tauri::Manager;
@@ -47,14 +47,18 @@ impl AppState {
 
     fn build_new_cluster(cluster_id: &str, error_callback: ErrorCallback) -> Cluster {
         debug!("Init cluster {}", cluster_id);
-        let configurations = ConfigStore::new()
+        let configuration = ConfigStore::new()
             .get_configuration()
             .expect("Unable to get the configuration");
-        let cluster_config = configurations
+        let cluster_config = configuration
             .clusters
             .iter()
             .find(|c| c.id == cluster_id)
             .expect("Unable to find the cluster config");
-        Cluster::new(cluster_config, error_callback)
+        Cluster::new(
+            cluster_config,
+            error_callback,
+            Duration::from_secs(configuration.sql_timeout_secs as u64),
+        )
     }
 }
