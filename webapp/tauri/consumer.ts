@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api";
+
 import { ConsumerConfiguration, ConsumerState, KafkaRecord } from "../models/kafka";
 import { addNotification } from "../providers";
 import { format, TauriError } from "./error";

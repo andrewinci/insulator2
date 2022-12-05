@@ -1,16 +1,17 @@
 import styled from "@emotion/styled";
-import { Paper, Text, Group, Loader, Center, ActionIcon, Tooltip, Title } from "@mantine/core";
+import { ActionIcon, Center, Group, Loader, Paper, Text, Title, Tooltip } from "@mantine/core";
 import { useClipboard } from "@mantine/hooks";
 import { openModal } from "@mantine/modals";
 import { Prism } from "@mantine/prism";
 import { IconCopy, IconEye } from "@tabler/icons";
 import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { getRecordsPage } from "@tauri/consumer";
 import dayjs from "dayjs";
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
+
 import { pretty } from "../../../helpers/json";
 import { KafkaRecord } from "../../../models/kafka";
-import { getRecordsPage } from "@tauri/consumer";
 import { RecordDetailsModal } from "./modals/record-view-modal";
 
 type RecordsListProps = {

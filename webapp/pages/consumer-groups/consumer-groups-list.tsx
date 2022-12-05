@@ -1,11 +1,12 @@
 import { ActionIcon, Button, Center, Chip, Group, Modal, Select, Stack, Text, TextInput, Title } from "@mantine/core";
 import { IconTrash } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
+import { getConsumerGroups, listTopics, setConsumerGroup } from "@tauri/admin";
 import { useState } from "react";
+
 import { SingleLineTitle } from "../../components";
 import { useFavorites } from "../../hooks/use-favorites";
 import { ConsumerOffsetConfiguration } from "../../models";
-import { setConsumerGroup, getConsumerGroups, listTopics } from "@tauri/admin";
 import { ItemList } from "../common";
 
 type SchemaListProps = {

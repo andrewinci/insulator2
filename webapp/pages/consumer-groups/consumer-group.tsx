@@ -1,9 +1,10 @@
-import { Text, Container, Group, Stack, Grid, Center, Loader, Accordion } from "@mantine/core";
+import { Accordion, Center, Container, Grid, Group, Loader, Stack, Text } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
+import { describeConsumerGroup, getConsumerGroupState, getLastOffsets } from "@tauri/admin";
 import React from "react";
 import { useMemo } from "react";
+
 import { PageHeader } from "../../components";
-import { describeConsumerGroup, getConsumerGroupState, getLastOffsets } from "@tauri/admin";
 import { ToolsMenu } from "./tools-menu";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {

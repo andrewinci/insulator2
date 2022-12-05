@@ -1,19 +1,21 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
 import "./init-monaco";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Routing } from "./routing";
-import { UserSettingsProvider, useNotifications } from "./providers";
+import "allotment/dist/style.css";
+
 import { AppShell, MantineProvider } from "@mantine/core";
-import { useUserSettings } from "./providers/user-settings-provider";
-import { SideBar } from "./components";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
-import "allotment/dist/style.css";
-import { listen } from "@tauri-apps/api/event";
-import { TauriError } from "@tauri/error";
 import { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { TauriError } from "@tauri/error";
+import { listen } from "@tauri-apps/api/event";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+import { SideBar } from "./components";
+import { useNotifications, UserSettingsProvider } from "./providers";
+import { useUserSettings } from "./providers/user-settings-provider";
+import { Routing } from "./routing";
 
 const App = () => {
   const { userSettings: appState } = useUserSettings();

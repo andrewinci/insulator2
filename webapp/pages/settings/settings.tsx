@@ -1,14 +1,15 @@
-import { Checkbox, Container, Select, Stack, Center, Button, NumberInput, Text, Group } from "@mantine/core";
+import { Button, Center, Checkbox, Container, Group, NumberInput, Select, Stack, Text } from "@mantine/core";
 import { useSessionStorage } from "@mantine/hooks";
 import { IconAlertTriangle, IconDatabaseExport } from "@tabler/icons";
+import { exportDatastore } from "@tauri/utils";
 import { save } from "@tauri-apps/api/dialog";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
+
 import { PageHeader } from "../../components";
 import { AppTheme } from "../../models";
 import { useNotifications } from "../../providers";
 import { useUserSettings } from "../../providers/user-settings-provider";
-import { exportDatastore } from "@tauri/utils";
 
 export const Settings = () => {
   const { clusterId } = useParams();

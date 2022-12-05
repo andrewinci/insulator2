@@ -1,10 +1,11 @@
-import { listSubjects } from "@tauri/schema-registry";
-import { ItemList } from "../common";
-import { useQuery } from "@tanstack/react-query";
-import { AddSchemaModal } from "./add-schema-modal";
 import { Modal, Title } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
+import { useQuery } from "@tanstack/react-query";
+import { listSubjects } from "@tauri/schema-registry";
+
 import { useFavorites } from "../../hooks/use-favorites";
+import { ItemList } from "../common";
+import { AddSchemaModal } from "./add-schema-modal";
 
 type SchemaListProps = {
   clusterId: string;

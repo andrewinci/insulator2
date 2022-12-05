@@ -1,5 +1,6 @@
-import { IconCheck, IconX } from "@tabler/icons";
 import { showNotification } from "@mantine/notifications";
+import { IconCheck, IconX } from "@tabler/icons";
+
 import { useUserSettings } from "./user-settings-provider";
 
 export type Notification = {

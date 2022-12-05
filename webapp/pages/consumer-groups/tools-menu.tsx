@@ -1,11 +1,12 @@
-import { Text, Loader, Menu, ActionIcon } from "@mantine/core";
+import { ActionIcon, Loader, Menu, Text } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
 import { openConfirmModal } from "@mantine/modals";
 import { IconFlag, IconPlayerPlay, IconRefresh, IconTool, IconTrash } from "@tabler/icons";
-import { useNavigate } from "react-router-dom";
-import { ConsumerOffsetConfiguration, ConsumerGroupInfo } from "../../models";
-import { useNotifications } from "../../providers";
 import { deleteConsumerGroup, setConsumerGroup } from "@tauri/admin";
+import { useNavigate } from "react-router-dom";
+
+import { ConsumerGroupInfo, ConsumerOffsetConfiguration } from "../../models";
+import { useNotifications } from "../../providers";
 
 export const ToolsMenu = (props: {
   loading: boolean;

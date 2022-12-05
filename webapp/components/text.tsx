@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Stack, Title, Text, Group, Divider } from "@mantine/core";
+import { Divider, Group, Stack, Text, Title } from "@mantine/core";
 
 export const SingleLineTitle = styled(Title)`
   overflow: hidden;

@@ -1,9 +1,10 @@
 import { ActionIcon, Menu, Text } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { IconTool, IconTrash } from "@tabler/icons";
-import { useNavigate } from "react-router-dom";
-import { useNotifications } from "../../providers";
 import { deleteSubject, deleteSubjectVersion } from "@tauri/schema-registry";
+import { useNavigate } from "react-router-dom";
+
+import { useNotifications } from "../../providers";
 
 export const ToolsMenu = ({ clusterId, subject, version }: { clusterId: string; subject: string; version: number }) => {
   const navigate = useNavigate();

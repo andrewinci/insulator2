@@ -1,4 +1,4 @@
-import { Group, ThemeIcon, UnstyledButton, Text } from "@mantine/core";
+import { Group, Text, ThemeIcon, UnstyledButton } from "@mantine/core";
 import { Link } from "react-router-dom";
 
 // From https://github.com/mantinedev/mantine/blob/master/src/mantine-demos/src/demos/core/AppShell/_mainLinks.tsx

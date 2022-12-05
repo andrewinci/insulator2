@@ -1,20 +1,21 @@
 import {
-  Button,
-  Text,
-  Container,
-  Paper,
-  Stack,
-  Title,
-  Group,
-  ScrollArea,
-  Tooltip,
   ActionIcon,
+  Button,
+  Container,
+  Group,
   Modal,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
+  Tooltip,
 } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { IconPlus } from "@tabler/icons";
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { PageHeader, SearchInput } from "../../components";
 import { Cluster } from "../../models";
 import { useUserSettings } from "../../providers";

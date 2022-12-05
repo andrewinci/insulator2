@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Favorites } from "../models";
 import { getFavorites, setFavorites } from "@tauri/configuration";
+
+import { Favorites } from "../models";
 
 export const useFavorites = (clusterId: string, key: keyof Favorites) => {
   const { data: userFavorites, refetch } = useQuery(["getFavorites", clusterId], () => getFavorites(clusterId));

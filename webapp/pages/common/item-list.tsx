@@ -1,22 +1,23 @@
 import {
-  Container,
-  Group,
-  NavLink,
-  Loader,
-  Center,
   ActionIcon,
-  Tooltip,
-  Text,
-  Tabs,
   Badge,
-  Grid,
+  Center,
+  Container,
   FocusTrap,
+  Grid,
+  Group,
+  Loader,
+  NavLink,
+  Tabs,
+  Text,
+  Tooltip,
   useMantineTheme,
 } from "@mantine/core";
 import { useSessionStorage } from "@mantine/hooks";
 import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconStar } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList } from "react-window";
+
 import { PageHeader, SearchInput } from "../../components";
 import { useUserSettings } from "../../providers";
 

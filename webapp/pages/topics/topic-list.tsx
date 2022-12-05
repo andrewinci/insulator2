@@ -1,10 +1,11 @@
-import { ItemList } from "../common";
-import { createTopic, listTopics } from "@tauri/admin";
 import { Button, Checkbox, Group, NumberInput, Stack, TextInput, Title } from "@mantine/core";
-import { openModal, useModals } from "@mantine/modals";
 import { useForm } from "@mantine/form";
+import { openModal, useModals } from "@mantine/modals";
 import { useQuery } from "@tanstack/react-query";
+import { createTopic, listTopics } from "@tauri/admin";
+
 import { useFavorites } from "../../hooks/use-favorites";
+import { ItemList } from "../common";
 
 type TopicListProps = {
   clusterId: string;

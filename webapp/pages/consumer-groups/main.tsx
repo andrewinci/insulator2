@@ -1,6 +1,7 @@
 import { useSessionStorage } from "@mantine/hooks";
 import { Allotment } from "allotment";
 import { useParams } from "react-router-dom";
+
 import { ConsumerGroup } from "./consumer-group";
 import { ConsumerGroupsList } from "./consumer-groups-list";
 

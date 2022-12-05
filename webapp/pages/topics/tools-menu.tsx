@@ -1,8 +1,9 @@
-import { ActionIcon, Text, Menu } from "@mantine/core";
+import { ActionIcon, Menu, Text } from "@mantine/core";
+import { openConfirmModal } from "@mantine/modals";
 import { IconInfoCircle, IconTool, IconTrash } from "@tabler/icons";
 import { deleteTopic } from "@tauri/admin";
 import { useNavigate } from "react-router-dom";
-import { openConfirmModal } from "@mantine/modals";
+
 import { useNotifications } from "../../providers";
 
 export const ToolsMenu = ({ clusterId, topic }: { clusterId: string; topic: string }) => {
