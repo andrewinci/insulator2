@@ -1,11 +1,11 @@
 import { Autocomplete, Button, Group, Input, Stack, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useNotifications } from "@providers";
 import { postSchema } from "@tauri/schema-registry";
 import { useState } from "react";
 import { Form } from "react-router-dom";
 
 import { CodeEditor } from "../../components";
-import { useNotifications } from "../../providers";
 
 type FormType = { subjectName: string; avroSchema: string };
 

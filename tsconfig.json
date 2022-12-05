@@ -18,7 +18,8 @@
     "baseUrl": "./webapp",
     "paths": {
       "@pages": ["pages/"],
-      "@tauri/*": ["tauri/*"]
+      "@tauri/*": ["tauri/*"],
+      "@providers": ["providers/"]
     }
   },
   "include": ["webapp"],

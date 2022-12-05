@@ -1,6 +1,5 @@
+import { addNotification } from "@providers";
 import { invoke } from "@tauri-apps/api";
-
-import { addNotification } from "../providers";
 
 export const exportDatastore = async (clusterId: string, outputPath: string): Promise<void> => {
   try {

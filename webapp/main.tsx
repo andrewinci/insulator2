@@ -4,6 +4,7 @@ import "allotment/dist/style.css";
 import { AppShell, MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
+import { useNotifications, UserSettingsProvider, useUserSettings } from "@providers";
 import { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { TauriError } from "@tauri/error";
@@ -13,8 +14,6 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import { SideBar } from "./components";
-import { useNotifications, UserSettingsProvider } from "./providers";
-import { useUserSettings } from "./providers/user-settings-provider";
 import { Routing } from "./routing";
 
 const App = () => {

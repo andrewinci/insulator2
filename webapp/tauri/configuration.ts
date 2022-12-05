@@ -1,7 +1,7 @@
+import { addNotification } from "@providers";
 import { invoke } from "@tauri-apps/api";
 
 import { Favorites, UserSettings } from "../models";
-import { addNotification } from "../providers";
 import { format, TauriError } from "./error";
 
 export const getFavorites = (clusterId: string): Promise<Favorites> =>

@@ -1,4 +1,5 @@
 import { Box, Center, Divider, Group, Image, Navbar, ScrollArea, Stack, Text, Title } from "@mantine/core";
+import { useUserSettings } from "@providers";
 import { IconCircleDashed, IconLine, IconSatellite, IconServer, IconSettings } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { getVersion } from "@tauri-apps/api/app";
@@ -6,7 +7,6 @@ import { useMemo } from "react";
 import { matchPath, useLocation } from "react-router-dom";
 
 import logo from "../../src-tauri/icons/128x128.png";
-import { useUserSettings } from "../providers";
 import { SidebarItem } from "./sidebar-item";
 
 export const SideBar = () => {

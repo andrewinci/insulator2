@@ -1,9 +1,8 @@
 import { Button, Checkbox, Group, Modal, NumberInput, Stack, Text, Title } from "@mantine/core";
+import { useNotifications } from "@providers";
 import { exportRecords } from "@tauri/consumer";
 import { save } from "@tauri-apps/api/dialog";
 import { useState } from "react";
-
-import { useNotifications } from "../../../../providers";
 
 type ExportRecordsModalProps = {
   clusterId: string;
