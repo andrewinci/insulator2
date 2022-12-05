@@ -1,7 +1,6 @@
+import { UserSettings } from "@models";
 import { getConfiguration, setConfiguration } from "@tauri/configuration";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-
-import { UserSettings } from "../models";
 
 type AppStateContextType = {
   userSettings: UserSettings;

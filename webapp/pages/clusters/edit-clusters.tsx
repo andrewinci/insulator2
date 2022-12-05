@@ -1,7 +1,7 @@
+import { Cluster, ClusterAuthentication, UserSettings } from "@models";
 import { useNotifications, useUserSettings } from "@providers";
 import { v4 as uuid } from "uuid";
 
-import { Cluster, ClusterAuthentication, UserSettings } from "../../models";
 import { AuthenticationFormType, ClusterForm, ClusterFormType, SaslFormType, SslFormType } from "./form";
 
 const upsertCluster = (s: UserSettings, cluster: Cluster): UserSettings => {

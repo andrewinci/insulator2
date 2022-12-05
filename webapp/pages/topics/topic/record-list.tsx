@@ -3,6 +3,7 @@ import { ActionIcon, Center, Group, Loader, Paper, Text, Title, Tooltip } from "
 import { useClipboard } from "@mantine/hooks";
 import { openModal } from "@mantine/modals";
 import { Prism } from "@mantine/prism";
+import { KafkaRecord } from "@models";
 import { IconCopy, IconEye } from "@tabler/icons";
 import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -11,7 +12,6 @@ import dayjs from "dayjs";
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
 
 import { pretty } from "../../../helpers/json";
-import { KafkaRecord } from "../../../models/kafka";
 import { RecordDetailsModal } from "./modals/record-view-modal";
 
 type RecordsListProps = {

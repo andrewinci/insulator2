@@ -1,14 +1,13 @@
 import { PageHeader } from "@components";
 import { Button, Center, Checkbox, Container, Group, NumberInput, Select, Stack, Text } from "@mantine/core";
 import { useSessionStorage } from "@mantine/hooks";
+import { AppTheme } from "@models";
 import { useNotifications, useUserSettings } from "@providers";
 import { IconAlertTriangle, IconDatabaseExport } from "@tabler/icons";
 import { exportDatastore } from "@tauri/utils";
 import { save } from "@tauri-apps/api/dialog";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
-
-import { AppTheme } from "../../models";
 
 export const Settings = () => {
   const { clusterId } = useParams();

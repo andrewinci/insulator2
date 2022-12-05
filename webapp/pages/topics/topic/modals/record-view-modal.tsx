@@ -1,9 +1,9 @@
 import { CodeEditor } from "@components";
 import { Group, Stack, Text, TextInput } from "@mantine/core";
+import { KafkaRecord } from "@models";
 import dayjs from "dayjs";
 
 import { pretty } from "../../../../helpers/json";
-import { KafkaRecord } from "../../../../models";
 
 type RecordDetailsModalProps = {
   topic: string;

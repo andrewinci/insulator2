@@ -13,12 +13,12 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
+import { Cluster } from "@models";
 import { useUserSettings } from "@providers";
 import { IconPlus } from "@tabler/icons";
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Cluster } from "../../models";
 import { AddNewCluster, EditCluster } from "./edit-clusters";
 
 export const ClusterList = () => {

@@ -1,7 +1,7 @@
+import { ConsumerGroupInfo, ConsumerOffsetConfiguration, PartitionOffset, TopicInfo } from "@models";
 import { addNotification } from "@providers";
 import { invoke } from "@tauri-apps/api";
 
-import { ConsumerGroupInfo, ConsumerOffsetConfiguration, PartitionOffset, TopicInfo } from "../models/kafka";
 import { format, TauriError } from "./error";
 
 export const setConsumerGroup = (

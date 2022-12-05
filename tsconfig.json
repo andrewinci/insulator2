@@ -20,7 +20,8 @@
       "@pages": ["pages/"],
       "@tauri/*": ["tauri/*"],
       "@providers": ["providers/"],
-      "@components": ["components/"]
+      "@components": ["components/"],
+      "@models": ["models/"]
     }
   },
   "include": ["webapp"],
