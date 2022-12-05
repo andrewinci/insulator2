@@ -1,7 +1,6 @@
 import { Route, Routes } from "react-router-dom";
-import { Settings, TopicsPage, SchemasPage, ConsumerGroupsPage } from "./pages";
+import { Settings, TopicsPage, SchemasPage, ConsumerGroupsPage, ClusterList } from "@pages";
 import "allotment/dist/style.css";
-import { ClusterList } from "./pages/clusters";
 
 export const Routing = () => (
   <Routes>
