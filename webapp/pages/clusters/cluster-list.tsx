@@ -1,3 +1,4 @@
+import { PageHeader, SearchInput } from "@components";
 import {
   ActionIcon,
   Button,
@@ -17,7 +18,6 @@ import { IconPlus } from "@tabler/icons";
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { PageHeader, SearchInput } from "../../components";
 import { Cluster } from "../../models";
 import { AddNewCluster, EditCluster } from "./edit-clusters";
 

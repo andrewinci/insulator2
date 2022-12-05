@@ -1,7 +1,7 @@
+import { CodeEditor } from "@components";
 import { Group, Stack, Text, TextInput } from "@mantine/core";
 import dayjs from "dayjs";
 
-import { CodeEditor } from "../../../../components";
 import { pretty } from "../../../../helpers/json";
 import { KafkaRecord } from "../../../../models";
 

@@ -1,10 +1,10 @@
+import { CodeEditor, PageHeader } from "@components";
 import { Center, Container, Group, Loader, Select, Tooltip } from "@mantine/core";
 import { IconVersions } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { getSubject } from "@tauri/schema-registry";
 import { useMemo, useState } from "react";
 
-import { CodeEditor, PageHeader } from "../../components";
 import { pretty } from "../../helpers/json";
 import { ToolsMenu } from "./tools-menu";
 

@@ -1,3 +1,4 @@
+import { PageHeader } from "@components";
 import { Center, Container, Loader } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { getLastOffsets, getTopicInfo } from "@tauri/admin";
@@ -5,7 +6,6 @@ import { getConsumerState, stopConsumer } from "@tauri/consumer";
 import { Allotment } from "allotment";
 import { useRef, useState } from "react";
 
-import { PageHeader } from "../../../components";
 import { useCache } from "../../../hooks";
 import { ToolsMenu } from "../tools-menu";
 import { openConsumerModal } from "./modals/consumer-modal";

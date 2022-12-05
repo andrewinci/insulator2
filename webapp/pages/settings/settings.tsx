@@ -1,3 +1,4 @@
+import { PageHeader } from "@components";
 import { Button, Center, Checkbox, Container, Group, NumberInput, Select, Stack, Text } from "@mantine/core";
 import { useSessionStorage } from "@mantine/hooks";
 import { useNotifications, useUserSettings } from "@providers";
@@ -7,7 +8,6 @@ import { save } from "@tauri-apps/api/dialog";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 
-import { PageHeader } from "../../components";
 import { AppTheme } from "../../models";
 
 export const Settings = () => {

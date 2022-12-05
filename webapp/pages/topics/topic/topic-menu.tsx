@@ -1,7 +1,6 @@
+import { CodeEditor } from "@components";
 import { Anchor, Badge, Button, Group, Loader, Text, Tooltip } from "@mantine/core";
 import { IconArrowBarToDown, IconArrowBarToUp, IconFileExport, IconSearch } from "@tabler/icons";
-
-import { CodeEditor } from "../../../components";
 
 type TopicPageMenuProps = {
   topicName: string;

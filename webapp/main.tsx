@@ -1,6 +1,7 @@
 import "./init-monaco";
 import "allotment/dist/style.css";
 
+import { SideBar } from "@components";
 import { AppShell, MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
@@ -13,7 +14,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import { SideBar } from "./components";
 import { Routing } from "./routing";
 
 const App = () => {

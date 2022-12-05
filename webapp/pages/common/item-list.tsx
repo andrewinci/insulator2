@@ -1,3 +1,4 @@
+import { PageHeader, SearchInput } from "@components";
 import {
   ActionIcon,
   Badge,
@@ -18,8 +19,6 @@ import { useUserSettings } from "@providers";
 import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconStar } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList } from "react-window";
-
-import { PageHeader, SearchInput } from "../../components";
 
 const getWindowSize = () => {
   const { innerWidth, innerHeight } = window;

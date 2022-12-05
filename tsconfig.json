@@ -19,7 +19,8 @@
     "paths": {
       "@pages": ["pages/"],
       "@tauri/*": ["tauri/*"],
-      "@providers": ["providers/"]
+      "@providers": ["providers/"],
+      "@components": ["components/"]
     }
   },
   "include": ["webapp"],
