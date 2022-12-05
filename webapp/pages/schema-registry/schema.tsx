@@ -1,13 +1,11 @@
-import { ActionIcon, Center, Container, Group, Loader, Menu, Select, Tooltip, Text } from "@mantine/core";
-import { openConfirmModal } from "@mantine/modals";
-import { IconTool, IconTrash, IconVersions } from "@tabler/icons";
+import { Center, Container, Group, Loader, Select, Tooltip } from "@mantine/core";
+import { IconVersions } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { CodeEditor, PageHeader } from "../../components";
 import { pretty } from "../../helpers/json";
-import { useNotifications } from "../../providers";
-import { deleteSubject, deleteSubjectVersion, getSubject } from "../../tauri/schema-registry";
+import { getSubject } from "../../tauri/schema-registry";
+import { ToolsMenu } from "./tools-menu";
 
 type SchemaProps = {
   schemaName: string;
@@ -29,7 +27,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
   return (
     <Container>
       <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`}>
-        {state?.version && <Tools clusterId={clusterId} subject={schemaName} version={state.version} />}
+        {state?.version && <ToolsMenu clusterId={clusterId} subject={schemaName} version={state.version} />}
       </PageHeader>
       {!isLoading && subject && (
         <Group>
@@ -58,60 +56,5 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
         />
       </Container>
     </Container>
-  );
-};
-
-const Tools = ({ clusterId, subject, version }: { clusterId: string; subject: string; version: number }) => {
-  const navigate = useNavigate();
-  const { success } = useNotifications();
-  const openDeleteSubjectModal = () =>
-    openConfirmModal({
-      title: "Are you sure to delete this subject?",
-      children: (
-        <Text color="red" size="sm">
-          All versions of this {subject} will be deleted. This action is not reversible!
-        </Text>
-      ),
-      labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: async () =>
-        await deleteSubject(clusterId, subject).then((_) => {
-          success("Schema deleted successfully");
-          navigate(`/cluster/${clusterId}/schemas`);
-        }),
-    });
-
-  const openDeleteVersionModal = () =>
-    openConfirmModal({
-      title: "Are you sure to delete this version of the schema?",
-      children: (
-        <Text color="red" size="sm">
-          The version {version} of {subject} will be deleted. This action is not reversible!
-        </Text>
-      ),
-      labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: async () =>
-        await deleteSubjectVersion(clusterId, subject, version).then((_) => {
-          success(`Schema version ${version} deleted successfully`);
-          navigate(`/cluster/${clusterId}/schemas`);
-        }),
-    });
-
-  return (
-    <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
-      <Menu.Target>
-        <ActionIcon size={28} sx={{ marginRight: "10px" }}>
-          <IconTool />
-        </ActionIcon>
-      </Menu.Target>
-      <Menu.Dropdown>
-        <Menu.Label>Tools</Menu.Label>
-        <Menu.Item color="red" icon={<IconTrash size={14} />} onClick={openDeleteVersionModal}>
-          Delete selected version
-        </Menu.Item>
-        <Menu.Item color="red" icon={<IconTrash size={14} />} onClick={openDeleteSubjectModal}>
-          Delete subject
-        </Menu.Item>
-      </Menu.Dropdown>
-    </Menu>
   );
 };

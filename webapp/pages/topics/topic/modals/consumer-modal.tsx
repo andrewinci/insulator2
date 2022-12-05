@@ -1,11 +1,11 @@
 import { Chip, Stack, Title, Text, Group, Checkbox, Button } from "@mantine/core";
 import { openModal, useModals } from "@mantine/modals";
 import { DateRangePicker, DatePicker, TimeRangeInput, TimeInput } from "@mantine/dates";
-import { ConsumerOffsetConfiguration } from "../../../models/kafka";
+import { ConsumerOffsetConfiguration } from "../../../../models/kafka";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
-import { startConsumer } from "../../../tauri/consumer";
-import { dateTimeToUnixTimeMs } from "../../../helpers/date-time";
+import { startConsumer } from "../../../../tauri/consumer";
+import { dateTimeToUnixTimeMs } from "../../../../helpers/date-time";
 
 type ConsumerModalProps = {
   clusterId: string;

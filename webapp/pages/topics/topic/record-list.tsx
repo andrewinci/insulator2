@@ -11,7 +11,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } 
 import { pretty } from "../../../helpers/json";
 import { KafkaRecord } from "../../../models/kafka";
 import { getRecordsPage } from "../../../tauri/consumer";
-import { RecordDetailsModal } from "./record-view-modal";
+import { RecordDetailsModal } from "./modals/record-view-modal";
 
 type RecordsListProps = {
   clusterId: string;
