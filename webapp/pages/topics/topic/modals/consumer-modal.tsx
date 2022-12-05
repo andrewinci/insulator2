@@ -4,7 +4,7 @@ import { DateRangePicker, DatePicker, TimeRangeInput, TimeInput } from "@mantine
 import { ConsumerOffsetConfiguration } from "../../../../models/kafka";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
-import { startConsumer } from "../../../../tauri/consumer";
+import { startConsumer } from "@tauri/consumer";
 import { dateTimeToUnixTimeMs } from "../../../../helpers/date-time";
 
 type ConsumerModalProps = {

@@ -8,7 +8,7 @@ import { PageHeader } from "../../components";
 import { AppTheme } from "../../models";
 import { useNotifications } from "../../providers";
 import { useUserSettings } from "../../providers/user-settings-provider";
-import { exportDatastore } from "../../tauri/utils";
+import { exportDatastore } from "@tauri/utils";
 
 export const Settings = () => {
   const { clusterId } = useParams();

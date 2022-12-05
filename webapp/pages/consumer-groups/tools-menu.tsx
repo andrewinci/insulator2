@@ -5,7 +5,7 @@ import { IconFlag, IconPlayerPlay, IconRefresh, IconTool, IconTrash } from "@tab
 import { useNavigate } from "react-router-dom";
 import { ConsumerOffsetConfiguration, ConsumerGroupInfo } from "../../models";
 import { useNotifications } from "../../providers";
-import { deleteConsumerGroup, setConsumerGroup } from "../../tauri/admin";
+import { deleteConsumerGroup, setConsumerGroup } from "@tauri/admin";
 
 export const ToolsMenu = (props: {
   loading: boolean;

@@ -1,6 +1,6 @@
 import { ActionIcon, Text, Menu } from "@mantine/core";
 import { IconInfoCircle, IconTool, IconTrash } from "@tabler/icons";
-import { deleteTopic } from "../../tauri/admin";
+import { deleteTopic } from "@tauri/admin";
 import { useNavigate } from "react-router-dom";
 import { openConfirmModal } from "@mantine/modals";
 import { useNotifications } from "../../providers";

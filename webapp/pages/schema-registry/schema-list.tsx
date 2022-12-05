@@ -1,4 +1,4 @@
-import { listSubjects } from "../../tauri/schema-registry";
+import { listSubjects } from "@tauri/schema-registry";
 import { ItemList } from "../common";
 import { useQuery } from "@tanstack/react-query";
 import { AddSchemaModal } from "./add-schema-modal";

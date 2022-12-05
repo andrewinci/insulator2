@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { CodeEditor, PageHeader } from "../../components";
 import { pretty } from "../../helpers/json";
-import { getSubject } from "../../tauri/schema-registry";
+import { getSubject } from "@tauri/schema-registry";
 import { ToolsMenu } from "./tools-menu";
 
 type SchemaProps = {

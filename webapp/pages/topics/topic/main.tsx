@@ -1,10 +1,10 @@
 import { Center, Container, Loader } from "@mantine/core";
 import { RecordsList, RecordsListRef } from "./record-list";
-import { getConsumerState, stopConsumer } from "../../../tauri/consumer";
+import { getLastOffsets, getTopicInfo } from "@tauri/admin";
+import { getConsumerState, stopConsumer } from "@tauri/consumer";
 import { PageHeader } from "../../../components";
 import { openConsumerModal } from "./modals/consumer-modal";
 import { useQuery } from "@tanstack/react-query";
-import { getLastOffsets, getTopicInfo } from "../../../tauri/admin";
 import { Allotment } from "allotment";
 import { ToolsMenu } from "../tools-menu";
 import { TopicPageMenu } from "./topic-menu";

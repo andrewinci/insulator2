@@ -2,7 +2,7 @@ import { Text, Checkbox, Modal, Title, NumberInput, Stack, Group, Button } from 
 import { useNotifications } from "../../../../providers";
 import { save } from "@tauri-apps/api/dialog";
 import { useState } from "react";
-import { exportRecords } from "../../../../tauri/consumer";
+import { exportRecords } from "@tauri/consumer";
 
 type ExportRecordsModalProps = {
   clusterId: string;

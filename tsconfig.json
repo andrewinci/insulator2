@@ -17,7 +17,8 @@
     "jsx": "react-jsx",
     "baseUrl": "./webapp",
     "paths": {
-      "@pages": ["pages/"]
+      "@pages": ["pages/"],
+      "@tauri/*": ["tauri/*"]
     }
   },
   "include": ["webapp"],

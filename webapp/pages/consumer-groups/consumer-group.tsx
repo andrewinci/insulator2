@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useMemo } from "react";
 import { PageHeader } from "../../components";
-import { describeConsumerGroup, getConsumerGroupState, getLastOffsets } from "../../tauri/admin";
+import { describeConsumerGroup, getConsumerGroupState, getLastOffsets } from "@tauri/admin";
 import { ToolsMenu } from "./tools-menu";
 
 export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: string }) => {

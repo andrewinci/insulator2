@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { pretty } from "../../../helpers/json";
 import { KafkaRecord } from "../../../models/kafka";
-import { getRecordsPage } from "../../../tauri/consumer";
+import { getRecordsPage } from "@tauri/consumer";
 import { RecordDetailsModal } from "./modals/record-view-modal";
 
 type RecordsListProps = {

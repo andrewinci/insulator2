@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Form } from "react-router-dom";
 import { CodeEditor } from "../../components";
 import { useNotifications } from "../../providers";
-import { postSchema } from "../../tauri/schema-registry";
+import { postSchema } from "@tauri/schema-registry";
 
 type FormType = { subjectName: string; avroSchema: string };
 
