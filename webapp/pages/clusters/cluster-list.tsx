@@ -20,6 +20,20 @@ import { Cluster } from "../../models";
 import { useUserSettings } from "../../providers";
 import { AddNewCluster, EditCluster } from "./edit-clusters";
 
+export const containsAllWords = (input: string, search: string): boolean => {
+  if (search == "") return true;
+  const lowerCaseInput = input.toLowerCase();
+  const lowerCaseSearch = search.toLowerCase();
+
+  const lowerCaseInputWords = lowerCaseInput.split(" ").filter((w) => w != "");
+  const lowerCaseSearchWords = lowerCaseSearch.split(" ").filter((w) => w != "");
+
+  return (
+    lowerCaseSearchWords.map((w) => lowerCaseInputWords.includes(w)).reduce((a, b) => a && b, true) ||
+    lowerCaseInput.includes(lowerCaseSearch)
+  );
+};
+
 export const ClusterList = () => {
   const { userSettings, setUserSettings } = useUserSettings();
   const [state, setState] = useState<{ search: string; newClusterModalOpened: boolean; editClusterId: string | null }>({
@@ -38,7 +52,7 @@ export const ClusterList = () => {
     });
 
   const filteredClusters = useMemo(
-    () => userSettings.clusters.filter((c) => c.name.toLowerCase().includes(state.search.toLowerCase() ?? "")),
+    () => userSettings.clusters.filter((c) => containsAllWords(c.name, state.search)),
     [state.search, userSettings.clusters]
   );
   const ref = useRef<HTMLButtonElement>(null);
