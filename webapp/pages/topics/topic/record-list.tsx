@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
-import { Paper, Text, Group, Loader, Center, ActionIcon, Tooltip, Title } from "@mantine/core";
+import { Paper, Text, Group, Loader, Center, ActionIcon, Tooltip } from "@mantine/core";
 import { useClipboard } from "@mantine/hooks";
-import { openModal } from "@mantine/modals";
 import { Prism } from "@mantine/prism";
 import { IconCopy, IconEye } from "@tabler/icons";
 import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
@@ -101,6 +100,11 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
 
   const parentRef = React.useRef<HTMLDivElement>(null);
 
+  const [recordModalState, setRecordModalState] = useState({
+    opened: false,
+    record: null as KafkaRecord | null,
+  });
+
   return (
     <>
       <div
@@ -150,9 +154,9 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
               return (
                 <KafkaRecordCard
                   key={virtualItem.index}
-                  topic={topic}
                   index={virtualItem.index}
                   record={allRecords[virtualItem.index]}
+                  onOpenDetails={(record) => setRecordModalState({ opened: true, record })}
                   style={{
                     position: "absolute",
                     top: 0,
@@ -167,6 +171,14 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
           })}
         </div>
       </div>
+      {recordModalState.record && (
+        <RecordDetailsModal
+          record={recordModalState.record}
+          onClose={() => setRecordModalState((s) => ({ ...s, opened: false }))}
+          opened={recordModalState.opened}
+          topic={topic}
+        />
+      )}
     </>
   );
 });
@@ -181,25 +193,19 @@ const LabelValue = ({ label, value }: { label: string; value: string | number })
   </>
 );
 
-const KafkaRecordCard = ({
-  record,
-  topic,
-  index,
-  style,
-}: {
+type KafkaRecordCardProps = {
   record: KafkaRecord;
-  topic: string;
   index: number;
   style: React.CSSProperties;
-}) => {
-  const timestamp = record?.timestamp ? dayjs(record.timestamp).toISOString() : "N/A";
+  onOpenDetails: (record: KafkaRecord) => void;
+};
+
+const KafkaRecordCard = ({ record, index, style, onOpenDetails }: KafkaRecordCardProps) => {
+  const timestamp = useMemo(
+    () => (record?.timestamp ? dayjs(record.timestamp).toISOString() : "N/A"),
+    [record.timestamp]
+  );
   const clipboard = useClipboard();
-  const openDetails = (record: KafkaRecord) =>
-    openModal({
-      title: <Title order={3}>Record details</Title>,
-      children: <RecordDetailsModal topic={topic} record={record} />,
-      size: 700,
-    });
 
   const [copyState, setCopyState] = useState<{ color?: string }>({ color: undefined });
   return (
@@ -224,7 +230,7 @@ const KafkaRecordCard = ({
             </ActionIcon>
           </Tooltip>
           <Tooltip label="Record details">
-            <ActionIcon onClick={() => openDetails(record)}>
+            <ActionIcon onClick={() => onOpenDetails(record)}>
               <IconEye size={20}></IconEye>
             </ActionIcon>
           </Tooltip>
