@@ -1,7 +1,7 @@
 import { listSubjects } from "../../tauri/schema-registry";
 import { ItemList } from "../common";
 import { useQuery } from "@tanstack/react-query";
-import { AddSchemaModal } from "./add-schema";
+import { AddSchemaModal } from "./add-schema-modal";
 import { Modal, Title } from "@mantine/core";
 import { useSetState } from "@mantine/hooks";
 import { useFavorites } from "../../hooks/use-favorites";
@@ -43,6 +43,7 @@ export const SchemaList = (props: SchemaListProps) => {
         closeOnEscape={false}
         closeOnClickOutside={false}>
         <AddSchemaModal
+          opened={state.modalOpened}
           onClose={() => refetch().then((_) => setState((s) => ({ ...s, modalOpened: false })))}
           clusterId={clusterId}
           subjects={subjects ?? []}

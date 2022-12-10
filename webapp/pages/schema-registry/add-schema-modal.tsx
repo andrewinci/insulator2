@@ -2,21 +2,20 @@ import { Autocomplete, Button, Group, Input, Stack, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { Form } from "react-router-dom";
-import { CodeEditor } from "../../components";
+import { CodeEditor, ResizableModal } from "../../components";
 import { useNotifications } from "../../providers";
 import { postSchema } from "../../tauri/schema-registry";
 
 type FormType = { subjectName: string; avroSchema: string };
 
-export const AddSchemaModal = ({
-  subjects,
-  clusterId,
-  onClose,
-}: {
+type AddSchemaModalProps = {
   subjects: string[];
   clusterId: string;
+  opened: boolean;
   onClose: () => void;
-}) => {
+};
+
+export const AddSchemaModal = ({ subjects, clusterId, opened, onClose }: AddSchemaModalProps) => {
   const [state, setState] = useState<{ isUploading: boolean }>({ isUploading: false });
   const schemaNameRegex = /^[a-zA-Z][a-zA-Z0-9_-]*$/g;
   const form = useForm<FormType>({
@@ -57,33 +56,30 @@ export const AddSchemaModal = ({
   };
 
   return (
-    <Form onSubmit={form.onSubmit(onSubmit)}>
-      <Stack>
-        <Autocomplete
-          label="Subject name"
-          placeholder="schema name...."
-          data={subjects}
-          {...form.getInputProps("subjectName")}
-        />
-        <Input.Wrapper id="schema-input" label="Avro schema" error={form.getInputProps("avroSchema").error}>
-          <div
-            style={{
-              backgroundColor: "#000000",
-              borderRadius: "4px",
-              minHeight: "400px",
-              height: "100%",
-              overflowY: "auto",
-            }}>
-            <CodeEditor id="schema-input" {...form.getInputProps("avroSchema")} language="json" height="400px" />
-          </div>
-        </Input.Wrapper>
-        <Group position="apart">
-          <Text color={"red"}></Text>
-          <Button loading={state.isUploading} type="submit" size="sm">
-            Validate and submit
-          </Button>
-        </Group>
-      </Stack>
-    </Form>
+    <ResizableModal title={"Add a new schema"} opened={opened} onClose={onClose}>
+      <Form style={{ height: "100%" }} onSubmit={form.onSubmit(onSubmit)}>
+        <Stack spacing={3} style={{ height: "100%" }}>
+          <Autocomplete
+            label="Subject name"
+            placeholder="schema name...."
+            data={subjects}
+            {...form.getInputProps("subjectName")}
+          />
+          <Input.Wrapper
+            style={{ height: "calc(100% - 100px)" }}
+            id="schema-input"
+            label="Avro schema"
+            error={form.getInputProps("avroSchema").error}>
+            <CodeEditor {...form.getInputProps("avroSchema")} language="json" height="calc(100% - 30px)" />
+          </Input.Wrapper>
+          <Group position="apart">
+            <Text color={"red"}></Text>
+            <Button loading={state.isUploading} type="submit" size="sm">
+              Validate and submit
+            </Button>
+          </Group>
+        </Stack>
+      </Form>
+    </ResizableModal>
   );
 };
