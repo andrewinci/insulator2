@@ -1,4 +1,5 @@
-import { Text, Group, Stack, TextInput, Modal, Title } from "@mantine/core";
+import { Input, Group, Stack, TextInput, Modal, Title } from "@mantine/core";
+
 import dayjs from "dayjs";
 import { CodeEditor } from "../../../components";
 import { pretty } from "../../../helpers/json";
@@ -15,7 +16,26 @@ export const RecordDetailsModal = (props: RecordDetailsModalProps) => {
   const { record, topic, opened, onClose } = props;
   const timestamp = record?.timestamp ? dayjs(record.timestamp).toISOString() : "N/A";
   return (
-    <Modal onClose={onClose} opened={opened} title={<Title order={3}>Record details</Title>}>
+    <Modal
+      onClose={onClose}
+      opened={opened}
+      title={<Title order={3}>Record details</Title>}
+      closeOnClickOutside={false}
+      styles={{
+        modal: {
+          minWidth: 600,
+          minHeight: 700,
+          height: 700,
+          maxHeight: "92vh",
+          maxWidth: "92vw",
+          position: "absolute",
+          resize: "both",
+          overflow: "auto",
+        },
+        body: {
+          height: "calc(100% - 50px)",
+        },
+      }}>
       <Stack spacing={3}>
         <Group grow position="apart">
           <TextInput label="Topic name" value={topic} />
@@ -26,13 +46,10 @@ export const RecordDetailsModal = (props: RecordDetailsModalProps) => {
           <TextInput label="Offset" value={record.offset} />
         </Group>
         <TextInput label="Key" value={record.key} />
-        <div>
-          <Text mb={2} weight={500} size={14}>
-            Value
-          </Text>
-          <CodeEditor path={topic} language="json" height={400} value={pretty(record.payload)} readOnly />
-        </div>
       </Stack>
+      <Input.Wrapper mt={3} style={{ height: "calc(100% - 210px)" }} label="Value">
+        <CodeEditor path={topic} language="json" height={"100%"} value={pretty(record.payload)} readOnly />
+      </Input.Wrapper>
     </Modal>
   );
 };

@@ -3,7 +3,7 @@ import Editor, { useMonaco } from "@monaco-editor/react";
 import { useEffect } from "react";
 
 type CodeEditorProps = {
-  height: number | string;
+  height?: number | string;
   path: string;
   language?: string;
   value?: string;
@@ -52,7 +52,6 @@ export const CodeEditor = ({
         minimap: {
           enabled: false,
         },
-
         contextmenu: false,
         readOnly,
         theme: "custom",
