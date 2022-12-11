@@ -1,3 +1,19 @@
+# [2.6.0](https://github.com/andrewinci/insulator2/compare/v2.5.0...v2.6.0) (2022-12-11)
+
+### Bug Fixes
+
+- resolve schema from cache when no ns is specified ([9d4b727](https://github.com/andrewinci/insulator2/commit/9d4b727005df97ccae59c58a81263d17dde11f79))
+
+### Features
+
+- improve cluster search ([df4e6d8](https://github.com/andrewinci/insulator2/commit/df4e6d8f4c775e2694458e80de9d6bc5cb15ed27))
+- make record details modal resizable ([e94e65c](https://github.com/andrewinci/insulator2/commit/e94e65c4a63122d8dc6938d67ea78e6434642e68))
+- use resizable modal in add-schema-modal ([d25b146](https://github.com/andrewinci/insulator2/commit/d25b1463d835ba6bfd9672d3d3c22a35e0403000))
+
+### Performance Improvements
+
+- extract nested schemas in schema registry to speed up Avro serde ([208837a](https://github.com/andrewinci/insulator2/commit/208837a20b05b6ef78d5ab3873f0dc3e4fefd5cf))
+
 # [2.5.0](https://github.com/andrewinci/insulator2/compare/v2.4.1...v2.5.0) (2022-12-04)
 
 ### Bug Fixes

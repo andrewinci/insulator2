@@ -1,11 +1,11 @@
 {
-  "version": "v2.5.0",
-  "notes": "# [2.5.0](https://github.com/andrewinci/insulator2/compare/v2.4.1...v2.5.0) (2022-12-04)\n\n\n### Bug Fixes\n\n* repeated keystroke in input fields ([a24ee3e](https://github.com/andrewinci/insulator2/commit/a24ee3e3f31aa3c89726a5d37837dce9c1cb2d57))\n\n\n### Features\n\n* Allow to set query timeout ([#211](https://github.com/andrewinci/insulator2/issues/211)) ([ff68093](https://github.com/andrewinci/insulator2/commit/ff68093be9d991df0a5b61584c360acefad8084b))\n* shrink cluster items ([5def932](https://github.com/andrewinci/insulator2/commit/5def932f3f1fff544fd1c3724b67c8bdf44ca188))\n\n\n### Performance Improvements\n\n* fetch consumer state after stop and disable re-fetching while the consumer is stopped ([9eaed7a](https://github.com/andrewinci/insulator2/commit/9eaed7a6b138957d78bd4bd40ee1deaa78bf7c41))\n* on query only refetch first page ([b52f49b](https://github.com/andrewinci/insulator2/commit/b52f49bbede39948c8eb1e980dd135654340534d))\n* use an instert counter instead of a query to get the table size ([8b6af73](https://github.com/andrewinci/insulator2/commit/8b6af730a06948add4b4a207bed55eabb74a2a0d))\n\n\n\n",
-  "pub_date": "2022-12-04T12:03:23Z",
+  "version": "v2.6.0",
+  "notes": "# [2.6.0](https://github.com/andrewinci/insulator2/compare/v2.5.0...v2.6.0) (2022-12-11)\n\n\n### Bug Fixes\n\n* resolve schema from cache when no ns is specified ([9d4b727](https://github.com/andrewinci/insulator2/commit/9d4b727005df97ccae59c58a81263d17dde11f79))\n\n\n### Features\n\n* improve cluster search ([df4e6d8](https://github.com/andrewinci/insulator2/commit/df4e6d8f4c775e2694458e80de9d6bc5cb15ed27))\n* make record details modal resizable ([e94e65c](https://github.com/andrewinci/insulator2/commit/e94e65c4a63122d8dc6938d67ea78e6434642e68))\n* use resizable modal in add-schema-modal ([d25b146](https://github.com/andrewinci/insulator2/commit/d25b1463d835ba6bfd9672d3d3c22a35e0403000))\n\n\n### Performance Improvements\n\n* extract nested schemas in schema registry to speed up Avro serde ([208837a](https://github.com/andrewinci/insulator2/commit/208837a20b05b6ef78d5ab3873f0dc3e4fefd5cf))\n\n\n\n",
+  "pub_date": "2022-12-11T20:24:27Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.5.0/insulator-2_2.5.0_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.6.0/insulator-2_2.6.0_amd64.AppImage.tar.gz"
     }
   }
 }

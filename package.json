@@ -1,7 +1,7 @@
 {
   "name": "insulator2",
   "private": true,
-  "version": "2.5.0",
+  "version": "2.6.0",
   "type": "module",
   "scripts": {
     "postinstall": "husky install",
