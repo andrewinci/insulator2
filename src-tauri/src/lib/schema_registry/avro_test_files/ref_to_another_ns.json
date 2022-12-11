@@ -1,0 +1,27 @@
+{
+  "type": "record",
+  "name": "userInfo1",
+  "namespace": "top.level.ns",
+  "fields": [
+    { "name": "value", "type": "long" },
+    {
+      "name": "nested",
+      "type": {
+        "type": "record",
+        "name": "userInfo2",
+        "namespace": "nested.ns",
+        "fields": [
+          {
+            "name": "nested_without_ns",
+            "type": {
+              "type": "record",
+              "name": "testTarget",
+              "fields": [{ "name": "value", "type": "long" }]
+            }
+          }
+        ]
+      }
+    },
+    { "name": "ref", "type": "nested.ns.testTarget" }
+  ]
+}

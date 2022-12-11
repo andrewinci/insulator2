@@ -10,7 +10,7 @@ use apache_avro::Schema as AvroSchema;
 
 use super::error::{Result, SchemaRegistryError};
 use super::http_client::{HttpClient, ReqwestClient};
-use super::types::{BasicAuth, Schema, Subject};
+use super::types::{BasicAuth, ResolvedAvroSchema, Schema, Subject};
 
 #[derive(Deserialize)]
 struct GetSchemaByIdResult {
@@ -21,7 +21,7 @@ struct GetSchemaByIdResult {
 pub trait SchemaRegistryClient {
     async fn list_subjects(&self) -> Result<Vec<String>>;
     async fn get_subject(&self, subject_name: &str) -> Result<Subject>;
-    async fn get_schema_by_id(&self, id: i32) -> Result<AvroSchema>;
+    async fn get_schema_by_id(&self, id: i32) -> Result<ResolvedAvroSchema>;
     async fn delete_subject(&self, subject_name: &str) -> Result<()>;
     async fn delete_version(&self, subject_name: &str, version: i32) -> Result<()>;
     async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()>;
@@ -34,7 +34,7 @@ where
 {
     http_client: C,
     endpoint: String,
-    schema_cache_by_id: Arc<RwLock<HashMap<i32, AvroSchema>>>,
+    schema_cache_by_id: Arc<RwLock<HashMap<i32, ResolvedAvroSchema>>>,
 }
 
 impl CachedSchemaRegistry<ReqwestClient> {
@@ -116,7 +116,7 @@ where
         Ok(self.http_client.delete(url.as_str()).await?)
     }
 
-    async fn get_schema_by_id(&self, id: i32) -> Result<AvroSchema> {
+    async fn get_schema_by_id(&self, id: i32) -> Result<ResolvedAvroSchema> {
         trace!("Getting schema {} by id.", id);
         {
             if let Some(cached) = self.schema_cache_by_id.read().await.get(&id) {
@@ -132,8 +132,9 @@ where
                 AvroSchema::parse_str(schema.schema.as_str()).map_err(|err| SchemaRegistryError::SchemaParsing {
                     message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
                 })?;
-            self.schema_cache_by_id.write().await.insert(id, schema.clone());
-            return Ok(schema);
+            let res = ResolvedAvroSchema::from(schema);
+            self.schema_cache_by_id.write().await.insert(id, res.clone());
+            return Ok(res);
         }
     }
 }

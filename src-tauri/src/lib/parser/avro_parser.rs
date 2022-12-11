@@ -46,10 +46,10 @@ where
                 ),
             })?;
         let mut data = Cursor::new(&raw[5..]);
-        let record = from_avro_datum(&schema, &mut data, None).map_err(|err| Error::AvroParse {
+        let record = from_avro_datum(&schema.schema, &mut data, None).map_err(|err| Error::AvroParse {
             message: format!("{}\n{}", "Unable to parse the avro record", err),
         })?;
-        let json = map(&record, &schema, &mut HashMap::new())?;
+        let json = map(&record, &schema.schema, &schema.resolved_schemas)?;
         let res = serde_json::to_string(&json).map_err(|err| Error::AvroParse {
             message: format!("{}\n{}", "Unable to map the avro record to json", err),
         })?; // todo: maybe pretty_print
@@ -64,11 +64,7 @@ fn get_schema_id(raw: &[u8]) -> Result<i32> {
     Ok(i32::from_be_bytes(arr))
 }
 
-fn map<'a>(
-    value: &AvroValue,
-    schema: &'a Schema,
-    ref_cache: &mut HashMap<&'a Name, &'a Schema>, //cache to resolve avro references
-) -> Result<JsonValue> {
+fn map(value: &AvroValue, schema: &Schema, ref_cache: &HashMap<Name, Schema>) -> Result<JsonValue> {
     match (value, schema) {
         (AvroValue::Null, Schema::Null) => Ok(JsonValue::Null),
         (AvroValue::Boolean(v), Schema::Boolean) => Ok(json!(*v)),
@@ -95,10 +91,12 @@ fn map<'a>(
         (
             AvroValue::Record(vec),
             Schema::Record {
-                name, fields, lookup, ..
+                name: _,
+                fields,
+                lookup,
+                ..
             },
         ) => {
-            ref_cache.insert(name, schema);
             let mut json_map = Map::new();
             for (k, v) in vec.iter() {
                 let field_index = lookup.get(k).unwrap_or_else(|| panic!("Missing field {}", k));
@@ -142,22 +140,11 @@ fn map<'a>(
         //todo: use avro-json format
         (AvroValue::Union(i, v), Schema::Union(s)) => {
             let schema = s.variants().get(*i as usize).expect("Missing schema in the union");
-            for s in s.variants() {
-                if let Schema::Record { name, .. } = s {
-                    ref_cache.insert(name, s);
-                }
-            }
             map(&**v, schema, ref_cache)
         }
-        (AvroValue::Enum(_, v), Schema::Enum { name, .. }) => {
-            ref_cache.insert(name, schema);
-            Ok(json!(*v))
-        }
+        (AvroValue::Enum(_, v), Schema::Enum { name: _, .. }) => Ok(json!(*v)),
         //todo: check representation in avro-json
-        (AvroValue::Fixed(_, v), Schema::Fixed { name, .. }) => {
-            ref_cache.insert(name, schema);
-            Ok(json!(*v))
-        }
+        (AvroValue::Fixed(_, v), Schema::Fixed { .. }) => Ok(json!(*v)),
         (value, Schema::Ref { name }) => {
             let schema = ref_cache
                 .get(name)
@@ -175,7 +162,7 @@ mod tests {
     use apache_avro::{to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer};
     use async_trait::async_trait;
 
-    use crate::lib::schema_registry::{Result, SchemaRegistryClient, Subject};
+    use crate::lib::schema_registry::{ResolvedAvroSchema, Result, SchemaRegistryClient, Subject};
 
     use super::{get_schema_id, AvroParser};
     struct MockSchemaRegistry {
@@ -190,8 +177,8 @@ mod tests {
         async fn get_subject(&self, _: &str) -> Result<Subject> {
             todo!()
         }
-        async fn get_schema_by_id(&self, _: i32) -> Result<ApacheAvroSchema> {
-            Ok(ApacheAvroSchema::parse_str(&self.schema).unwrap())
+        async fn get_schema_by_id(&self, _: i32) -> Result<ResolvedAvroSchema> {
+            Ok(ApacheAvroSchema::parse_str(&self.schema).unwrap().into())
         }
         async fn delete_subject(&self, _: &str) -> Result<()> {
             todo!()

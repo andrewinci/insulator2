@@ -1,0 +1,44 @@
+{
+  "type": "record",
+  "name": "userInfo1",
+  "namespace": "my.example",
+  "fields": [
+    { "name": "value", "type": "long" },
+    {
+      "name": "nested",
+      "type": {
+        "type": "record",
+        "name": "userInfo2",
+        "fields": [
+          {
+            "name": "value",
+            "type": {
+              "type": "record",
+              "name": "userInfo3",
+              "namespace": "my.nested",
+              "fields": [{ "name": "value", "type": "long" }]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "array",
+      "type": {
+        "type": "array",
+        "items": [
+          "string",
+          {
+            "type": "record",
+            "name": "userInfo4",
+            "namespace": "my.nested",
+            "fields": [
+              { "name": "value", "type": "string" },
+              { "name": "ref", "type": "my.example.userInfo2" }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
