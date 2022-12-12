@@ -10,6 +10,7 @@ use std::{
     fs::OpenOptions,
     io::{LineWriter, Write},
     sync::{Arc, RwLock},
+    time::Duration,
 };
 
 use super::{
@@ -59,18 +60,27 @@ where
             .create_or_replace_topic_table(&self.cluster_id, &self.topic_name, compactify)
     }
 
-    pub fn get_records(&self, query: Option<&str>, offset: i64, limit: i64) -> Result<Vec<ParsedKafkaRecord>> {
-        self.store.query_records(&Query {
-            cluster_id: self.cluster_id.clone(),
-            topic_name: self.topic_name.clone(),
-            offset,
-            limit,
-            query_template: match query {
-                Some(query) => query,
-                None => Query::SELECT_WITH_OFFSET_LIMIT_QUERY,
-            }
-            .into(),
-        })
+    pub fn get_records(
+        &self,
+        query: Option<&str>,
+        offset: i64,
+        limit: i64,
+        timeout: Option<Duration>,
+    ) -> Result<Vec<ParsedKafkaRecord>> {
+        self.store.query_records(
+            &Query {
+                cluster_id: self.cluster_id.clone(),
+                topic_name: self.topic_name.clone(),
+                offset,
+                limit,
+                query_template: match query {
+                    Some(query) => query,
+                    None => Query::SELECT_WITH_OFFSET_LIMIT_QUERY,
+                }
+                .into(),
+            },
+            timeout,
+        )
     }
 
     pub async fn insert_record(&self, record: &RawKafkaRecord) -> Result<()> {
@@ -114,7 +124,8 @@ where
             }
         }?;
         let mut writer = LineWriter::new(out_file);
-        let query_result: Vec<ParsedKafkaRecord> = self.get_records(query.as_deref(), 0, query_limit)?;
+        let query_result: Vec<ParsedKafkaRecord> =
+            self.get_records(query.as_deref(), 0, query_limit, Some(Duration::from_secs(3 * 60)))?;
         trace!("Write records to the out file");
         writer.write_all(ParsedKafkaRecord::to_string_header().to_bytes())?;
         for record in query_result {
@@ -132,6 +143,7 @@ mod test {
     use std::env::temp_dir;
     use std::fs;
     use std::sync::Arc;
+    use std::time::Duration;
 
     use mockall::*;
 
@@ -154,7 +166,7 @@ mod test {
     mock! {
         Store {}
         impl RecordStore for Store {
-            fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>>;
+            fn query_records(&self, query: &Query, timeout: Option<Duration>) -> Result<Vec<ParsedKafkaRecord>>;
             fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()>;
             fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
             fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
@@ -171,7 +183,7 @@ mod test {
             .returning(|_, _, _| Ok(()));
         mock_record_store
             .expect_query_records()
-            .returning(|_| Ok(vec![create_test_record(0), create_test_record(1)]));
+            .returning(|_, _| Ok(vec![create_test_record(0), create_test_record(1)]));
         let sut = TopicStore::from_record_store(
             Arc::new(mock_record_store),
             Arc::new(parser_mock),
@@ -204,7 +216,7 @@ mod test {
         // arrange
         let mut mock_record_store = MockStore::new();
         let parser_mock = MockParser::new();
-        mock_record_store.expect_query_records().returning(|_| Ok(vec![]));
+        mock_record_store.expect_query_records().returning(|_, _| Ok(vec![]));
         mock_record_store
             .expect_create_or_replace_topic_table()
             .returning(|_, _, _| Ok(()));
@@ -238,7 +250,7 @@ mod test {
         mock_record_store
             .expect_create_or_replace_topic_table()
             .returning(|_, _, _| Ok(()));
-        mock_record_store.expect_query_records().returning(|_| Ok(vec![]));
+        mock_record_store.expect_query_records().returning(|_, _| Ok(vec![]));
         let sut = TopicStore::from_record_store(
             Arc::new(mock_record_store),
             Arc::new(parser_mock),

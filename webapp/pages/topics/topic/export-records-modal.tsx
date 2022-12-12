@@ -10,9 +10,14 @@ type ExportRecordsModalProps = {
   query: string;
   opened: boolean;
   onClose: () => void;
+  onExportStart: () => void;
+  onExportComplete: () => void;
 };
 
-export const ExportRecordsModal = ({ clusterId, topicName, query, opened, onClose }: ExportRecordsModalProps) => {
+export const ExportRecordsModal = (props: ExportRecordsModalProps) => {
+  const { clusterId, topicName, query, opened } = props;
+  const { onClose, onExportComplete, onExportStart } = props;
+
   // export records
   const { success } = useNotifications();
 
@@ -30,6 +35,7 @@ export const ExportRecordsModal = ({ clusterId, topicName, query, opened, onClos
         filters: [{ name: topicName, extensions: ["csv"] }],
       });
       if (outputPath != null) {
+        onExportStart();
         exportRecords(clusterId, topicName, {
           query,
           outputPath,
@@ -38,7 +44,10 @@ export const ExportRecordsModal = ({ clusterId, topicName, query, opened, onClos
           parseTimestamp: exportState.parseTimestamp,
         })
           .then((_) => onClose())
-          .then((_) => success("Records exported successfully"));
+          .then((_) => {
+            success("Records exported successfully");
+            onExportComplete();
+          });
       }
     } finally {
       onClose();

@@ -11,7 +11,7 @@ use super::query::Query;
 
 pub trait RecordStore {
     fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()>;
-    fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>>;
+    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> Result<Vec<ParsedKafkaRecord>>;
     fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
     fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
 }
@@ -22,7 +22,7 @@ pub struct SqliteStore {
 }
 
 impl RecordStore for SqliteStore {
-    fn query_records(&self, query: &Query) -> Result<Vec<ParsedKafkaRecord>> {
+    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> Result<Vec<ParsedKafkaRecord>> {
         let parsed_query = Self::parse_query(query);
         // closure that actually execute the query
         let _get_records = move |connection: &r2d2::PooledConnection<SqliteConnectionManager>| {
@@ -45,7 +45,7 @@ impl RecordStore for SqliteStore {
         };
         let connection = self.pool.get().unwrap();
         let start_query = Instant::now();
-        let timeout = self.timeout;
+        let timeout = timeout.unwrap_or(self.timeout);
         // setup the progress handler for the connection
         connection.progress_handler(2500, Some(move || start_query.elapsed() > timeout));
         // run the query
@@ -245,7 +245,7 @@ mod tests {
         // act
         db.insert_record(cluster_id, topic_name, &test_record).unwrap();
         let records_back = db
-            .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000))
+            .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000), None)
             .unwrap();
         // assert
         assert_eq!(records_back.len(), 1);
@@ -264,7 +264,7 @@ mod tests {
             db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, i))
                 .unwrap()
         });
-        let records_back = db.query_records(&Query::select_any(cluster_id, topic_name, 0, 1000));
+        let records_back = db.query_records(&Query::select_any(cluster_id, topic_name, 0, 1000), None);
         // assert
         assert_eq!(
             records_back.err().unwrap(),
@@ -293,7 +293,7 @@ mod tests {
             db.insert_record(cluster_id, topic_name, &test_record1).unwrap();
             db.insert_record(cluster_id, topic_name, &test_record2).unwrap();
             let records_back = db
-                .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000))
+                .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000), None)
                 .unwrap();
             // assert
             assert_eq!(records_back.len(), 1);
@@ -307,7 +307,7 @@ mod tests {
             db.insert_record(cluster_id, topic_name, &test_record1).unwrap();
             db.insert_record(cluster_id, topic_name, &test_record2).unwrap();
             let records_back = db
-                .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000))
+                .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000), None)
                 .unwrap();
             // assert
             assert_eq!(records_back.len(), 2);
@@ -385,13 +385,13 @@ mod tests {
         db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, 2))
             .unwrap();
         let first_1000_res = db
-            .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000))
+            .query_records(&Query::select_any(cluster_id, topic_name, 0, 1000), None)
             .unwrap();
         let first_res = db
-            .query_records(&Query::select_any(cluster_id, topic_name, 1, 1))
+            .query_records(&Query::select_any(cluster_id, topic_name, 1, 1), None)
             .unwrap();
         let no_res = db
-            .query_records(&Query::select_any(cluster_id, topic_name, 3, 1000))
+            .query_records(&Query::select_any(cluster_id, topic_name, 3, 1000), None)
             .unwrap();
         // assert
         assert_eq!(first_1000_res.len(), 3);
@@ -423,7 +423,7 @@ mod tests {
         async fn read(id: i32, db: Arc<SqliteStore>, cluster_id: &str, topic_name: &str) {
             let start = Instant::now();
             for i in 0..10_000 {
-                let res = db.query_records(&Query::select_any(cluster_id, topic_name, 0, 1000));
+                let res = db.query_records(&Query::select_any(cluster_id, topic_name, 0, 1000), None);
                 if res.is_err() {
                     println!("read-{} {} {:?}", id, i, res);
                 }

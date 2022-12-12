@@ -8,23 +8,17 @@ type TopicPageMenuProps = {
   consumedRecords?: number;
   isConsumerRunning?: boolean;
   height?: number;
+  exportInProgress?: boolean;
   onQueryChange: (query: string) => void;
   onQuery: () => void;
   onConsumerToggle: () => void;
   onExportClick: () => void;
 };
 
-export const TopicPageMenu = ({
-  consumedRecords,
-  isConsumerRunning,
-  height,
-  query,
-  topicName,
-  onQueryChange,
-  onConsumerToggle,
-  onQuery,
-  onExportClick,
-}: TopicPageMenuProps) => {
+export const TopicPageMenu = (props: TopicPageMenuProps) => {
+  const { consumedRecords, isConsumerRunning, height, query, topicName, exportInProgress } = props;
+  const { onQueryChange, onConsumerToggle, onQuery, onExportClick } = props;
+
   return (
     <>
       <Text my={5} size={"xs"}>
@@ -59,7 +53,12 @@ export const TopicPageMenu = ({
           <Button leftIcon={<IconSearch size={16} />} size="xs" onClick={onQuery}>
             Query
           </Button>
-          <Button leftIcon={<IconFileExport size={16} />} color={"green"} size="xs" onClick={onExportClick}>
+          <Button
+            loading={exportInProgress}
+            leftIcon={<IconFileExport size={16} />}
+            color={"green"}
+            size="xs"
+            onClick={onExportClick}>
             Export
           </Button>
         </Group>

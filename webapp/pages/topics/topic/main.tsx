@@ -38,7 +38,7 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
   const recordListRef = useRef<RecordsListRef>(null);
 
   // export records modal
-  const [exportModal, setExportModal] = useState({ opened: false });
+  const [exportState, setExportState] = useState({ modalOpened: false, exportInProgress: false });
 
   return (
     <>
@@ -69,7 +69,8 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
                 query={queryState.query}
                 onQueryChange={(query) => setQueryState((s) => ({ ...s, query }))}
                 onQuery={() => recordListRef.current?.executeQuery(queryState.query)}
-                onExportClick={() => setExportModal({ opened: true })}
+                exportInProgress={exportState.exportInProgress}
+                onExportClick={() => setExportState({ modalOpened: true, exportInProgress: false })}
               />
             )}
           </Container>
@@ -89,8 +90,10 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
         clusterId={clusterId}
         topicName={topicName}
         query={queryState.query}
-        opened={exportModal.opened}
-        onClose={() => setExportModal({ opened: false })}
+        opened={exportState.modalOpened}
+        onClose={() => setExportState((s) => ({ ...s, modalOpened: false }))}
+        onExportStart={() => setExportState((s) => ({ ...s, exportInProgress: true }))}
+        onExportComplete={() => setExportState((s) => ({ ...s, exportInProgress: false }))}
       />
     </>
   );

@@ -46,7 +46,7 @@ pub async fn get_records_page(
     const PAGE_SIZE: usize = 20;
     let cluster = state.get_cluster(cluster_id).await;
     let topic_store = cluster.get_topic_store(topic).await;
-    let records = topic_store.get_records(query, (page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64)?;
+    let records = topic_store.get_records(query, (page_number * PAGE_SIZE) as i64, PAGE_SIZE as i64, None)?;
     let records_count = records.len();
     Ok(GetPageResponse {
         records,
