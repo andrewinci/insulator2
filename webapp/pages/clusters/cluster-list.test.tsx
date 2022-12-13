@@ -1,5 +1,17 @@
-import { it, describe, expect } from "vitest";
-import { containsAllWords } from "./cluster-list";
+import { it, describe, expect, vi } from "vitest";
+import { ClusterList, containsAllWords } from "./cluster-list";
+import { render } from "@testing-library/react";
+import { mockHelpers } from "@tauri/test";
+
+mockHelpers();
+
+describe("clusterList", () => {
+  it("should render", () => {
+    vi.stubGlobal("useQuery", { data: true });
+    render(<ClusterList clusters={[]} onClusterDelete={vi.fn} onClusterSelected={vi.fn} />);
+  });
+});
+
 describe("containsAllWords", () => {
   it("should return false if no word is contained in the text", () => {
     expect(containsAllWords("a b c", "d e f") == false);

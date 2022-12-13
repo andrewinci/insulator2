@@ -13,53 +13,51 @@ import {
 } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { IconPlus } from "@tabler/icons";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader, SearchInput } from "../../components";
 import { Cluster } from "../../models";
 import { useUserSettings } from "../../providers";
 import { AddNewCluster, EditCluster } from "./edit-clusters";
 
-export const containsAllWords = (input: string, search: string): boolean => {
-  if (search == "") return true;
-  const lowerCaseInput = input.toLowerCase();
-  const lowerCaseSearch = search.toLowerCase();
-
-  const lowerCaseInputWords = lowerCaseInput.split(" ").filter((w) => w != "");
-  const lowerCaseSearchWords = lowerCaseSearch.split(" ").filter((w) => w != "");
-
-  return (
-    lowerCaseSearchWords.map((w) => lowerCaseInputWords.includes(w)).reduce((a, b) => a && b, true) ||
-    lowerCaseInput.includes(lowerCaseSearch)
-  );
-};
-
-export const ClusterList = () => {
+export const ClusterListPage = () => {
   const { userSettings, setUserSettings } = useUserSettings();
-  const [state, setState] = useState<{ search: string; newClusterModalOpened: boolean; editClusterId: string | null }>({
-    search: "",
-    newClusterModalOpened: false,
-    editClusterId: null,
-  });
   const navigate = useNavigate();
-
-  const openModal = (cluster: Cluster) =>
+  const openDeleteModal = (cluster: Cluster) =>
     openConfirmModal({
       title: `Are you sure to delete "${cluster.name}"`,
       children: <Text size="sm">If confirmed, it will not be possible to retrieve this configuration.</Text>,
       labels: { confirm: "Confirm", cancel: "Cancel" },
       onConfirm: () => setUserSettings((s) => ({ ...s, clusters: s.clusters.filter((c) => c.id != cluster.id) })),
     });
-
-  const filteredClusters = useMemo(
-    () => userSettings.clusters.filter((c) => containsAllWords(c.name, state.search)),
-    [state.search, userSettings.clusters]
+  return (
+    <ClusterList
+      clusters={userSettings.clusters}
+      onClusterSelected={(c) => navigate(`/cluster/${c.id}/topics`)}
+      onClusterDelete={(c) => openDeleteModal(c)}
+    />
   );
+};
+
+type ClusterListProps = {
+  clusters: Cluster[];
+  onClusterSelected: (cluster: Cluster) => void;
+  onClusterDelete: (cluster: Cluster) => void;
+};
+
+export const ClusterList = ({ clusters, onClusterSelected, onClusterDelete }: ClusterListProps) => {
+  const [state, setState] = useState({
+    search: "",
+    newClusterModalOpened: false,
+    editClusterId: null as string | null,
+  });
+
+  const filteredClusters = clusters.filter((c) => containsAllWords(c.name, state.search));
   const ref = useRef<HTMLButtonElement>(null);
   return (
     <>
       <Container>
-        <PageHeader title="Clusters" subtitle={`Total: ${userSettings.clusters.length}`}>
+        <PageHeader title="Clusters" subtitle={`Total: ${clusters.length}`}>
           <SearchInput
             showShortcut={true}
             value={state.search}
@@ -85,17 +83,13 @@ export const ClusterList = () => {
                     </div>
                     <Group position="right">
                       <Button.Group>
-                        <Button onClick={() => openModal(c)} color={"red"}>
+                        <Button onClick={() => onClusterDelete(c)} color={"red"}>
                           Delete
                         </Button>
                         <Button onClick={() => setState((s) => ({ ...s, editClusterId: c.id }))} color={"teal"}>
                           Edit
                         </Button>
-                        <Button
-                          ref={i == 0 ? ref : null}
-                          onClick={() => {
-                            navigate(`/cluster/${c.id}/topics`);
-                          }}>
+                        <Button ref={i == 0 ? ref : null} onClick={() => onClusterSelected(c)}>
                           Use
                         </Button>
                       </Button.Group>
@@ -136,5 +130,19 @@ export const ClusterList = () => {
         </Modal>
       )}
     </>
+  );
+};
+
+export const containsAllWords = (input: string, search: string): boolean => {
+  if (search == "") return true;
+  const lowerCaseInput = input.toLowerCase();
+  const lowerCaseSearch = search.toLowerCase();
+
+  const lowerCaseInputWords = lowerCaseInput.split(" ").filter((w) => w != "");
+  const lowerCaseSearchWords = lowerCaseSearch.split(" ").filter((w) => w != "");
+
+  return (
+    lowerCaseSearchWords.map((w) => lowerCaseInputWords.includes(w)).reduce((a, b) => a && b, true) ||
+    lowerCaseInput.includes(lowerCaseSearch)
   );
 };

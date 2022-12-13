@@ -1,14 +1,14 @@
 import { Route, Routes } from "react-router-dom";
 import { Settings, TopicsPage, SchemasPage, ConsumerGroupsPage } from "./pages";
 import "allotment/dist/style.css";
-import { ClusterList } from "./pages/clusters";
+import { ClusterListPage } from "./pages/clusters";
 
 export const Routing = () => (
   <Routes>
     {/* Clusters */}
-    <Route index element={<ClusterList />} />
-    <Route path="/clusters" element={<ClusterList />} />
-    <Route path="/cluster/:clusterId/clusters" element={<ClusterList />} />
+    <Route index element={<ClusterListPage />} />
+    <Route path="/clusters" element={<ClusterListPage />} />
+    <Route path="/cluster/:clusterId/clusters" element={<ClusterListPage />} />
     {/* Topics */}
     <Route path="/cluster/:clusterId/topics" element={<TopicsPage />} />
     <Route path="/cluster/:clusterId/topic/:topicName" element={<TopicsPage />} />

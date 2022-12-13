@@ -1,9 +1,8 @@
 import { Kbd, TextInput } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { IconSearch } from "@tabler/icons";
-import { useQuery } from "@tanstack/react-query";
-import { platform } from "@tauri-apps/api/os";
 import { useRef } from "react";
+import { usePlatform } from "@tauri/helpers";
 
 type SearchInputProps = {
   value?: string;
@@ -15,14 +14,15 @@ type SearchInputProps = {
 
 export const SearchInput = (props: SearchInputProps) => {
   const { placeholder, value, showShortcut, onChange, onEnter } = props;
-  const { data: isDarwin } = useQuery(["currentPlatform"], () => platform().then((p) => p === "darwin"));
+  const platform = usePlatform();
   const rightSection = (
     <div style={{ display: "flex", alignItems: "center" }}>
-      <Kbd sx={{ maxHeight: "23px" }}> {isDarwin ? "⌘" : "Ctrl"}</Kbd>
+      <Kbd sx={{ maxHeight: "23px" }}> {platform === "darwin" ? "⌘" : "Ctrl"}</Kbd>
       <span style={{ margin: "0 5px" }}>+</span>
       <Kbd sx={{ maxHeight: "23px" }}>f</Kbd>
     </div>
   );
+
   const ref = useRef<HTMLInputElement>(null);
   useHotkeys([["mod+f", () => ref.current?.focus()]]);
 
