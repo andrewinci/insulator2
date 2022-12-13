@@ -13,7 +13,7 @@ pub enum Error {
     LegacyConfig { message: String },
 }
 
-pub(super) type Result<T> = core::result::Result<T, Error>;
+pub type Result<T> = core::result::Result<T, Error>;
 
 impl From<std::io::Error> for Error {
     fn from(error: std::io::Error) -> Self {
