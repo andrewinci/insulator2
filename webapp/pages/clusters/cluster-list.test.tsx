@@ -1,9 +1,8 @@
 import { it, describe, expect, vi } from "vitest";
-import { ClusterList, containsAllWords } from "./cluster-list";
 import { render } from "@testing-library/react";
 import { mockHelpers } from "@tauri/test";
-
 mockHelpers();
+import { ClusterList, containsAllWords } from "./cluster-list";
 
 describe("clusterList", () => {
   it("should render", () => {

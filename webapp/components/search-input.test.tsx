@@ -1,10 +1,9 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { SearchInput } from "./search-input";
 import userEvent from "@testing-library/user-event";
 import { mockHelpers } from "@tauri/test";
-
 mockHelpers();
+import { SearchInput } from "./search-input";
 
 describe("SearchInput", () => {
   it("should render without throwing", () => {
