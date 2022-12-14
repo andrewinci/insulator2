@@ -20,8 +20,8 @@ pub struct UserCertificate {
 #[tauri::command]
 pub async fn parse_truststore(location: &str, password: Option<&str>) -> Result<String> {
     debug!("Parsing truststore {}", &location);
-    let ca_certificate = KeyStore::try_load(&location)
-        .and_then(|c| c.certificates(password.as_deref()))
+    let ca_certificate = KeyStore::try_load(location)
+        .and_then(|c| c.certificates(password))
         .map(|certs| certs[0].pem.clone());
     ca_certificate.map_err(|err| {
         error!("Unable to load the truststore: {:?}", err);
@@ -35,8 +35,8 @@ pub async fn parse_truststore(location: &str, password: Option<&str>) -> Result<
 #[tauri::command]
 pub async fn parse_keystore(location: &str, password: Option<&str>) -> Result<UserCertificate> {
     debug!("Parsing keystore {}", &location);
-    let user_cert = KeyStore::try_load(&location)
-        .and_then(|c| c.certificates(password.as_deref()))
+    let user_cert = KeyStore::try_load(location)
+        .and_then(|c| c.certificates(password))
         .map(|certs| certs[0].clone());
 
     if let Ok(certificate) = user_cert {
