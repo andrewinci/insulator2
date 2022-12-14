@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { useUserSettings, useNotifications } from "../../providers";
 import { Cluster, ClusterAuthentication, UserSettings } from "../../models";
-import { AuthenticationFormType, ClusterForm, ClusterFormType, SaslFormType, SslFormType } from "./form";
+import { AuthenticationFormType, ClusterForm, ClusterFormType, SaslFormType, SslFormType } from "./cluster-form";
 
 const upsertCluster = (s: UserSettings, cluster: Cluster): UserSettings => {
   if (s.clusters.find((c) => c.id == cluster.id)) {
