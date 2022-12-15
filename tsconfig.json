@@ -14,11 +14,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
-    "baseUrl": "./webapp",
-    "paths": {
-      "@tauri/*": ["tauri/*"]
-    }
+    "jsx": "react-jsx"
   },
   "include": ["webapp"],
   "references": [{ "path": "./tsconfig.node.json" }]

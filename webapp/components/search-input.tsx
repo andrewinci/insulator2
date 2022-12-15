@@ -2,7 +2,7 @@ import { Kbd, TextInput } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { IconSearch } from "@tabler/icons";
 import { useRef } from "react";
-import { usePlatform } from "@tauri/helpers";
+import { usePlatform } from "../tauri/helpers";
 
 type SearchInputProps = {
   value?: string;

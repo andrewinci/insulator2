@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api";
 import { platform } from "@tauri-apps/api/os";
-import { addNotification } from "providers";
+import { addNotification } from "../providers";
 import { format, TauriError } from "./error";
 
 type Platform = "linux" | "darwin" | "win";

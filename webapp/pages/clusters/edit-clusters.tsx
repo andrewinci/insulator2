@@ -9,7 +9,7 @@ import {
   SaslFormType,
   SslFormType,
 } from "./cluster-form";
-import { parseKeystore, parseTruststore } from "@tauri/helpers";
+import { parseKeystore, parseTruststore } from "../../tauri/helpers";
 
 const upsertCluster = (s: UserSettings, cluster: Cluster): UserSettings => {
   if (s.clusters.find((c) => c.id == cluster.id)) {
