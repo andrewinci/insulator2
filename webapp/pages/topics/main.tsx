@@ -19,7 +19,7 @@ export const TopicsPage = () => {
 
   return (
     <Allotment>
-      <Allotment.Pane minSize={430} maxSize={state.topicName ? 600 : undefined}>
+      <Allotment.Pane minSize={430} preferredSize={state.topicName ? 600 : undefined}>
         <TopicList clusterId={clusterId} onTopicSelected={(activeTopic) => setState({ topicName: activeTopic })} />
       </Allotment.Pane>
       {state.topicName && (

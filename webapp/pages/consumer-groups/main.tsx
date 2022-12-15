@@ -19,11 +19,11 @@ export const ConsumerGroupsPage = () => {
 
   return (
     <Allotment>
-      <Allotment.Pane minSize={430} maxSize={state.consumerName ? 600 : undefined}>
+      <Allotment.Pane minSize={430} preferredSize={state.consumerName ? 600 : undefined}>
         <ConsumerGroupsList clusterId={clusterId} onConsumerSelected={(consumerName) => setState({ consumerName })} />
       </Allotment.Pane>
 
-      <Allotment.Pane minSize={300}>
+      <Allotment.Pane minSize={520}>
         {state.consumerName && <ConsumerGroup name={state.consumerName} clusterId={clusterId} />}
       </Allotment.Pane>
     </Allotment>

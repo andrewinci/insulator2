@@ -21,11 +21,11 @@ export const SchemasPage = () => {
     // a schema has been selected, show the allotment
     return (
       <Allotment>
-        <Allotment.Pane minSize={430} maxSize={state.schemaName ? 600 : undefined}>
+        <Allotment.Pane minSize={430} preferredSize={state.schemaName ? 600 : undefined}>
           <SchemaList clusterId={clusterId} onSubjectSelected={(schemaName) => setState({ schemaName })} />
         </Allotment.Pane>
 
-        <Allotment.Pane minSize={300}>
+        <Allotment.Pane minSize={520}>
           {state.schemaName && <Schema clusterId={clusterId} schemaName={state.schemaName} />}
         </Allotment.Pane>
       </Allotment>
