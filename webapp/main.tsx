@@ -41,6 +41,7 @@ const App = () => {
                   paddingRight: 0,
                   paddingTop: 0,
                   paddingBottom: 0,
+                  paddingLeft: "calc(var(--mantine-navbar-width, 0px))",
                 },
               })}>
               <Routing />

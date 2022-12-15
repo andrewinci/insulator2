@@ -10,15 +10,14 @@ interface SidebarItemProps {
   url: string;
   active?: boolean;
   minimized?: boolean;
-  onClick?: () => void;
 }
 
-export const SidebarItem = ({ icon, color, label, url, active, minimized, onClick }: SidebarItemProps) => {
+export const SidebarItem = ({ icon, color, label, url, active, minimized }: SidebarItemProps) => {
   const navigate = useNavigate();
   return (
     <Tooltip hidden={!minimized} label={label} position={"right"} zIndex={2147483647}>
       <UnstyledButton
-        onClick={() => (onClick ? onClick() : navigate(url))}
+        onClick={() => navigate(url)}
         sx={(theme) => ({
           display: "block",
           marginTop: "5px",

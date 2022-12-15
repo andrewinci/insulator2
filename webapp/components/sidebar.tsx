@@ -1,14 +1,6 @@
 import { Text, Divider, Image, Box, Center, Group, Navbar, Title, Stack } from "@mantine/core";
 import { SidebarItem } from "./sidebar-item";
-import {
-  IconArrowBarLeft,
-  IconArrowBarRight,
-  IconCircleDashed,
-  IconLine,
-  IconSatellite,
-  IconServer,
-  IconSettings,
-} from "@tabler/icons";
+import { IconCircleDashed, IconLine, IconSatellite, IconServer, IconSettings } from "@tabler/icons";
 import logo from "../../src-tauri/icons/128x128.png";
 import { matchPath, useLocation } from "react-router-dom";
 import { useMemo, useState } from "react";
@@ -16,6 +8,7 @@ import { useUserSettings } from "../providers";
 import { getVersion } from "@tauri-apps/api/app";
 import { useQuery } from "@tanstack/react-query";
 import { appWindow, PhysicalSize } from "@tauri-apps/api/window";
+import { MinimizeButton } from "./minimize-button";
 
 export const SideBar = () => {
   const { userSettings: appState } = useUserSettings();
@@ -102,14 +95,7 @@ export const SideBar = () => {
           />
         </Box>
       </Navbar.Section>
-      <SidebarItem
-        url={""}
-        onClick={() => setMinimized(!minimized)}
-        icon={minimized ? <IconArrowBarRight size={iconSize} /> : <IconArrowBarLeft size={iconSize} />}
-        color={"transparent"}
-        label={minimized ? "Expand" : "Minimize"}
-        minimized={minimized}
-      />
+      <MinimizeButton minimized={minimized} onClick={() => setMinimized(!minimized)} />
     </Navbar>
   );
 };
