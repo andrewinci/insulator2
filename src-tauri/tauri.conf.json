@@ -16,7 +16,8 @@
         "all": true
       },
       "window": {
-        "setTitle": true
+        "setTitle": true,
+        "setMinSize": true
       },
       "dialog": {
         "save": true,

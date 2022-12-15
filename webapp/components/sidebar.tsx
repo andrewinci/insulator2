@@ -15,7 +15,7 @@ import { useMemo, useState } from "react";
 import { useUserSettings } from "../providers";
 import { getVersion } from "@tauri-apps/api/app";
 import { useQuery } from "@tanstack/react-query";
-import { appWindow } from "@tauri-apps/api/window";
+import { appWindow, PhysicalSize } from "@tauri-apps/api/window";
 
 export const SideBar = () => {
   const { userSettings: appState } = useUserSettings();
@@ -26,8 +26,10 @@ export const SideBar = () => {
     const clusterName = appState.clusters.find((c) => c.id == clusterId)?.name;
     return { clusterName, clusterId, activeItem };
   }, [location, appState]);
-  appWindow.setTitle(clusterName ? `Insulator 2 - ${clusterName}` : `Insulator 2`);
+
   const [minimized, setMinimized] = useState(false);
+  appWindow.setMinSize(new PhysicalSize(minimized ? 1020 : 1200, minimized ? 700 : 800));
+  appWindow.setTitle(clusterName ? `Insulator 2 - ${clusterName}` : `Insulator 2`);
   const iconSize = minimized ? 20 : 16;
   return (
     <Navbar width={{ base: minimized ? 63 : 220 }} p="xs">
