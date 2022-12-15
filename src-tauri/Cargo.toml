@@ -15,7 +15,7 @@ tauri-build = { version = "1.2", features = [] }
 serde_json = "1.0"
 dirs = "4.0.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.2", features = ["dialog-save", "os-all", "updater"] }
+tauri = { version = "1.2", features = ["dialog-open", "dialog-save", "os-all", "updater"] }
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 url = { version = "2", features = ["serde"] }
 tokio = { version = "1", features = ["full"] }

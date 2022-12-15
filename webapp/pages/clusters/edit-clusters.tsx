@@ -1,7 +1,15 @@
 import { v4 as uuid } from "uuid";
 import { useUserSettings, useNotifications } from "../../providers";
 import { Cluster, ClusterAuthentication, UserSettings } from "../../models";
-import { AuthenticationFormType, ClusterForm, ClusterFormType, SaslFormType, SslFormType } from "./form";
+import {
+  AuthenticationFormType,
+  ClusterForm,
+  ClusterFormType,
+  JksFormType,
+  SaslFormType,
+  SslFormType,
+} from "./cluster-form";
+import { parseKeystore, parseTruststore } from "../../tauri/helpers";
 
 const upsertCluster = (s: UserSettings, cluster: Cluster): UserSettings => {
   if (s.clusters.find((c) => c.id == cluster.id)) {
@@ -32,7 +40,7 @@ export const EditCluster = ({ onSubmit, clusterId }: { onSubmit: () => void; clu
   };
 
   const onFormSubmit = async (c: ClusterFormType) => {
-    const newCluster = mapFormToCluster(c);
+    const newCluster = await mapFormToCluster(c);
     await editCluster(cluster.id, newCluster).then((_) => onSubmit());
   };
 
@@ -56,7 +64,7 @@ export const AddNewCluster = ({ onSubmit }: { onSubmit: () => void }) => {
   };
 
   const onFormSubmit = async (c: ClusterFormType) => {
-    const newCluster = mapFormToCluster(c);
+    const newCluster = await mapFormToCluster(c);
     await addCluster(newCluster).then((_) => onSubmit());
   };
 
@@ -83,7 +91,7 @@ function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
   return { name, endpoint, authentication: { type, sasl, ssl }, schemaRegistry };
 }
 
-function mapFormToCluster(c: ClusterFormType): Cluster {
+async function mapFormToCluster(c: ClusterFormType): Promise<Cluster> {
   let authentication: ClusterAuthentication = "None";
   switch (c.authentication.type) {
     case "None":
@@ -96,6 +104,10 @@ function mapFormToCluster(c: ClusterFormType): Cluster {
     case "SSL":
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       authentication = { Ssl: { ...c.authentication.ssl! } };
+      break;
+    case "JKS":
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      authentication = { Ssl: { ...(await mapJKSConfigToSSLConfig(c.authentication.jks!)) } };
       break;
     default:
       throw "Not supported";
@@ -119,5 +131,20 @@ function mapFormToCluster(c: ClusterFormType): Cluster {
       schemas: [],
       topics: [],
     },
+  };
+}
+
+async function mapJKSConfigToSSLConfig(cfg: JksFormType): Promise<SslFormType> {
+  if (!cfg.keystoreLocation || !cfg.truststoreLocation) {
+    throw "Keystore and truststore locations must be specified";
+  }
+  const truststorePromise = parseTruststore(cfg.truststoreLocation, cfg.truststorePassword);
+  const keystorePromise = parseKeystore(cfg.keystoreLocation, cfg.keystorePassword);
+  const certs = await Promise.all([truststorePromise, keystorePromise]);
+  return {
+    ca: certs[0],
+    certificate: certs[1].certificate,
+    key: certs[1].key,
+    keyPassword: undefined,
   };
 }
