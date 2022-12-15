@@ -37,16 +37,17 @@ export const TopicsPage = () => {
             onTopicSelected={(activeTopic) => setState((s) => ({ ...s, topicName: activeTopic }))}
           />
         )}
-        <MinimizeButton
-          minimized={state.minimized}
-          onClick={() => setState((s) => ({ ...s, minimized: !state.minimized }))}
-        />
+        {state.topicName && (
+          <MinimizeButton
+            minimizeTarget="itemList"
+            minimized={state.minimized}
+            onClick={() => setState((s) => ({ ...s, minimized: !state.minimized }))}
+          />
+        )}
       </Allotment.Pane>
-      {state.topicName && (
-        <Allotment.Pane minSize={520}>
-          <Topic clusterId={clusterId} topicName={state.topicName} />
-        </Allotment.Pane>
-      )}
+      <Allotment.Pane minSize={520}>
+        {state.topicName && <Topic clusterId={clusterId} topicName={state.topicName} />}
+      </Allotment.Pane>
     </Allotment>
   );
 };

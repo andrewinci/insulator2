@@ -1,11 +1,25 @@
 import { IconArrowBarLeft, IconArrowBarRight } from "@tabler/icons";
 import { Group, ThemeIcon, UnstyledButton } from "@mantine/core";
+import { appWindow, LogicalSize } from "@tauri-apps/api/window";
+
+const isMinimizedMap = {
+  sidebar: false,
+  itemList: false,
+};
 
 type MinimizeButtonProps = {
   minimized: boolean;
+  minimizeTarget: "sidebar" | "itemList";
   onClick: () => void;
 };
-export const MinimizeButton = ({ minimized, onClick }: MinimizeButtonProps) => {
+
+export const MinimizeButton = ({ minimized, minimizeTarget, onClick }: MinimizeButtonProps) => {
+  isMinimizedMap[minimizeTarget] = minimized;
+  if (isMinimizedMap["sidebar"] && isMinimizedMap["itemList"]) appWindow.setMinSize(new LogicalSize(620, 600));
+  else if (isMinimizedMap["sidebar"]) appWindow.setMinSize(new LogicalSize(1020, 700));
+  else if (isMinimizedMap["itemList"]) appWindow.setMinSize(new LogicalSize(800, 700));
+  else appWindow.setMinSize(new LogicalSize(1200, 800));
+
   return (
     <UnstyledButton
       onClick={onClick}
