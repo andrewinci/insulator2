@@ -1,7 +1,7 @@
 {
   "build": {
-    "beforeDevCommand": "yarn dev",
-    "beforeBuildCommand": "yarn build",
+    "beforeDevCommand": "yarn workspace frontend dev",
+    "beforeBuildCommand": "yarn workspace frontend build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist"
   },
@@ -35,7 +35,7 @@
         "depends": []
       },
       "externalBin": [],
-      "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+      "icon": ["../icons/32x32.png", "../icons/128x128.png", "../icons/128x128@2x.png", "../icons/icon.icns", "../icons/icon.ico"],
       "identifier": "com.insulator",
       "publisher": "Insulator",
       "longDescription": "A client UI to inspect Kafka topics, consume, produce and much more.",

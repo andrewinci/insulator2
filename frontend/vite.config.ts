@@ -25,6 +25,6 @@ export default defineConfig({
     sourcemap: !!process.env.TAURI_DEBUG,
   },
   test: {
-    setupFiles: ["./webapp/test-setup.ts"],
+    setupFiles: ["./src/test-setup.ts"],
   },
 });

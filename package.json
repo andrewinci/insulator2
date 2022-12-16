@@ -3,23 +3,17 @@
   "private": true,
   "version": "2.7.0",
   "type": "module",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
     "postinstall": "husky install",
     "release": "semantic-release --repositoryUrl=\"https://github.com/andrewinci/insulator2.git\" --ci false",
-    "lint:rust": "cd src-tauri && cargo fmt && cargo clippy",
-    "lint:rust:check": "cd src-tauri && cargo fmt --check && cargo clippy",
-    "lint:ts": "prettier --write . && yarn eslint webapp/ --fix && yarn tsc --noemit",
-    "lint:ts:check": "prettier --check . && yarn eslint webapp/ && yarn tsc --noemit",
-    "lint": "yarn lint:ts && yarn lint:rust",
-    "lint:check": "yarn lint:rust:check && yarn lint:ts:check",
-    "test:ts": "vitest run --dom",
-    "test:rust": "cd src-tauri && cargo test",
-    "test": "yarn test:rust && yarn test:ts",
-    "coverage:rust": "cargo tarpaulin --root=src-tauri --out Xml",
-    "coverage:ts": "vitest run --dom --coverage",
-    "coverage": "yarn coverage:rust && yarn coverage:ts",
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "lint": "yarn workspaces run lint",
+    "lint:check": "yarn workspaces run lint:check",
+    "test": "yarn workspaces run test",
+    "coverage": "yarn workspaces run coverage",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -141,5 +135,5 @@
     "node": "16.18.0",
     "yarn": "1.22.19"
   },
-  "packageManager": "yarn@3.2.4"
+  "packageManager": "yarn@3.3.0"
 }
