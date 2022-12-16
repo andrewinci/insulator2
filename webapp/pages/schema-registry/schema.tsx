@@ -1,7 +1,9 @@
 import { ActionIcon, Center, Container, Group, Loader, Menu, Select, Tooltip, Text } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
-import { IconTool, IconTrash, IconVersions } from "@tabler/icons";
+import { IconFileExport, IconTool, IconTrash, IconVersions } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
+import { fs } from "@tauri-apps/api";
+import { save } from "@tauri-apps/api/dialog";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CodeEditor, PageHeader } from "../../components";
@@ -18,18 +20,26 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
   const { data: subject, isLoading } = useQuery(["getSchemaVersions", clusterId, schemaName], () =>
     getSubject(clusterId, schemaName)
   );
-  const [state, setState] = useState<{ version?: number }>();
+
+  const [state, setState] = useState({
+    version: undefined as number | undefined,
+  });
 
   useMemo(() => {
     if (subject) {
       const lastSchemaVersion = Math.max(...subject.versions.map((s) => s.version));
-      setState({ version: lastSchemaVersion });
+      setState((s) => ({ ...s, version: lastSchemaVersion }));
     }
   }, [subject]);
+
+  const currentSchema = pretty(subject?.versions?.find((s) => s.version == state?.version)?.schema ?? "");
+
   return (
     <Container fluid>
       <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`}>
-        {state?.version && <Tools clusterId={clusterId} subject={schemaName} version={state.version} />}
+        {state?.version && (
+          <Tools clusterId={clusterId} subject={schemaName} version={state.version} currentSchema={currentSchema} />
+        )}
       </PageHeader>
       {!isLoading && subject && (
         <Group>
@@ -53,7 +63,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
           path={schemaName}
           height="calc(100vh - 155px)"
           language="json"
-          value={pretty(subject?.versions?.find((s) => s.version == state?.version)?.schema ?? "")}
+          value={currentSchema}
           readOnly={true}
         />
       </Container>
@@ -61,15 +71,25 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
   );
 };
 
-const Tools = ({ clusterId, subject, version }: { clusterId: string; subject: string; version: number }) => {
+const Tools = ({
+  clusterId,
+  subject,
+  version,
+  currentSchema,
+}: {
+  clusterId: string;
+  subject: string;
+  version: number;
+  currentSchema: string;
+}) => {
   const navigate = useNavigate();
-  const { success } = useNotifications();
+  const { success, alert } = useNotifications();
   const openDeleteSubjectModal = () =>
     openConfirmModal({
       title: "Are you sure to delete this subject?",
       children: (
         <Text color="red" size="sm">
-          All versions of this {subject} will be deleted. This action is not reversible!
+          All versions of the {subject} schema will be deleted. This action is not reversible!
         </Text>
       ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
@@ -96,6 +116,20 @@ const Tools = ({ clusterId, subject, version }: { clusterId: string; subject: st
         }),
     });
 
+  const onExport = async () => {
+    const path = await save({
+      defaultPath: `${subject}.json`,
+    });
+    if (path) {
+      try {
+        await fs.writeTextFile(path, currentSchema);
+        success(`Schema saved to ${path}`);
+      } catch (err) {
+        alert("Unable to save the schema locally", JSON.stringify(err));
+      }
+    }
+  };
+
   return (
     <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
       <Menu.Target>
@@ -105,6 +139,9 @@ const Tools = ({ clusterId, subject, version }: { clusterId: string; subject: st
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Tools</Menu.Label>
+        <Menu.Item icon={<IconFileExport size={14} />} onClick={onExport}>
+          Download schema
+        </Menu.Item>
         <Menu.Item color="red" icon={<IconTrash size={14} />} onClick={openDeleteVersionModal}>
           Delete selected version
         </Menu.Item>
