@@ -1,5 +1,5 @@
 import { Badge, Button, Group, Text, Anchor, Tooltip, Loader } from "@mantine/core";
-import { IconArrowBarToDown, IconArrowBarToUp, IconFileExport, IconSearch } from "@tabler/icons";
+import { IconArrowBarToDown, IconArrowBarToUp, IconSearch } from "@tabler/icons";
 import { CodeEditor } from "../../../components";
 
 type TopicPageMenuProps = {
@@ -8,16 +8,14 @@ type TopicPageMenuProps = {
   consumedRecords?: number;
   isConsumerRunning?: boolean;
   height?: number;
-  exportInProgress?: boolean;
   onQueryChange: (query: string) => void;
   onQuery: () => void;
   onConsumerToggle: () => void;
-  onExportClick: () => void;
 };
 
 export const TopicPageMenu = (props: TopicPageMenuProps) => {
-  const { consumedRecords, isConsumerRunning, height, query, topicName, exportInProgress } = props;
-  const { onQueryChange, onConsumerToggle, onQuery, onExportClick } = props;
+  const { consumedRecords, isConsumerRunning, height, query, topicName } = props;
+  const { onQueryChange, onConsumerToggle, onQuery } = props;
 
   return (
     <>
@@ -52,14 +50,6 @@ export const TopicPageMenu = (props: TopicPageMenuProps) => {
           </Button>
           <Button leftIcon={<IconSearch size={16} />} size="xs" onClick={onQuery}>
             Query
-          </Button>
-          <Button
-            loading={exportInProgress}
-            leftIcon={<IconFileExport size={16} />}
-            color={"green"}
-            size="xs"
-            onClick={onExportClick}>
-            Export
           </Button>
         </Group>
         <Button disabled leftIcon={<IconArrowBarToUp size={16} />} color={"orange"} size="xs">

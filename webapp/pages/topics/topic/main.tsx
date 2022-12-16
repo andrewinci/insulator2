@@ -52,7 +52,12 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
               subtitle={`Estimated Records: ${estimatedRecords ?? "..."}, Cleanup policy: ${
                 topicInfo?.cleanupPolicy ?? "..."
               }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}>
-              <ToolsMenu clusterId={clusterId} topic={topicName} />
+              <ToolsMenu
+                clusterId={clusterId}
+                topic={topicName}
+                onExportClick={() => setExportState({ modalOpened: true, exportInProgress: false })}
+                exportInProgress={exportState.exportInProgress}
+              />
             </PageHeader>
             {isLoading && (
               <Center mt={10}>
@@ -69,8 +74,6 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
                 query={queryState.query}
                 onQueryChange={(query) => setQueryState((s) => ({ ...s, query }))}
                 onQuery={() => recordListRef.current?.executeQuery(queryState.query)}
-                exportInProgress={exportState.exportInProgress}
-                onExportClick={() => setExportState({ modalOpened: true, exportInProgress: false })}
               />
             )}
           </Container>

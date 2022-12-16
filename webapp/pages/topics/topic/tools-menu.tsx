@@ -1,12 +1,14 @@
 import { ActionIcon, Text, Menu, Title } from "@mantine/core";
-import { IconInfoCircle, IconTool, IconTrash } from "@tabler/icons";
+import { IconFileExport, IconInfoCircle, IconTool, IconTrash } from "@tabler/icons";
 import { deleteTopic, getTopicInfo } from "../../../tauri/admin";
 import { useNavigate } from "react-router-dom";
 import { openConfirmModal, openModal } from "@mantine/modals";
 import { useNotifications } from "../../../providers";
 import { TopicInfoModal } from "./topic-info-modal";
 
-export const ToolsMenu = ({ clusterId, topic }: { clusterId: string; topic: string }) => {
+type ToolsMenuProps = { clusterId: string; topic: string; exportInProgress: boolean; onExportClick: () => void };
+
+export const ToolsMenu = ({ clusterId, topic, exportInProgress, onExportClick }: ToolsMenuProps) => {
   const navigate = useNavigate();
   const { success } = useNotifications();
   const openDeleteTopicModal = () =>
@@ -46,6 +48,9 @@ export const ToolsMenu = ({ clusterId, topic }: { clusterId: string; topic: stri
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Tools</Menu.Label>
+        <Menu.Item icon={<IconFileExport size={14} />} onClick={onExportClick} disabled={exportInProgress}>
+          Export records
+        </Menu.Item>
         <Menu.Item icon={<IconInfoCircle size={14} />} onClick={openInfoModal}>
           Topic info
         </Menu.Item>
