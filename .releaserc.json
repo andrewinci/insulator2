@@ -13,7 +13,7 @@
       "@semantic-release/git",
       {
         "assets": [
-          "src-tauri/tauri.conf.json",
+          "backend/tauri.conf.json",
           "CHANGELOG.md",
           "package.json",
           "manifests/update-darwin.json",

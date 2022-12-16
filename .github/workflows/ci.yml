@@ -53,14 +53,14 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            src-tauri/target/
+            backend/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: (MacOS) Test and build
         if: matrix.os == 'macos-12' && !startsWith(github.ref, 'refs/tags/v')
         run: |
           # clean up cached bundle
-          yarn rimraf src-tauri/target/release/bundle/
+          yarn rimraf backend/target/release/bundle/
           mkdir dist
           yarn test && yarn tauri build -b dmg
 
@@ -85,7 +85,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           # clean up cached bundle
-          yarn rimraf src-tauri/target/release/bundle/
+          yarn rimraf backend/target/release/bundle/
           # build
           yarn tauri build
         env:
@@ -96,7 +96,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}-artifacts
-          path: src-tauri/target/release/bundle/*
+          path: backend/target/release/bundle/*
           retention-days: 1
 
       - name: (MacOS) Update manifest
@@ -127,13 +127,13 @@ jobs:
         with:
           files: |
             manifests/update-linux.json
-            src-tauri/target/release/bundle/deb/insulator-*_amd64.deb
-            src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage
-            src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz
+            backend/target/release/bundle/deb/insulator-*_amd64.deb
+            backend/target/release/bundle/appimage/insulator-*_amd64.AppImage
+            backend/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz
             manifests/update-darwin.json
-            src-tauri/target/release/bundle/dmg/*.dmg
-            src-tauri/target/release/bundle/macos/Insulator*.app.tar.gz
+            backend/target/release/bundle/dmg/*.dmg
+            backend/target/release/bundle/macos/Insulator*.app.tar.gz
             manifests/update-windows.json
-            src-tauri/target/release/Insulator*.exe
-            src-tauri/target/release/bundle/msi/Insulator*.msi
-            src-tauri/target/release/bundle/msi/Insulator*.msi.zip
+            backend/target/release/Insulator*.exe
+            backend/target/release/bundle/msi/Insulator*.msi
+            backend/target/release/bundle/msi/Insulator*.msi.zip
