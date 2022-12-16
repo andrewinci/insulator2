@@ -1,9 +1,10 @@
-import { ActionIcon, Text, Menu } from "@mantine/core";
+import { ActionIcon, Text, Menu, Title } from "@mantine/core";
 import { IconInfoCircle, IconTool, IconTrash } from "@tabler/icons";
-import { deleteTopic } from "../../../tauri/admin";
+import { deleteTopic, getTopicInfo } from "../../../tauri/admin";
 import { useNavigate } from "react-router-dom";
-import { openConfirmModal } from "@mantine/modals";
+import { openConfirmModal, openModal } from "@mantine/modals";
 import { useNotifications } from "../../../providers";
+import { TopicInfoModal } from "./topic-info-modal";
 
 export const ToolsMenu = ({ clusterId, topic }: { clusterId: string; topic: string }) => {
   const navigate = useNavigate();
@@ -27,7 +28,14 @@ export const ToolsMenu = ({ clusterId, topic }: { clusterId: string; topic: stri
         }),
     });
 
-  const openInfoModal = () => console.log("Not implemented yet");
+  const openInfoModal = async () => {
+    const topicInfo = await getTopicInfo(clusterId, topic);
+    return openModal({
+      title: <Title>Topic info</Title>,
+      size: 700,
+      children: <TopicInfoModal topicInfo={topicInfo} />,
+    });
+  };
 
   return (
     <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
