@@ -134,5 +134,6 @@ jobs:
             src-tauri/target/release/bundle/dmg/*.dmg
             src-tauri/target/release/bundle/macos/Insulator*.app.tar.gz
             manifests/update-windows.json
+            src-tauri/target/release/Insulator*.exe
             src-tauri/target/release/bundle/msi/Insulator*.msi
             src-tauri/target/release/bundle/msi/Insulator*.msi.zip
