@@ -25,7 +25,10 @@ export const useClusterForm = (initialValues?: ClusterFormType) => {
     },
     validate: {
       name: (v) => nonEmptyValidation("Cluster")(v ?? ""),
-      endpoint: (v) => nonEmptyValidation("Endpoint")(v ?? ""),
+      // the endpoint must be non empty and without the http protocol
+      endpoint: (v) =>
+        nonEmptyValidation("Endpoint")(v ?? "") ??
+        (v.includes("http://") || v.includes("https://") ? "Remove the protocol http(s):// from the endpoint" : null),
       authentication: {
         type: (v: string) => (["None", "SASL", "SSL", "JKS"].includes(v) ? null : "Unsupported authentication"),
         sasl: {

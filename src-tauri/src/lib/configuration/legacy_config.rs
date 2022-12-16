@@ -85,7 +85,7 @@ impl TryFrom<LegacyConfiguration> for InsulatorConfig {
                 clusters.push(ClusterConfig {
                     id: c.guid.clone(),
                     name: c.name.clone(),
-                    endpoint: c.endpoint.clone(),
+                    endpoint: c.endpoint.clone().replace("https://", "").replace("http://", ""),
                     authentication,
                     schema_registry,
                     ..Default::default()
