@@ -24,14 +24,6 @@ impl ConfigStore {
         }
     }
 
-    #[cfg(test)]
-    fn from_config_path(config_path: &str) -> Self {
-        ConfigStore {
-            config_path: PathBuf::from(config_path),
-            legacy_config_path: PathBuf::from(config_path),
-        }
-    }
-
     pub fn get_configuration(&self) -> Result<InsulatorConfig> {
         match Path::exists(&self.config_path) {
             // read file content
@@ -68,6 +60,14 @@ impl ConfigStore {
         let raw_config = toml::to_string_pretty(&as_store)?;
         fs::write(&self.config_path, raw_config)?;
         Ok(())
+    }
+
+    #[cfg(test)]
+    fn from_config_path(config_path: &str) -> Self {
+        ConfigStore {
+            config_path: PathBuf::from(config_path),
+            legacy_config_path: PathBuf::from(config_path),
+        }
     }
 }
 

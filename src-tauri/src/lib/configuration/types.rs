@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct InsulatorConfig {
     pub theme: Theme,
     #[serde(rename = "showNotifications")]
@@ -10,6 +10,18 @@ pub struct InsulatorConfig {
     #[serde(rename = "sqlTimeoutSeconds")]
     pub sql_timeout_secs: u32,
     pub clusters: Vec<ClusterConfig>,
+}
+
+impl Default for InsulatorConfig {
+    fn default() -> Self {
+        Self {
+            theme: Default::default(),
+            show_notifications: true,
+            use_regex: true,
+            sql_timeout_secs: 10,
+            clusters: Default::default(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone, Copy)]
