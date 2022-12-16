@@ -4,8 +4,8 @@
   "version": "2.7.0",
   "type": "module",
   "scripts": {
-    "lint": "prettier --write . && yarn eslint webapp/ --fix && yarn tsc --noemit",
-    "lint:check": "prettier --check . && yarn eslint webapp/ && yarn tsc --noemit",
+    "lint": "prettier --write . && yarn eslint --fix && yarn tsc --noemit",
+    "lint:check": "prettier --check . && yarn eslint && yarn tsc --noemit",
     "test": "vitest run --dom",
     "coverage": "vitest run --dom --coverage",
     "dev": "vite",

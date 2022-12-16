@@ -3,7 +3,7 @@
     "beforeDevCommand": "yarn workspace frontend dev",
     "beforeBuildCommand": "yarn workspace frontend build",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "distDir": "../frontend/dist"
   },
   "package": {
     "productName": "Insulator 2",

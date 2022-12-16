@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <img src="src-tauri/icons/icon.png" alt="Insulator" width="200">
+  <img src="icons/icon.png" alt="Insulator" width="200">
   <br>
   Insulator 2
   <br>
@@ -89,6 +89,12 @@ Before running the build make sure the following executables are installed and a
 ```bash
 yarn
 yarn tauri dev
+```
+
+### Run tests with
+
+```bash
+yarn test
 ```
 
 ### Spin up a local kafka (RedPanda) cluster for testing
