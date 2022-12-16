@@ -26,11 +26,10 @@ export const MinimizeButton = ({ minimized, minimizeTarget, onClick }: MinimizeB
       sx={(theme) => ({
         position: "absolute",
         right: 0,
-        bottom: 0,
+        bottom: 5,
         opacity: minimized ? 1 : 0.2,
         display: "block",
-        marginTop: "5px",
-        width: "42px",
+        width: "40px",
         padding: 8,
         borderRadius: theme.radius.sm,
         color: theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.black,

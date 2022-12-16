@@ -1,6 +1,6 @@
 import { useSessionStorage } from "@mantine/hooks";
-import { Allotment } from "allotment";
 import { useParams } from "react-router-dom";
+import { TwoColumnPage } from "../common";
 import { ConsumerGroup } from "./consumer-group";
 import { ConsumerGroupsList } from "./consumer-groups-list";
 
@@ -18,14 +18,12 @@ export const ConsumerGroupsPage = () => {
   }
 
   return (
-    <Allotment>
-      <Allotment.Pane minSize={430} preferredSize={state.consumerName ? 600 : undefined}>
+    <TwoColumnPage
+      title="Consumer groups"
+      left={
         <ConsumerGroupsList clusterId={clusterId} onConsumerSelected={(consumerName) => setState({ consumerName })} />
-      </Allotment.Pane>
-
-      <Allotment.Pane minSize={520}>
-        {state.consumerName && <ConsumerGroup name={state.consumerName} clusterId={clusterId} />}
-      </Allotment.Pane>
-    </Allotment>
+      }
+      right={state.consumerName && <ConsumerGroup name={state.consumerName} clusterId={clusterId} />}
+    />
   );
 };
