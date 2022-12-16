@@ -1,3 +1,18 @@
+# [2.7.0](https://github.com/andrewinci/insulator2/compare/v2.6.0...v2.7.0) (2022-12-16)
+
+### Bug Fixes
+
+- increase timeout in export records ([a8df9e5](https://github.com/andrewinci/insulator2/commit/a8df9e53fd152472d77aff30bea5b63385dc5a02))
+- set default sql timeout to 10s instead of 0 ([1941190](https://github.com/andrewinci/insulator2/commit/1941190a324a53914f2fdf3af913dc6a5fdc6cb5))
+- strip protocol from the cluster endpoint ([5c17b2f](https://github.com/andrewinci/insulator2/commit/5c17b2f609b7348b7925cdcb41ee4c90077d23b1))
+
+### Features
+
+- add topic info modal ([9e7b4fa](https://github.com/andrewinci/insulator2/commit/9e7b4faba8737771b401f4ab5eb7ce3620f6bd87))
+- Configure SSL connections using truststore and keystore ([#251](https://github.com/andrewinci/insulator2/issues/251)) ([5cf6913](https://github.com/andrewinci/insulator2/commit/5cf6913ee18e27dbe70676b05ce49cc769553a0e))
+- download schema locally ([d21bc33](https://github.com/andrewinci/insulator2/commit/d21bc3326b4a70456a9e5246b12e646a7a96f8e4))
+- minimize sidebar and item list column ([#254](https://github.com/andrewinci/insulator2/issues/254)) ([46c0cf3](https://github.com/andrewinci/insulator2/commit/46c0cf30c9d7eac5ce64e951b47cdf2c09c46f25))
+
 # [2.6.0](https://github.com/andrewinci/insulator2/compare/v2.5.0...v2.6.0) (2022-12-11)
 
 ### Bug Fixes

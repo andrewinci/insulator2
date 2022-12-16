@@ -1,11 +1,11 @@
 {
-  "version": "v2.6.0",
-  "notes": "# [2.6.0](https://github.com/andrewinci/insulator2/compare/v2.5.0...v2.6.0) (2022-12-11)\n\n\n### Bug Fixes\n\n* resolve schema from cache when no ns is specified ([9d4b727](https://github.com/andrewinci/insulator2/commit/9d4b727005df97ccae59c58a81263d17dde11f79))\n\n\n### Features\n\n* improve cluster search ([df4e6d8](https://github.com/andrewinci/insulator2/commit/df4e6d8f4c775e2694458e80de9d6bc5cb15ed27))\n* make record details modal resizable ([e94e65c](https://github.com/andrewinci/insulator2/commit/e94e65c4a63122d8dc6938d67ea78e6434642e68))\n* use resizable modal in add-schema-modal ([d25b146](https://github.com/andrewinci/insulator2/commit/d25b1463d835ba6bfd9672d3d3c22a35e0403000))\n\n\n### Performance Improvements\n\n* extract nested schemas in schema registry to speed up Avro serde ([208837a](https://github.com/andrewinci/insulator2/commit/208837a20b05b6ef78d5ab3873f0dc3e4fefd5cf))\n\n\n\n",
-  "pub_date": "2022-12-11T20:24:27Z",
+  "version": "v2.7.0",
+  "notes": "# [2.7.0](https://github.com/andrewinci/insulator2/compare/v2.6.0...v2.7.0) (2022-12-16)\n\n\n### Bug Fixes\n\n* increase timeout in export records ([a8df9e5](https://github.com/andrewinci/insulator2/commit/a8df9e53fd152472d77aff30bea5b63385dc5a02))\n* set default sql timeout to 10s instead of 0 ([1941190](https://github.com/andrewinci/insulator2/commit/1941190a324a53914f2fdf3af913dc6a5fdc6cb5))\n* strip protocol from the cluster endpoint ([5c17b2f](https://github.com/andrewinci/insulator2/commit/5c17b2f609b7348b7925cdcb41ee4c90077d23b1))\n\n\n### Features\n\n* add topic info modal ([9e7b4fa](https://github.com/andrewinci/insulator2/commit/9e7b4faba8737771b401f4ab5eb7ce3620f6bd87))\n* Configure SSL connections using truststore and keystore ([#251](https://github.com/andrewinci/insulator2/issues/251)) ([5cf6913](https://github.com/andrewinci/insulator2/commit/5cf6913ee18e27dbe70676b05ce49cc769553a0e))\n* download schema locally ([d21bc33](https://github.com/andrewinci/insulator2/commit/d21bc3326b4a70456a9e5246b12e646a7a96f8e4))\n* minimize sidebar and item list column ([#254](https://github.com/andrewinci/insulator2/issues/254)) ([46c0cf3](https://github.com/andrewinci/insulator2/commit/46c0cf30c9d7eac5ce64e951b47cdf2c09c46f25))\n\n\n\n",
+  "pub_date": "2022-12-16T13:49:22Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.6.0/insulator-2_2.6.0_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.7.0/insulator-2_2.7.0_amd64.AppImage.tar.gz"
     }
   }
 }
