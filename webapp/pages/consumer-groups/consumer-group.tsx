@@ -43,7 +43,7 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
   }, [consumerGroupInfo]);
 
   return (
-    <Container>
+    <Container fluid>
       <PageHeader
         title={name}
         subtitle={`topics: ${topicOffsetMap?.length ?? "..."}, status: ${consumerGroupState ?? "..."}`}>
@@ -65,7 +65,9 @@ export const ConsumerGroup = ({ name, clusterId }: { name: string; clusterId: st
         )}
         {!isLoading && topicOffsetMap && (
           <>
-            <Container sx={{ overflowX: "hidden", overflowY: "scroll", width: "100%", height: "calc(100vh - 180px)" }}>
+            <Container
+              fluid
+              sx={{ overflowX: "hidden", overflowY: "scroll", width: "100%", height: "calc(100vh - 180px)" }}>
               <Accordion chevronPosition="left" variant="contained" defaultValue="customization">
                 {topicOffsetMap.map(([topic, details]) => (
                   <ConsumerGroupTopicDetails key={topic} clusterId={clusterId} topicName={topic} offsets={details} />

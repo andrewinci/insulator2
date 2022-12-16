@@ -92,7 +92,7 @@ export const ItemList = (props: ItemListProps) => {
   };
 
   return (
-    <Container>
+    <Container fluid>
       <PageHeader title={title} subtitle={`Total: ${props.items.length}`}>
         <SearchInput
           placeholder={userSettings.useRegex ? "Search (regex)" : "Search"}

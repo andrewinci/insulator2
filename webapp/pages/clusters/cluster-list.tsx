@@ -56,7 +56,7 @@ export const ClusterList = ({ clusters, onClusterSelected, onClusterDelete }: Cl
   const ref = useRef<HTMLButtonElement>(null);
   return (
     <>
-      <Container>
+      <Container fluid>
         <PageHeader title="Clusters" subtitle={`Total: ${clusters.length}`}>
           <SearchInput
             showShortcut={true}

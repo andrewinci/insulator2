@@ -105,14 +105,9 @@ const useConsumer = (clusterId: string, topicName: string) => {
     data: consumerState,
     isLoading,
     refetch,
-  } = useQuery(
-    ["getConsumerState", clusterId, topicName],
-    () => {
-      console.log("Refetch");
-      return getConsumerState(clusterId, topicName);
-    },
-    { refetchInterval }
-  );
+  } = useQuery(["getConsumerState", clusterId, topicName], () => getConsumerState(clusterId, topicName), {
+    refetchInterval,
+  });
 
   const toggleConsumer = async () => {
     if (!consumerState) return;

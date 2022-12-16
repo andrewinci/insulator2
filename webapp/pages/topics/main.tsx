@@ -1,16 +1,14 @@
 import { useSessionStorage } from "@mantine/hooks";
-import { Allotment } from "allotment";
 import { useParams } from "react-router-dom";
 import { Topic } from "./topic/main";
 import { TopicList } from "./topic-list";
+import { TwoColumnPage } from "../common";
 
 export const TopicsPage = () => {
   const { clusterId, topicName } = useParams();
   const [state, setState] = useSessionStorage({
     key: `topic-main-${clusterId}`,
-    defaultValue: {
-      topicName,
-    },
+    defaultValue: { topicName },
   });
 
   if (!clusterId) {
@@ -18,15 +16,15 @@ export const TopicsPage = () => {
   }
 
   return (
-    <Allotment>
-      <Allotment.Pane minSize={430} maxSize={state.topicName ? 600 : undefined}>
-        <TopicList clusterId={clusterId} onTopicSelected={(activeTopic) => setState({ topicName: activeTopic })} />
-      </Allotment.Pane>
-      {state.topicName && (
-        <Allotment.Pane minSize={520}>
-          <Topic clusterId={clusterId} topicName={state.topicName} />
-        </Allotment.Pane>
-      )}
-    </Allotment>
+    <TwoColumnPage
+      title="Topics"
+      left={
+        <TopicList
+          clusterId={clusterId}
+          onTopicSelected={(activeTopic) => setState((s) => ({ ...s, topicName: activeTopic }))}
+        />
+      }
+      right={state.topicName && <Topic clusterId={clusterId} topicName={state.topicName} />}
+    />
   );
 };

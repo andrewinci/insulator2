@@ -40,7 +40,7 @@ export const Settings = () => {
   };
 
   return (
-    <Container>
+    <Container fluid>
       <PageHeader title={"Settings"} subtitle={"Customize insulator"} />
       <Center>
         <Stack sx={{ width: "400px" }}>

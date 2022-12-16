@@ -15,6 +15,10 @@
       "os": {
         "all": true
       },
+      "window": {
+        "setTitle": true,
+        "setMinSize": true
+      },
       "dialog": {
         "save": true,
         "open": true

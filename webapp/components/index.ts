@@ -4,3 +4,4 @@ export * from "./text";
 export * from "./search-input";
 export * from "./code-editor";
 export * from "./resizable-modal";
+export * from "./minimize-button";

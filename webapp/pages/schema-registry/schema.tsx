@@ -27,7 +27,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
     }
   }, [subject]);
   return (
-    <Container>
+    <Container fluid>
       <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`}>
         {state?.version && <Tools clusterId={clusterId} subject={schemaName} version={state.version} />}
       </PageHeader>
@@ -45,7 +45,7 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
         </Group>
       )}
 
-      <Container mt={20} p={0} ml={0}>
+      <Container fluid mt={20} p={0} ml={0}>
         <Center hidden={!isLoading} mt={10}>
           <Loader />
         </Center>
