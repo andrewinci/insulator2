@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "echo none",
+    "coverage": "echo none",
     "lint": "prettier --write . && yarn eslint --fix && yarn tsc --noemit",
+    "lint:check": "prettier --check . && yarn eslint && yarn tsc --noemit",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"

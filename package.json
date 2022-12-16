@@ -15,6 +15,7 @@
     "lint:check": "yarn workspaces run lint:check",
     "test": "yarn workspaces run test",
     "coverage": "yarn workspaces run coverage",
+    "website": "yarn workspace website",
     "tauri": "tauri"
   },
   "devDependencies": {
