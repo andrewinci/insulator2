@@ -24,19 +24,19 @@ notes = args.notes
 manifest_config = {
     "darwin": {
         "manifest": "manifests/update-darwin.json",
-        "sig": "src-tauri/target/release/bundle/macos/Insulator 2.app.tar.gz.sig",
+        "sig": "backend/target/release/bundle/macos/Insulator 2.app.tar.gz.sig",
         "url": f"https://github.com/andrewinci/insulator2/releases/download/v{version}/Insulator.2.app.tar.gz",
         "platforms": ["darwin-x86_64", "darwin-aarch64"],
     },
     "linux": {
         "manifest": "manifests/update-linux.json",
-        "sig": "src-tauri/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz.sig",
+        "sig": "backend/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz.sig",
         "url": f"https://github.com/andrewinci/insulator2/releases/download/v{version}/insulator-2_{version}_amd64.AppImage.tar.gz",
         "platforms": ["linux-x86_64"],
     },
     "windows": {
         "manifest": "manifests/update-windows.json",
-        "sig": "src-tauri/target/release/bundle/msi/Insulator*.msi.zip.sig",
+        "sig": "backend/target/release/bundle/msi/Insulator*.msi.zip.sig",
         "url": f"https://github.com/andrewinci/insulator2/releases/download/v{version}/Insulator.2_{version}_x64_en-US.msi.zip",
         "platforms": ["windows-x86_64"],
     },
@@ -92,15 +92,15 @@ if version:
     Path("./package.json").write_text(json.dumps(package_json, indent=2))
 
     # update tauri.conf.json
-    package_json = json.loads(Path("./src-tauri/tauri.conf.json").read_text())
+    package_json = json.loads(Path("./backend/tauri.conf.json").read_text())
     package_json["package"]["version"] = version
-    Path("./src-tauri/tauri.conf.json").write_text(json.dumps(package_json, indent=2))
+    Path("./backend/tauri.conf.json").write_text(json.dumps(package_json, indent=2))
 
     # update toml
     # todo: this invalidates the cache
     # new_version = []
-    # with open("./src-tauri/Cargo.toml", "r") as f:
+    # with open("./backend/Cargo.toml", "r") as f:
     #     new_version = f.readlines()
     #     new_version[2] = f'version = "{version}"\n'
-    # with open("./src-tauri/Cargo.toml", "w") as f:
+    # with open("./backend/Cargo.toml", "w") as f:
     #     f.writelines(new_version)

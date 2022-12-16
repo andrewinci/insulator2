@@ -1,7 +1,7 @@
 import { Text, Divider, Image, Box, Center, Group, Navbar, Title, Stack } from "@mantine/core";
 import { SidebarItem } from "./sidebar-item";
 import { IconCircleDashed, IconLine, IconSatellite, IconServer, IconSettings } from "@tabler/icons";
-import logo from "../../src-tauri/icons/128x128.png";
+import logo from "../../../icons/128x128.png";
 import { matchPath, useLocation } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { useUserSettings } from "../providers";

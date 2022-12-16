@@ -1,0 +1,12 @@
+{
+  "name": "backend",
+  "private": true,
+  "version": "2.7.0",
+  "type": "module",
+  "scripts": {
+    "lint": "cargo fmt && cargo clippy",
+    "lint:check": "cargo fmt --check && cargo clippy",
+    "test": "cargo test",
+    "coverage": "cargo tarpaulin --out Xml"
+  }
+}
