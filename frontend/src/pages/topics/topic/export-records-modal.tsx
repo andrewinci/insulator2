@@ -22,7 +22,7 @@ export const ExportRecordsModal = (props: ExportRecordsModalProps) => {
   const { success } = useNotifications();
 
   const [exportState, setExportState] = useState({
-    exportAll: true,
+    exportAll: false,
     limit: undefined as number | undefined,
     parseTimestamp: true,
   });
@@ -63,7 +63,7 @@ export const ExportRecordsModal = (props: ExportRecordsModalProps) => {
       title={<Title order={3}>Export options</Title>}>
       <Stack>
         <Text>
-          Export records from topic{" "}
+          Query and export records from the topic{" "}
           <Text span weight={800}>
             {topicName}
           </Text>{" "}
@@ -76,7 +76,7 @@ export const ExportRecordsModal = (props: ExportRecordsModalProps) => {
           onChange={(v) => setExportState((s) => ({ ...s, parseTimestamp: v.target.checked }))}
         />
         <Checkbox
-          label="Export all consumed records"
+          label="Export all records"
           checked={exportState.exportAll}
           onChange={(v) => setExportState((s) => ({ ...s, exportAll: v.target.checked }))}
         />
