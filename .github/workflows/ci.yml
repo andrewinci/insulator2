@@ -61,19 +61,19 @@ jobs:
         run: |
           # clean up cached bundle
           yarn rimraf backend/target/release/bundle/
-          mkdir dist
+          mkdir frontend/dist
           yarn test && yarn tauri build -b dmg
 
       - name: (Windows) Test and build
         if: matrix.os == 'windows-latest' && !startsWith(github.ref, 'refs/tags/v')
         run: |
-          mkdir dist
+          mkdir frontend/dist
           yarn test && yarn tauri build -b msi
 
       - name: (Linux) Coverage and build
         if: matrix.os == 'ubuntu-latest' && !startsWith(github.ref, 'refs/tags/v')
         run: |
-          mkdir dist
+          mkdir frontend/dist
           cargo install cargo-tarpaulin || true
           yarn lint:check && yarn coverage && yarn tauri build -b deb appimage
           # upload coverage
