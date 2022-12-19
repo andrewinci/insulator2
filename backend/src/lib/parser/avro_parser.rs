@@ -61,56 +61,20 @@ fn map(
         (AvroValue::Float(v), Schema::Float) => Ok(json!(*v)),
         (AvroValue::Double(v), Schema::Double) => Ok(json!(*v)),
         (AvroValue::String(v), Schema::String) => Ok(json!(*v)),
-        (AvroValue::Array(v), Schema::Array(s)) => {
-            let mut json_vec = Vec::new();
-            for v in v.iter() {
-                json_vec.push(map(v, s, parent_ns, ref_cache)?);
-            }
-            Ok(JsonValue::Array(json_vec))
-        }
-        (AvroValue::Map(vec), Schema::Map(s)) => {
-            //todo: DRY
-            let mut json_map = Map::new();
-            for (k, v) in vec.iter() {
-                json_map.insert(k.clone(), map(v, s, parent_ns, ref_cache)?);
-            }
-            Ok(JsonValue::Object(json_map))
-        }
-        (AvroValue::Record(vec), Schema::Record { name, fields, lookup, .. }) => {
-            let mut json_map = Map::new();
-            for (k, v) in vec.iter() {
-                let field_index = lookup.get(k).unwrap_or_else(|| panic!("Missing field {}", k));
-                json_map.insert(
-                    k.clone(),
-                    map(
-                        v,
-                        &fields.get(*field_index).unwrap().schema,
-                        &name.namespace.clone().or_else(|| parent_ns.to_owned()),
-                        ref_cache
-                    )?
-                );
-            }
-            Ok(JsonValue::Object(json_map))
-        }
+        (AvroValue::Array(v), Schema::Array(s)) => parse_array(v, s, parent_ns, ref_cache),
+        (AvroValue::Map(vec), Schema::Map(s)) => parse_map(vec, s, parent_ns, ref_cache),
+        (AvroValue::Record(vec), Schema::Record { name, fields, lookup, .. }) =>
+            parse_record(vec, lookup, fields, name, parent_ns, ref_cache),
         (AvroValue::Date(v), Schema::Date) => Ok(json!(*v)),
         (AvroValue::TimeMillis(v), Schema::TimeMillis) => Ok(json!(*v)),
         (AvroValue::TimeMicros(v), Schema::TimeMicros) => Ok(json!(*v)),
         (AvroValue::TimestampMillis(v), Schema::TimestampMillis) => Ok(json!(*v)),
         (AvroValue::TimestampMicros(v), Schema::TimestampMicros) => Ok(json!(*v)),
         (AvroValue::Uuid(v), Schema::Uuid) => Ok(json!(*v)),
-        //todo: WIP
-        (AvroValue::Bytes(v), Schema::Bytes) => Ok(json!(*v)), //todo: this should be like "\u00FF"
-        (AvroValue::Decimal(v), Schema::Decimal { precision: _, scale, inner: _ }) => {
-            let arr = <Vec<u8>>::try_from(v).expect("Invalid decimal received");
-            let value = BigInt::from_signed_bytes_be(&arr);
-            let decimal = Decimal::new(i64::try_from(value).expect("Unable to cast to i64"), scale.to_owned() as u32);
-            Ok(json!(decimal))
-        }
-        (AvroValue::Duration(v), Schema::Duration) => {
-            //todo: check avro json representation
-            Ok(json!(format!("{:?} months {:?} days {:?} millis", v.months(), v.days(), v.millis())))
-        }
-        //todo: use avro-json format
+        (AvroValue::Bytes(v), Schema::Bytes) => Ok(json!(*v)),
+        (AvroValue::Decimal(v), Schema::Decimal { precision: _, scale, inner: _ }) => parse_decimal(v, scale),
+        (AvroValue::Duration(v), Schema::Duration) =>
+            Ok(json!(format!("{:?} months {:?} days {:?} millis", v.months(), v.days(), v.millis()))),
         (AvroValue::Union(i, v), Schema::Union(s)) => {
             let schema = s
                 .variants()
@@ -119,21 +83,84 @@ fn map(
             map(&**v, schema, parent_ns, ref_cache)
         }
         (AvroValue::Enum(_, v), Schema::Enum { name: _, .. }) => Ok(json!(*v)),
-        //todo: check representation in avro-json
         (AvroValue::Fixed(_, v), Schema::Fixed { .. }) => Ok(json!(*v)),
-        (value, Schema::Ref { name }) => {
-            let schema = ref_cache
-                .get(
-                    &(Name {
-                        namespace: name.namespace.clone().or_else(|| parent_ns.to_owned()),
-                        name: name.name.clone(),
-                    })
-                )
-                .unwrap_or_else(|| panic!("Missing Avro schema reference {:?}", name));
-            map(value, schema, &name.namespace, ref_cache)
-        }
+        (value, Schema::Ref { name }) => parse_ref(ref_cache, name, parent_ns, value),
         (_, s) => panic!("Unexpected value/schema tuple. Schema: {:?}", s),
     }
+}
+
+fn parse_ref(
+    ref_cache: &HashMap<Name, Schema>,
+    name: &Name,
+    parent_ns: &Option<String>,
+    value: &AvroValue
+) -> Result<JsonValue> {
+    let schema = ref_cache
+        .get(
+            &(Name {
+                namespace: name.namespace.clone().or_else(|| parent_ns.to_owned()),
+                name: name.name.clone(),
+            })
+        )
+        .unwrap_or_else(|| panic!("Missing Avro schema reference {:?}", name));
+    map(value, schema, &name.namespace, ref_cache)
+}
+
+fn parse_decimal(v: &apache_avro::Decimal, scale: &usize) -> Result<JsonValue> {
+    let arr = <Vec<u8>>::try_from(v).expect("Invalid decimal received");
+    let value = BigInt::from_signed_bytes_be(&arr);
+    let decimal = Decimal::new(i64::try_from(value).expect("Unable to cast to i64"), scale.to_owned() as u32);
+    Ok(json!(decimal))
+}
+
+fn parse_record(
+    vec: &[(String, AvroValue)],
+    lookup: &std::collections::BTreeMap<String, usize>,
+    fields: &[apache_avro::schema::RecordField],
+    name: &Name,
+    parent_ns: &Option<String>,
+    ref_cache: &HashMap<Name, Schema>
+) -> Result<JsonValue> {
+    let mut json_map = Map::new();
+    for (k, v) in vec.iter() {
+        let field_index = lookup.get(k).unwrap_or_else(|| panic!("Missing field {}", k));
+        json_map.insert(
+            k.clone(),
+            map(
+                v,
+                &fields.get(*field_index).unwrap().schema,
+                &name.namespace.clone().or_else(|| parent_ns.to_owned()),
+                ref_cache
+            )?
+        );
+    }
+    Ok(JsonValue::Object(json_map))
+}
+
+fn parse_map(
+    vec: &HashMap<String, AvroValue>,
+    s: &Schema,
+    parent_ns: &Option<String>,
+    ref_cache: &HashMap<Name, Schema>
+) -> Result<JsonValue> {
+    let mut json_map = Map::new();
+    for (k, v) in vec.iter() {
+        json_map.insert(k.clone(), map(v, s, parent_ns, ref_cache)?);
+    }
+    Ok(JsonValue::Object(json_map))
+}
+
+fn parse_array(
+    v: &[AvroValue],
+    s: &Schema,
+    parent_ns: &Option<String>,
+    ref_cache: &HashMap<Name, Schema>
+) -> Result<JsonValue> {
+    let mut json_vec = Vec::new();
+    for v in v.iter() {
+        json_vec.push(map(v, s, parent_ns, ref_cache)?);
+    }
+    Ok(JsonValue::Array(json_vec))
 }
 
 #[cfg(test)]
