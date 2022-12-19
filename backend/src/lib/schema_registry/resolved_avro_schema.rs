@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use apache_avro::{schema::Name, Schema};
+use apache_avro::{ schema::Name, Schema };
 
 use super::types::ResolvedAvroSchema;
 
@@ -26,9 +26,14 @@ fn extract_all_refs(s: &Schema) -> HashMap<Name, Schema> {
         match s {
             Schema::Array(s) => _extract(s, parent_ns, cache),
             Schema::Map(s) => _extract(s, parent_ns, cache),
-            Schema::Union(s) => s.variants().iter().for_each(|s| _extract(s, parent_ns, cache)),
+            Schema::Union(s) =>
+                s
+                    .variants()
+                    .iter()
+                    .for_each(|s| _extract(s, parent_ns, cache)),
             Schema::Record { name, fields, .. } => {
-                fields.iter().for_each(|f| _extract(&f.schema, &name.namespace, cache));
+                let parent = name.namespace.clone().or_else(|| parent_ns.to_owned());
+                fields.iter().for_each(|f| _extract(&f.schema, &parent, cache));
                 cache.insert(ns_name(name, parent_ns), s.clone());
             }
             Schema::Enum { name, .. } => {
@@ -47,9 +52,9 @@ fn extract_all_refs(s: &Schema) -> HashMap<Name, Schema> {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashSet, fs};
+    use std::{ collections::HashSet, fs };
 
-    use apache_avro::{schema::Name, Schema};
+    use apache_avro::{ schema::Name, Schema };
 
     use super::extract_all_refs;
 
@@ -59,7 +64,10 @@ mod tests {
         let schema = Schema::parse_str(&test_schema).unwrap();
         let res = extract_all_refs(&schema);
         // assert
-        let names: HashSet<_> = res.keys().map(|n| n.to_owned()).collect();
+        let names: HashSet<_> = res
+            .keys()
+            .map(|n| n.to_owned())
+            .collect();
         assert!(names.contains(&name("testTarget", Some("nested.ns"))));
     }
 
@@ -69,15 +77,24 @@ mod tests {
         let schema = Schema::parse_str(&test_schema).unwrap();
         let res = extract_all_refs(&schema);
         // assert
-        let names: HashSet<_> = res.keys().map(|n| n.to_owned()).collect();
+        let names: HashSet<_> = res
+            .keys()
+            .map(|n| n.to_owned())
+            .collect();
         assert_eq!(
             names,
-            HashSet::from_iter(vec![
-                name("userInfo1", Some("my.example")),
-                name("userInfo2", Some("my.example")),
-                name("userInfo3", Some("my.nested")),
-                name("userInfo4", Some("my.nested")),
-            ])
+            HashSet::from_iter(
+                vec![
+                    name("userInfo1", Some("my.example")),
+                    name("userInfo2", Some("my.example")),
+                    name("userInfo3", Some("my.nested")),
+                    name("userInfo4", Some("my.nested")),
+                    name("Suit", Some("my.nested")),
+                    name("userInfo5", Some("my.example")),
+                    name("userInfo6", Some("my.example")),
+                    name("Suit", Some("my.example"))
+                ]
+            )
         );
     }
 

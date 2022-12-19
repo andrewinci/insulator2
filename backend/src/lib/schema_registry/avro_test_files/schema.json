@@ -23,6 +23,53 @@
       }
     },
     {
+      "name": "union",
+      "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "userInfo2",
+          "fields": [
+            {
+              "name": "value",
+              "type": {
+                "type": "record",
+                "name": "userInfo3",
+                "namespace": "my.nested",
+                "fields": [
+                  { "name": "value", "type": "long" },
+                  {
+                    "name": "enum",
+                    "type": { "type": "enum", "name": "Suit", "symbols": ["SPADES", "HEARTS", "DIAMONDS", "CLUBS"] }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "record",
+          "name": "userInfo5",
+          "fields": [
+            {
+              "name": "value",
+              "type": {
+                "type": "record",
+                "name": "userInfo6",
+                "fields": [
+                  { "name": "value", "type": "long" },
+                  {
+                    "name": "enum",
+                    "type": { "type": "enum", "name": "Suit", "symbols": ["SPADES", "HEARTS", "DIAMONDS", "CLUBS"] }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "array",
       "type": {
         "type": "array",
