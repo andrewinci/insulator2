@@ -23,8 +23,10 @@ export type ConsumerOffsetConfiguration =
   | "End"
   | {
       Custom: {
-        start_timestamp: number; //time in ms
-        stop_timestamp?: number; //time in ms
+        /** unix timestamp in ms */
+        start_timestamp: number;
+        /** unix timestamp in ms */
+        stop_timestamp?: number;
       };
     };
 

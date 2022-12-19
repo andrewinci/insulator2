@@ -78,8 +78,10 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
               <TopicPageMenu
                 topicName={topicName}
                 height={paneHeights.headerHeight - 150}
-                onConsumerChange={(s) => {
-                  s == "Custom" ? configureConsumer() : onStopConsumer();
+                onConsumerChange={(config) => {
+                  if (config == "Custom") configureConsumer();
+                  else if (config == "Stop") onStopConsumer();
+                  else onStartConsumer(config);
                 }}
                 consumedRecords={consumedRecordsCount}
                 isConsumerRunning={isRunning}

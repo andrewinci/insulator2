@@ -17,7 +17,7 @@ export const ConsumerConfigurationModal = ({ topicName, opened, onClose, onSubmi
   const zeroUTC = dayjs().set("h", 0).set("m", 0).set("s", 0).toDate();
   const form = useForm<ConsumerForm>({
     initialValues: {
-      from: "End",
+      from: "Custom",
       compactify: false,
       dateInterval: [nowUTC, nowUTC],
       onlyBeginning: true,
@@ -55,7 +55,7 @@ export const ConsumerConfigurationModal = ({ topicName, opened, onClose, onSubmi
 
           <Text size={15}>Start consuming from</Text>
           <Chip.Group position="left" multiple={false} {...form.getInputProps("from")}>
-            <Chip value="End">End</Chip>
+            <Chip value="End">Now</Chip>
             <Chip value="Beginning">Beginning</Chip>
             <Chip value="Custom">Custom Time</Chip>
           </Chip.Group>
