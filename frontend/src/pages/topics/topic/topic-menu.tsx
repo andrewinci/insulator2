@@ -6,6 +6,7 @@ import {
   IconCalendar,
   IconClock,
   IconFlag,
+  IconHourglassLow,
   IconPlayerPlay,
   IconSearch,
 } from "@tabler/icons";
@@ -75,7 +76,7 @@ export const TopicPageMenu = (props: TopicPageMenuProps) => {
                 </Button>
               </Menu.Target>
               <Menu.Dropdown mt={-3} pos={"fixed"}>
-                <Menu.Item onClick={consumeLast15Minutes} icon={<IconClock size={14} />}>
+                <Menu.Item onClick={consumeLast15Minutes} icon={<IconHourglassLow size={14} />}>
                   Last 15 minutes
                 </Menu.Item>
                 <Menu.Item onClick={consumeLastHour} icon={<IconClock size={14} />}>
