@@ -10,12 +10,12 @@ type TopicPageMenuProps = {
   height?: number;
   onQueryChange: (query: string) => void;
   onQuery: () => void;
-  onConsumerToggle: () => void;
+  onConsumerChange: (config: "Custom" | "Stop") => void;
 };
 
 export const TopicPageMenu = (props: TopicPageMenuProps) => {
   const { consumedRecords, isConsumerRunning, height, query, topicName } = props;
-  const { onQueryChange, onConsumerToggle, onQuery } = props;
+  const { onQueryChange, onConsumerChange, onQuery } = props;
 
   return (
     <>
@@ -37,7 +37,7 @@ export const TopicPageMenu = (props: TopicPageMenuProps) => {
         <Group>
           <Button
             size="xs"
-            onClick={onConsumerToggle}
+            onClick={isConsumerRunning ? () => onConsumerChange("Stop") : () => onConsumerChange("Custom")}
             leftIcon={isConsumerRunning ? <Loader color={"white"} size={"xs"} /> : <IconArrowBarToDown size={16} />}
             rightIcon={
               <Tooltip label="Total records consumed internally and queryable">
