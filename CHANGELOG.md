@@ -1,3 +1,9 @@
+## [2.7.1](https://github.com/andrewinci/insulator2/compare/v2.7.0...v2.7.1) (2022-12-19)
+
+### Bug Fixes
+
+- unable to decode nested avro schema without namespace ([ad59f98](https://github.com/andrewinci/insulator2/commit/ad59f98e62a6a9dcf75828bd281252d3ca31d740))
+
 # [2.7.0](https://github.com/andrewinci/insulator2/compare/v2.6.0...v2.7.0) (2022-12-16)
 
 ### Bug Fixes
