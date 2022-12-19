@@ -1,2 +1,2 @@
 export * from "./cluster-list";
-export * from "./edit-clusters";
+export * from "./edit-cluster";

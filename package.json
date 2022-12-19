@@ -10,6 +10,7 @@
   "scripts": {
     "postinstall": "husky install",
     "release": "semantic-release --repositoryUrl=\"https://github.com/andrewinci/insulator2.git\" --ci false",
+    "frontend": "yarn workspace frontend",
     "lint": "yarn workspaces run lint",
     "lint:check": "yarn workspaces run lint:check",
     "test": "yarn workspaces run test",

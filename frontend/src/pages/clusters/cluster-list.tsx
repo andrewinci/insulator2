@@ -18,7 +18,9 @@ import { useNavigate } from "react-router-dom";
 import { PageHeader, SearchInput } from "../../components";
 import { Cluster } from "../../models";
 import { useUserSettings } from "../../providers";
-import { AddNewCluster, EditCluster } from "./edit-clusters";
+import { AddNewCluster } from "./add-new-cluster";
+import { EditCluster } from "./edit-cluster";
+import { containsAllWords } from "./helpers";
 
 export const ClusterListPage = () => {
   const { userSettings, setUserSettings } = useUserSettings();
@@ -130,19 +132,5 @@ export const ClusterList = ({ clusters, onClusterSelected, onClusterDelete }: Cl
         </Modal>
       )}
     </>
-  );
-};
-
-export const containsAllWords = (input: string, search: string): boolean => {
-  if (search == "") return true;
-  const lowerCaseInput = input.toLowerCase();
-  const lowerCaseSearch = search.toLowerCase();
-
-  const lowerCaseInputWords = lowerCaseInput.split(" ").filter((w) => w != "");
-  const lowerCaseSearchWords = lowerCaseSearch.split(" ").filter((w) => w != "");
-
-  return (
-    lowerCaseSearchWords.map((w) => lowerCaseInputWords.includes(w)).reduce((a, b) => a && b, true) ||
-    lowerCaseInput.includes(lowerCaseSearch)
   );
 };
