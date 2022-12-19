@@ -97,6 +97,12 @@ yarn tauri dev
 yarn test
 ```
 
+### Start website devmode
+
+```bash
+yarn website dev
+```
+
 ### Spin up a local kafka (RedPanda) cluster for testing
 
 ```bash
