@@ -1,8 +1,7 @@
 import { Center, Container, Loader } from "@mantine/core";
 import { RecordsList, RecordsListRef } from "./record-list";
-import { getConsumerState, stopConsumer } from "../../../tauri/consumer";
+import { getConsumerState, startConsumer, stopConsumer } from "../../../tauri/consumer";
 import { PageHeader } from "../../../components";
-import { openConsumerModal } from "./consumer-modal";
 import { useQuery } from "@tanstack/react-query";
 import { getLastOffsets, getTopicInfo } from "../../../tauri/admin";
 import { Allotment } from "allotment";
@@ -10,7 +9,9 @@ import { ToolsMenu } from "./tools-menu";
 import { TopicPageMenu } from "./topic-menu";
 import { useRef, useState } from "react";
 import { useCache } from "../../../hooks";
-import { ExportRecordsModal } from "./export-records-modal";
+import { ExportRecordsModal } from "../modals/export-records-modal";
+import { ConsumerConfigurationModal } from "../modals/consumer-configuration-modal";
+import { ConsumerConfiguration } from "../../../models";
 
 export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: string }) => {
   // cached query across navigation
@@ -32,7 +33,16 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
   const [paneHeights, setPaneHeights] = useState({ headerHeight: 10, recordsHeight: 10 });
 
   // consumer
-  const { isLoading, isRunning, consumedRecordsCount, toggleConsumer } = useConsumer(clusterId, topicName);
+  const {
+    isLoading,
+    isRunning,
+    consumedRecordsCount,
+    consumerModalOpened,
+    onConsumerModalClose,
+    onStartConsumer,
+    configureConsumer,
+    onStopConsumer,
+  } = useConsumer(clusterId, topicName);
 
   // reference to trigger the query
   const recordListRef = useRef<RecordsListRef>(null);
@@ -68,7 +78,11 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
               <TopicPageMenu
                 topicName={topicName}
                 height={paneHeights.headerHeight - 150}
-                onConsumerToggle={toggleConsumer}
+                onConsumerChange={(config) => {
+                  if (config == "Custom") configureConsumer();
+                  else if (config == "Stop") onStopConsumer();
+                  else onStartConsumer(config);
+                }}
                 consumedRecords={consumedRecordsCount}
                 isConsumerRunning={isRunning}
                 query={queryState.query}
@@ -98,6 +112,12 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
         onExportStart={() => setExportState((s) => ({ ...s, exportInProgress: true }))}
         onExportComplete={() => setExportState((s) => ({ ...s, exportInProgress: false }))}
       />
+      <ConsumerConfigurationModal
+        topicName={topicName}
+        opened={consumerModalOpened}
+        onClose={onConsumerModalClose}
+        onSubmit={onStartConsumer}
+      />
     </>
   );
 };
@@ -112,20 +132,26 @@ const useConsumer = (clusterId: string, topicName: string) => {
     refetchInterval,
   });
 
-  const toggleConsumer = async () => {
-    if (!consumerState) return;
-    if (consumerState.isRunning) {
-      await stopConsumer(clusterId, topicName);
-      setRefetchInterval(false);
-    } else {
-      setRefetchInterval(1000);
-      openConsumerModal({ clusterId, topicName });
-    }
+  // consumer modal
+  const [consumerModalOpened, setConsumerModalOpened] = useState(false);
+
+  const _startConsumer = async (config: ConsumerConfiguration) => {
+    setRefetchInterval(1000);
+    await startConsumer(clusterId, topicName, config);
     refetch();
+    setConsumerModalOpened(false);
   };
 
   return {
-    toggleConsumer,
+    configureConsumer: () => setConsumerModalOpened(true),
+    onStartConsumer: _startConsumer,
+    onStopConsumer: async () => {
+      await stopConsumer(clusterId, topicName);
+      setRefetchInterval(false);
+      refetch();
+    },
+    onConsumerModalClose: () => setConsumerModalOpened(false),
+    consumerModalOpened,
     isRunning: consumerState?.isRunning ?? false,
     consumedRecordsCount: consumerState?.recordCount ?? 0,
     isLoading,

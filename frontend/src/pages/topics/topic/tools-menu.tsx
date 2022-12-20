@@ -4,7 +4,7 @@ import { deleteTopic, getTopicInfo } from "../../../tauri/admin";
 import { useNavigate } from "react-router-dom";
 import { openConfirmModal, openModal } from "@mantine/modals";
 import { useNotifications } from "../../../providers";
-import { TopicInfoModal } from "./topic-info-modal";
+import { TopicInfoModal } from "../modals/topic-info-modal";
 
 type ToolsMenuProps = { clusterId: string; topic: string; exportInProgress: boolean; onExportClick: () => void };
 
