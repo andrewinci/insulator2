@@ -19,8 +19,12 @@ export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: 
     {
       key: `topic-page-${clusterId}-${topicName}`,
       initialValue: {
-        query:
-          "SELECT partition, offset, timestamp, key, payload\nFROM {:topic}\nORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}\n",
+        query: `SELECT partition, offset, timestamp, key, payload
+FROM {:topic}
+-- query by json fields with the json_extract function
+-- WHERE json_extract(payload, "$.fieldName") = "something"
+ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
+          `,
       },
     },
     [clusterId, topicName]
