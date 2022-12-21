@@ -36,8 +36,8 @@
     "prettier-plugin-rust": "^0.1.8",
     "rimraf": "^3.0.2",
     "semantic-release": "^19.0.5",
-    "vite": "^4.0.2",
-    "vitest": "^0.26.0"
+    "vite": "^4.0.3",
+    "vitest": "^0.26.2"
   },
   "prettier": {
     "bracketSameLine": true,
