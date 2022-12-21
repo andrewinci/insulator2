@@ -1,11 +1,11 @@
 {
-  "version": "v2.7.1",
-  "notes": "## [2.7.1](https://github.com/andrewinci/insulator2/compare/v2.7.0...v2.7.1) (2022-12-19)\n\n\n### Bug Fixes\n\n* unable to decode nested avro schema without namespace ([ad59f98](https://github.com/andrewinci/insulator2/commit/ad59f98e62a6a9dcf75828bd281252d3ca31d740))\n\n\n\n",
-  "pub_date": "2022-12-19T19:15:37Z",
+  "version": "v2.8.0",
+  "notes": "# [2.8.0](https://github.com/andrewinci/insulator2/compare/v2.7.1...v2.8.0) (2022-12-21)\n\n\n### Bug Fixes\n\n* disable autocomplete on search input ([5ee2e0e](https://github.com/andrewinci/insulator2/commit/5ee2e0ed697eb0ab0377c16ce861e9cb23242cfd))\n* minimize button colors ([e754635](https://github.com/andrewinci/insulator2/commit/e754635be8295faaaeff6df3362de0bdaa342a21))\n\n\n### Features\n\n* consumer shortcuts ([#275](https://github.com/andrewinci/insulator2/issues/275)) ([3ff3041](https://github.com/andrewinci/insulator2/commit/3ff3041d55732a6e0308cf2d62f0a46a14e1f0c0))\n\n\n\n",
+  "pub_date": "2022-12-21T08:47:20Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.7.1/Insulator.2_2.7.1_x64_en-US.msi.zip"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.8.0/Insulator.2_2.8.0_x64_en-US.msi.zip"
     }
   }
 }

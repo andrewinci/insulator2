@@ -1,3 +1,14 @@
+# [2.8.0](https://github.com/andrewinci/insulator2/compare/v2.7.1...v2.8.0) (2022-12-21)
+
+### Bug Fixes
+
+- disable autocomplete on search input ([5ee2e0e](https://github.com/andrewinci/insulator2/commit/5ee2e0ed697eb0ab0377c16ce861e9cb23242cfd))
+- minimize button colors ([e754635](https://github.com/andrewinci/insulator2/commit/e754635be8295faaaeff6df3362de0bdaa342a21))
+
+### Features
+
+- consumer shortcuts ([#275](https://github.com/andrewinci/insulator2/issues/275)) ([3ff3041](https://github.com/andrewinci/insulator2/commit/3ff3041d55732a6e0308cf2d62f0a46a14e1f0c0))
+
 ## [2.7.1](https://github.com/andrewinci/insulator2/compare/v2.7.0...v2.7.1) (2022-12-19)
 
 ### Bug Fixes
