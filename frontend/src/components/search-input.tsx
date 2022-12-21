@@ -28,6 +28,9 @@ export const SearchInput = (props: SearchInputProps) => {
 
   return (
     <TextInput
+      autoComplete="off"
+      autoCorrect="off"
+      autoCapitalize="off"
       ref={ref}
       size="xs"
       style={{ width: "40%" }}
