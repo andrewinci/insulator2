@@ -1,5 +1,5 @@
 import { IconArrowBarLeft, IconArrowBarRight } from "@tabler/icons";
-import { Group, ThemeIcon, UnstyledButton } from "@mantine/core";
+import { ActionIcon } from "@mantine/core";
 import { appWindow, LogicalSize } from "@tauri-apps/api/window";
 
 const isMinimizedMap = {
@@ -21,7 +21,7 @@ export const MinimizeButton = ({ minimized, minimizeTarget, onClick }: MinimizeB
   else appWindow.setMinSize(new LogicalSize(1200, 800));
 
   return (
-    <UnstyledButton
+    <ActionIcon
       onClick={onClick}
       sx={(theme) => ({
         position: "absolute",
@@ -29,19 +29,15 @@ export const MinimizeButton = ({ minimized, minimizeTarget, onClick }: MinimizeB
         bottom: 5,
         opacity: minimized ? 1 : 0.2,
         display: "block",
-        width: "40px",
-        padding: 8,
+        marginRight: "6px",
         borderRadius: theme.radius.sm,
         color: theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.black,
+        backgroundColor: "transparent",
         "&:hover": {
           backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.colors.gray[0],
         },
       })}>
-      <Group>
-        <ThemeIcon size={27} color={"black"} variant="light">
-          {minimized ? <IconArrowBarRight onClick={onClick} style={{}} /> : <IconArrowBarLeft onClick={onClick} />}
-        </ThemeIcon>
-      </Group>
-    </UnstyledButton>
+      {minimized ? <IconArrowBarRight onClick={onClick} /> : <IconArrowBarLeft onClick={onClick} />}
+    </ActionIcon>
   );
 };
