@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
-use super::{AuthenticationConfig, ClusterConfig, Favorites, InsulatorConfig, SchemaRegistryConfig, Theme};
+use super::{ AuthenticationConfig, ClusterConfig, Favorites, InsulatorConfig, SchemaRegistryConfig, Theme };
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
 pub struct StoreConfig {
@@ -13,6 +13,8 @@ pub struct StoreConfig {
     pub use_regex: bool,
     #[serde(rename = "sqlTimeoutSeconds")]
     pub sql_timeout_secs: Option<u32>,
+    #[serde(rename = "kafkaTimeoutSeconds")]
+    pub kafka_timeout_secs: Option<u32>,
     pub clusters: HashMap<String, StoreCluster>,
 }
 
@@ -48,26 +50,19 @@ pub enum StoreAuthentication {
 impl From<StoreAuthentication> for AuthenticationConfig {
     fn from(s: StoreAuthentication) -> Self {
         match s {
-            StoreAuthentication::Ssl {
-                ca,
-                certificate,
-                key,
-                key_password,
-            } => AuthenticationConfig::Ssl {
-                ca,
-                certificate,
-                key,
-                key_password,
-            },
-            StoreAuthentication::Sasl {
-                username,
-                password,
-                scram,
-            } => AuthenticationConfig::Sasl {
-                username,
-                password,
-                scram,
-            },
+            StoreAuthentication::Ssl { ca, certificate, key, key_password } =>
+                AuthenticationConfig::Ssl {
+                    ca,
+                    certificate,
+                    key,
+                    key_password,
+                },
+            StoreAuthentication::Sasl { username, password, scram } =>
+                AuthenticationConfig::Sasl {
+                    username,
+                    password,
+                    scram,
+                },
             StoreAuthentication::None => AuthenticationConfig::None,
         }
     }
@@ -85,15 +80,14 @@ fn store_cluster_to_config(id: String, store: StoreCluster) -> ClusterConfig {
 }
 
 impl From<StoreConfig> for InsulatorConfig {
-    fn from(
-        StoreConfig {
-            theme,
-            show_notifications,
-            use_regex,
-            clusters,
-            sql_timeout_secs,
-        }: StoreConfig,
-    ) -> Self {
+    fn from(StoreConfig {
+        theme,
+        show_notifications,
+        use_regex,
+        clusters,
+        sql_timeout_secs,
+        kafka_timeout_secs,
+    }: StoreConfig) -> Self {
         let converted_clusters = clusters
             .into_iter()
             .map(|(id, c)| store_cluster_to_config(id, c))
@@ -103,6 +97,7 @@ impl From<StoreConfig> for InsulatorConfig {
             show_notifications,
             use_regex,
             sql_timeout_secs: sql_timeout_secs.unwrap_or(10),
+            kafka_timeout_secs: kafka_timeout_secs.unwrap_or(15),
             clusters: converted_clusters,
         }
     }
@@ -111,26 +106,19 @@ impl From<StoreConfig> for InsulatorConfig {
 impl From<AuthenticationConfig> for StoreAuthentication {
     fn from(authentication_config: AuthenticationConfig) -> Self {
         match authentication_config {
-            AuthenticationConfig::Ssl {
-                ca,
-                certificate,
-                key,
-                key_password,
-            } => StoreAuthentication::Ssl {
-                ca,
-                certificate,
-                key,
-                key_password,
-            },
-            AuthenticationConfig::Sasl {
-                username,
-                password,
-                scram,
-            } => StoreAuthentication::Sasl {
-                username,
-                password,
-                scram,
-            },
+            AuthenticationConfig::Ssl { ca, certificate, key, key_password } =>
+                StoreAuthentication::Ssl {
+                    ca,
+                    certificate,
+                    key,
+                    key_password,
+                },
+            AuthenticationConfig::Sasl { username, password, scram } =>
+                StoreAuthentication::Sasl {
+                    username,
+                    password,
+                    scram,
+                },
             AuthenticationConfig::None => StoreAuthentication::None,
         }
     }
@@ -155,8 +143,8 @@ impl From<&InsulatorConfig> for StoreConfig {
             show_notifications: config.show_notifications,
             use_regex: config.use_regex,
             sql_timeout_secs: Some(config.sql_timeout_secs),
-            clusters: config
-                .clusters
+            kafka_timeout_secs: Some(config.kafka_timeout_secs),
+            clusters: config.clusters
                 .clone()
                 .into_iter()
                 .map(|c| (c.id.clone(), c.into()))

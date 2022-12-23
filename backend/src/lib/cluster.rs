@@ -1,28 +1,28 @@
-use log::{debug, trace};
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use log::{ debug, trace };
+use std::{ collections::HashMap, sync::Arc };
 use tokio::sync::RwLock;
 
 use crate::lib::{
-    admin::{Admin, KafkaAdmin},
-    configuration::ClusterConfig,
-    consumer::{Consumer, KafkaConsumer},
-    parser::{Parser, RecordParser},
+    admin::{ Admin, KafkaAdmin },
+    consumer::{ Consumer, KafkaConsumer },
+    parser::{ Parser, RecordParser },
     record_store::TopicStore,
-    schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
+    schema_registry::{ CachedSchemaRegistry, SchemaRegistryClient },
+    Result,
 };
 
-use super::{record_store::SqliteStore, types::ErrorCallback};
+use super::{ configuration::InsulatorConfig, record_store::SqliteStore, types::ErrorCallback };
 
 type TopicName = String;
 
 pub struct Cluster<SR = CachedSchemaRegistry, C = KafkaConsumer, P = RecordParser, A = KafkaAdmin>
-where
-    SR: SchemaRegistryClient + Send + Sync,
-    C: Consumer + Send + Sync,
-    P: Parser + Send + Sync,
-    A: Admin + Send + Sync,
-{
-    pub config: ClusterConfig,
+    where
+        SR: SchemaRegistryClient + Send + Sync,
+        C: Consumer + Send + Sync,
+        P: Parser + Send + Sync,
+        A: Admin + Send + Sync {
+    pub cluster_id: String,
+    pub config: InsulatorConfig,
     pub schema_registry_client: Option<Arc<SR>>,
     pub admin_client: Arc<A>,
     pub parser: Arc<P>,
@@ -34,6 +34,7 @@ where
 impl Clone for Cluster<CachedSchemaRegistry> {
     fn clone(&self) -> Self {
         Self {
+            cluster_id: self.cluster_id.clone(),
             config: self.config.clone(),
             schema_registry_client: self.schema_registry_client.clone(),
             consumers: self.consumers.clone(),
@@ -46,28 +47,32 @@ impl Clone for Cluster<CachedSchemaRegistry> {
 }
 
 impl Cluster {
-    pub fn new(config: &ClusterConfig, error_callback: ErrorCallback, sql_timeout: Duration) -> Self {
+    pub fn new(cluster_id: &str, config: &InsulatorConfig, error_callback: ErrorCallback) -> Result<Self> {
+        let cluster_config = config.get_cluster_config(cluster_id)?;
         let (schema_registry_client, parser) = {
-            if let Some(s_config) = &config.schema_registry {
-                let ptr = Arc::new(CachedSchemaRegistry::new(
-                    s_config.endpoint.as_str(),
-                    s_config.username.as_deref(),
-                    s_config.password.as_deref(),
-                ));
+            if let Some(s_config) = &cluster_config.schema_registry {
+                let ptr = Arc::new(
+                    CachedSchemaRegistry::new(
+                        s_config.endpoint.as_str(),
+                        s_config.username.as_deref(),
+                        s_config.password.as_deref()
+                    )
+                );
                 (Some(ptr.clone()), RecordParser::new(Some(ptr)))
             } else {
                 (None, RecordParser::new(None))
             }
         };
-        Cluster {
-            config: config.clone(),
+        Ok(Cluster {
+            cluster_id: cluster_id.to_string(),
             schema_registry_client,
             consumers: Arc::new(RwLock::new(HashMap::new())),
-            admin_client: Arc::new(KafkaAdmin::new(config)),
+            admin_client: Arc::new(KafkaAdmin::new(&cluster_config, config.get_kafka_tmo())?),
             parser: Arc::new(parser),
-            store: Arc::new(SqliteStore::new(sql_timeout)),
+            store: Arc::new(SqliteStore::new(config.get_sql_tmo())),
             error_callback,
-        }
+            config: config.clone(),
+        })
     }
 
     pub async fn get_consumer(&self, topic_name: &str) -> Arc<KafkaConsumer> {
@@ -79,19 +84,25 @@ impl Cluster {
         }
         {
             debug!("Create consumer for topic {}", topic_name);
+            let cluster_config = self.config.get_cluster_config(&self.cluster_id).expect("Cluster id not found"); //todo: bubble up the error
+
             // create a new table for the consumer
-            let topic_store =
-                TopicStore::from_record_store(self.store.clone(), self.parser.clone(), &self.config.id, topic_name);
-            let consumer = Arc::new(KafkaConsumer::new(
-                &self.config,
-                topic_name,
-                topic_store,
-                self.error_callback.clone(),
-            ));
-            self.consumers
-                .write()
-                .await
-                .insert(topic_name.to_string(), consumer.clone());
+            let topic_store = TopicStore::from_record_store(
+                self.store.clone(),
+                self.parser.clone(),
+                &self.cluster_id,
+                topic_name
+            );
+            let consumer = Arc::new(
+                KafkaConsumer::new(
+                    &cluster_config,
+                    topic_name,
+                    topic_store,
+                    self.error_callback.clone(),
+                    self.config.get_kafka_tmo()
+                )
+            );
+            self.consumers.write().await.insert(topic_name.to_string(), consumer.clone());
             consumer
         }
     }
