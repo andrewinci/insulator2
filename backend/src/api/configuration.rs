@@ -1,19 +1,20 @@
 use log::debug;
 
-use crate::lib::configuration::{ConfigStore, InsulatorConfig};
+use crate::lib::configuration::InsulatorConfig;
 
-use super::error::Result;
+use super::{ error::Result, AppState };
 
 #[tauri::command]
-pub fn get_configuration() -> Result<InsulatorConfig> {
+pub fn get_configuration(state: tauri::State<'_, AppState>) -> Result<InsulatorConfig> {
     debug!("Retrieve configuration");
-    Ok(ConfigStore::new().get_configuration()?)
+    Ok(state.configuration_provider.get_configuration()?)
 }
 
 #[tauri::command]
-pub fn write_configuration(configuration: InsulatorConfig) -> Result<InsulatorConfig> {
+pub fn write_configuration(
+    configuration: InsulatorConfig,
+    state: tauri::State<'_, AppState>
+) -> Result<InsulatorConfig> {
     debug!("Write configuration");
-    Ok(ConfigStore::new()
-        .write_configuration(&configuration)
-        .map(|_| configuration)?)
+    Ok(state.configuration_provider.write_configuration(&configuration).map(|_| configuration)?)
 }

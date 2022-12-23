@@ -4,21 +4,21 @@ use super::InsulatorConfig;
 use crate::lib::error::Result;
 use dirs::home_dir;
 use std::path::PathBuf;
-use std::{fs, path::Path};
+use std::{ fs, path::Path };
 
 #[derive(Default)]
-pub struct ConfigStore {
+pub struct ConfigurationProvider {
     config_path: PathBuf,
     legacy_config_path: PathBuf,
 }
 
-impl ConfigStore {
+impl ConfigurationProvider {
     pub fn new() -> Self {
         let mut config_path = home_dir().expect("Unable to retrieve the home directory");
         let mut legacy_config_path = config_path.clone();
         config_path.push(".insulator2.toml");
         legacy_config_path.push(".insulator.config");
-        ConfigStore {
+        ConfigurationProvider {
             config_path,
             legacy_config_path,
         }
@@ -54,7 +54,7 @@ impl ConfigStore {
             match &c.schema_registry {
                 Some(s) => assert!(!s.endpoint.is_empty()),
                 None => {}
-            };
+            }
         });
         let as_store = StoreConfig::from(configuration);
         let raw_config = toml::to_string_pretty(&as_store)?;
@@ -64,7 +64,7 @@ impl ConfigStore {
 
     #[cfg(test)]
     fn from_config_path(config_path: &str) -> Self {
-        ConfigStore {
+        ConfigurationProvider {
             config_path: PathBuf::from(config_path),
             legacy_config_path: PathBuf::from(config_path),
         }
@@ -73,11 +73,11 @@ impl ConfigStore {
 
 #[cfg(test)]
 mod test {
-    use std::{env::temp_dir, fs};
+    use std::{ env::temp_dir, fs };
 
     use crate::lib::configuration::InsulatorConfig;
 
-    use super::ConfigStore;
+    use super::ConfigurationProvider;
 
     fn get_test_config_path() -> String {
         let mut dir = temp_dir();
@@ -88,7 +88,7 @@ mod test {
     #[test]
     fn test_retrieve_config() {
         let tmp_config_file = get_test_config_path();
-        let sut = ConfigStore::from_config_path(&tmp_config_file);
+        let sut = ConfigurationProvider::from_config_path(&tmp_config_file);
 
         // retrieve config the first time returns the default
         {
@@ -103,9 +103,9 @@ mod test {
     fn test_write_config() {
         // write a default config
         {
-            let sut = ConfigStore::from_config_path(&get_test_config_path());
+            let sut = ConfigurationProvider::from_config_path(&get_test_config_path());
             let res = sut.write_configuration(&InsulatorConfig::default());
-            assert!(res.is_ok())
+            assert!(res.is_ok());
         }
         // write a config with a cluster authentication and schema registry
         {
@@ -134,7 +134,7 @@ mod test {
                 schema_registry: None,
                 ..Default::default()
             });
-            let sut = ConfigStore::from_config_path(&get_test_config_path());
+            let sut = ConfigurationProvider::from_config_path(&get_test_config_path());
             let res = sut.write_configuration(&InsulatorConfig::default());
             assert!(res.is_ok())
         }
