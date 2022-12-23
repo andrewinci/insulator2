@@ -5,7 +5,7 @@ use super::{ ConsumerGroupInfo, KafkaAdmin };
 use crate::lib::{
     admin::TopicPartitionOffset,
     configuration::build_kafka_client_config,
-    consumer::{ types::ConsumerOffsetConfiguration, KafkaConsumer },
+    consumer::{ types::ConsumerSessionConfiguration, KafkaConsumer },
     error::Result,
     Error,
 };
@@ -18,7 +18,7 @@ pub trait ConsumerGroupAdmin {
         &self,
         consumer_group_name: &str,
         topics: &[&str],
-        config: &ConsumerOffsetConfiguration
+        config: &ConsumerSessionConfiguration
     ) -> Result<()>;
     fn list_consumer_groups(&self) -> Result<Vec<String>>;
     async fn describe_consumer_group(&self, consumer_group_name: &str, ignore_cache: bool) -> Result<ConsumerGroupInfo>;
@@ -45,7 +45,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
         &self,
         consumer_group_name: &str,
         topic_names: &[&str],
-        config: &ConsumerOffsetConfiguration
+        config: &ConsumerSessionConfiguration
     ) -> Result<()> {
         let consumer = build_kafka_client_config(&self.config, Some(consumer_group_name)).create()?;
 

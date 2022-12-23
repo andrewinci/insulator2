@@ -34,7 +34,10 @@ export const ConsumerConfigurationModal = ({ topicName, opened, onClose, onSubmi
       onClose={onClose}
       title={<Title order={3}>Consumer settings</Title>}
       closeOnClickOutside={false}>
-      <form onSubmit={form.onSubmit((f) => onSubmit({ compactify: f.compactify, interval: getConsumerSettings(f) }))}>
+      <form
+        onSubmit={form.onSubmit((f) =>
+          onSubmit({ compactify: f.compactify, consumer_start_config: getConsumerSettings(f) })
+        )}>
         <Stack>
           <Stack spacing={0}>
             <Text weight={"normal"} size={15}>

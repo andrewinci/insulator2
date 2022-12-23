@@ -4,7 +4,7 @@ use log::debug;
 
 use crate::lib::{
     admin::{ ConsumerGroupAdmin, ConsumerGroupInfo, PartitionOffset, Topic, TopicAdmin, TopicInfo },
-    consumer::types::ConsumerOffsetConfiguration,
+    consumer::types::ConsumerSessionConfiguration,
 };
 
 use super::{ error::Result, AppState };
@@ -83,7 +83,7 @@ pub async fn set_consumer_group(
     cluster_id: &str,
     consumer_group_name: &str,
     topics: Vec<&str>,
-    offset_config: ConsumerOffsetConfiguration,
+    offset_config: ConsumerSessionConfiguration,
     state: tauri::State<'_, AppState>
 ) -> Result<()> {
     debug!("Create consumer group {}", consumer_group_name);

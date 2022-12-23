@@ -115,27 +115,27 @@ function consumeFromFunctions(onConsumerChange: (config: "Custom" | ConsumerConf
   const consumeLast15Minutes = () =>
     onConsumerChange({
       compactify: false,
-      interval: { Custom: { start_timestamp: Date.now() - FifteenMinutesMs } },
+      consumer_start_config: { Custom: { start_timestamp: Date.now() - FifteenMinutesMs } },
     });
   const consumeLastHour = () =>
     onConsumerChange({
       compactify: false,
-      interval: { Custom: { start_timestamp: Date.now() - OneHourMs } },
+      consumer_start_config: { Custom: { start_timestamp: Date.now() - OneHourMs } },
     });
   const consumeLastDay = () =>
     onConsumerChange({
       compactify: false,
-      interval: { Custom: { start_timestamp: Date.now() - 24 * OneHourMs } },
+      consumer_start_config: { Custom: { start_timestamp: Date.now() - 24 * OneHourMs } },
     });
   const consumeFromNow = () =>
     onConsumerChange({
       compactify: false,
-      interval: "End",
+      consumer_start_config: "End",
     });
   const consumeFromBeginning = () =>
     onConsumerChange({
       compactify: false,
-      interval: "Beginning",
+      consumer_start_config: "Beginning",
     });
   return { consumeLast15Minutes, consumeLastHour, consumeLastDay, consumeFromNow, consumeFromBeginning };
 }

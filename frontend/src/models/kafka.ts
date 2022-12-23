@@ -32,7 +32,7 @@ export type ConsumerOffsetConfiguration =
 
 export type ConsumerConfiguration = {
   compactify: boolean;
-  interval: ConsumerOffsetConfiguration;
+  consumer_start_config: ConsumerOffsetConfiguration;
 };
 
 export type ConsumerGroupInfo = {
