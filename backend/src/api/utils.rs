@@ -1,14 +1,14 @@
-use log::{debug, error};
+use log::{ debug, error };
 
-use super::error::{Result, TauriError};
+use super::error::{ Result, TauriError };
 use super::AppState;
 use rust_keystore::KeyStore;
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
 #[tauri::command]
 pub async fn export_datastore(cluster_id: &str, output_path: &str, state: tauri::State<'_, AppState>) -> Result<()> {
     debug!("Start export database");
-    Ok(state.get_cluster(cluster_id).await.store.export_db(output_path)?)
+    Ok(state.get_cluster(cluster_id).await?.store.export_db(output_path)?)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -45,8 +45,8 @@ pub async fn parse_keystore(location: &str, password: Option<&str>) -> Result<Us
                 certificate,
                 key: key.pkcs8_pem,
             });
-        };
-    };
+        }
+    }
     Err(TauriError {
         error_type: "Legacy config".into(),
         message: "Unable to correctly parse the keystore".into(),

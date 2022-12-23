@@ -79,7 +79,9 @@ fn map(
             let schema = s
                 .variants()
                 .get(*i as usize)
-                .expect("Missing schema in the union");
+                .ok_or(Error::AvroParse {
+                    message: format!("Missing schema index {} in the union {:?}", *i, s),
+                })?;
             map(&**v, schema, parent_ns, ref_cache)
         }
         (AvroValue::Enum(_, v), Schema::Enum { name: _, .. }) => Ok(json!(*v)),

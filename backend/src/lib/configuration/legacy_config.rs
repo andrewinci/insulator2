@@ -1,6 +1,6 @@
-use super::{AuthenticationConfig, ClusterConfig, InsulatorConfig, SchemaRegistryConfig, Theme};
-use crate::lib::{Error, Result};
-use log::{debug, warn};
+use super::{ AuthenticationConfig, ClusterConfig, InsulatorConfig, SchemaRegistryConfig, Theme };
+use crate::lib::{ Error, Result };
+use log::{ debug, warn };
 use serde::Deserialize;
 
 // insulator v1 config
@@ -65,10 +65,8 @@ impl TryFrom<LegacyConfiguration> for InsulatorConfig {
     fn try_from(legacy: LegacyConfiguration) -> std::result::Result<Self, Self::Error> {
         let mut config = InsulatorConfig {
             theme: legacy.theme,
-            show_notifications: true,
-            use_regex: false,
-            sql_timeout_secs: 10,
             clusters: vec![], //populated below
+            ..Default::default()
         };
         let mut clusters = Vec::new();
         for c in legacy.clusters {
@@ -89,7 +87,7 @@ impl TryFrom<LegacyConfiguration> for InsulatorConfig {
                     authentication,
                     schema_registry,
                     ..Default::default()
-                })
+                });
             } else {
                 warn!("Unable to parse cluster config. {:?}", authentication);
             }
@@ -107,39 +105,42 @@ fn map_sasl_config(legacy: SaslConfigurationLegacy) -> Result<AuthenticationConf
             scram: legacy.use_scram.unwrap_or(false),
         })
     } else {
-        Err(crate::lib::Error::LegacyConfig {
+        Err(crate::lib::Error::LegacyConfiguration {
             message: "Invalid sasl configuration found. Username and password must be non-empty".into(),
         })
     }
 }
 
 fn map_ssl_config(legacy: SslConfigurationLegacy) -> Result<AuthenticationConfig> {
-    if let (Some(truststore_location), Some(keystore_location)) =
-        (legacy.ssl_truststore_location, legacy.ssl_keystore_location)
+    if
+        let (Some(truststore_location), Some(keystore_location)) = (
+            legacy.ssl_truststore_location,
+            legacy.ssl_keystore_location,
+        )
     {
         debug!("Parsing truststore {}", &truststore_location);
-        let ca_certificate = &rust_keystore::KeyStore::try_load(&truststore_location)?
+        let ca_certificate = &rust_keystore::KeyStore
+            ::try_load(&truststore_location)?
             .certificates(legacy.ssl_truststore_password.as_deref())?[0];
 
         debug!("Parsing keystore {}", &keystore_location);
-        let user_certificate = &rust_keystore::KeyStore::try_load(&keystore_location)?
+        let user_certificate = &rust_keystore::KeyStore
+            ::try_load(&keystore_location)?
             .certificates(legacy.ssl_keystore_password.as_deref())?[0];
 
         Ok(AuthenticationConfig::Ssl {
             ca: ca_certificate.pem.clone(),
             certificate: user_certificate.pem.clone(),
-            key: user_certificate
-                .private_key
+            key: user_certificate.private_key
                 .as_ref()
-                .ok_or(Error::LegacyConfig {
+                .ok_or(Error::LegacyConfiguration {
                     message: "Unable to parse the keystore".into(),
                 })?
-                .pkcs8_pem
-                .clone(),
+                .pkcs8_pem.clone(),
             key_password: None,
         })
     } else {
-        Err(crate::lib::Error::LegacyConfig {
+        Err(crate::lib::Error::LegacyConfiguration {
             message: "Invalid ssl configuration found. truststore and keystore locations are required".into(),
         })
     }
@@ -159,7 +160,7 @@ fn map_schema_registry(legacy: SchemaRegistryConfigurationLegacy) -> Option<Sche
 
 impl From<rust_keystore::error::Error> for Error {
     fn from(err: rust_keystore::error::Error) -> Self {
-        Self::LegacyConfig {
+        Self::LegacyConfiguration {
             message: format!("{:?}", err),
         }
     }

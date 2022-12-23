@@ -1,6 +1,9 @@
-use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+use crate::lib::{ Error, Result };
+use serde::{ Deserialize, Serialize };
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct InsulatorConfig {
     pub theme: Theme,
     #[serde(rename = "showNotifications")]
@@ -9,17 +12,38 @@ pub struct InsulatorConfig {
     pub use_regex: bool,
     #[serde(rename = "sqlTimeoutSeconds")]
     pub sql_timeout_secs: u32,
+    #[serde(rename = "kafkaTimeoutSeconds")]
+    pub kafka_timeout_secs: u32,
     pub clusters: Vec<ClusterConfig>,
+}
+
+impl InsulatorConfig {
+    pub fn get_kafka_tmo(&self) -> Duration {
+        Duration::from_secs(self.kafka_timeout_secs as u64)
+    }
+    pub fn get_sql_tmo(&self) -> Duration {
+        Duration::from_secs(self.sql_timeout_secs as u64)
+    }
+    pub fn get_cluster_config(&self, cluster_id: &str) -> Result<ClusterConfig> {
+        self.clusters
+            .iter()
+            .find(|c| c.id == cluster_id)
+            .cloned()
+            .ok_or(Error::Generic {
+                message: format!("Unable to load the configuration for the cluster {}", cluster_id),
+            })
+    }
 }
 
 impl Default for InsulatorConfig {
     fn default() -> Self {
         Self {
-            theme: Default::default(),
             show_notifications: true,
             use_regex: true,
             sql_timeout_secs: 10,
-            clusters: Default::default(),
+            clusters: vec![],
+            kafka_timeout_secs: 20,
+            theme: Theme::Dark,
         }
     }
 }
