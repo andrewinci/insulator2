@@ -1,17 +1,17 @@
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ConsumerConfiguration {
     pub compactify: bool,
-    pub interval: ConsumerOffsetConfiguration,
+    pub consumer_start_config: ConsumerSessionConfiguration,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum ConsumerOffsetConfiguration {
+pub enum ConsumerSessionConfiguration {
     Beginning,
     End,
     Custom {
-        start_timestamp: i64,        //time in ms
+        start_timestamp: i64, //time in ms
         stop_timestamp: Option<i64>, //time in ms
     },
 }
