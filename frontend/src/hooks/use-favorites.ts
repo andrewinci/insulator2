@@ -1,19 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
 import { Favorites } from "../models";
-import { getFavorites, setFavorites } from "../tauri/configuration";
+import { useUserSettings } from "../providers";
 
 export const useFavorites = (clusterId: string, key: keyof Favorites) => {
-  const { data: userFavorites, refetch } = useQuery(["getFavorites", clusterId], () => getFavorites(clusterId));
+  const { userSettings, setUserSettings } = useUserSettings();
+  const setFavorites = (newFavs: Favorites) => {
+    setUserSettings((s) => ({
+      ...s,
+      clusters: s.clusters.map((c) => (c.id != clusterId ? c : { ...c, favorites: newFavs })),
+    }));
+  };
+  const userFavorites = userSettings.clusters.find((c) => c.id == clusterId)?.favorites;
   const toggleFav = async (newItem: string) => {
     if (!userFavorites) return;
     const favorites = userFavorites[key];
     // toggle item from the favorites list
     if (favorites?.includes(newItem)) {
-      await setFavorites(clusterId, { ...userFavorites, [key]: favorites.filter((f) => f != newItem) }); //todo: fix
+      await setFavorites({ ...userFavorites, [key]: favorites.filter((f) => f != newItem) });
     } else {
-      await setFavorites(clusterId, { ...userFavorites, [key]: [...favorites, newItem] });
+      await setFavorites({ ...userFavorites, [key]: [...favorites, newItem] });
     }
-    refetch();
   };
 
   return { favorites: userFavorites ? userFavorites[key] : [], toggleFavorite: toggleFav };
