@@ -69,6 +69,17 @@ export const Settings = () => {
             value={userSettings.sqlTimeoutSeconds}
             onChange={(c) => setUserSettings((s) => ({ ...s, sqlTimeoutSeconds: c }))}
           />
+          <NumberInput
+            label="Kafka Timeout Seconds"
+            description={
+              <Group spacing={5}>
+                <IconAlertTriangle color={"orange"} size={14} />
+                <Text color={"orange"}>Require app restart to take effect</Text>
+              </Group>
+            }
+            value={userSettings.kafkaTimeoutSeconds}
+            onChange={(c) => setUserSettings((s) => ({ ...s, kafkaTimeoutSeconds: c }))}
+          />
           <Checkbox
             label="Show notifications"
             checked={userSettings.showNotifications}
