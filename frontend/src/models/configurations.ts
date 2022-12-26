@@ -4,6 +4,7 @@ export type UserSettings = {
   showNotifications?: boolean;
   useRegex?: boolean;
   sqlTimeoutSeconds?: number;
+  kafkaTimeoutSeconds?: number;
 };
 
 export type AppTheme = "Light" | "Dark";
