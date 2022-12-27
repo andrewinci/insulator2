@@ -34,7 +34,6 @@
     "husky": "^8.0.1",
     "lint-staged": "^13.1.0",
     "prettier": "2.8.1",
-    "prettier-plugin-rust": "^0.1.8",
     "rimraf": "^3.0.2",
     "semantic-release": "^19.0.5",
     "vite": "^4.0.3",
@@ -46,7 +45,7 @@
     "printWidth": 120
   },
   "lint-staged": {
-    "*": [
+    "*.{ts,tsx,json,md}": [
       "prettier --write "
     ],
     "*.{ts,tsx}": [
