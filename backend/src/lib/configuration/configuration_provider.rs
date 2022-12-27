@@ -4,7 +4,7 @@ use super::InsulatorConfig;
 use crate::lib::error::Result;
 use dirs::home_dir;
 use std::path::PathBuf;
-use std::{ fs, path::Path };
+use std::{fs, path::Path};
 
 #[derive(Default)]
 pub struct ConfigurationProvider {
@@ -73,7 +73,7 @@ impl ConfigurationProvider {
 
 #[cfg(test)]
 mod test {
-    use std::{ env::temp_dir, fs };
+    use std::{env::temp_dir, fs};
 
     use crate::lib::configuration::InsulatorConfig;
 

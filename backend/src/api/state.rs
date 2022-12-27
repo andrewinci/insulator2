@@ -1,15 +1,11 @@
-use std::{ collections::HashMap, sync::Arc };
+use std::{collections::HashMap, sync::Arc};
 
 use log::debug;
 use tauri::Manager;
 use tokio::sync::RwLock;
 
 use crate::lib::{
-    configuration::ConfigurationProvider,
-    schema_registry::CachedSchemaRegistry,
-    types::ErrorCallback,
-    Cluster,
-    Result,
+    configuration::ConfigurationProvider, schema_registry::CachedSchemaRegistry, types::ErrorCallback, Cluster, Result,
 };
 
 use super::error::TauriError;

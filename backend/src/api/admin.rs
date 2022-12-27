@@ -3,11 +3,11 @@ use std::collections::HashMap;
 use log::debug;
 
 use crate::lib::{
-    admin::{ ConsumerGroupAdmin, ConsumerGroupInfo, PartitionOffset, Topic, TopicAdmin, TopicInfo },
+    admin::{ConsumerGroupAdmin, ConsumerGroupInfo, PartitionOffset, Topic, TopicAdmin, TopicInfo},
     consumer::types::ConsumerSessionConfiguration,
 };
 
-use super::{ error::Result, AppState };
+use super::{error::Result, AppState};
 
 #[tauri::command]
 pub async fn list_topics(cluster_id: &str, state: tauri::State<'_, AppState>) -> Result<Vec<Topic>> {
@@ -17,11 +17,7 @@ pub async fn list_topics(cluster_id: &str, state: tauri::State<'_, AppState>) ->
 }
 
 #[tauri::command]
-pub async fn get_topic_info(
-    cluster_id: &str,
-    topic_name: &str,
-    state: tauri::State<'_, AppState>
-) -> Result<TopicInfo> {
+pub async fn get_topic_info(cluster_id: &str, topic_name: &str, state: tauri::State<'_, AppState>) -> Result<TopicInfo> {
     debug!("Retrieve topic info for {}", topic_name);
     let cluster = state.get_cluster(cluster_id).await?;
     Ok(cluster.admin_client.get_topic_info(topic_name).await?)
@@ -41,11 +37,14 @@ pub async fn create_topic(
     partitions: i32,
     isr: i32,
     compacted: bool,
-    state: tauri::State<'_, AppState>
+    state: tauri::State<'_, AppState>,
 ) -> Result<()> {
     debug!("Create new topic");
     let cluster = state.get_cluster(cluster_id).await?;
-    Ok(cluster.admin_client.create_topic(topic_name, partitions, isr, compacted).await?)
+    Ok(cluster
+        .admin_client
+        .create_topic(topic_name, partitions, isr, compacted)
+        .await?)
 }
 
 #[tauri::command]
@@ -60,18 +59,21 @@ pub async fn describe_consumer_group(
     cluster_id: &str,
     consumer_group_name: &str,
     ignore_cache: Option<bool>,
-    state: tauri::State<'_, AppState>
+    state: tauri::State<'_, AppState>,
 ) -> Result<ConsumerGroupInfo> {
     debug!("Describe consumer group");
     let cluster = state.get_cluster(cluster_id).await?;
-    Ok(cluster.admin_client.describe_consumer_group(consumer_group_name, ignore_cache.unwrap_or(false)).await?)
+    Ok(cluster
+        .admin_client
+        .describe_consumer_group(consumer_group_name, ignore_cache.unwrap_or(false))
+        .await?)
 }
 
 #[tauri::command]
 pub async fn get_consumer_group_state(
     cluster_id: &str,
     consumer_group_name: &str,
-    state: tauri::State<'_, AppState>
+    state: tauri::State<'_, AppState>,
 ) -> Result<String> {
     debug!("Get consumer group");
     let cluster = state.get_cluster(cluster_id).await?;
@@ -84,18 +86,21 @@ pub async fn set_consumer_group(
     consumer_group_name: &str,
     topics: Vec<&str>,
     offset_config: ConsumerSessionConfiguration,
-    state: tauri::State<'_, AppState>
+    state: tauri::State<'_, AppState>,
 ) -> Result<()> {
     debug!("Create consumer group {}", consumer_group_name);
     let cluster = state.get_cluster(cluster_id).await?;
-    Ok(cluster.admin_client.set_consumer_group(consumer_group_name, &topics, &offset_config).await?)
+    Ok(cluster
+        .admin_client
+        .set_consumer_group(consumer_group_name, &topics, &offset_config)
+        .await?)
 }
 
 #[tauri::command]
 pub async fn get_last_offsets(
     cluster_id: &str,
     topic_names: Vec<&str>,
-    state: tauri::State<'_, AppState>
+    state: tauri::State<'_, AppState>,
 ) -> Result<HashMap<String, Vec<PartitionOffset>>> {
     debug!("Get last offset for topics {:?}", topic_names);
     let cluster = state.get_cluster(cluster_id).await?;
@@ -106,7 +111,7 @@ pub async fn get_last_offsets(
 pub async fn delete_consumer_group(
     cluster_id: &str,
     consumer_group_name: &str,
-    state: tauri::State<'_, AppState>
+    state: tauri::State<'_, AppState>,
 ) -> Result<()> {
     debug!("Deleting consumer group {}", consumer_group_name);
     let cluster = state.get_cluster(cluster_id).await?;

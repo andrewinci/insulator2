@@ -3,33 +3,15 @@ use serde::Serialize;
 
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub enum Error {
-    Generic {
-        message: String,
-    },
-    AvroParse {
-        message: String,
-    },
-    IO {
-        message: String,
-    },
-    JSONSerde {
-        message: String,
-    },
-    TOMLSerde {
-        message: String,
-    },
-    Consumer {
-        message: String,
-    },
-    Kafka {
-        message: String,
-    },
-    SqlError {
-        message: String,
-    },
-    LegacyConfiguration {
-        message: String,
-    },
+    Generic { message: String },
+    AvroParse { message: String },
+    IO { message: String },
+    JSONSerde { message: String },
+    TOMLSerde { message: String },
+    Consumer { message: String },
+    Kafka { message: String },
+    SqlError { message: String },
+    LegacyConfiguration { message: String },
 }
 
 pub type Result<T> = core::result::Result<T, Error>;

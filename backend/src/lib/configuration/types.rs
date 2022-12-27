@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use crate::lib::{ Error, Result };
-use serde::{ Deserialize, Serialize };
+use crate::lib::{Error, Result};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct InsulatorConfig {
