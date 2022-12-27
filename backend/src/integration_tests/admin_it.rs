@@ -1,3 +1,4 @@
+#[cfg(target_os = "linux")]
 #[cfg(test)]
 mod integration_tests {
     use futures::StreamExt;
