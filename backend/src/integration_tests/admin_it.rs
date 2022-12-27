@@ -2,13 +2,16 @@
 #[cfg(test)]
 mod integration_tests {
     use rdkafka::{
-        config::{ ClientConfig, FromClientConfig },
-        consumer::{ stream_consumer::StreamConsumer, Consumer },
+        config::{ClientConfig, FromClientConfig},
+        consumer::{stream_consumer::StreamConsumer, Consumer},
     };
     use std::time::Duration;
-    use testcontainers::{ clients, images::kafka };
+    use testcontainers::{clients, images::kafka};
 
-    use crate::lib::{ admin::{ KafkaAdmin, TopicAdmin }, configuration::{ ClusterConfig, Favorites } };
+    use crate::lib::{
+        admin::{KafkaAdmin, TopicAdmin},
+        configuration::{ClusterConfig, Favorites},
+    };
 
     struct KafkaTestFixture {
         pub cluster_config: ClusterConfig,
@@ -54,7 +57,12 @@ mod integration_tests {
     #[tokio::test]
     async fn produce_and_consume_messages() {
         // arrange
-        let KafkaTestFixture { tmo, cluster_config, consumer, .. } = init_test();
+        let KafkaTestFixture {
+            tmo,
+            cluster_config,
+            consumer,
+            ..
+        } = init_test();
 
         let sut = KafkaAdmin::new(&cluster_config, tmo.clone()).expect("Unable to create the admin client");
         let test_topic_name = "test_topic_name";
@@ -62,12 +70,14 @@ mod integration_tests {
         {
             let partition_count = 7_usize;
             // act
-            sut.create_topic(test_topic_name, partition_count as i32, 1, false).await.expect(
-                "Unable to create the test topic"
-            );
+            sut.create_topic(test_topic_name, partition_count as i32, 1, false)
+                .await
+                .expect("Unable to create the test topic");
 
             // assert
-            let metadata = consumer.fetch_metadata(None, tmo).expect("Unable to retrieve the metadata");
+            let metadata = consumer
+                .fetch_metadata(None, tmo)
+                .expect("Unable to retrieve the metadata");
             let tp: Vec<_> = metadata
                 .topics()
                 .iter()
