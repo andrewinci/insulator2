@@ -1,17 +1,26 @@
-use std::{ collections::HashMap, io::Cursor, sync::Arc };
+use std::{collections::HashMap, io::Cursor, sync::Arc};
 
-use apache_avro::{ from_avro_datum, schema::Name, types::Value as AvroValue, Schema };
+use apache_avro::{from_avro_datum, schema::Name, types::Value as AvroValue, Schema};
 use num_bigint::BigInt;
 use rust_decimal::Decimal;
-use serde_json::{ json, Map, Value as JsonValue };
+use serde_json::{json, Map, Value as JsonValue};
 
-use crate::lib::{ error::{ Error, Result }, schema_registry::{ CachedSchemaRegistry, SchemaRegistryClient } };
+use crate::lib::{
+    error::{Error, Result},
+    schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
+};
 
-pub struct AvroParser<C = CachedSchemaRegistry> where C: SchemaRegistryClient + Send + Sync {
+pub struct AvroParser<C = CachedSchemaRegistry>
+where
+    C: SchemaRegistryClient + Send + Sync,
+{
     schema_registry_client: Arc<C>,
 }
 
-impl<C> AvroParser<C> where C: SchemaRegistryClient + Send + Sync {
+impl<C> AvroParser<C>
+where
+    C: SchemaRegistryClient + Send + Sync,
+{
     pub fn new(schema_registry_client: Arc<C>) -> Self {
         AvroParser { schema_registry_client }
     }
@@ -25,9 +34,17 @@ impl<C> AvroParser<C> where C: SchemaRegistryClient + Send + Sync {
 
         let id = get_schema_id(raw)?;
 
-        let schema = self.schema_registry_client.get_schema_by_id(id).await.map_err(|err| Error::AvroParse {
-            message: format!("{}\n{}", "Unable to retrieve the schema from schema registry", err.to_string()),
-        })?;
+        let schema = self
+            .schema_registry_client
+            .get_schema_by_id(id)
+            .await
+            .map_err(|err| Error::AvroParse {
+                message: format!(
+                    "{}\n{}",
+                    "Unable to retrieve the schema from schema registry",
+                    err.to_string()
+                ),
+            })?;
         let mut data = Cursor::new(&raw[5..]);
         let record = from_avro_datum(&schema.schema, &mut data, None).map_err(|err| Error::AvroParse {
             message: format!("{}\n{}", "Unable to parse the avro record", err),
@@ -51,7 +68,7 @@ fn map(
     value: &AvroValue,
     schema: &Schema,
     parent_ns: &Option<String>,
-    ref_cache: &HashMap<Name, Schema>
+    ref_cache: &HashMap<Name, Schema>,
 ) -> Result<JsonValue> {
     match (value, schema) {
         (AvroValue::Null, Schema::Null) => Ok(JsonValue::Null),
@@ -63,8 +80,12 @@ fn map(
         (AvroValue::String(v), Schema::String) => Ok(json!(*v)),
         (AvroValue::Array(v), Schema::Array(s)) => parse_array(v, s, parent_ns, ref_cache),
         (AvroValue::Map(vec), Schema::Map(s)) => parse_map(vec, s, parent_ns, ref_cache),
-        (AvroValue::Record(vec), Schema::Record { name, fields, lookup, .. }) =>
-            parse_record(vec, lookup, fields, name, parent_ns, ref_cache),
+        (
+            AvroValue::Record(vec),
+            Schema::Record {
+                name, fields, lookup, ..
+            },
+        ) => parse_record(vec, lookup, fields, name, parent_ns, ref_cache),
         (AvroValue::Date(v), Schema::Date) => Ok(json!(*v)),
         (AvroValue::TimeMillis(v), Schema::TimeMillis) => Ok(json!(*v)),
         (AvroValue::TimeMicros(v), Schema::TimeMicros) => Ok(json!(*v)),
@@ -72,16 +93,24 @@ fn map(
         (AvroValue::TimestampMicros(v), Schema::TimestampMicros) => Ok(json!(*v)),
         (AvroValue::Uuid(v), Schema::Uuid) => Ok(json!(*v)),
         (AvroValue::Bytes(v), Schema::Bytes) => Ok(json!(*v)),
-        (AvroValue::Decimal(v), Schema::Decimal { precision: _, scale, inner: _ }) => parse_decimal(v, scale),
-        (AvroValue::Duration(v), Schema::Duration) =>
-            Ok(json!(format!("{:?} months {:?} days {:?} millis", v.months(), v.days(), v.millis()))),
+        (
+            AvroValue::Decimal(v),
+            Schema::Decimal {
+                precision: _,
+                scale,
+                inner: _,
+            },
+        ) => parse_decimal(v, scale),
+        (AvroValue::Duration(v), Schema::Duration) => Ok(json!(format!(
+            "{:?} months {:?} days {:?} millis",
+            v.months(),
+            v.days(),
+            v.millis()
+        ))),
         (AvroValue::Union(i, v), Schema::Union(s)) => {
-            let schema = s
-                .variants()
-                .get(*i as usize)
-                .ok_or(Error::AvroParse {
-                    message: format!("Missing schema index {} in the union {:?}", *i, s),
-                })?;
+            let schema = s.variants().get(*i as usize).ok_or(Error::AvroParse {
+                message: format!("Missing schema index {} in the union {:?}", *i, s),
+            })?;
             map(&**v, schema, parent_ns, ref_cache)
         }
         (AvroValue::Enum(_, v), Schema::Enum { name: _, .. }) => Ok(json!(*v)),
@@ -95,14 +124,14 @@ fn parse_ref(
     ref_cache: &HashMap<Name, Schema>,
     name: &Name,
     parent_ns: &Option<String>,
-    value: &AvroValue
+    value: &AvroValue,
 ) -> Result<JsonValue> {
     let schema = ref_cache
         .get(
             &(Name {
                 namespace: name.namespace.clone().or_else(|| parent_ns.to_owned()),
                 name: name.name.clone(),
-            })
+            }),
         )
         .unwrap_or_else(|| panic!("Missing Avro schema reference {:?}", name));
     map(value, schema, &name.namespace, ref_cache)
@@ -111,7 +140,10 @@ fn parse_ref(
 fn parse_decimal(v: &apache_avro::Decimal, scale: &usize) -> Result<JsonValue> {
     let arr = <Vec<u8>>::try_from(v).expect("Invalid decimal received");
     let value = BigInt::from_signed_bytes_be(&arr);
-    let decimal = Decimal::new(i64::try_from(value).expect("Unable to cast to i64"), scale.to_owned() as u32);
+    let decimal = Decimal::new(
+        i64::try_from(value).expect("Unable to cast to i64"),
+        scale.to_owned() as u32,
+    );
     Ok(json!(decimal))
 }
 
@@ -121,7 +153,7 @@ fn parse_record(
     fields: &[apache_avro::schema::RecordField],
     name: &Name,
     parent_ns: &Option<String>,
-    ref_cache: &HashMap<Name, Schema>
+    ref_cache: &HashMap<Name, Schema>,
 ) -> Result<JsonValue> {
     let mut json_map = Map::new();
     for (k, v) in vec.iter() {
@@ -132,8 +164,8 @@ fn parse_record(
                 v,
                 &fields.get(*field_index).unwrap().schema,
                 &name.namespace.clone().or_else(|| parent_ns.to_owned()),
-                ref_cache
-            )?
+                ref_cache,
+            )?,
         );
     }
     Ok(JsonValue::Object(json_map))
@@ -143,7 +175,7 @@ fn parse_map(
     vec: &HashMap<String, AvroValue>,
     s: &Schema,
     parent_ns: &Option<String>,
-    ref_cache: &HashMap<Name, Schema>
+    ref_cache: &HashMap<Name, Schema>,
 ) -> Result<JsonValue> {
     let mut json_map = Map::new();
     for (k, v) in vec.iter() {
@@ -156,7 +188,7 @@ fn parse_array(
     v: &[AvroValue],
     s: &Schema,
     parent_ns: &Option<String>,
-    ref_cache: &HashMap<Name, Schema>
+    ref_cache: &HashMap<Name, Schema>,
 ) -> Result<JsonValue> {
     let mut json_vec = Vec::new();
     for v in v.iter() {
@@ -169,12 +201,12 @@ fn parse_array(
 mod tests {
     use std::sync::Arc;
 
-    use apache_avro::{ to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer };
+    use apache_avro::{to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer};
     use async_trait::async_trait;
 
-    use crate::lib::schema_registry::{ ResolvedAvroSchema, Result, SchemaRegistryClient, Subject };
+    use crate::lib::schema_registry::{ResolvedAvroSchema, Result, SchemaRegistryClient, Subject};
 
-    use super::{ get_schema_id, AvroParser };
+    use super::{get_schema_id, AvroParser};
     struct MockSchemaRegistry {
         schema: String,
     }
@@ -207,8 +239,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_simple_types_parsing() {
-        let raw_schema =
-            r#"
+        let raw_schema = r#"
     {
         "fields": [
             { "name": "null_field", "type": "null" },
@@ -241,9 +272,7 @@ mod tests {
         let mut raw: Vec<u8> = vec![0x00, 0x00, 0x00, 0x00, 0x00];
         raw.append(&mut encoded);
 
-        let res = get_sut(raw_schema.to_string())
-            .parse_payload(&raw[..]).await
-            .unwrap();
+        let res = get_sut(raw_schema.to_string()).parse_payload(&raw[..]).await.unwrap();
 
         assert_eq!(
             res,

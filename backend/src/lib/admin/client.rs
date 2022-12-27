@@ -1,13 +1,13 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use super::{ ConsumerGroupAdmin, TopicAdmin };
-use crate::lib::configuration::{ build_kafka_client_config, ClusterConfig };
+use super::{ConsumerGroupAdmin, TopicAdmin};
+use crate::lib::configuration::{build_kafka_client_config, ClusterConfig};
 use crate::lib::error::Result;
 use log::debug;
 use rdkafka::admin::AdminClient;
-use rdkafka::{ client::DefaultClientContext, consumer::BaseConsumer };
-use rdkafka::{ Offset, TopicPartitionList };
+use rdkafka::{client::DefaultClientContext, consumer::BaseConsumer};
+use rdkafka::{Offset, TopicPartitionList};
 use tokio::sync::RwLock;
 
 pub trait Admin: TopicAdmin + ConsumerGroupAdmin {}

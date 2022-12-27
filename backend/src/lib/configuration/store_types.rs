@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
 
-use super::{ AuthenticationConfig, ClusterConfig, Favorites, InsulatorConfig, SchemaRegistryConfig, Theme };
+use super::{AuthenticationConfig, ClusterConfig, Favorites, InsulatorConfig, SchemaRegistryConfig, Theme};
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
 pub struct StoreConfig {
@@ -50,19 +50,26 @@ pub enum StoreAuthentication {
 impl From<StoreAuthentication> for AuthenticationConfig {
     fn from(s: StoreAuthentication) -> Self {
         match s {
-            StoreAuthentication::Ssl { ca, certificate, key, key_password } =>
-                AuthenticationConfig::Ssl {
-                    ca,
-                    certificate,
-                    key,
-                    key_password,
-                },
-            StoreAuthentication::Sasl { username, password, scram } =>
-                AuthenticationConfig::Sasl {
-                    username,
-                    password,
-                    scram,
-                },
+            StoreAuthentication::Ssl {
+                ca,
+                certificate,
+                key,
+                key_password,
+            } => AuthenticationConfig::Ssl {
+                ca,
+                certificate,
+                key,
+                key_password,
+            },
+            StoreAuthentication::Sasl {
+                username,
+                password,
+                scram,
+            } => AuthenticationConfig::Sasl {
+                username,
+                password,
+                scram,
+            },
             StoreAuthentication::None => AuthenticationConfig::None,
         }
     }
@@ -80,14 +87,16 @@ fn store_cluster_to_config(id: String, store: StoreCluster) -> ClusterConfig {
 }
 
 impl From<StoreConfig> for InsulatorConfig {
-    fn from(StoreConfig {
-        theme,
-        show_notifications,
-        use_regex,
-        clusters,
-        sql_timeout_secs,
-        kafka_timeout_secs,
-    }: StoreConfig) -> Self {
+    fn from(
+        StoreConfig {
+            theme,
+            show_notifications,
+            use_regex,
+            clusters,
+            sql_timeout_secs,
+            kafka_timeout_secs,
+        }: StoreConfig,
+    ) -> Self {
         let converted_clusters = clusters
             .into_iter()
             .map(|(id, c)| store_cluster_to_config(id, c))
@@ -106,19 +115,26 @@ impl From<StoreConfig> for InsulatorConfig {
 impl From<AuthenticationConfig> for StoreAuthentication {
     fn from(authentication_config: AuthenticationConfig) -> Self {
         match authentication_config {
-            AuthenticationConfig::Ssl { ca, certificate, key, key_password } =>
-                StoreAuthentication::Ssl {
-                    ca,
-                    certificate,
-                    key,
-                    key_password,
-                },
-            AuthenticationConfig::Sasl { username, password, scram } =>
-                StoreAuthentication::Sasl {
-                    username,
-                    password,
-                    scram,
-                },
+            AuthenticationConfig::Ssl {
+                ca,
+                certificate,
+                key,
+                key_password,
+            } => StoreAuthentication::Ssl {
+                ca,
+                certificate,
+                key,
+                key_password,
+            },
+            AuthenticationConfig::Sasl {
+                username,
+                password,
+                scram,
+            } => StoreAuthentication::Sasl {
+                username,
+                password,
+                scram,
+            },
             AuthenticationConfig::None => StoreAuthentication::None,
         }
     }
@@ -144,7 +160,8 @@ impl From<&InsulatorConfig> for StoreConfig {
             use_regex: config.use_regex,
             sql_timeout_secs: Some(config.sql_timeout_secs),
             kafka_timeout_secs: Some(config.kafka_timeout_secs),
-            clusters: config.clusters
+            clusters: config
+                .clusters
                 .clone()
                 .into_iter()
                 .map(|c| (c.id.clone(), c.into()))

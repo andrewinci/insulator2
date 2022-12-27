@@ -1,21 +1,19 @@
 use crate::lib::{
-    configuration::{ build_kafka_client_config, ClusterConfig },
-    consumer::types::{ ConsumerConfiguration, ConsumerSessionConfiguration, ConsumerState },
-    error::{ Error, Result },
+    configuration::{build_kafka_client_config, ClusterConfig},
+    consumer::types::{ConsumerConfiguration, ConsumerSessionConfiguration, ConsumerState},
+    error::{Error, Result},
     record_store::TopicStore,
-    types::{ ErrorCallback, RawKafkaRecord },
+    types::{ErrorCallback, RawKafkaRecord},
 };
 use async_trait::async_trait;
-use futures::{ lock::Mutex, StreamExt };
-use log::{ debug, error, warn };
+use futures::{lock::Mutex, StreamExt};
+use log::{debug, error, warn};
 use rdkafka::{
-    consumer::{ Consumer as ApacheKafkaConsumer, StreamConsumer },
+    consumer::{Consumer as ApacheKafkaConsumer, StreamConsumer},
     message::OwnedMessage,
-    Message,
-    Offset,
-    TopicPartitionList,
+    Message, Offset, TopicPartitionList,
 };
-use std::{ sync::Arc, time::Duration };
+use std::{sync::Arc, time::Duration};
 use tauri::async_runtime::JoinHandle;
 
 #[async_trait]
@@ -40,7 +38,7 @@ impl KafkaConsumer {
         topic: &str,
         topic_store: TopicStore,
         error_cb: ErrorCallback,
-        timeout: Duration
+        timeout: Duration,
     ) -> Self {
         KafkaConsumer {
             error_callback: error_cb,
@@ -56,19 +54,14 @@ impl KafkaConsumer {
         consumer: &rdkafka::consumer::StreamConsumer,
         topics: &[&str],
         config: &ConsumerSessionConfiguration,
-        tmo: Duration
+        tmo: Duration,
     ) -> Result<()> {
         let metadata = consumer.fetch_metadata(if topics.len() == 1 { Some(topics[0]) } else { None }, tmo)?;
         let topic_partition: Vec<_> = metadata
             .topics()
             .iter()
             .filter(|t| topics.contains(&t.name()))
-            .flat_map(|t|
-                t
-                    .partitions()
-                    .iter()
-                    .map(|p| (t.name(), p.id()))
-            )
+            .flat_map(|t| t.partitions().iter().map(|p| (t.name(), p.id())))
             .collect();
 
         let mut timestamp_assignment = consumer.assignment()?;
@@ -83,7 +76,10 @@ impl KafkaConsumer {
                     timestamp_assignment.add_partition_offset(t, p, Offset::End)?;
                 }
             }
-            ConsumerSessionConfiguration::Custom { start_timestamp, stop_timestamp: _ } => {
+            ConsumerSessionConfiguration::Custom {
+                start_timestamp,
+                stop_timestamp: _,
+            } => {
                 // note: the offsets_for_times function takes a TopicPartitionList in which the
                 // offset is the timestamp in ms (instead of the actual offset) and returns a
                 // new TopicPartitionList with the actual offset
@@ -110,36 +106,30 @@ impl Consumer for KafkaConsumer {
             });
         }
         // set the handle to the consumer loop
-        *self.loop_handle.clone().lock().await = Some(
-            tauri::async_runtime::spawn({
-                // clone arcs for the closure below
-                let consumer: StreamConsumer = build_kafka_client_config(&self.cluster_config, None)
-                    .create()
-                    .expect("Unable to create kafka the consumer");
+        *self.loop_handle.clone().lock().await = Some(tauri::async_runtime::spawn({
+            // clone arcs for the closure below
+            let consumer: StreamConsumer = build_kafka_client_config(&self.cluster_config, None)
+                .create()
+                .expect("Unable to create kafka the consumer");
 
-                // configure the consumer
-                if
-                    let Err(err) = KafkaConsumer::update_consumer_assignment(
-                        &consumer,
-                        &[&topic],
-                        &consumer_config.consumer_start_config,
-                        self.timeout
-                    )
-                {
-                    error!("{:?}", err);
-                    (self.error_callback)(err);
-                    panic!("Unable to continue");
-                }
+            // configure the consumer
+            if let Err(err) = KafkaConsumer::update_consumer_assignment(
+                &consumer,
+                &[&topic],
+                &consumer_config.consumer_start_config,
+                self.timeout,
+            ) {
+                error!("{:?}", err);
+                (self.error_callback)(err);
+                panic!("Unable to continue");
+            }
 
-                let loop_handle = self.loop_handle.clone();
-                let topic_store = self.topic_store.clone();
-                let consumer_config = consumer_config.clone();
-                let error_callback = self.error_callback.clone();
-                async move {
-                    consumer_loop(&consumer, &consumer_config, &topic_store, &error_callback, loop_handle).await
-                }
-            })
-        );
+            let loop_handle = self.loop_handle.clone();
+            let topic_store = self.topic_store.clone();
+            let consumer_config = consumer_config.clone();
+            let error_callback = self.error_callback.clone();
+            async move { consumer_loop(&consumer, &consumer_config, &topic_store, &error_callback, loop_handle).await }
+        }));
         Ok(())
     }
 
@@ -157,9 +147,10 @@ impl Consumer for KafkaConsumer {
 
 fn get_stop_timestamp(consumer_config: &ConsumerConfiguration) -> Option<u64> {
     // retrieve the stop timestamp if specified
-    if
-        let ConsumerSessionConfiguration::Custom { stop_timestamp: Some(stop), .. } =
-            &consumer_config.consumer_start_config
+    if let ConsumerSessionConfiguration::Custom {
+        stop_timestamp: Some(stop),
+        ..
+    } = &consumer_config.consumer_start_config
     {
         Some(*stop as u64)
     } else {
@@ -172,12 +163,14 @@ async fn consumer_loop(
     consumer_config: &ConsumerConfiguration,
     topic_store: &TopicStore,
     error_callback: &ErrorCallback,
-    loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>
+    loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>,
 ) {
     let stop_timestamp = get_stop_timestamp(consumer_config);
 
     // setup a new store
-    topic_store.setup(consumer_config.compactify).expect("Unable to create the internal store");
+    topic_store
+        .setup(consumer_config.compactify)
+        .expect("Unable to create the internal store");
 
     // infinite consumer loop
     debug!("Start consumer loop");
@@ -207,11 +200,14 @@ async fn handle_consumed_message(
     topic_store: &TopicStore,
     stop_timestamp: Option<u64>,
     consumer: &StreamConsumer,
-    error_callback: &ErrorCallback
+    error_callback: &ErrorCallback,
 ) {
     let record = map_kafka_record(msg);
     if record.timestamp.unwrap_or(u64::MIN) < stop_timestamp.unwrap_or(u64::MAX) {
-        topic_store.insert_record(&record).await.unwrap_or_else(|err| error_callback(err));
+        topic_store
+            .insert_record(&record)
+            .await
+            .unwrap_or_else(|err| error_callback(err));
     } else {
         // pause consumption on the record partition
         let mut tpl = TopicPartitionList::new();
@@ -220,7 +216,10 @@ async fn handle_consumed_message(
             Ok(_) => {
                 debug!("Pause consuming {} partition {}", record.topic, record.partition);
             }
-            Err(err) => error!("Unable to pause consuming {} partition {}: {:?}", record.topic, record.partition, err),
+            Err(err) => error!(
+                "Unable to pause consuming {} partition {}: {:?}",
+                record.topic, record.partition, err
+            ),
         }
     }
 }
@@ -241,9 +240,6 @@ fn map_kafka_record(msg: &OwnedMessage) -> RawKafkaRecord {
         topic: msg.topic().into(),
         partition: msg.partition(),
         offset: msg.offset(),
-        timestamp: msg
-            .timestamp()
-            .to_millis()
-            .map(|v| v as u64),
+        timestamp: msg.timestamp().to_millis().map(|v| v as u64),
     }
 }

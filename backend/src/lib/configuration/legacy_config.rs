@@ -1,6 +1,6 @@
-use super::{ AuthenticationConfig, ClusterConfig, InsulatorConfig, SchemaRegistryConfig, Theme };
-use crate::lib::{ Error, Result };
-use log::{ debug, warn };
+use super::{AuthenticationConfig, ClusterConfig, InsulatorConfig, SchemaRegistryConfig, Theme};
+use crate::lib::{Error, Result};
+use log::{debug, warn};
 use serde::Deserialize;
 
 // insulator v1 config
@@ -112,31 +112,28 @@ fn map_sasl_config(legacy: SaslConfigurationLegacy) -> Result<AuthenticationConf
 }
 
 fn map_ssl_config(legacy: SslConfigurationLegacy) -> Result<AuthenticationConfig> {
-    if
-        let (Some(truststore_location), Some(keystore_location)) = (
-            legacy.ssl_truststore_location,
-            legacy.ssl_keystore_location,
-        )
+    if let (Some(truststore_location), Some(keystore_location)) =
+        (legacy.ssl_truststore_location, legacy.ssl_keystore_location)
     {
         debug!("Parsing truststore {}", &truststore_location);
-        let ca_certificate = &rust_keystore::KeyStore
-            ::try_load(&truststore_location)?
+        let ca_certificate = &rust_keystore::KeyStore::try_load(&truststore_location)?
             .certificates(legacy.ssl_truststore_password.as_deref())?[0];
 
         debug!("Parsing keystore {}", &keystore_location);
-        let user_certificate = &rust_keystore::KeyStore
-            ::try_load(&keystore_location)?
+        let user_certificate = &rust_keystore::KeyStore::try_load(&keystore_location)?
             .certificates(legacy.ssl_keystore_password.as_deref())?[0];
 
         Ok(AuthenticationConfig::Ssl {
             ca: ca_certificate.pem.clone(),
             certificate: user_certificate.pem.clone(),
-            key: user_certificate.private_key
+            key: user_certificate
+                .private_key
                 .as_ref()
                 .ok_or(Error::LegacyConfiguration {
                     message: "Unable to parse the keystore".into(),
                 })?
-                .pkcs8_pem.clone(),
+                .pkcs8_pem
+                .clone(),
             key_password: None,
         })
     } else {
