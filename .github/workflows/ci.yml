@@ -80,7 +80,9 @@ jobs:
         run: |
           mkdir frontend/dist
           yarn lint:check
-          yarn test
+          yarn frontend test
+          # run unit and integration tests
+          yarn backend test:all
           yarn coverage
           yarn tauri build -b deb appimage
           # upload coverage

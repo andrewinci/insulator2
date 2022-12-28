@@ -1,4 +1,3 @@
-#[cfg(target_os = "linux")]
 #[cfg(test)]
 mod integration_tests {
     use rdkafka::{
@@ -6,16 +5,11 @@ mod integration_tests {
         consumer::{stream_consumer::StreamConsumer, Consumer},
     };
     use std::time::Duration;
-    use testcontainers::{
-        clients::{self, Cli},
-        images::kafka::{self, Kafka},
-        Container,
-    };
+    use testcontainers::{clients, images::kafka};
 
     use crate::lib::{
         admin::{KafkaAdmin, TopicAdmin},
         configuration::{ClusterConfig, Favorites},
-        Cluster,
     };
 
     fn build_kafka_client<T: FromClientConfig>(bootstrap_servers: &str) -> T {
