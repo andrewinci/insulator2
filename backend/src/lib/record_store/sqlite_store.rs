@@ -120,12 +120,12 @@ impl SqliteStore {
         let manager = SqliteConnectionManager::file(file_name)
             .with_flags(flags_r)
             .with_init(|conn| {
-                conn.pragma_update(None, "journal_mode", &"OFF").unwrap();
-                conn.pragma_update(None, "synchronous", &"OFF").unwrap();
-                conn.pragma_update(None, "page_size", &"4096").unwrap();
-                conn.pragma_update(None, "cache_size", &"16384").unwrap();
-                conn.pragma_update(None, "locking_mode", &"NORMAL").unwrap();
-                conn.pragma_update(None, "read_uncommitted", &"ON").unwrap();
+                conn.pragma_update(None, "journal_mode", "OFF").unwrap();
+                conn.pragma_update(None, "synchronous", "OFF").unwrap();
+                conn.pragma_update(None, "page_size", "4096").unwrap();
+                conn.pragma_update(None, "cache_size", "16384").unwrap();
+                conn.pragma_update(None, "locking_mode", "NORMAL").unwrap();
+                conn.pragma_update(None, "read_uncommitted", "ON").unwrap();
                 Ok(())
             });
         let pool = r2d2::Pool::builder()

@@ -93,7 +93,7 @@ impl TopicAdmin for KafkaAdmin {
         let mut topic_partition_list = TopicPartitionList::new();
         for topic in topic_names {
             for tpo in all_partitions.elements_for_topic(topic) {
-                topic_partition_list.add_partition_offset(*topic, tpo.partition(), Offset::End)?;
+                topic_partition_list.add_partition_offset(topic, tpo.partition(), Offset::End)?;
             }
         }
         let offsets = self.consumer.offsets_for_times(topic_partition_list, self.timeout)?;

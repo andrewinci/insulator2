@@ -4,9 +4,10 @@
   "version": "2.7.0",
   "type": "module",
   "scripts": {
-    "lint": "cargo fmt && cargo clippy",
+    "lint": "cargo fmt && cargo clippy --all-features",
     "lint:check": "cargo fmt --check && cargo clippy",
     "test": "cargo test",
-    "coverage": "cargo tarpaulin --out Xml"
+    "test:all": "cargo test --features integration_tests",
+    "coverage": "cargo tarpaulin --all-features --out Xml"
   }
 }
