@@ -16,7 +16,7 @@ pub fn build_kafka_client_config(cluster: &ClusterConfig, group_id: Option<&str>
         .set("debug", "all");
     match &cluster.authentication {
         AuthenticationConfig::None => {
-            // config.set("security.protocol", "PLAINTEXT");
+            config.set("security.protocol", "PLAINTEXT");
         }
         AuthenticationConfig::Sasl {
             username,
