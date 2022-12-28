@@ -45,6 +45,9 @@
     "printWidth": 120
   },
   "lint-staged": {
+    "*.rs": [
+      "cargo fmt --manifest-path ./backend/Cargo.toml -- "
+    ],
     "*.{ts,tsx,json,md}": [
       "prettier --write "
     ],
