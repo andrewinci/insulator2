@@ -4,11 +4,13 @@ type ResizableModalProps = {
   children: React.ReactNode;
   title: string;
   opened: boolean;
+  minHeight?: number;
+  maxHeight?: number | string;
   onClose: () => void;
 };
 
 export const ResizableModal = (props: ResizableModalProps) => {
-  const { children, title, opened, onClose } = props;
+  const { children, title, opened, minHeight, maxHeight, onClose } = props;
   return (
     <Modal
       onClose={onClose}
@@ -18,9 +20,9 @@ export const ResizableModal = (props: ResizableModalProps) => {
       styles={{
         modal: {
           minWidth: 600,
-          minHeight: 700,
+          minHeight: minHeight ?? 700,
           height: 700,
-          maxHeight: "92vh",
+          maxHeight: maxHeight ?? "92vh",
           maxWidth: "92vw",
           position: "absolute",
           resize: "both",

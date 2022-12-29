@@ -1,7 +1,6 @@
 import { Autocomplete, Button, Group, Input, Stack, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
-import { Form } from "react-router-dom";
 import { CodeEditor, ResizableModal } from "../../components";
 import { useNotifications } from "../../providers";
 import { postSchema } from "../../tauri/schema-registry";
@@ -57,7 +56,7 @@ export const AddSchemaModal = ({ subjects, clusterId, opened, onClose }: AddSche
 
   return (
     <ResizableModal title={"Add a new schema"} opened={opened} onClose={onClose}>
-      <Form style={{ height: "100%" }} onSubmit={form.onSubmit(onSubmit)}>
+      <form style={{ height: "100%" }} onSubmit={form.onSubmit(onSubmit)}>
         <Stack spacing={3} style={{ height: "100%" }}>
           <Autocomplete
             label="Subject name"
@@ -79,7 +78,7 @@ export const AddSchemaModal = ({ subjects, clusterId, opened, onClose }: AddSche
             </Button>
           </Group>
         </Stack>
-      </Form>
+      </form>
     </ResizableModal>
   );
 };
