@@ -11,7 +11,7 @@ use crate::lib::{
     Result,
 };
 
-use super::{configuration::InsulatorConfig, record_store::SqliteStore, types::ErrorCallback};
+use super::{configuration::InsulatorConfig, producer::KafkaProducer, record_store::SqliteStore, types::ErrorCallback};
 
 type TopicName = String;
 
@@ -26,6 +26,7 @@ where
     pub config: InsulatorConfig,
     pub schema_registry_client: Option<Arc<SR>>,
     pub admin_client: Arc<A>,
+    pub producer: Arc<KafkaProducer>,
     pub parser: Arc<P>,
     pub store: Arc<SqliteStore>,
     consumers: Arc<RwLock<HashMap<TopicName, Arc<C>>>>,
@@ -39,6 +40,7 @@ impl Clone for Cluster<CachedSchemaRegistry> {
             config: self.config.clone(),
             schema_registry_client: self.schema_registry_client.clone(),
             consumers: self.consumers.clone(),
+            producer: self.producer.clone(),
             admin_client: self.admin_client.clone(),
             parser: self.parser.clone(),
             store: self.store.clone(),
@@ -68,6 +70,7 @@ impl Cluster {
             consumers: Arc::new(RwLock::new(HashMap::new())),
             admin_client: Arc::new(KafkaAdmin::new(&cluster_config, config.get_kafka_tmo())?),
             parser: Arc::new(parser),
+            producer: Arc::new(KafkaProducer::new(&cluster_config)),
             store: Arc::new(SqliteStore::new(config.get_sql_tmo())),
             error_callback,
             config: config.clone(),

@@ -30,9 +30,9 @@ export const ProducerModal = ({ topic, clusterId, opened, onClose }: AddSchemaMo
   const onSubmit = async (v: FormType) => {
     setState({ isProducing: true });
     try {
-      await produceRecord(clusterId, topic, v.key, v.tombstone ? null : v.value).then(() =>
-        success("Record produced to kafka")
-      );
+      await produceRecord(clusterId, topic, v.key, v.tombstone ? null : v.value)
+        .then(() => onClose())
+        .then(() => success("Record produced to kafka"));
     } finally {
       setState({ isProducing: false });
     }
