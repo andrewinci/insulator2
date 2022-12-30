@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use log::{debug, trace};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -15,16 +14,6 @@ use super::types::{BasicAuth, ResolvedAvroSchema, Schema, Subject};
 #[derive(Deserialize)]
 struct GetSchemaByIdResult {
     pub schema: String,
-}
-
-#[async_trait]
-pub trait SchemaRegistryClient: Sync + Send {
-    async fn list_subjects(&self) -> Result<Vec<String>>;
-    async fn get_subject(&self, subject_name: &str) -> Result<Subject>;
-    async fn get_schema_by_id(&self, id: i32) -> Result<ResolvedAvroSchema>;
-    async fn delete_subject(&self, subject_name: &str) -> Result<()>;
-    async fn delete_version(&self, subject_name: &str, version: i32) -> Result<()>;
-    async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()>;
 }
 
 #[derive(Clone)]
@@ -60,11 +49,8 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
             schema_cache_by_id: Arc::new(RwLock::new(HashMap::new())),
         }
     }
-}
 
-#[async_trait]
-impl<C: HttpClient> SchemaRegistryClient for CachedSchemaRegistry<C> {
-    async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()> {
+    pub async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()> {
         #[derive(Serialize)]
         struct PostRequest {
             schema: String,
@@ -79,13 +65,13 @@ impl<C: HttpClient> SchemaRegistryClient for CachedSchemaRegistry<C> {
         }
     }
 
-    async fn list_subjects(&self) -> Result<Vec<String>> {
+    pub async fn list_subjects(&self) -> Result<Vec<String>> {
         let url = Url::parse(&self.endpoint)?.join("subjects")?;
         let res = self.http_client.get(url.as_ref()).await?;
         Ok(res)
     }
 
-    async fn get_subject(&self, subject_name: &str) -> Result<Subject> {
+    pub async fn get_subject(&self, subject_name: &str) -> Result<Subject> {
         debug!("Get subject {}", subject_name);
         Ok(Subject {
             subject: subject_name.into(),
@@ -94,20 +80,20 @@ impl<C: HttpClient> SchemaRegistryClient for CachedSchemaRegistry<C> {
         })
     }
 
-    async fn delete_subject(&self, subject_name: &str) -> Result<()> {
+    pub async fn delete_subject(&self, subject_name: &str) -> Result<()> {
         debug!("Deleting subject {}", subject_name);
         let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}", subject_name).as_str())?;
         Ok(self.http_client.delete(url.as_str()).await?)
     }
 
-    async fn delete_version(&self, subject_name: &str, version: i32) -> Result<()> {
+    pub async fn delete_version(&self, subject_name: &str, version: i32) -> Result<()> {
         debug!("Deleting subject {} version {}", subject_name, version);
         let url =
             Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/{}", subject_name, version).as_str())?;
         Ok(self.http_client.delete(url.as_str()).await?)
     }
 
-    async fn get_schema_by_id(&self, id: i32) -> Result<ResolvedAvroSchema> {
+    pub async fn get_schema_by_id(&self, id: i32) -> Result<ResolvedAvroSchema> {
         trace!("Getting schema {} by id.", id);
         {
             if let Some(cached) = self.schema_cache_by_id.read().await.get(&id) {
@@ -125,12 +111,10 @@ impl<C: HttpClient> SchemaRegistryClient for CachedSchemaRegistry<C> {
                 })?;
             let res = ResolvedAvroSchema::from(schema);
             self.schema_cache_by_id.write().await.insert(id, res.clone());
-            return Ok(res);
+            Ok(res)
         }
     }
-}
 
-impl<C: HttpClient> CachedSchemaRegistry<C> {
     async fn get_compatibility_level(&self, subject_name: &str) -> Result<String> {
         #[derive(Deserialize)]
         struct CompatibilityResponse {

@@ -7,14 +7,16 @@ use serde_json::{json, Map, Value as JsonValue};
 
 use crate::lib::{
     error::{Error, Result},
-    schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
+    schema_registry::CachedSchemaRegistry,
 };
 
-pub struct AvroParser<C: SchemaRegistryClient = CachedSchemaRegistry> {
+use super::schema_provider::SchemaProvider;
+
+pub struct AvroParser<C: SchemaProvider = CachedSchemaRegistry> {
     schema_registry_client: Arc<C>,
 }
 
-impl<C: SchemaRegistryClient> AvroParser<C> {
+impl<C: SchemaProvider> AvroParser<C> {
     pub fn new(schema_registry_client: Arc<C>) -> Self {
         AvroParser { schema_registry_client }
     }
@@ -198,35 +200,20 @@ mod tests {
     use apache_avro::{to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer};
     use async_trait::async_trait;
 
-    use crate::lib::schema_registry::{ResolvedAvroSchema, Result, SchemaRegistryClient, Subject};
+    use crate::lib::schema_registry::{ResolvedAvroSchema, Result, Subject};
 
-    use super::{get_schema_id, AvroParser};
+    use super::{get_schema_id, AvroParser, SchemaProvider};
     struct MockSchemaRegistry {
         schema: String,
     }
 
     #[async_trait]
-    impl SchemaRegistryClient for MockSchemaRegistry {
-        async fn list_subjects(&self) -> Result<Vec<String>> {
-            todo!()
-        }
-        async fn get_subject(&self, _: &str) -> Result<Subject> {
-            todo!()
-        }
+    impl SchemaProvider for MockSchemaRegistry {
         async fn get_schema_by_id(&self, _: i32) -> Result<ResolvedAvroSchema> {
             Ok(ApacheAvroSchema::parse_str(&self.schema).unwrap().into())
         }
-        async fn delete_subject(&self, _: &str) -> Result<()> {
-            todo!()
-        }
-
-        async fn delete_version(&self, _: &str, _: i32) -> Result<()> {
-            todo!()
-        }
-        async fn post_schema(&self, _: &str, _: &str) -> Result<()> {
-            todo!()
-        }
     }
+
     fn get_sut(schema: String) -> AvroParser<MockSchemaRegistry> {
         AvroParser::new(Arc::new(MockSchemaRegistry { schema }))
     }

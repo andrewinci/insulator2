@@ -4,11 +4,11 @@ use async_trait::async_trait;
 
 use crate::lib::{
     error::{Error, Result},
-    schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
+    schema_registry::CachedSchemaRegistry,
     types::{ParsedKafkaRecord, RawKafkaRecord},
 };
 
-use super::{avro_parser::AvroParser, string_parser::parse_string};
+use super::{avro_parser::AvroParser, schema_provider::SchemaProvider, string_parser::parse_string};
 
 pub enum ParserMode {
     String,
@@ -20,11 +20,11 @@ pub trait Parser {
     async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord>;
 }
 
-pub struct RecordParser<C: SchemaRegistryClient = CachedSchemaRegistry> {
+pub struct RecordParser<C: SchemaProvider = CachedSchemaRegistry> {
     avro_parser: Option<AvroParser<C>>,
 }
 
-impl<C: SchemaRegistryClient> RecordParser<C> {
+impl<C: SchemaProvider> RecordParser<C> {
     pub fn new(schema_registry_client: Option<Arc<C>>) -> Self {
         RecordParser {
             avro_parser: schema_registry_client.map(|client| AvroParser::new(client)),
@@ -33,7 +33,7 @@ impl<C: SchemaRegistryClient> RecordParser<C> {
 }
 
 #[async_trait]
-impl<C: SchemaRegistryClient> Parser for RecordParser<C> {
+impl<C: SchemaProvider> Parser for RecordParser<C> {
     async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord> {
         let RawKafkaRecord {
             payload,
