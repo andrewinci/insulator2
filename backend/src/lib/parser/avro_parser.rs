@@ -10,17 +10,11 @@ use crate::lib::{
     schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
 };
 
-pub struct AvroParser<C = CachedSchemaRegistry>
-where
-    C: SchemaRegistryClient + Send + Sync,
-{
+pub struct AvroParser<C: SchemaRegistryClient = CachedSchemaRegistry> {
     schema_registry_client: Arc<C>,
 }
 
-impl<C> AvroParser<C>
-where
-    C: SchemaRegistryClient + Send + Sync,
-{
+impl<C: SchemaRegistryClient> AvroParser<C> {
     pub fn new(schema_registry_client: Arc<C>) -> Self {
         AvroParser { schema_registry_client }
     }

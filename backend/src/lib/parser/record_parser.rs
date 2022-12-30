@@ -20,17 +20,11 @@ pub trait Parser {
     async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord>;
 }
 
-pub struct RecordParser<C = CachedSchemaRegistry>
-where
-    C: SchemaRegistryClient + Send + Sync,
-{
+pub struct RecordParser<C: SchemaRegistryClient = CachedSchemaRegistry> {
     avro_parser: Option<AvroParser<C>>,
 }
 
-impl<C> RecordParser<C>
-where
-    C: SchemaRegistryClient + Send + Sync,
-{
+impl<C: SchemaRegistryClient> RecordParser<C> {
     pub fn new(schema_registry_client: Option<Arc<C>>) -> Self {
         RecordParser {
             avro_parser: schema_registry_client.map(|client| AvroParser::new(client)),
@@ -39,10 +33,7 @@ where
 }
 
 #[async_trait]
-impl<C> Parser for RecordParser<C>
-where
-    C: SchemaRegistryClient + Sync + Send,
-{
+impl<C: SchemaRegistryClient> Parser for RecordParser<C> {
     async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord> {
         let RawKafkaRecord {
             payload,

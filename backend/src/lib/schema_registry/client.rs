@@ -18,7 +18,7 @@ struct GetSchemaByIdResult {
 }
 
 #[async_trait]
-pub trait SchemaRegistryClient {
+pub trait SchemaRegistryClient: Sync + Send {
     async fn list_subjects(&self) -> Result<Vec<String>>;
     async fn get_subject(&self, subject_name: &str) -> Result<Subject>;
     async fn get_schema_by_id(&self, id: i32) -> Result<ResolvedAvroSchema>;
@@ -28,10 +28,7 @@ pub trait SchemaRegistryClient {
 }
 
 #[derive(Clone)]
-pub struct CachedSchemaRegistry<C = ReqwestClient>
-where
-    C: HttpClient + Sync + Send,
-{
+pub struct CachedSchemaRegistry<C: HttpClient = ReqwestClient> {
     http_client: C,
     endpoint: String,
     schema_cache_by_id: Arc<RwLock<HashMap<i32, ResolvedAvroSchema>>>,
@@ -55,10 +52,7 @@ impl CachedSchemaRegistry<ReqwestClient> {
     }
 }
 
-impl<C> CachedSchemaRegistry<C>
-where
-    C: HttpClient + Sync + Send,
-{
+impl<C: HttpClient> CachedSchemaRegistry<C> {
     pub fn new_with_client(endpoint: &str, http_client: C) -> Self {
         Self {
             http_client,
@@ -69,10 +63,7 @@ where
 }
 
 #[async_trait]
-impl<C> SchemaRegistryClient for CachedSchemaRegistry<C>
-where
-    C: HttpClient + Sync + Send,
-{
+impl<C: HttpClient> SchemaRegistryClient for CachedSchemaRegistry<C> {
     async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()> {
         #[derive(Serialize)]
         struct PostRequest {
@@ -139,10 +130,7 @@ where
     }
 }
 
-impl<C> CachedSchemaRegistry<C>
-where
-    C: HttpClient + Sync + Send,
-{
+impl<C: HttpClient> CachedSchemaRegistry<C> {
     async fn get_compatibility_level(&self, subject_name: &str) -> Result<String> {
         #[derive(Deserialize)]
         struct CompatibilityResponse {
