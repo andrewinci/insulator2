@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use log::debug;
 
 use crate::lib::{
-    admin::{ConsumerGroupAdmin, ConsumerGroupInfo, PartitionOffset, Topic, TopicAdmin, TopicInfo},
+    admin::{ConsumerGroupInfo, PartitionOffset, Topic, TopicInfo},
     consumer::types::ConsumerSessionConfiguration,
 };
 

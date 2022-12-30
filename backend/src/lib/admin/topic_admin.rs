@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use log::{debug, warn};
 use std::{collections::HashMap, vec};
 
@@ -13,20 +12,8 @@ use rdkafka::{
     consumer::Consumer,
 };
 
-#[async_trait]
-pub trait TopicAdmin {
-    // topics
-    async fn list_topics(&self) -> Result<Vec<Topic>>;
-    fn get_topic(&self, topic_name: &str) -> Result<Topic>;
-    async fn delete_topic(&self, topic_name: &str) -> Result<()>;
-    async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo>;
-    async fn create_topic(&self, topic_name: &str, partitions: i32, isr: i32, compacted: bool) -> Result<()>;
-    async fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, Vec<PartitionOffset>>>;
-}
-
-#[async_trait]
-impl TopicAdmin for KafkaAdmin {
-    async fn list_topics(&self) -> Result<Vec<Topic>> {
+impl KafkaAdmin {
+    pub async fn list_topics(&self) -> Result<Vec<Topic>> {
         {
             // delete cache of topics/partitions map
             *self.all_topic_partition_list.write().await = TopicPartitionList::new();
@@ -34,7 +21,7 @@ impl TopicAdmin for KafkaAdmin {
         self.internal_list_topics(None)
     }
 
-    fn get_topic(&self, topic_name: &str) -> Result<Topic> {
+    pub fn get_topic(&self, topic_name: &str) -> Result<Topic> {
         let topic_list = self.internal_list_topics(Some(topic_name))?;
         if let Some(topic) = topic_list.first() {
             Ok(topic.to_owned())
@@ -49,7 +36,7 @@ impl TopicAdmin for KafkaAdmin {
         }
     }
 
-    async fn delete_topic(&self, topic_name: &str) -> Result<()> {
+    pub async fn delete_topic(&self, topic_name: &str) -> Result<()> {
         debug!("Deleting topic {}", topic_name);
         let res = self
             .admin_client
@@ -64,7 +51,7 @@ impl TopicAdmin for KafkaAdmin {
         }
     }
 
-    async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
+    pub async fn get_topic_info(&self, topic_name: &str) -> Result<TopicInfo> {
         let topic = self.get_topic(topic_name)?;
 
         // retrieve the last offsets
@@ -88,7 +75,7 @@ impl TopicAdmin for KafkaAdmin {
     }
 
     // return a list in which the index is the partition id and the value is the offset
-    async fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, Vec<PartitionOffset>>> {
+    pub async fn get_last_offsets(&self, topic_names: &[&str]) -> Result<HashMap<String, Vec<PartitionOffset>>> {
         let all_partitions = self.get_all_topic_partition_list(false).await?;
         let mut topic_partition_list = TopicPartitionList::new();
         for topic in topic_names {
@@ -111,7 +98,7 @@ impl TopicAdmin for KafkaAdmin {
         Ok(res)
     }
 
-    async fn create_topic(&self, name: &str, num_partitions: i32, isr: i32, compacted: bool) -> Result<()> {
+    pub async fn create_topic(&self, name: &str, num_partitions: i32, isr: i32, compacted: bool) -> Result<()> {
         let new_topic = NewTopic {
             name,
             num_partitions,
@@ -138,10 +125,8 @@ impl TopicAdmin for KafkaAdmin {
             }
         }
     }
-}
 
-impl KafkaAdmin {
-    async fn get_topic_configuration(&self, topic_name: &str) -> Result<HashMap<String, Option<String>>> {
+    pub async fn get_topic_configuration(&self, topic_name: &str) -> Result<HashMap<String, Option<String>>> {
         debug!("Retrieving the topic configurations");
         let responses = self
             .admin_client

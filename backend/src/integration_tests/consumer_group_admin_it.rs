@@ -5,10 +5,7 @@ use rdkafka::{
 };
 use std::time::Duration;
 
-use crate::{
-    integration_tests::KafkaTest,
-    lib::admin::{ConsumerGroupAdmin, KafkaAdmin},
-};
+use crate::{integration_tests::KafkaTest, lib::admin::KafkaAdmin};
 
 #[tokio::test]
 async fn test_consumer_groups_admin_client() {

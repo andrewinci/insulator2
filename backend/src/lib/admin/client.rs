@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use super::{ConsumerGroupAdmin, TopicAdmin};
 use crate::lib::configuration::{build_kafka_client_config, ClusterConfig};
 use crate::lib::error::Result;
 use log::debug;
@@ -10,8 +9,6 @@ use rdkafka::{client::DefaultClientContext, consumer::BaseConsumer};
 use rdkafka::{Offset, TopicPartitionList};
 use tokio::sync::RwLock;
 
-pub trait Admin: TopicAdmin + ConsumerGroupAdmin {}
-
 pub struct KafkaAdmin {
     pub(super) config: ClusterConfig,
     pub(super) timeout: Duration,
@@ -19,8 +16,6 @@ pub struct KafkaAdmin {
     pub(super) admin_client: AdminClient<DefaultClientContext>,
     pub(super) all_topic_partition_list: Arc<RwLock<TopicPartitionList>>,
 }
-
-impl Admin for KafkaAdmin {}
 
 impl KafkaAdmin {
     pub fn new(config: &ClusterConfig, kafka_timeout: Duration) -> Result<Self> {

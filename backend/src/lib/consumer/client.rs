@@ -5,7 +5,6 @@ use crate::lib::{
     record_store::TopicStore,
     types::{ErrorCallback, RawKafkaRecord},
 };
-use async_trait::async_trait;
 use futures::{lock::Mutex, StreamExt};
 use log::{debug, error, warn};
 use rdkafka::{
@@ -15,14 +14,6 @@ use rdkafka::{
 };
 use std::{sync::Arc, time::Duration};
 use tauri::async_runtime::JoinHandle;
-
-#[async_trait]
-pub trait Consumer {
-    async fn start(&self, offset_config: &ConsumerConfiguration) -> Result<()>;
-    async fn stop(&self) -> Result<()>;
-    async fn get_consumer_state(&self) -> Result<ConsumerState>;
-}
-
 pub struct KafkaConsumer {
     cluster_config: ClusterConfig,
     topic: String,
@@ -93,11 +84,8 @@ impl KafkaConsumer {
         debug!("Partition assigned {:?}", assignment);
         Ok(())
     }
-}
 
-#[async_trait]
-impl Consumer for KafkaConsumer {
-    async fn start(&self, consumer_config: &ConsumerConfiguration) -> Result<()> {
+    pub async fn start(&self, consumer_config: &ConsumerConfiguration) -> Result<()> {
         let topic = self.topic.clone();
         if self.loop_handle.lock().await.is_some() {
             warn!("Try to start an already running consumer");
@@ -133,11 +121,11 @@ impl Consumer for KafkaConsumer {
         Ok(())
     }
 
-    async fn stop(&self) -> Result<()> {
+    pub async fn stop(&self) -> Result<()> {
         _stop(self.loop_handle.clone()).await
     }
 
-    async fn get_consumer_state(&self) -> Result<ConsumerState> {
+    pub async fn get_consumer_state(&self) -> Result<ConsumerState> {
         Ok(ConsumerState {
             is_running: self.loop_handle.clone().lock().await.is_some(),
             record_count: self.topic_store.get_records_count()?,
