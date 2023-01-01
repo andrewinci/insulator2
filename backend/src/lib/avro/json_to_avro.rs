@@ -7,7 +7,12 @@ use super::{avro_parser::AvroParser, helpers::build_record_header, schema_provid
 use crate::lib::{error::Result, schema_registry::ResolvedAvroSchema, Error};
 
 impl<S: SchemaProvider> AvroParser<S> {
-    pub fn _json_to_avro(&self, json: &str, schema: ResolvedAvroSchema) -> Result<Vec<u8>> {
+    pub async fn json_to_avro(&self, json: &str, schema_name: &str) -> Result<Vec<u8>> {
+        let schema = self.schema_provider.get_schema_by_name(schema_name).await?;
+        Self::json_to_avro_with_schema(&self, json, schema)
+    }
+
+    pub fn json_to_avro_with_schema(&self, json: &str, schema: ResolvedAvroSchema) -> Result<Vec<u8>> {
         let json_value = JsonValue::from_str(json)?;
         let mut res = build_record_header(schema.schema_id);
         let avro_value = Self::json_to_avro_map(json_value, &schema)?;
@@ -22,20 +27,20 @@ impl<S: SchemaProvider> AvroParser<S> {
         match (&s.schema, j) {
             (Schema::Null, JsonValue::Null) => Ok(AvroValue::Null),
             (Schema::Boolean, JsonValue::Bool(v)) => Ok(AvroValue::Boolean(v)),
-            (Schema::String, JsonValue::String(s)) => todo!(),
+            (Schema::String, JsonValue::String(s)) => Ok(AvroValue::String(s)),
             // numbers
             (Schema::Int, JsonValue::Number(n)) => Ok(AvroValue::Int(n.as_i64().unwrap() as i32)), //todo: handle
-            (Schema::Long, JsonValue::Number(n)) => todo!(),
-            (Schema::Float, JsonValue::Number(n)) => todo!(),
-            (Schema::Double, JsonValue::Number(n)) => todo!(),
-            (
-                Schema::Decimal {
-                    precision,
-                    scale,
-                    inner,
-                },
-                JsonValue::Number(n),
-            ) => todo!(),
+            // (Schema::Long, JsonValue::Number(n)) => todo!(),
+            // (Schema::Float, JsonValue::Number(n)) => todo!(),
+            // (Schema::Double, JsonValue::Number(n)) => todo!(),
+            // (
+            //     Schema::Decimal {
+            //         precision,
+            //         scale,
+            //         inner,
+            //     },
+            //     JsonValue::Number(n),
+            // ) => todo!(),
             // Schema::Array(_) => todo!(),
             // Schema::Map(_) => todo!(),
             // Schema::Union(_) => todo!(),

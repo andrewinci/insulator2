@@ -188,6 +188,9 @@ mod tests {
                 ApacheAvroSchema::parse_str(&self.schema).unwrap(),
             ))
         }
+        async fn get_schema_by_name(&self, name: &str) -> AvroResult<ResolvedAvroSchema> {
+            todo!()
+        }
     }
 
     fn get_sut(schema: String) -> AvroParser<MockSchemaRegistry> {
