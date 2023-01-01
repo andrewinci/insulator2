@@ -2,6 +2,7 @@ mod cluster;
 mod error;
 
 pub mod admin;
+mod avro;
 pub mod configuration;
 pub mod consumer;
 pub mod parser;
