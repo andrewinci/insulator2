@@ -192,7 +192,10 @@ mod tests {
     #[async_trait]
     impl SchemaProvider for MockSchemaRegistry {
         async fn get_schema_by_id(&self, _: i32) -> Result<ResolvedAvroSchema> {
-            Ok(ApacheAvroSchema::parse_str(&self.schema).unwrap().into())
+            Ok(ResolvedAvroSchema::from(
+                123,
+                ApacheAvroSchema::parse_str(&self.schema).unwrap(),
+            ))
         }
     }
 

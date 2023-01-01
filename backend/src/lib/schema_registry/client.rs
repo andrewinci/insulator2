@@ -109,7 +109,7 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
                 AvroSchema::parse_str(schema.schema.as_str()).map_err(|err| SchemaRegistryError::SchemaParsing {
                     message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
                 })?;
-            let res = ResolvedAvroSchema::from(schema);
+            let res = ResolvedAvroSchema::from(id, schema);
             self.schema_cache_by_id.write().await.insert(id, res.clone());
             Ok(res)
         }
