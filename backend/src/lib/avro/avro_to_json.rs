@@ -1,6 +1,6 @@
 use std::{collections::HashMap, io::Cursor};
 
-use super::{avro_parser::AvroParser, helpers::get_schema_id, schema_provider::SchemaProvider};
+use super::{avro_parser::AvroParser, helpers::get_schema_id_from_record_header, schema_provider::SchemaProvider};
 use crate::lib::{error::Result, Error};
 use apache_avro::{from_avro_datum, schema::Name, types::Value as AvroValue, Schema};
 use num_bigint::BigInt;
@@ -9,13 +9,8 @@ use serde_json::{json, Map, Value as JsonValue};
 
 impl<S: SchemaProvider> AvroParser<S> {
     pub async fn avro_to_json(&self, raw: &[u8]) -> Result<String> {
-        if raw.len() <= 5 || raw[0] != 0x00 {
-            return Err(Error::AvroParse {
-                message: "Supported avro messages should start with 0x00 follow by the schema id (4 bytes)".into(),
-            });
-        }
         // retrieve the schema from the id on the record header
-        let id = get_schema_id(raw)?;
+        let id = get_schema_id_from_record_header(raw)?;
 
         let schema = self
             .schema_provider
@@ -182,7 +177,7 @@ mod tests {
     use apache_avro::{to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer};
     use async_trait::async_trait;
 
-    use crate::lib::schema_registry::{ResolvedAvroSchema, Result, Subject};
+    use crate::lib::schema_registry::{ResolvedAvroSchema, Result};
 
     use super::{AvroParser, SchemaProvider};
     struct MockSchemaRegistry {
