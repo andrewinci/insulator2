@@ -1,6 +1,8 @@
 use rdkafka::error::KafkaError;
 use serde::Serialize;
 
+use super::avro::AvroError;
+
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub enum Error {
     Generic { message: String },
@@ -52,6 +54,20 @@ impl From<KafkaError> for Error {
     fn from(error: KafkaError) -> Self {
         Error::Kafka {
             message: format!("{}", error),
+        }
+    }
+}
+
+impl From<AvroError> for Error {
+    fn from(value: AvroError) -> Self {
+        match value {
+            AvroError::InvalidNumber(m) => Self::AvroParse { message: m },
+            AvroError::MissingAvroSchemaReference(m) => Self::AvroParse { message: m },
+            AvroError::MissingField(m) => Self::AvroParse { message: m },
+            //todo: this should be a schema registry error
+            AvroError::SchemaProvider(m) => Self::AvroParse { message: m },
+            AvroError::InvalidUnion(m) => Self::AvroParse { message: m },
+            AvroError::Unsupported(m) => Self::AvroParse { message: m },
         }
     }
 }
