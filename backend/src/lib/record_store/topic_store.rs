@@ -2,7 +2,7 @@ use log::{debug, trace};
 use rdkafka::message::ToBytes;
 
 use crate::lib::{
-    parser::{Parser, ParserMode, RecordParser},
+    parser::Parser,
     types::{ParsedKafkaRecord, RawKafkaRecord},
     Result,
 };
@@ -15,15 +15,12 @@ use std::{
 
 use super::{
     query::Query,
+    record_parser::KafkaRecordParser,
     sqlite_store::{RecordStore, SqliteStore},
     types::ExportOptions,
 };
 
-pub struct TopicStore<S = SqliteStore, P = RecordParser>
-where
-    S: RecordStore,
-    P: Parser,
-{
+pub struct TopicStore<S: RecordStore = SqliteStore, P: KafkaRecordParser = Parser> {
     cluster_id: String,
     topic_name: String,
     store: Arc<S>,
@@ -31,11 +28,7 @@ where
     records_counter: RwLock<usize>,
 }
 
-impl<S, P> TopicStore<S, P>
-where
-    S: RecordStore,
-    P: Parser,
-{
+impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
     pub fn from_record_store(store: Arc<S>, parser: Arc<P>, cluster_id: &str, topic_name: &str) -> Self {
         store
             .create_or_replace_topic_table(cluster_id, topic_name, false)
@@ -85,11 +78,7 @@ where
 
     pub async fn insert_record(&self, record: &RawKafkaRecord) -> Result<()> {
         *self.records_counter.write().unwrap() += 1;
-        let parsed_record = if let Ok(avro_record) = self.parser.parse_record(record, ParserMode::Avro).await {
-            Ok(avro_record)
-        } else {
-            self.parser.parse_record(record, ParserMode::String).await
-        }?;
+        let parsed_record = self.parser.parse_kafka_record(record).await?;
         self.store
             .insert_record(&self.cluster_id, &self.topic_name, &parsed_record)
     }
@@ -148,8 +137,8 @@ mod test {
     use mockall::*;
 
     use super::TopicStore;
-    use crate::lib::parser::{Parser as LibParser, ParserMode};
     use crate::lib::record_store::query::Query;
+    use crate::lib::record_store::record_parser::KafkaRecordParser;
     use crate::lib::record_store::sqlite_store::RecordStore;
     use crate::lib::record_store::types::ExportOptions;
     use crate::lib::types::{ParsedKafkaRecord, RawKafkaRecord};
@@ -159,8 +148,8 @@ mod test {
     mock! {
         Parser {}
         #[async_trait]
-        impl LibParser for Parser {
-            async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord>;
+        impl KafkaRecordParser for Parser {
+            async fn parse_kafka_record(&self, record: &RawKafkaRecord) -> Result<ParsedKafkaRecord>;
         }
     }
     mock! {

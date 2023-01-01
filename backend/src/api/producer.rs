@@ -11,5 +11,5 @@ pub async fn produce_record(
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
     let cluster = state.get_cluster(cluster_id).await?;
-    cluster.kafka_producer.produce(topic, key, value)
+    cluster.kafka_producer.produce(topic, key, value).await
 }

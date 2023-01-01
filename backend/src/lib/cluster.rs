@@ -3,11 +3,13 @@ use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::lib::{
-    admin::KafkaAdmin, consumer::KafkaConsumer, parser::RecordParser, record_store::TopicStore,
-    schema_registry::CachedSchemaRegistry, Result,
+    admin::KafkaAdmin, consumer::KafkaConsumer, record_store::TopicStore, schema_registry::CachedSchemaRegistry, Result,
 };
 
-use super::{configuration::InsulatorConfig, producer::KafkaProducer, record_store::SqliteStore, types::ErrorCallback};
+use super::{
+    configuration::InsulatorConfig, parser::Parser, producer::KafkaProducer, record_store::SqliteStore,
+    types::ErrorCallback,
+};
 
 type TopicName = String;
 
@@ -17,7 +19,7 @@ pub struct Cluster {
     pub schema_registry_client: Option<Arc<CachedSchemaRegistry>>,
     pub kafka_admin_client: Arc<KafkaAdmin>,
     pub kafka_producer: Arc<KafkaProducer>,
-    pub parser: Arc<RecordParser>,
+    pub parser: Arc<Parser>,
     pub store: Arc<SqliteStore>,
     active_kafka_consumers: Arc<RwLock<HashMap<TopicName, Arc<KafkaConsumer>>>>,
     error_callback: ErrorCallback,
@@ -33,9 +35,9 @@ impl Cluster {
                     s_config.username.as_deref(),
                     s_config.password.as_deref(),
                 ));
-                (Some(ptr.clone()), RecordParser::new(Some(ptr)))
+                (Some(ptr.clone()), Arc::new(Parser::new(Some(ptr))))
             } else {
-                (None, RecordParser::new(None))
+                (None, Arc::new(Parser::new(None)))
             }
         };
         Ok(Cluster {
@@ -43,8 +45,8 @@ impl Cluster {
             schema_registry_client,
             active_kafka_consumers: Arc::new(RwLock::new(HashMap::new())),
             kafka_admin_client: Arc::new(KafkaAdmin::new(&cluster_config, config.get_kafka_tmo())?),
-            parser: Arc::new(parser),
-            kafka_producer: Arc::new(KafkaProducer::new(&cluster_config)),
+            kafka_producer: Arc::new(KafkaProducer::new(&cluster_config, parser.clone())),
+            parser,
             store: Arc::new(SqliteStore::new(config.get_sql_tmo())),
             error_callback,
             config: config.clone(),

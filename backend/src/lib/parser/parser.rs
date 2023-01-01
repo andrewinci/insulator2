@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use async_trait::async_trait;
-
 use crate::lib::{
     avro::{AvroParser, SchemaProvider},
     error::{Error, Result},
@@ -16,26 +14,18 @@ pub enum ParserMode {
     Avro,
 }
 
-#[async_trait]
-pub trait Parser {
-    async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord>;
-}
-
-pub struct RecordParser<C: SchemaProvider = CachedSchemaRegistry> {
+pub struct Parser<C: SchemaProvider = CachedSchemaRegistry> {
     avro_parser: Option<AvroParser<C>>,
 }
 
-impl<C: SchemaProvider> RecordParser<C> {
+impl<C: SchemaProvider> Parser<C> {
     pub fn new(schema_registry_client: Option<Arc<C>>) -> Self {
-        RecordParser {
+        Parser {
             avro_parser: schema_registry_client.map(|client| AvroParser::new(client)),
         }
     }
-}
 
-#[async_trait]
-impl<C: SchemaProvider> Parser for RecordParser<C> {
-    async fn parse_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord> {
+    pub async fn parse_from_kafka_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord> {
         let RawKafkaRecord {
             payload,
             key,
@@ -67,5 +57,9 @@ impl<C: SchemaProvider> Parser for RecordParser<C> {
             partition,
             offset,
         })
+    }
+
+    pub async fn parse_to_kafka_payload(&self, payload: &str, mode: ParserMode) -> Result<Vec<u8>> {
+        todo!()
     }
 }

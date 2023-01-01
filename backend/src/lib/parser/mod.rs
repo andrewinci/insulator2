@@ -1,4 +1,4 @@
-mod record_parser;
+mod parser;
 mod string_parser;
 
-pub use record_parser::{Parser, ParserMode, RecordParser};
+pub use parser::{Parser, ParserMode};
