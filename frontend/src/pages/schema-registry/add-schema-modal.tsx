@@ -61,6 +61,9 @@ export const AddSchemaModal = ({ subjects, clusterId, opened, onClose }: AddSche
           <Autocomplete
             label="Subject name"
             placeholder="schema name...."
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
             data={subjects}
             {...form.getInputProps("subjectName")}
           />
