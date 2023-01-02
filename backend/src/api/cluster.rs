@@ -12,10 +12,9 @@ use crate::lib::{
     record_store::SqliteStore,
     record_store::TopicStore,
     schema_registry::CachedSchemaRegistry,
-    LibResult,
 };
 
-use super::error::ApiError;
+use super::error::{ApiError, ApiResult};
 
 type TopicName = String;
 
@@ -32,7 +31,7 @@ pub struct Cluster {
 }
 
 impl Cluster {
-    pub fn new(cluster_id: &str, config: &InsulatorConfig, error_callback: ErrorCallback<ApiError>) -> LibResult<Self> {
+    pub fn new(cluster_id: &str, config: &InsulatorConfig, error_callback: ErrorCallback<ApiError>) -> ApiResult<Self> {
         let cluster_config = config.get_cluster_config(cluster_id)?;
         let (schema_registry_client, parser) = {
             if let Some(s_config) = &cluster_config.schema_registry {

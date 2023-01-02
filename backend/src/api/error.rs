@@ -1,6 +1,6 @@
 use crate::lib::{
     admin::AdminError, configuration::ConfigError, consumer::ConsumerError, producer::ProducerError,
-    record_store::StoreError, schema_registry::SchemaRegistryError, LibError,
+    record_store::StoreError, schema_registry::SchemaRegistryError,
 };
 use serde::{Deserialize, Serialize};
 
@@ -11,22 +11,6 @@ pub struct ApiError {
     #[serde(rename = "errorType")]
     pub error_type: String,
     pub message: String,
-}
-
-impl From<LibError> for ApiError {
-    fn from(err: LibError) -> Self {
-        let (error_type, message) = match err {
-            LibError::AvroParse { message } => ("Avro parser error", message),
-            LibError::IO { message } => ("IO error", message),
-            LibError::Consumer { message } => ("Kafka Consumer error", message),
-            LibError::Kafka { message } => ("Kafka error", message),
-            LibError::SqlError { message } => ("SQLite error", message),
-        };
-        ApiError {
-            error_type: error_type.into(),
-            message,
-        }
-    }
 }
 
 impl From<SchemaRegistryError> for ApiError {

@@ -1,5 +1,3 @@
-mod error;
-
 pub mod admin;
 mod avro;
 pub mod configuration;
@@ -11,5 +9,3 @@ pub mod producer;
 pub mod record_store;
 pub mod schema_registry;
 pub mod types;
-
-pub use error::*;
