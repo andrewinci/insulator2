@@ -1,11 +1,11 @@
-import { Button, Checkbox, Group, Input, Stack, Text, TextInput } from "@mantine/core";
+import { Button, Checkbox, Chip, Group, Input, Stack, Text, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { CodeEditor, ResizableModal } from "../../../components";
 import { useNotifications } from "../../../providers";
 import { produceRecord } from "../../../tauri/producer";
 
-type FormType = { key: string; value: string; tombstone: boolean };
+type FormType = { key: string; value: string; tombstone: boolean; mode: "Avro" | "String" };
 
 type AddSchemaModalProps = {
   topic: string;
@@ -20,6 +20,7 @@ export const ProducerModal = ({ topic, clusterId, opened, onClose }: AddSchemaMo
     initialValues: {
       key: "",
       value: "",
+      mode: "Avro",
       tombstone: false,
     },
     validate: {
@@ -30,9 +31,9 @@ export const ProducerModal = ({ topic, clusterId, opened, onClose }: AddSchemaMo
   const onSubmit = async (v: FormType) => {
     setState({ isProducing: true });
     try {
-      await produceRecord(clusterId, topic, v.key, v.tombstone ? null : v.value)
-        .then(() => onClose())
-        .then(() => success("Record produced to kafka"));
+      await produceRecord(clusterId, topic, v.key, v.tombstone ? null : v.value, v.mode);
+      onClose();
+      success("Record produced to kafka");
     } finally {
       setState({ isProducing: false });
     }
@@ -49,13 +50,31 @@ export const ProducerModal = ({ topic, clusterId, opened, onClose }: AddSchemaMo
         <Stack spacing={3} style={{ height: "100%" }}>
           <TextInput label="Topic name" readOnly value={topic} />
           <TextInput label="Key" {...form.getInputProps("key")} />
-          <Checkbox mt={10} label="Tombstone" {...form.getInputProps("tombstone", { type: "checkbox" })} />
+          <Group position="apart">
+            <Input.Wrapper label="Serialization">
+              <Chip.Group position="left" multiple={false} {...form.getInputProps("mode")}>
+                <Chip value="Avro">Avro</Chip>
+                <Chip value="String">String</Chip>
+              </Chip.Group>
+            </Input.Wrapper>
+            <Input.Wrapper label="Tombstone">
+              <Checkbox
+                label="Set the Record value to null"
+                {...form.getInputProps("tombstone", { type: "checkbox" })}
+              />
+            </Input.Wrapper>
+          </Group>
           <Input.Wrapper
             hidden={form.values.tombstone}
             style={{ height: "calc(100% - 100px)" }}
             label="Record value"
             error={form.getInputProps("value").error}>
-            <CodeEditor language="json" height="calc(100% - 30px)" {...form.getInputProps("value")} />
+            <CodeEditor
+              //todo: the language needs to change depending on the serialization mode
+              language="json"
+              height="calc(100% - 30px)"
+              {...form.getInputProps("value")}
+            />
           </Input.Wrapper>
           <Group position="apart">
             <Text color={"red"}></Text>

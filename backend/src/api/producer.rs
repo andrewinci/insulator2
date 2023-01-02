@@ -1,4 +1,4 @@
-use crate::lib::Result;
+use crate::lib::{types::ParserMode, Result};
 
 use super::AppState;
 
@@ -8,8 +8,9 @@ pub async fn produce_record(
     topic: &str,
     key: &str,
     value: Option<&str>, // None would be a tombstone
+    mode: ParserMode,
     state: tauri::State<'_, AppState>,
 ) -> Result<()> {
     let cluster = state.get_cluster(cluster_id).await?;
-    cluster.kafka_producer.produce(topic, key, value).await
+    cluster.kafka_producer.produce(topic, key, value, mode).await
 }

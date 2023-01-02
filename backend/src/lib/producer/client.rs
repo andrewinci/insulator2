@@ -5,6 +5,7 @@ use rdkafka::producer::{BaseProducer, BaseRecord};
 use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     parser::Parser,
+    types::ParserMode,
     Result,
 };
 
@@ -23,11 +24,18 @@ impl<P: KafkaRecordParser> KafkaProducer<P> {
         Self { producer, parser }
     }
     // Use a None value for tombstones
-    pub async fn produce(&self, topic: &str, key: &str, value: Option<&str>) -> Result<()> {
+    pub async fn produce(&self, topic: &str, key: &str, value: Option<&str>, mode: ParserMode) -> Result<()> {
         let mut record = BaseRecord::to(topic).key(key);
-        if let Some(payload) = value {
-            let payload = self.parser.parse_to_kafka_payload(payload, topic).await?;
-            record = record.payload(&payload);
+        let payload = if let Some(payload) = value {
+            match mode {
+                ParserMode::String => Some(self.parser.parse_to_string(payload)),
+                ParserMode::Avro => Some(self.parser.parse_to_avro(payload, topic).await?),
+            }
+        } else {
+            None
+        };
+        if let Some(value) = payload {
+            record = record.payload(&value);
             Ok(self.producer.send(record).map_err(|err| err.0)?)
         } else {
             Ok(self.producer.send(record).map_err(|err| err.0)?)

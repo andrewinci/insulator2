@@ -2,8 +2,8 @@ use async_trait::async_trait;
 
 use crate::lib::{
     error::Result,
-    parser::{Parser, ParserMode},
-    types::{ParsedKafkaRecord, RawKafkaRecord},
+    parser::Parser,
+    types::{ParsedKafkaRecord, ParserMode, RawKafkaRecord},
 };
 
 #[async_trait]

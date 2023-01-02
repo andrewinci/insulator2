@@ -11,10 +11,7 @@ use crate::lib::{
 
 use string_parser::parse_string;
 
-pub enum ParserMode {
-    String,
-    Avro,
-}
+use super::types::ParserMode;
 
 pub struct Parser<C: SchemaProvider = CachedSchemaRegistry> {
     avro_parser: Option<AvroParser<C>>,
@@ -61,15 +58,15 @@ impl<C: SchemaProvider> Parser<C> {
         })
     }
 
-    pub async fn parse_payload_to_avro(&self, payload: &str, topic_name: &str) -> Option<Result<Vec<u8>>> {
+    pub async fn parse_payload_to_avro(&self, payload: &str, topic_name: &str) -> Result<Vec<u8>> {
         if let Some(avro_parser) = self.avro_parser.as_ref() {
-            Some(
-                avro_parser
-                    .json_to_avro(payload, &format!("{}-value", topic_name))
-                    .await,
-            )
+            Ok(avro_parser
+                .json_to_avro(payload, &format!("{}-value", topic_name))
+                .await?)
         } else {
-            None
+            Err(Error::AvroParse {
+                message: "Missing avro configuration".into(),
+            })
         }
     }
 
