@@ -2,35 +2,21 @@ use super::http_client::HttpClientError;
 
 #[derive(Debug)]
 pub enum SchemaRegistryError {
-    SchemaNotFound { message: String },
-    SchemaParsing { message: String },
-    HttpClient { message: String },
-    InvalidUrl,
+    SchemaNotFound(String),
+    SchemaParsing(String),
+    HttpClient(String),
+    InvalidUrl(String),
 }
 
-pub type Result<T> = core::result::Result<T, SchemaRegistryError>;
+pub type SchemaRegistryResult<T> = core::result::Result<T, SchemaRegistryError>;
 
 impl From<url::ParseError> for SchemaRegistryError {
-    fn from(_: url::ParseError) -> Self {
-        Self::InvalidUrl
+    fn from(url: url::ParseError) -> Self {
+        Self::InvalidUrl(url.to_string())
     }
 }
-
-impl ToString for SchemaRegistryError {
-    fn to_string(&self) -> String {
-        match self {
-            SchemaRegistryError::HttpClient { message: msg } => msg.into(),
-            SchemaRegistryError::InvalidUrl => "Invalid URL".into(),
-            SchemaRegistryError::SchemaParsing { message: msg } => msg.into(),
-            SchemaRegistryError::SchemaNotFound { message } => message.into(),
-        }
-    }
-}
-
 impl From<HttpClientError> for SchemaRegistryError {
     fn from(err: HttpClientError) -> Self {
-        SchemaRegistryError::HttpClient {
-            message: format!("Http client error {:?}", err),
-        }
+        SchemaRegistryError::HttpClient(format!("Http client error {:?}", err))
     }
 }

@@ -6,10 +6,9 @@ use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     parser::Parser,
     types::ParserMode,
-    Result,
 };
 
-use super::record_parser::KafkaRecordParser;
+use super::{error::ProducerResult, record_parser::KafkaRecordParser};
 
 pub struct KafkaProducer<P: KafkaRecordParser = Parser> {
     producer: BaseProducer,
@@ -24,7 +23,7 @@ impl<P: KafkaRecordParser> KafkaProducer<P> {
         Self { producer, parser }
     }
     // Use a None value for tombstones
-    pub async fn produce(&self, topic: &str, key: &str, value: Option<&str>, mode: ParserMode) -> Result<()> {
+    pub async fn produce(&self, topic: &str, key: &str, value: Option<&str>, mode: ParserMode) -> ProducerResult<()> {
         let mut record = BaseRecord::to(topic).key(key);
         let payload = if let Some(payload) = value {
             match mode {

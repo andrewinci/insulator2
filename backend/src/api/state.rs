@@ -5,17 +5,20 @@ use tauri::Manager;
 use tokio::sync::RwLock;
 
 use crate::lib::{
-    configuration::ConfigurationProvider, schema_registry::CachedSchemaRegistry, types::ErrorCallback, Cluster, Result,
+    configuration::ConfigurationProvider, error_callback::ErrorCallback, schema_registry::CachedSchemaRegistry,
 };
 
-use super::error::TauriError;
+use super::{
+    cluster::Cluster,
+    error::{ApiError, ApiResult},
+};
 
 type ClusterId = String;
 
 pub struct AppState {
     clusters: Arc<RwLock<HashMap<ClusterId, Arc<Cluster>>>>,
     pub configuration_provider: Arc<ConfigurationProvider>,
-    error_callback: ErrorCallback,
+    error_callback: ErrorCallback<ApiError>,
 }
 
 impl AppState {
@@ -24,12 +27,12 @@ impl AppState {
             clusters: Default::default(),
             configuration_provider: Arc::new(ConfigurationProvider::new()),
             error_callback: Arc::new(move |err| {
-                app_handle.emit_all("error", TauriError::from(err)).ok();
+                app_handle.emit_all("error", err).ok();
             }),
         }
     }
 
-    pub async fn get_cluster(&self, cluster_id: &str) -> Result<Arc<Cluster>> {
+    pub async fn get_cluster(&self, cluster_id: &str) -> ApiResult<Arc<Cluster>> {
         {
             if let Some(cluster) = self.clusters.read().await.get(cluster_id) {
                 return Ok(cluster.clone());
@@ -44,12 +47,12 @@ impl AppState {
         }
     }
 
-    pub async fn get_schema_reg_client(&self, cluster_id: &str) -> Result<Option<Arc<CachedSchemaRegistry>>> {
+    pub async fn get_schema_reg_client(&self, cluster_id: &str) -> ApiResult<Option<Arc<CachedSchemaRegistry>>> {
         let cluster = self.get_cluster(cluster_id).await?;
         Ok(cluster.schema_registry_client.as_ref().cloned())
     }
 
-    fn build_new_cluster(&self, cluster_id: &str, error_callback: ErrorCallback) -> Result<Cluster> {
+    fn build_new_cluster(&self, cluster_id: &str, error_callback: ErrorCallback<ApiError>) -> ApiResult<Cluster> {
         debug!("Init cluster {}", cluster_id);
         let configuration = self.configuration_provider.get_configuration()?;
         Cluster::new(cluster_id, &configuration, error_callback)

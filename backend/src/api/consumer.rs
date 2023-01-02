@@ -5,7 +5,7 @@ use crate::lib::{
     record_store::types::ExportOptions,
 };
 
-use super::{error::Result, types::GetPageResponse, AppState};
+use super::{error::ApiResult, types::GetPageResponse, AppState};
 
 #[tauri::command]
 pub async fn start_consumer(
@@ -13,7 +13,7 @@ pub async fn start_consumer(
     topic: &str,
     config: ConsumerConfiguration,
     state: tauri::State<'_, AppState>,
-) -> Result<()> {
+) -> ApiResult<()> {
     let consumer = state.get_cluster(cluster_id).await?.get_consumer(topic).await;
     Ok(consumer.start(&config).await?)
 }
@@ -23,13 +23,13 @@ pub async fn get_consumer_state(
     cluster_id: &str,
     topic: &str,
     state: tauri::State<'_, AppState>,
-) -> Result<ConsumerState> {
+) -> ApiResult<ConsumerState> {
     let consumer = state.get_cluster(cluster_id).await?.get_consumer(topic).await;
     Ok(consumer.get_consumer_state().await?)
 }
 
 #[tauri::command]
-pub async fn stop_consumer(cluster_id: &str, topic: &str, state: tauri::State<'_, AppState>) -> Result<()> {
+pub async fn stop_consumer(cluster_id: &str, topic: &str, state: tauri::State<'_, AppState>) -> ApiResult<()> {
     let consumer = state.get_cluster(cluster_id).await?.get_consumer(topic).await;
     Ok(consumer.stop().await?)
 }
@@ -41,7 +41,7 @@ pub async fn get_records_page(
     page_number: usize,
     query: Option<&str>,
     state: tauri::State<'_, AppState>,
-) -> Result<GetPageResponse> {
+) -> ApiResult<GetPageResponse> {
     debug!("Get records page");
     const PAGE_SIZE: usize = 20;
     let cluster = state.get_cluster(cluster_id).await?;
@@ -65,7 +65,7 @@ pub async fn export_records(
     topic: &str,
     options: ExportOptions,
     state: tauri::State<'_, AppState>,
-) -> Result<()> {
+) -> ApiResult<()> {
     let store = state.get_cluster(cluster_id).await?.get_topic_store(topic).await;
     Ok(store.export_records(&options)?)
 }

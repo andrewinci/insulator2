@@ -1,12 +1,7 @@
-use std::{
-    sync::Arc,
-    time::{Duration, UNIX_EPOCH},
-};
+use std::time::{Duration, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 use time::format_description::well_known;
-
-use super::Error;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct KafkaRecord<T> {
@@ -30,7 +25,6 @@ pub enum ParserMode {
 
 pub type RawKafkaRecord = KafkaRecord<Vec<u8>>;
 pub type ParsedKafkaRecord = KafkaRecord<String>;
-pub type ErrorCallback = Arc<dyn Fn(Error) + Send + Sync>;
 
 impl ParsedKafkaRecord {
     pub fn to_csv_line(&self, parse_timestamp: bool) -> String {

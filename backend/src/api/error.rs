@@ -1,43 +1,133 @@
-use crate::lib::{schema_registry::SchemaRegistryError, Error};
+use crate::lib::{
+    admin::AdminError, configuration::ConfigError, consumer::ConsumerError, producer::ProducerError,
+    record_store::StoreError, schema_registry::SchemaRegistryError,
+};
 use serde::{Deserialize, Serialize};
-pub type Result<T> = std::result::Result<T, TauriError>;
+
+pub type ApiResult<T> = std::result::Result<T, ApiError>;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct TauriError {
+pub struct ApiError {
     #[serde(rename = "errorType")]
     pub error_type: String,
     pub message: String,
 }
 
-impl From<Error> for TauriError {
-    fn from(err: Error) -> Self {
-        let (error_type, message) = match err {
-            Error::Generic { message } => ("Generic error", message),
-            Error::AvroParse { message } => ("Avro parser error", message),
-            Error::IO { message } => ("IO error", message),
-            Error::JSONSerde { message } => ("JSON Serde error", message),
-            Error::Consumer { message } => ("Kafka Consumer error", message),
-            Error::Kafka { message } => ("Kafka error", message),
-            Error::SqlError { message } => ("SQLite error", message),
-            Error::LegacyConfiguration { message } => ("Import legacy config error", message),
-            Error::TOMLSerde { message } => ("TOML Serde error", message),
-        };
-        TauriError {
-            error_type: error_type.into(),
-            message,
+impl From<SchemaRegistryError> for ApiError {
+    fn from(err: SchemaRegistryError) -> Self {
+        match err {
+            SchemaRegistryError::SchemaNotFound(message) => ApiError {
+                error_type: "Schema registry error: Schema not found".into(),
+                message,
+            },
+            SchemaRegistryError::SchemaParsing(message) => ApiError {
+                error_type: "Schema registry error: Unable to parse the schema".into(),
+                message,
+            },
+            SchemaRegistryError::HttpClient(message) => ApiError {
+                error_type: "Schema registry error: HTTPClient".into(),
+                message,
+            },
+            SchemaRegistryError::InvalidUrl(message) => ApiError {
+                error_type: "Schema registry error: Invalid URL".into(),
+                message,
+            },
         }
     }
 }
 
-impl From<SchemaRegistryError> for TauriError {
-    fn from(err: SchemaRegistryError) -> Self {
-        TauriError {
-            error_type: "Schema registry error".into(),
-            message: match err {
-                SchemaRegistryError::HttpClient { message: msg } => msg,
-                SchemaRegistryError::InvalidUrl => "Invalid url".into(),
-                SchemaRegistryError::SchemaParsing { message: msg } => msg,
-                SchemaRegistryError::SchemaNotFound { message } => message,
+impl From<StoreError> for ApiError {
+    fn from(value: StoreError) -> Self {
+        match value {
+            StoreError::SqlError(message) => ApiError {
+                error_type: "Records store error: SQL".into(),
+                message,
+            },
+            StoreError::IO(message) => ApiError {
+                error_type: "Records store error: IO".into(),
+                message,
+            },
+            StoreError::RecordParse(message) => ApiError {
+                error_type: "Records store error: Parsing the record".into(),
+                message,
+            },
+        }
+    }
+}
+
+impl From<ConsumerError> for ApiError {
+    fn from(value: ConsumerError) -> Self {
+        match value {
+            ConsumerError::RDKafka(message) => ApiError {
+                error_type: "Consumer error: RDKafkaLib".into(),
+                message,
+            },
+            ConsumerError::RecordStore(_, records_store_error) => records_store_error.into(),
+            ConsumerError::AlreadyRunning(message) => ApiError {
+                error_type: "Consumer error".into(),
+                message,
+            },
+        }
+    }
+}
+
+impl From<AdminError> for ApiError {
+    fn from(value: AdminError) -> Self {
+        match value {
+            AdminError::TopicNotFound(topic_name) => ApiError {
+                error_type: "Admin client".into(),
+                message: format!("Topic {} not found.", topic_name),
+            },
+            AdminError::RDKafka(message) => ApiError {
+                error_type: "RDKafkaLib error".into(),
+                message,
+            },
+            AdminError::ConsumerError(consumer_error) => consumer_error.into(),
+        }
+    }
+}
+
+impl From<ConfigError> for ApiError {
+    fn from(value: ConfigError) -> Self {
+        match value {
+            ConfigError::IO(msg) => ApiError {
+                error_type: "IO error handling user configurations".into(),
+                message: msg,
+            },
+            ConfigError::JSONSerde(msg) => ApiError {
+                error_type: "JSON error handling user configurations".into(),
+                message: msg,
+            },
+            ConfigError::TOMLSerde(msg) => ApiError {
+                error_type: "TOML error handling user configurations".into(),
+                message: msg,
+            },
+            ConfigError::LegacyConfiguration(msg) => ApiError {
+                error_type: "Error loading the legacy configuration".into(),
+                message: msg,
+            },
+            ConfigError::ClusterNotFound(cluster_id) => ApiError {
+                error_type: "User configuration error".into(),
+                message: format!("Cluster {} not found", cluster_id),
+            },
+        }
+    }
+}
+
+impl From<ProducerError> for ApiError {
+    fn from(value: ProducerError) -> Self {
+        match value {
+            ProducerError::MissingAvroConfiguration => Self {
+                error_type: "Missing avro configuration".into(),
+                message: "Unable to parse the record to avro".into(),
+            },
+            ProducerError::RDKafka(message) => ApiError {
+                error_type: "RDKafkaLib error trying to produce".into(),
+                message,
+            },
+            ProducerError::AvroParse(_avro_error) => ApiError {
+                error_type: "Avro serialization error".into(),
+                message: "Missing avro error".into(),
             },
         }
     }

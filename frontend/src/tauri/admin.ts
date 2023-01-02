@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api";
 import { ConsumerGroupInfo, ConsumerOffsetConfiguration, PartitionOffset, TopicInfo } from "../models/kafka";
 import { addNotification } from "../providers";
-import { format, TauriError } from "./error";
+import { format, ApiError } from "./error";
 
 export const setConsumerGroup = (
   clusterId: string,
@@ -10,7 +10,7 @@ export const setConsumerGroup = (
   offsetConfig: ConsumerOffsetConfiguration
 ): Promise<void> => {
   return invoke<void>("set_consumer_group", { clusterId, consumerGroupName, topics, offsetConfig }).catch(
-    (err: TauriError) => {
+    (err: ApiError) => {
       addNotification({
         type: "error",
         title: `Unable to setup the consumer group ${consumerGroupName}`,
@@ -22,7 +22,7 @@ export const setConsumerGroup = (
 };
 
 export const getConsumerGroupState = (clusterId: string, consumerGroupName: string): Promise<string> => {
-  return invoke<string>("get_consumer_group_state", { clusterId, consumerGroupName }).catch((err: TauriError) => {
+  return invoke<string>("get_consumer_group_state", { clusterId, consumerGroupName }).catch((err: ApiError) => {
     addNotification({
       type: "error",
       title: `Unable to get the consumer group state`,
@@ -38,7 +38,7 @@ export const describeConsumerGroup = (
   ignoreCache: boolean
 ): Promise<ConsumerGroupInfo> => {
   return invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, ignoreCache }).catch(
-    (err: TauriError) => {
+    (err: ApiError) => {
       addNotification({
         type: "error",
         title: `Unable to describe the consumer group`,
@@ -50,7 +50,7 @@ export const describeConsumerGroup = (
 };
 
 export const getConsumerGroups = (clusterId: string): Promise<string[]> => {
-  return invoke<string[]>("list_consumer_groups", { clusterId }).catch((err: TauriError) => {
+  return invoke<string[]>("list_consumer_groups", { clusterId }).catch((err: ApiError) => {
     addNotification({
       type: "error",
       title: `Unable to retrieve the list of consumer groups`,
@@ -67,7 +67,7 @@ export const createTopic = (
   isr: number,
   compacted: boolean
 ): Promise<void> => {
-  return invoke<void>("create_topic", { clusterId, topicName, partitions, isr, compacted }).catch((err: TauriError) => {
+  return invoke<void>("create_topic", { clusterId, topicName, partitions, isr, compacted }).catch((err: ApiError) => {
     addNotification({
       type: "error",
       title: `Unable to create the new topic`,
@@ -80,7 +80,7 @@ export const createTopic = (
 export const listTopics = (clusterId: string): Promise<string[]> =>
   invoke<{ name: string }[]>("list_topics", { clusterId })
     .then((topics) => topics.map((t) => t.name))
-    .catch((err: TauriError) => {
+    .catch((err: ApiError) => {
       addNotification({
         type: "error",
         title: `Unable to retrieve the list of topics`,
@@ -90,7 +90,7 @@ export const listTopics = (clusterId: string): Promise<string[]> =>
     });
 
 export const getTopicInfo = (clusterId: string, topicName: string): Promise<TopicInfo> =>
-  invoke<TopicInfo>("get_topic_info", { clusterId, topicName }).catch((err: TauriError) => {
+  invoke<TopicInfo>("get_topic_info", { clusterId, topicName }).catch((err: ApiError) => {
     addNotification({
       type: "error",
       title: `Unable to retrieve topic info`,
@@ -100,7 +100,7 @@ export const getTopicInfo = (clusterId: string, topicName: string): Promise<Topi
   });
 
 export const deleteTopic = (clusterId: string, topicName: string): Promise<void> =>
-  invoke<void>("delete_topic", { clusterId, topicName }).catch((err: TauriError) => {
+  invoke<void>("delete_topic", { clusterId, topicName }).catch((err: ApiError) => {
     addNotification({
       type: "error",
       title: `Unable to delete the topic`,
@@ -110,7 +110,7 @@ export const deleteTopic = (clusterId: string, topicName: string): Promise<void>
   });
 
 export const getLastOffsets = (clusterId: string, topicNames: [string]): Promise<Record<string, [PartitionOffset]>> =>
-  invoke<Record<string, [PartitionOffset]>>("get_last_offsets", { clusterId, topicNames }).catch((err: TauriError) => {
+  invoke<Record<string, [PartitionOffset]>>("get_last_offsets", { clusterId, topicNames }).catch((err: ApiError) => {
     addNotification({
       type: "error",
       title: `Unable to retrieve the last offset`,
@@ -120,7 +120,7 @@ export const getLastOffsets = (clusterId: string, topicNames: [string]): Promise
   });
 
 export const deleteConsumerGroup = (clusterId: string, consumerGroupName: string): Promise<void> =>
-  invoke<void>("delete_consumer_group", { clusterId, consumerGroupName }).catch((err: TauriError) => {
+  invoke<void>("delete_consumer_group", { clusterId, consumerGroupName }).catch((err: ApiError) => {
     addNotification({
       type: "error",
       title: `Unable to delete the consumer group`,

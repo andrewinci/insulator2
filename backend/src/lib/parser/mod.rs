@@ -1,15 +1,18 @@
+mod error;
 mod string_parser;
 
 use std::sync::Arc;
 
 use crate::lib::{
     avro::{AvroParser, SchemaProvider},
-    error::{Error, Result},
     schema_registry::CachedSchemaRegistry,
     types::{ParsedKafkaRecord, RawKafkaRecord},
 };
 
 use string_parser::parse_string;
+
+pub use self::error::ParserError;
+use self::error::ParserResult;
 
 use super::types::ParserMode;
 
@@ -24,7 +27,11 @@ impl<C: SchemaProvider> Parser<C> {
         }
     }
 
-    pub async fn parse_from_kafka_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord> {
+    pub async fn parse_from_kafka_record(
+        &self,
+        record: &RawKafkaRecord,
+        mode: ParserMode,
+    ) -> ParserResult<ParsedKafkaRecord> {
         let RawKafkaRecord {
             payload,
             key,
@@ -36,9 +43,7 @@ impl<C: SchemaProvider> Parser<C> {
         let (key, payload) = match mode {
             ParserMode::String => (key.map(|v| parse_string(&v)), payload.map(|v| parse_string(&v))),
             ParserMode::Avro => {
-                let avro_parser = self.avro_parser.as_ref().ok_or(Error::AvroParse {
-                    message: "Missing avro parser".into(),
-                })?;
+                let avro_parser = self.avro_parser.as_ref().ok_or(ParserError::MissingAvroConfiguration)?;
                 (
                     key.map(|v| parse_string(&v)),
                     match payload {
@@ -58,15 +63,13 @@ impl<C: SchemaProvider> Parser<C> {
         })
     }
 
-    pub async fn parse_payload_to_avro(&self, payload: &str, topic_name: &str) -> Result<Vec<u8>> {
+    pub async fn parse_payload_to_avro(&self, payload: &str, topic_name: &str) -> ParserResult<Vec<u8>> {
         if let Some(avro_parser) = self.avro_parser.as_ref() {
             Ok(avro_parser
                 .json_to_avro(payload, &format!("{}-value", topic_name))
                 .await?)
         } else {
-            Err(Error::AvroParse {
-                message: "Missing avro configuration".into(),
-            })
+            Err(ParserError::MissingAvroConfiguration)
         }
     }
 

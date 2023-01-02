@@ -42,13 +42,11 @@ async fn test_consumer_groups_admin_client() {
     {
         let test_consumer_group = "test-consumer-group";
         // act
-        let res = sut
-            .set_consumer_group(
-                test_consumer_group,
-                &[&test_topic_name],
-                &crate::lib::consumer::types::ConsumerSessionConfiguration::Beginning,
-            )
-            .await;
+        let res = sut.set_consumer_group(
+            test_consumer_group,
+            &[&test_topic_name],
+            &crate::lib::consumer::types::ConsumerSessionConfiguration::Beginning,
+        );
         // assert
         assert!(res.is_ok());
         let consumer_groups = consumer
@@ -70,7 +68,6 @@ async fn test_consumer_groups_admin_client() {
             &[&test_topic_name],
             &crate::lib::consumer::types::ConsumerSessionConfiguration::Beginning,
         )
-        .await
         .expect("Unable to create the consumer group for the test");
         // act
         let res = sut.delete_consumer_group(test_consumer_group).await;
@@ -95,7 +92,6 @@ async fn test_consumer_groups_admin_client() {
             &[&test_topic_name],
             &crate::lib::consumer::types::ConsumerSessionConfiguration::Beginning,
         )
-        .await
         .expect("Unable to create the consumer group for the test");
         // act
         let res = sut

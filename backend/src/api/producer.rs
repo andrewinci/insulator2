@@ -1,6 +1,6 @@
-use crate::lib::{types::ParserMode, Result};
+use crate::lib::types::ParserMode;
 
-use super::AppState;
+use super::{error::ApiResult, AppState};
 
 #[tauri::command]
 pub async fn produce_record(
@@ -10,7 +10,7 @@ pub async fn produce_record(
     value: Option<&str>, // None would be a tombstone
     mode: ParserMode,
     state: tauri::State<'_, AppState>,
-) -> Result<()> {
+) -> ApiResult<()> {
     let cluster = state.get_cluster(cluster_id).await?;
-    cluster.kafka_producer.produce(topic, key, value, mode).await
+    Ok(cluster.kafka_producer.produce(topic, key, value, mode).await?)
 }

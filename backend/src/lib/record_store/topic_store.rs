@@ -4,7 +4,6 @@ use rdkafka::message::ToBytes;
 use crate::lib::{
     parser::Parser,
     types::{ParsedKafkaRecord, RawKafkaRecord},
-    Result,
 };
 use std::{
     fs::OpenOptions,
@@ -14,6 +13,7 @@ use std::{
 };
 
 use super::{
+    error::StoreResult,
     query::Query,
     record_parser::KafkaRecordParser,
     sqlite_store::{RecordStore, SqliteStore},
@@ -47,7 +47,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
         }
     }
 
-    pub fn setup(&self, compactify: bool) -> Result<()> {
+    pub fn setup(&self, compactify: bool) -> StoreResult<()> {
         *self.records_counter.write().unwrap() = 0;
         self.store
             .create_or_replace_topic_table(&self.cluster_id, &self.topic_name, compactify)
@@ -59,7 +59,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
         offset: i64,
         limit: i64,
         timeout: Option<Duration>,
-    ) -> Result<Vec<ParsedKafkaRecord>> {
+    ) -> StoreResult<Vec<ParsedKafkaRecord>> {
         self.store.query_records(
             &Query {
                 cluster_id: self.cluster_id.clone(),
@@ -76,18 +76,18 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
         )
     }
 
-    pub async fn insert_record(&self, record: &RawKafkaRecord) -> Result<()> {
+    pub async fn insert_record(&self, record: &RawKafkaRecord) -> StoreResult<()> {
         *self.records_counter.write().unwrap() += 1;
         let parsed_record = self.parser.parse_kafka_record(record).await?;
         self.store
             .insert_record(&self.cluster_id, &self.topic_name, &parsed_record)
     }
 
-    pub fn get_records_count(&self) -> Result<usize> {
+    pub fn get_records_count(&self) -> StoreResult<usize> {
         Ok(*self.records_counter.read().unwrap())
     }
 
-    pub fn export_records(&self, options: &ExportOptions) -> Result<()> {
+    pub fn export_records(&self, options: &ExportOptions) -> StoreResult<()> {
         let ExportOptions {
             limit,
             query,
@@ -137,28 +137,28 @@ mod test {
     use mockall::*;
 
     use super::TopicStore;
+    use crate::lib::record_store::error::StoreResult;
     use crate::lib::record_store::query::Query;
     use crate::lib::record_store::record_parser::KafkaRecordParser;
     use crate::lib::record_store::sqlite_store::RecordStore;
     use crate::lib::record_store::types::ExportOptions;
     use crate::lib::types::{ParsedKafkaRecord, RawKafkaRecord};
-    use crate::lib::Result;
     use async_trait::async_trait;
 
     mock! {
         Parser {}
         #[async_trait]
         impl KafkaRecordParser for Parser {
-            async fn parse_kafka_record(&self, record: &RawKafkaRecord) -> Result<ParsedKafkaRecord>;
+            async fn parse_kafka_record(&self, record: &RawKafkaRecord) -> StoreResult<ParsedKafkaRecord>;
         }
     }
     mock! {
         Store {}
         impl RecordStore for Store {
-            fn query_records(&self, query: &Query, timeout: Option<Duration>) -> Result<Vec<ParsedKafkaRecord>>;
-            fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()>;
-            fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
-            fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
+            fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<ParsedKafkaRecord>>;
+            fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> StoreResult<()>;
+            fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> StoreResult<()>;
+            fn destroy(&self, cluster_id: &str, topic_name: &str) -> StoreResult<()>;
         }
     }
 

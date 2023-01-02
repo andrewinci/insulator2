@@ -3,13 +3,18 @@ use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::lib::{
-    admin::KafkaAdmin, consumer::KafkaConsumer, record_store::TopicStore, schema_registry::CachedSchemaRegistry, Result,
+    admin::KafkaAdmin,
+    configuration::InsulatorConfig,
+    consumer::{ConsumerError, KafkaConsumer},
+    error_callback::ErrorCallback,
+    parser::Parser,
+    producer::KafkaProducer,
+    record_store::SqliteStore,
+    record_store::TopicStore,
+    schema_registry::CachedSchemaRegistry,
 };
 
-use super::{
-    configuration::InsulatorConfig, parser::Parser, producer::KafkaProducer, record_store::SqliteStore,
-    types::ErrorCallback,
-};
+use super::error::{ApiError, ApiResult};
 
 type TopicName = String;
 
@@ -22,11 +27,11 @@ pub struct Cluster {
     pub parser: Arc<Parser>,
     pub store: Arc<SqliteStore>,
     active_kafka_consumers: Arc<RwLock<HashMap<TopicName, Arc<KafkaConsumer>>>>,
-    error_callback: ErrorCallback,
+    error_callback: ErrorCallback<ApiError>,
 }
 
 impl Cluster {
-    pub fn new(cluster_id: &str, config: &InsulatorConfig, error_callback: ErrorCallback) -> Result<Self> {
+    pub fn new(cluster_id: &str, config: &InsulatorConfig, error_callback: ErrorCallback<ApiError>) -> ApiResult<Self> {
         let cluster_config = config.get_cluster_config(cluster_id)?;
         let (schema_registry_client, parser) = {
             if let Some(s_config) = &cluster_config.schema_registry {
@@ -70,11 +75,14 @@ impl Cluster {
             // create a new table for the consumer
             let topic_store =
                 TopicStore::from_record_store(self.store.clone(), self.parser.clone(), &self.cluster_id, topic_name);
+            // build the consumer callback
+            let error_cb = self.error_callback.clone();
+            let consumer_callback: ErrorCallback<ConsumerError> = Arc::new(move |err| (*error_cb)(err.into()));
             let consumer = Arc::new(KafkaConsumer::new(
                 &cluster_config,
                 topic_name,
                 topic_store,
-                self.error_callback.clone(),
+                consumer_callback,
                 self.config.get_kafka_tmo(),
             ));
             self.active_kafka_consumers
