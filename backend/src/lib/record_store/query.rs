@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Query {
     pub cluster_id: String,
     pub topic_name: String,
@@ -5,6 +6,7 @@ pub struct Query {
     pub limit: i64,
     pub query_template: String,
 }
+
 impl Query {
     pub const SELECT_WITH_OFFSET_LIMIT_QUERY : &str = "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
 

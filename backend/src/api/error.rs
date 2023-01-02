@@ -1,4 +1,7 @@
-use crate::lib::{admin::AdminError, configuration::ConfigError, schema_registry::SchemaRegistryError, LibError};
+use crate::lib::{
+    admin::AdminError, configuration::ConfigError, record_store::StoreError, schema_registry::SchemaRegistryError,
+    LibError,
+};
 use serde::{Deserialize, Serialize};
 
 pub type ApiResult<T> = std::result::Result<T, ApiError>;
@@ -35,6 +38,25 @@ impl From<SchemaRegistryError> for ApiError {
                 SchemaRegistryError::SchemaParsing(msg) => msg,
                 SchemaRegistryError::SchemaNotFound(msg) => msg,
                 SchemaRegistryError::InvalidUrl => "Invalid url".into(),
+            },
+        }
+    }
+}
+
+impl From<StoreError> for ApiError {
+    fn from(value: StoreError) -> Self {
+        match value {
+            StoreError::SqlError(message) => ApiError {
+                error_type: "Records store error: SQL".into(),
+                message,
+            },
+            StoreError::IO(message) => ApiError {
+                error_type: "Records store error: IO".into(),
+                message,
+            },
+            StoreError::RecordParse(message) => ApiError {
+                error_type: "Records store error: Parsing the record".into(),
+                message,
             },
         }
     }

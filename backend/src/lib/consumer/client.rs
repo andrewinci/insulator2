@@ -128,7 +128,9 @@ impl KafkaConsumer {
     pub async fn get_consumer_state(&self) -> LibResult<ConsumerState> {
         Ok(ConsumerState {
             is_running: self.loop_handle.clone().lock().await.is_some(),
-            record_count: self.topic_store.get_records_count()?,
+            record_count: self.topic_store.get_records_count().map_err(|_| LibError::SqlError {
+                message: "Unable to get the records count".into(),
+            })?,
         })
     }
 }
@@ -192,10 +194,11 @@ async fn handle_consumed_message(
 ) {
     let record = map_kafka_record(msg);
     if record.timestamp.unwrap_or(u64::MIN) < stop_timestamp.unwrap_or(u64::MAX) {
-        topic_store
-            .insert_record(&record)
-            .await
-            .unwrap_or_else(|err| error_callback(err));
+        topic_store.insert_record(&record).await.unwrap_or_else(|_| {
+            error_callback(LibError::SqlError {
+                message: "Unable to insert record".into(),
+            })
+        });
     } else {
         // pause consumption on the record partition
         let mut tpl = TopicPartitionList::new();
