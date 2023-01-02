@@ -1,9 +1,9 @@
-export type TauriError = {
+export type ApiError = {
   errorType: string;
   message: string;
 };
 
-export const format = (err: TauriError) => {
+export const format = (err: ApiError) => {
   const { errorType, message } = err;
   if (errorType && message) return `${errorType}: ${message}`;
   if (errorType) return `${errorType}`;

@@ -11,7 +11,7 @@ import { ModalsProvider } from "@mantine/modals";
 import { NotificationsProvider } from "@mantine/notifications";
 import "allotment/dist/style.css";
 import { listen } from "@tauri-apps/api/event";
-import { TauriError } from "./tauri/error";
+import { ApiError } from "./tauri/error";
 import { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 
@@ -20,7 +20,7 @@ const App = () => {
   const { alert } = useNotifications();
   const queryClient = new QueryClient();
   // listen for errors emitted by the backend
-  listen<TauriError>("error", (event) => {
+  listen<ApiError>("error", (event) => {
     alert(event.payload.errorType, event.payload.message);
   });
 
