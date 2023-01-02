@@ -15,10 +15,10 @@ impl<S: SchemaProvider> AvroParser<S> {
     }
 
     pub fn json_to_avro_with_schema(&self, json: &str, schema: ResolvedAvroSchema) -> AvroResult<Vec<u8>> {
-        let json_value = JsonValue::from_str(json).map_err(|err| AvroError::ParseJsonValue(err))?;
+        let json_value = JsonValue::from_str(json).map_err(AvroError::ParseJsonValue)?;
         let mut res = build_record_header(schema.schema_id);
         let avro_value = Self::json_to_avro_map(json_value, &schema)?;
-        let mut avro_record = to_avro_datum(&schema.schema, avro_value).map_err(|err| AvroError::ParseAvroValue(err))?;
+        let mut avro_record = to_avro_datum(&schema.schema, avro_value).map_err(AvroError::ParseAvroValue)?;
         res.append(&mut avro_record);
         Ok(res)
     }

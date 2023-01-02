@@ -125,7 +125,7 @@ impl From<ProducerError> for ApiError {
                 error_type: "RDKafkaLib error trying to produce".into(),
                 message,
             },
-            ProducerError::AvroParse(avro_error) => ApiError {
+            ProducerError::AvroParse(_avro_error) => ApiError {
                 error_type: "Avro serialization error".into(),
                 message: "Missing avro error".into(),
             },

@@ -109,7 +109,7 @@ impl KafkaAdmin {
             .await?;
         let res = res
             .first()
-            .ok_or(AdminError::RDKafka("Invalid result from create topic api call.".into()))?;
+            .ok_or_else(|| AdminError::RDKafka("Invalid result from create topic api call.".into()))?;
         match res {
             Ok(_) => {
                 debug!("Topic created successfully");

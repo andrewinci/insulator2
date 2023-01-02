@@ -131,7 +131,7 @@ fn map_ssl_config(legacy: SslConfigurationLegacy) -> ConfigResult<Authentication
             key: user_certificate
                 .private_key
                 .as_ref()
-                .ok_or(ConfigError::LegacyConfiguration("Unable to parse the keystore".into()))?
+                .ok_or_else(|| ConfigError::LegacyConfiguration("Unable to parse the keystore".into()))?
                 .pkcs8_pem
                 .clone(),
             key_password: None,

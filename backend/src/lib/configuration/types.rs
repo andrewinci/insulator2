@@ -30,7 +30,7 @@ impl InsulatorConfig {
             .iter()
             .find(|c| c.id == cluster_id)
             .cloned()
-            .ok_or(ConfigError::ClusterNotFound(cluster_id.to_string()))
+            .ok_or_else(|| ConfigError::ClusterNotFound(cluster_id.to_string()))
     }
 }
 
