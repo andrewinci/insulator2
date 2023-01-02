@@ -1,9 +1,11 @@
+use crate::lib::schema_registry::SchemaRegistryError;
+
 #[derive(Debug)]
 pub enum AvroError {
     InvalidNumber(String),
     MissingAvroSchemaReference(String),
     MissingField(String),
-    SchemaProvider(String),
+    SchemaProvider(String, SchemaRegistryError),
     InvalidUnion(String),
     Unsupported(String),
     InvalidAvroHeader(String),

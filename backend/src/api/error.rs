@@ -13,15 +13,11 @@ pub struct ApiError {
 impl From<LibError> for ApiError {
     fn from(err: LibError) -> Self {
         let (error_type, message) = match err {
-            LibError::Generic { message } => ("Generic error", message),
             LibError::AvroParse { message } => ("Avro parser error", message),
             LibError::IO { message } => ("IO error", message),
-            LibError::JSONSerde { message } => ("JSON Serde error", message),
             LibError::Consumer { message } => ("Kafka Consumer error", message),
             LibError::Kafka { message } => ("Kafka error", message),
             LibError::SqlError { message } => ("SQLite error", message),
-            LibError::LegacyConfiguration { message } => ("Import legacy config error", message),
-            LibError::TOMLSerde { message } => ("TOML Serde error", message),
         };
         ApiError {
             error_type: error_type.into(),
@@ -35,10 +31,10 @@ impl From<SchemaRegistryError> for ApiError {
         ApiError {
             error_type: "Schema registry error".into(),
             message: match err {
-                SchemaRegistryError::HttpClient { message: msg } => msg,
+                SchemaRegistryError::HttpClient(msg) => msg,
+                SchemaRegistryError::SchemaParsing(msg) => msg,
+                SchemaRegistryError::SchemaNotFound(msg) => msg,
                 SchemaRegistryError::InvalidUrl => "Invalid url".into(),
-                SchemaRegistryError::SchemaParsing { message: msg } => msg,
-                SchemaRegistryError::SchemaNotFound { message } => message,
             },
         }
     }

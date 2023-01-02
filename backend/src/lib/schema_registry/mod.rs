@@ -5,5 +5,5 @@ mod resolved_avro_schema;
 mod types;
 
 pub use client::CachedSchemaRegistry;
-pub use error::{Result, SchemaRegistryError};
+pub use error::SchemaRegistryError;
 pub use types::{BasicAuth, ResolvedAvroSchema, Schema, Subject};

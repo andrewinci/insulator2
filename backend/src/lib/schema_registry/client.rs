@@ -7,7 +7,7 @@ use url::Url;
 
 use apache_avro::Schema as AvroSchema;
 
-use super::error::{Result, SchemaRegistryError};
+use super::error::{SchemaRegistryError, SchemaRegistryResult};
 use super::http_client::{HttpClient, ReqwestClient};
 use super::types::{BasicAuth, ResolvedAvroSchema, Schema, Subject};
 
@@ -50,7 +50,7 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         }
     }
 
-    pub async fn post_schema(&self, subject_name: &str, schema: &str) -> Result<()> {
+    pub async fn post_schema(&self, subject_name: &str, schema: &str) -> SchemaRegistryResult<()> {
         #[derive(Serialize)]
         struct PostRequest {
             schema: String,
@@ -59,19 +59,17 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         let request = PostRequest { schema: schema.into() };
         match AvroSchema::parse_str(schema) {
             Ok(_) => Ok(self.http_client.post(url.as_str(), request).await?),
-            Err(err) => Err(SchemaRegistryError::SchemaParsing {
-                message: format!("Invalid schema {}", err),
-            }),
+            Err(err) => Err(SchemaRegistryError::SchemaParsing(format!("Invalid schema {}", err))),
         }
     }
 
-    pub async fn list_subjects(&self) -> Result<Vec<String>> {
+    pub async fn list_subjects(&self) -> SchemaRegistryResult<Vec<String>> {
         let url = Url::parse(&self.endpoint)?.join("subjects")?;
         let res = self.http_client.get(url.as_ref()).await?;
         Ok(res)
     }
 
-    pub async fn get_subject(&self, subject_name: &str) -> Result<Subject> {
+    pub async fn get_subject(&self, subject_name: &str) -> SchemaRegistryResult<Subject> {
         debug!("Get subject {}", subject_name);
         Ok(Subject {
             subject: subject_name.into(),
@@ -80,20 +78,20 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         })
     }
 
-    pub async fn delete_subject(&self, subject_name: &str) -> Result<()> {
+    pub async fn delete_subject(&self, subject_name: &str) -> SchemaRegistryResult<()> {
         debug!("Deleting subject {}", subject_name);
         let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}", subject_name).as_str())?;
         Ok(self.http_client.delete(url.as_str()).await?)
     }
 
-    pub async fn delete_version(&self, subject_name: &str, version: i32) -> Result<()> {
+    pub async fn delete_version(&self, subject_name: &str, version: i32) -> SchemaRegistryResult<()> {
         debug!("Deleting subject {} version {}", subject_name, version);
         let url =
             Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/{}", subject_name, version).as_str())?;
         Ok(self.http_client.delete(url.as_str()).await?)
     }
 
-    pub async fn get_schema_by_id(&self, id: i32) -> Result<ResolvedAvroSchema> {
+    pub async fn get_schema_by_id(&self, id: i32) -> SchemaRegistryResult<ResolvedAvroSchema> {
         trace!("Getting schema {} by id.", id);
         {
             if let Some(cached) = self.schema_cache_by_id.read().await.get(&id) {
@@ -105,17 +103,16 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
             trace!("Schema not found in cache, retrieving");
             let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
             let schema: GetSchemaByIdResult = self.http_client.get(url.as_str()).await?;
-            let schema =
-                AvroSchema::parse_str(schema.schema.as_str()).map_err(|err| SchemaRegistryError::SchemaParsing {
-                    message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
-                })?;
+            let schema = AvroSchema::parse_str(schema.schema.as_str()).map_err(|err| {
+                SchemaRegistryError::SchemaParsing(format!("Unable to parse the schema from schema registry\n{}", err))
+            })?;
             let res = ResolvedAvroSchema::from(id, schema);
             self.schema_cache_by_id.write().await.insert(id, res.clone());
             Ok(res)
         }
     }
 
-    async fn get_compatibility_level(&self, subject_name: &str) -> Result<String> {
+    async fn get_compatibility_level(&self, subject_name: &str) -> SchemaRegistryResult<String> {
         #[derive(Deserialize)]
         struct CompatibilityResponse {
             #[serde(alias = "compatibilityLevel")]
@@ -126,7 +123,7 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         Ok(response.compatibility_level)
     }
 
-    async fn get_versions(&self, subject_name: &str) -> Result<Vec<Schema>> {
+    async fn get_versions(&self, subject_name: &str) -> SchemaRegistryResult<Vec<Schema>> {
         let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
         let versions: Vec<i32> = self.http_client.get(url.as_ref()).await?;
         let mut schemas = Vec::<Schema>::new();
@@ -138,20 +135,20 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         Ok(schemas)
     }
 
-    pub async fn get_last_schema(&self, subject_name: &str) -> Result<ResolvedAvroSchema> {
+    pub async fn get_last_schema(&self, subject_name: &str) -> SchemaRegistryResult<ResolvedAvroSchema> {
         let schemas = self.get_versions(subject_name).await?;
         let last = schemas.iter().max_by(|x, y| x.version.cmp(&y.version));
 
         if let Some(last) = last {
-            let schema =
-                AvroSchema::parse_str(last.schema.as_str()).map_err(|err| SchemaRegistryError::SchemaParsing {
-                    message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
-                })?;
+            let schema = AvroSchema::parse_str(last.schema.as_str()).map_err(|err| {
+                SchemaRegistryError::SchemaParsing(format!("Unable to parse the schema from schema registry\n{}", err))
+            })?;
             Ok(ResolvedAvroSchema::from(last.id, schema))
         } else {
-            Err(SchemaRegistryError::SchemaNotFound {
-                message: format!("Schema {} not found", subject_name),
-            })
+            Err(SchemaRegistryError::SchemaNotFound(format!(
+                "Schema {} not found",
+                subject_name
+            )))
         }
     }
 }

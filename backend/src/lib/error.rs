@@ -5,15 +5,11 @@ use super::{admin::AdminError, avro::AvroError, configuration::ConfigError};
 
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub enum LibError {
-    Generic { message: String },
     AvroParse { message: String },
     IO { message: String },
-    JSONSerde { message: String },
-    TOMLSerde { message: String },
     Consumer { message: String },
     Kafka { message: String },
     SqlError { message: String },
-    LegacyConfiguration { message: String },
 }
 
 pub type LibResult<T> = core::result::Result<T, LibError>;
@@ -41,7 +37,7 @@ impl From<AvroError> for LibError {
             AvroError::MissingAvroSchemaReference(m) => Self::AvroParse { message: m },
             AvroError::MissingField(m) => Self::AvroParse { message: m },
             //todo: this should be a schema registry error
-            AvroError::SchemaProvider(m) => Self::AvroParse { message: m },
+            AvroError::SchemaProvider(m, err) => todo!(),
             AvroError::InvalidUnion(m) => Self::AvroParse { message: m },
             AvroError::Unsupported(m) => Self::AvroParse { message: m },
             AvroError::InvalidAvroHeader(_) => todo!(),
