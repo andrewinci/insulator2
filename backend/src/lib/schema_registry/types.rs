@@ -25,6 +25,7 @@ pub struct BasicAuth {
 
 #[derive(Debug, Clone)]
 pub struct ResolvedAvroSchema {
+    pub schema_id: i32,
     pub schema: AvroSchema,
     pub resolved_schemas: HashMap<Name, AvroSchema>,
 }

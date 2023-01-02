@@ -4,10 +4,11 @@ use apache_avro::{schema::Name, Schema};
 
 use super::types::ResolvedAvroSchema;
 
-impl From<Schema> for ResolvedAvroSchema {
-    fn from(schema: Schema) -> Self {
+impl ResolvedAvroSchema {
+    pub fn from(schema_id: i32, schema: Schema) -> Self {
         let refs = extract_all_refs(&schema);
         Self {
+            schema_id,
             schema,
             resolved_schemas: refs,
         }

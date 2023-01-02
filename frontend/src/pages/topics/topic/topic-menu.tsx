@@ -10,10 +10,13 @@ import {
   IconPlayerPlay,
   IconSearch,
 } from "@tabler/icons";
+import { useState } from "react";
 import { CodeEditor } from "../../../components";
 import { ConsumerConfiguration } from "../../../models";
+import { ProducerModal } from "../modals/producer-modal";
 
 type TopicPageMenuProps = {
+  clusterId: string;
   topicName: string;
   query: string;
   consumedRecords?: number;
@@ -25,7 +28,7 @@ type TopicPageMenuProps = {
 };
 
 export const TopicPageMenu = (props: TopicPageMenuProps) => {
-  const { consumedRecords, isConsumerRunning, height, query, topicName } = props;
+  const { consumedRecords, isConsumerRunning, height, query, topicName, clusterId } = props;
   const { onQueryChange, onConsumerChange, onQuery } = props;
 
   const { consumeLast15Minutes, consumeLastHour, consumeLastDay, consumeFromNow, consumeFromBeginning } =
@@ -48,6 +51,8 @@ export const TopicPageMenu = (props: TopicPageMenuProps) => {
       Stop
     </Button>
   );
+
+  const [producerOpened, setProducerOpened] = useState(false);
 
   return (
     <>
@@ -101,9 +106,20 @@ export const TopicPageMenu = (props: TopicPageMenuProps) => {
             Query
           </Button>
         </Group>
-        <Button disabled leftIcon={<IconArrowBarToUp size={16} />} color={"orange"} size="xs">
+        <Button
+          disabled
+          leftIcon={<IconArrowBarToUp size={16} />}
+          color={"orange"}
+          size="xs"
+          onClick={() => setProducerOpened(true)}>
           Produce
         </Button>
+        <ProducerModal
+          clusterId={clusterId}
+          topic={topicName}
+          onClose={() => setProducerOpened(false)}
+          opened={producerOpened}
+        />
       </Group>
     </>
   );

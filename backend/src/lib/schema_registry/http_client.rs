@@ -18,7 +18,7 @@ pub enum HttpClientError {
 pub(super) type Result<T> = std::result::Result<T, HttpClientError>;
 
 #[async_trait]
-pub trait HttpClient {
+pub trait HttpClient: Sync + Send {
     async fn get<T: 'static + DeserializeOwned>(&self, url: &str) -> Result<T>;
     async fn delete(&self, url: &str) -> Result<()>;
     async fn post<T: Serialize + Send + Sync>(&self, url: &str, data: T) -> Result<()>;

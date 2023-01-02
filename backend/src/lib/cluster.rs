@@ -3,48 +3,26 @@ use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::lib::{
-    admin::{Admin, KafkaAdmin},
-    consumer::{Consumer, KafkaConsumer},
-    parser::{Parser, RecordParser},
-    record_store::TopicStore,
-    schema_registry::{CachedSchemaRegistry, SchemaRegistryClient},
-    Result,
+    admin::KafkaAdmin, consumer::KafkaConsumer, record_store::TopicStore, schema_registry::CachedSchemaRegistry, Result,
 };
 
-use super::{configuration::InsulatorConfig, record_store::SqliteStore, types::ErrorCallback};
+use super::{
+    configuration::InsulatorConfig, parser::Parser, producer::KafkaProducer, record_store::SqliteStore,
+    types::ErrorCallback,
+};
 
 type TopicName = String;
 
-pub struct Cluster<SR = CachedSchemaRegistry, C = KafkaConsumer, P = RecordParser, A = KafkaAdmin>
-where
-    SR: SchemaRegistryClient + Send + Sync,
-    C: Consumer + Send + Sync,
-    P: Parser + Send + Sync,
-    A: Admin + Send + Sync,
-{
+pub struct Cluster {
     pub cluster_id: String,
     pub config: InsulatorConfig,
-    pub schema_registry_client: Option<Arc<SR>>,
-    pub admin_client: Arc<A>,
-    pub parser: Arc<P>,
+    pub schema_registry_client: Option<Arc<CachedSchemaRegistry>>,
+    pub kafka_admin_client: Arc<KafkaAdmin>,
+    pub kafka_producer: Arc<KafkaProducer>,
+    pub parser: Arc<Parser>,
     pub store: Arc<SqliteStore>,
-    consumers: Arc<RwLock<HashMap<TopicName, Arc<C>>>>,
+    active_kafka_consumers: Arc<RwLock<HashMap<TopicName, Arc<KafkaConsumer>>>>,
     error_callback: ErrorCallback,
-}
-
-impl Clone for Cluster<CachedSchemaRegistry> {
-    fn clone(&self) -> Self {
-        Self {
-            cluster_id: self.cluster_id.clone(),
-            config: self.config.clone(),
-            schema_registry_client: self.schema_registry_client.clone(),
-            consumers: self.consumers.clone(),
-            admin_client: self.admin_client.clone(),
-            parser: self.parser.clone(),
-            store: self.store.clone(),
-            error_callback: self.error_callback.clone(),
-        }
-    }
 }
 
 impl Cluster {
@@ -57,17 +35,18 @@ impl Cluster {
                     s_config.username.as_deref(),
                     s_config.password.as_deref(),
                 ));
-                (Some(ptr.clone()), RecordParser::new(Some(ptr)))
+                (Some(ptr.clone()), Arc::new(Parser::new(Some(ptr))))
             } else {
-                (None, RecordParser::new(None))
+                (None, Arc::new(Parser::new(None)))
             }
         };
         Ok(Cluster {
             cluster_id: cluster_id.to_string(),
             schema_registry_client,
-            consumers: Arc::new(RwLock::new(HashMap::new())),
-            admin_client: Arc::new(KafkaAdmin::new(&cluster_config, config.get_kafka_tmo())?),
-            parser: Arc::new(parser),
+            active_kafka_consumers: Arc::new(RwLock::new(HashMap::new())),
+            kafka_admin_client: Arc::new(KafkaAdmin::new(&cluster_config, config.get_kafka_tmo())?),
+            kafka_producer: Arc::new(KafkaProducer::new(&cluster_config, parser.clone())),
+            parser,
             store: Arc::new(SqliteStore::new(config.get_sql_tmo())),
             error_callback,
             config: config.clone(),
@@ -76,7 +55,7 @@ impl Cluster {
 
     pub async fn get_consumer(&self, topic_name: &str) -> Arc<KafkaConsumer> {
         {
-            if let Some(consumer) = self.consumers.read().await.get(topic_name) {
+            if let Some(consumer) = self.active_kafka_consumers.read().await.get(topic_name) {
                 trace!("Consumer for {} found in cache", topic_name);
                 return consumer.clone();
             }
@@ -98,7 +77,7 @@ impl Cluster {
                 self.error_callback.clone(),
                 self.config.get_kafka_tmo(),
             ));
-            self.consumers
+            self.active_kafka_consumers
                 .write()
                 .await
                 .insert(topic_name.to_string(), consumer.clone());

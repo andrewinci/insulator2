@@ -6,10 +6,7 @@ use rdkafka::{
 };
 use std::{collections::HashSet, time::Duration};
 
-use crate::{
-    integration_tests::KafkaTest,
-    lib::admin::{KafkaAdmin, TopicAdmin},
-};
+use crate::{integration_tests::KafkaTest, lib::admin::KafkaAdmin};
 
 #[tokio::test]
 async fn test_topic_admin_client() {

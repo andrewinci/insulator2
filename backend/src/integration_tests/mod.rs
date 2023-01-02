@@ -16,7 +16,7 @@ struct KafkaTest<'a> {
     pub tmo: Duration,
     pub default_consumer_group: String,
     pub bootstrap_servers: String,
-    kafka_node: testcontainers::Container<'a, kafka::Kafka>,
+    _kafka_node: testcontainers::Container<'a, kafka::Kafka>,
 }
 
 impl<'a> KafkaTest<'a> {
@@ -31,7 +31,7 @@ impl<'a> KafkaTest<'a> {
             tmo,
             default_consumer_group: "testcontainer-rs".into(),
             bootstrap_servers,
-            kafka_node,
+            _kafka_node: kafka_node,
         }
     }
 

@@ -2,6 +2,7 @@ use super::http_client::HttpClientError;
 
 #[derive(Debug)]
 pub enum SchemaRegistryError {
+    SchemaNotFound { message: String },
     SchemaParsing { message: String },
     HttpClient { message: String },
     InvalidUrl,
@@ -21,6 +22,7 @@ impl ToString for SchemaRegistryError {
             SchemaRegistryError::HttpClient { message: msg } => msg.into(),
             SchemaRegistryError::InvalidUrl => "Invalid URL".into(),
             SchemaRegistryError::SchemaParsing { message: msg } => msg.into(),
+            SchemaRegistryError::SchemaNotFound { message } => message.into(),
         }
     }
 }

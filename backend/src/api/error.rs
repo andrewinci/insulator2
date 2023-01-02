@@ -37,6 +37,7 @@ impl From<SchemaRegistryError> for TauriError {
                 SchemaRegistryError::HttpClient { message: msg } => msg,
                 SchemaRegistryError::InvalidUrl => "Invalid url".into(),
                 SchemaRegistryError::SchemaParsing { message: msg } => msg,
+                SchemaRegistryError::SchemaNotFound { message } => message,
             },
         }
     }

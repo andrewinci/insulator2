@@ -3,7 +3,6 @@ use std::{
     time::{Duration, UNIX_EPOCH},
 };
 
-//use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use time::format_description::well_known;
 
@@ -21,6 +20,12 @@ pub struct KafkaRecord<T> {
     pub partition: i32,
     pub offset: i64,
     //todo: headers
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub enum ParserMode {
+    String,
+    Avro,
 }
 
 pub type RawKafkaRecord = KafkaRecord<Vec<u8>>;

@@ -1,5 +1,6 @@
 mod error;
 mod query;
+mod record_parser;
 mod sqlite_store;
 mod topic_store;
 pub mod types;

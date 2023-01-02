@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use log::{debug, trace};
 
 use super::{ConsumerGroupInfo, KafkaAdmin};
@@ -15,23 +14,8 @@ use rdkafka::{
 };
 use rdkafka::{consumer::CommitMode, Offset};
 
-#[async_trait]
-pub trait ConsumerGroupAdmin {
-    async fn set_consumer_group(
-        &self,
-        consumer_group_name: &str,
-        topics: &[&str],
-        config: &ConsumerSessionConfiguration,
-    ) -> Result<()>;
-    fn list_consumer_groups(&self) -> Result<Vec<String>>;
-    async fn describe_consumer_group(&self, consumer_group_name: &str, ignore_cache: bool) -> Result<ConsumerGroupInfo>;
-    fn get_consumer_group_state(&self, consumer_group_name: &str) -> Result<String>;
-    async fn delete_consumer_group(&self, consumer_group_name: &str) -> Result<()>;
-}
-
-#[async_trait]
-impl ConsumerGroupAdmin for KafkaAdmin {
-    async fn delete_consumer_group(&self, consumer_group_name: &str) -> Result<()> {
+impl KafkaAdmin {
+    pub async fn delete_consumer_group(&self, consumer_group_name: &str) -> Result<()> {
         debug!("Deleting consumer group {}", consumer_group_name);
         let res = self
             .admin_client
@@ -46,7 +30,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
         }
     }
 
-    async fn set_consumer_group(
+    pub async fn set_consumer_group(
         &self,
         consumer_group_name: &str,
         topic_names: &[&str],
@@ -72,13 +56,17 @@ impl ConsumerGroupAdmin for KafkaAdmin {
         Ok(consumer.commit_consumer_state(CommitMode::Sync)?)
     }
 
-    fn list_consumer_groups(&self) -> Result<Vec<String>> {
+    pub fn list_consumer_groups(&self) -> Result<Vec<String>> {
         let groups = self.consumer.fetch_group_list(None, self.timeout)?;
         let group_names: Vec<_> = groups.groups().iter().map(|g| g.name().to_string()).collect();
         Ok(group_names)
     }
 
-    async fn describe_consumer_group(&self, consumer_group_name: &str, ignore_cache: bool) -> Result<ConsumerGroupInfo> {
+    pub async fn describe_consumer_group(
+        &self,
+        consumer_group_name: &str,
+        ignore_cache: bool,
+    ) -> Result<ConsumerGroupInfo> {
         // create a consumer with the defined consumer_group_name.
         // NOTE: the consumer shouldn't join the consumer group, otherwise it'll cause a re-balance
         debug!("Build the consumer for the consumer group {}", consumer_group_name);
@@ -109,7 +97,7 @@ impl ConsumerGroupAdmin for KafkaAdmin {
         })
     }
 
-    fn get_consumer_group_state(&self, consumer_group_name: &str) -> Result<String> {
+    pub fn get_consumer_group_state(&self, consumer_group_name: &str) -> Result<String> {
         debug!("Retrieve consumer group status");
         let fetch_group_response = self
             .consumer

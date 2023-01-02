@@ -1,7 +1,7 @@
 use log::debug;
 
 use crate::lib::{
-    consumer::{types::ConsumerState, Consumer, ConsumerConfiguration},
+    consumer::{types::ConsumerState, ConsumerConfiguration},
     record_store::types::ExportOptions,
 };
 
