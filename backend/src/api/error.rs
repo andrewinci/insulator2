@@ -1,4 +1,4 @@
-use crate::lib::{schema_registry::SchemaRegistryError, LibError};
+use crate::lib::{admin::AdminError, schema_registry::SchemaRegistryError, LibError};
 use serde::{Deserialize, Serialize};
 
 pub type ApiResult<T> = std::result::Result<T, ApiError>;
@@ -40,6 +40,22 @@ impl From<SchemaRegistryError> for ApiError {
                 SchemaRegistryError::SchemaParsing { message: msg } => msg,
                 SchemaRegistryError::SchemaNotFound { message } => message,
             },
+        }
+    }
+}
+
+impl From<AdminError> for ApiError {
+    fn from(value: AdminError) -> Self {
+        match value {
+            AdminError::TopicNotFound(topic_name) => ApiError {
+                error_type: "Admin client".into(),
+                message: format!("Topic {} not found.", topic_name),
+            },
+            AdminError::RDKafka(message) => ApiError {
+                error_type: "RDKafkaLib error".into(),
+                message,
+            },
+            AdminError::ConsumerError(consumer_error) => consumer_error.into(),
         }
     }
 }

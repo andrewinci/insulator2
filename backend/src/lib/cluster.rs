@@ -4,12 +4,11 @@ use tokio::sync::RwLock;
 
 use crate::lib::{
     admin::KafkaAdmin, consumer::KafkaConsumer, record_store::TopicStore, schema_registry::CachedSchemaRegistry,
-    LibResult,
 };
 
 use super::{
     configuration::InsulatorConfig, parser::Parser, producer::KafkaProducer, record_store::SqliteStore,
-    types::ErrorCallback,
+    types::ErrorCallback, LibResult,
 };
 
 type TopicName = String;

@@ -1,7 +1,7 @@
 use rdkafka::error::KafkaError;
 use serde::Serialize;
 
-use super::avro::AvroError;
+use super::{admin::AdminError, avro::AvroError};
 
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub enum LibError {
@@ -68,6 +68,14 @@ impl From<AvroError> for LibError {
             AvroError::SchemaProvider(m) => Self::AvroParse { message: m },
             AvroError::InvalidUnion(m) => Self::AvroParse { message: m },
             AvroError::Unsupported(m) => Self::AvroParse { message: m },
+        }
+    }
+}
+
+impl From<AdminError> for LibError {
+    fn from(value: AdminError) -> Self {
+        LibError::Generic {
+            message: "Unable to create the admin client".into(),
         }
     }
 }

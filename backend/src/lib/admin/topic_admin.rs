@@ -1,11 +1,13 @@
 use log::{debug, warn};
 use std::{collections::HashMap, vec};
 
+use crate::lib::admin::error::AdminError;
+
 use super::{
+    error::AdminResult,
     types::{PartitionInfo, PartitionOffset, Topic, TopicInfo},
     KafkaAdmin, Partition,
 };
-use crate::lib::error::{LibError, LibResult};
 use rdkafka::{admin::ResourceSpecifier, Offset, TopicPartitionList};
 use rdkafka::{
     admin::{AdminOptions, NewTopic, TopicReplication},
@@ -13,7 +15,7 @@ use rdkafka::{
 };
 
 impl KafkaAdmin {
-    pub async fn list_topics(&self) -> LibResult<Vec<Topic>> {
+    pub async fn list_topics(&self) -> AdminResult<Vec<Topic>> {
         {
             // delete cache of topics/partitions map
             *self.all_topic_partition_list.write().await = TopicPartitionList::new();
@@ -21,7 +23,7 @@ impl KafkaAdmin {
         self.internal_list_topics(None)
     }
 
-    pub fn get_topic(&self, topic_name: &str) -> LibResult<Topic> {
+    pub fn get_topic(&self, topic_name: &str) -> AdminResult<Topic> {
         let topic_list = self.internal_list_topics(Some(topic_name))?;
         if let Some(topic) = topic_list.first() {
             Ok(topic.to_owned())
@@ -30,28 +32,24 @@ impl KafkaAdmin {
                 "Topic not found or more than one topic with the same name {}",
                 topic_name
             );
-            Err(LibError::Kafka {
-                message: "Topic not found".into(),
-            })
+            Err(AdminError::TopicNotFound(topic_name.to_string()))
         }
     }
 
-    pub async fn delete_topic(&self, topic_name: &str) -> LibResult<()> {
+    pub async fn delete_topic(&self, topic_name: &str) -> AdminResult<()> {
         debug!("Deleting topic {}", topic_name);
         let res = self
             .admin_client
             .delete_topics(&[topic_name], &AdminOptions::default())
             .await?;
-        assert_eq!(res.len(), 1);
-        match res.first().unwrap() {
-            Ok(_) => Ok(()),
-            Err(err) => Err(LibError::Kafka {
-                message: format!("Unable to delete the topic {}. Error {}", err.0, err.1),
-            }),
+        match res.first() {
+            Some(Ok(_)) => Ok(()),
+            Some(Err(err)) => Err(err.1.into()),
+            None => Err(AdminError::TopicNotFound(topic_name.to_string())),
         }
     }
 
-    pub async fn get_topic_info(&self, topic_name: &str) -> LibResult<TopicInfo> {
+    pub async fn get_topic_info(&self, topic_name: &str) -> AdminResult<TopicInfo> {
         let topic = self.get_topic(topic_name)?;
 
         // retrieve the last offsets
@@ -75,7 +73,7 @@ impl KafkaAdmin {
     }
 
     // return a list in which the index is the partition id and the value is the offset
-    pub async fn get_last_offsets(&self, topic_names: &[&str]) -> LibResult<HashMap<String, Vec<PartitionOffset>>> {
+    pub async fn get_last_offsets(&self, topic_names: &[&str]) -> AdminResult<HashMap<String, Vec<PartitionOffset>>> {
         let all_partitions = self.get_all_topic_partition_list(false).await?;
         let mut topic_partition_list = TopicPartitionList::new();
         for topic in topic_names {
@@ -98,7 +96,7 @@ impl KafkaAdmin {
         Ok(res)
     }
 
-    pub async fn create_topic(&self, name: &str, num_partitions: i32, isr: i32, compacted: bool) -> LibResult<()> {
+    pub async fn create_topic(&self, name: &str, num_partitions: i32, isr: i32, compacted: bool) -> AdminResult<()> {
         let new_topic = NewTopic {
             name,
             num_partitions,
@@ -109,9 +107,9 @@ impl KafkaAdmin {
             .admin_client
             .create_topics(vec![&new_topic], &AdminOptions::default())
             .await?;
-        let res = res.get(0).ok_or(LibError::Kafka {
-            message: "Create topic api call: missing result".into(),
-        })?;
+        let res = res
+            .first()
+            .ok_or(AdminError::RDKafka("Invalid result from create topic api call.".into()))?;
         match res {
             Ok(_) => {
                 debug!("Topic created successfully");
@@ -119,14 +117,12 @@ impl KafkaAdmin {
             }
             Err(err) => {
                 warn!("{:?}", err);
-                Err(LibError::Kafka {
-                    message: format!("Unable to create the topic. {} {}", err.0, err.1),
-                })
+                Err(err.1.into())
             }
         }
     }
 
-    pub async fn get_topic_configuration(&self, topic_name: &str) -> LibResult<HashMap<String, Option<String>>> {
+    pub async fn get_topic_configuration(&self, topic_name: &str) -> AdminResult<HashMap<String, Option<String>>> {
         debug!("Retrieving the topic configurations");
         let responses = self
             .admin_client
@@ -141,7 +137,7 @@ impl KafkaAdmin {
         Ok(configurations)
     }
 
-    fn internal_list_topics(&self, topic: Option<&str>) -> LibResult<Vec<Topic>> {
+    fn internal_list_topics(&self, topic: Option<&str>) -> AdminResult<Vec<Topic>> {
         let topics: Vec<_> = self
             .consumer
             .fetch_metadata(topic, self.timeout)?

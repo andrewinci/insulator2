@@ -98,8 +98,7 @@ pub async fn set_consumer_group(
     let cluster = state.get_cluster(cluster_id).await?;
     Ok(cluster
         .kafka_admin_client
-        .set_consumer_group(consumer_group_name, &topics, &offset_config)
-        .await?)
+        .set_consumer_group(consumer_group_name, &topics, &offset_config)?)
 }
 
 #[tauri::command]
