@@ -1,12 +1,12 @@
 use log::{debug, error};
 
-use super::error::{Result, TauriError};
+use super::error::{ApiError, ApiResult};
 use super::AppState;
 use rust_keystore::KeyStore;
 use serde::{Deserialize, Serialize};
 
 #[tauri::command]
-pub async fn export_datastore(cluster_id: &str, output_path: &str, state: tauri::State<'_, AppState>) -> Result<()> {
+pub async fn export_datastore(cluster_id: &str, output_path: &str, state: tauri::State<'_, AppState>) -> ApiResult<()> {
     debug!("Start export database");
     Ok(state.get_cluster(cluster_id).await?.store.export_db(output_path)?)
 }
@@ -18,14 +18,14 @@ pub struct UserCertificate {
 }
 
 #[tauri::command]
-pub async fn parse_truststore(location: &str, password: Option<&str>) -> Result<String> {
+pub async fn parse_truststore(location: &str, password: Option<&str>) -> ApiResult<String> {
     debug!("Parsing truststore {}", &location);
     let ca_certificate = KeyStore::try_load(location)
         .and_then(|c| c.certificates(password))
         .map(|certs| certs[0].pem.clone());
     ca_certificate.map_err(|err| {
         error!("Unable to load the truststore: {:?}", err);
-        TauriError {
+        ApiError {
             error_type: "Legacy config".into(),
             message: "Unable to correctly parse the truststore".into(),
         }
@@ -33,7 +33,7 @@ pub async fn parse_truststore(location: &str, password: Option<&str>) -> Result<
 }
 
 #[tauri::command]
-pub async fn parse_keystore(location: &str, password: Option<&str>) -> Result<UserCertificate> {
+pub async fn parse_keystore(location: &str, password: Option<&str>) -> ApiResult<UserCertificate> {
     debug!("Parsing keystore {}", &location);
     let user_cert = KeyStore::try_load(location)
         .and_then(|c| c.certificates(password))
@@ -47,7 +47,7 @@ pub async fn parse_keystore(location: &str, password: Option<&str>) -> Result<Us
             });
         }
     }
-    Err(TauriError {
+    Err(ApiError {
         error_type: "Legacy config".into(),
         message: "Unable to correctly parse the keystore".into(),
     })

@@ -1,12 +1,12 @@
 use tauri::{AppHandle, Manager};
 
-use super::error::TauriError;
+use super::error::ApiError;
 
 pub fn _notify_error(error_type: &str, message: &str, app: &AppHandle) {
     app.app_handle()
         .emit_all(
             "error",
-            TauriError {
+            ApiError {
                 error_type: error_type.to_string(),
                 message: message.to_string(),
             },

@@ -8,7 +8,7 @@ use crate::lib::{
     configuration::ConfigurationProvider, schema_registry::CachedSchemaRegistry, types::ErrorCallback, Cluster, Result,
 };
 
-use super::error::TauriError;
+use super::error::ApiError;
 
 type ClusterId = String;
 
@@ -24,7 +24,7 @@ impl AppState {
             clusters: Default::default(),
             configuration_provider: Arc::new(ConfigurationProvider::new()),
             error_callback: Arc::new(move |err| {
-                app_handle.emit_all("error", TauriError::from(err)).ok();
+                app_handle.emit_all("error", ApiError::from(err)).ok();
             }),
         }
     }

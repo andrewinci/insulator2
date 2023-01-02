@@ -2,14 +2,14 @@ use crate::lib::schema_registry::Subject;
 use log::debug;
 
 use super::{
-    error::{Result, TauriError},
+    error::{ApiError, ApiResult},
     AppState,
 };
 
 #[tauri::command]
-pub async fn list_subjects(cluster_id: &str, state: tauri::State<'_, AppState>) -> Result<Vec<String>> {
+pub async fn list_subjects(cluster_id: &str, state: tauri::State<'_, AppState>) -> ApiResult<Vec<String>> {
     debug!("List schema schema registry subjects");
-    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(TauriError {
+    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(ApiError {
         error_type: "Configuration error".into(),
         message: "Missing schema registry configuration".into(),
     })?;
@@ -17,9 +17,9 @@ pub async fn list_subjects(cluster_id: &str, state: tauri::State<'_, AppState>) 
 }
 
 #[tauri::command]
-pub async fn get_subject(subject_name: &str, cluster_id: &str, state: tauri::State<'_, AppState>) -> Result<Subject> {
+pub async fn get_subject(subject_name: &str, cluster_id: &str, state: tauri::State<'_, AppState>) -> ApiResult<Subject> {
     debug!("Retrieve all schema version for subject {}", subject_name);
-    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(TauriError {
+    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(ApiError {
         error_type: "Configuration error".into(),
         message: "Missing schema registry configuration".into(),
     })?;
@@ -27,9 +27,9 @@ pub async fn get_subject(subject_name: &str, cluster_id: &str, state: tauri::Sta
 }
 
 #[tauri::command]
-pub async fn delete_subject(subject_name: &str, cluster_id: &str, state: tauri::State<'_, AppState>) -> Result<()> {
+pub async fn delete_subject(subject_name: &str, cluster_id: &str, state: tauri::State<'_, AppState>) -> ApiResult<()> {
     debug!("Deleting subject {}", subject_name);
-    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(TauriError {
+    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(ApiError {
         error_type: "Configuration error".into(),
         message: "Missing schema registry configuration".into(),
     })?;
@@ -42,9 +42,9 @@ pub async fn delete_subject_version(
     version: i32,
     cluster_id: &str,
     state: tauri::State<'_, AppState>,
-) -> Result<()> {
+) -> ApiResult<()> {
     debug!("Deleting subject {} version {}", subject_name, version);
-    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(TauriError {
+    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(ApiError {
         error_type: "Configuration error".into(),
         message: "Missing schema registry configuration".into(),
     })?;
@@ -57,9 +57,9 @@ pub async fn post_schema(
     schema: &str,
     cluster_id: &str,
     state: tauri::State<'_, AppState>,
-) -> Result<()> {
+) -> ApiResult<()> {
     debug!("Create subject {}", subject_name);
-    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(TauriError {
+    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(ApiError {
         error_type: "Configuration error".into(),
         message: "Missing schema registry configuration".into(),
     })?;
