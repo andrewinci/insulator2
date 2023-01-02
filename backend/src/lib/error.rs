@@ -68,14 +68,15 @@ impl From<AvroError> for LibError {
             AvroError::SchemaProvider(m) => Self::AvroParse { message: m },
             AvroError::InvalidUnion(m) => Self::AvroParse { message: m },
             AvroError::Unsupported(m) => Self::AvroParse { message: m },
+            AvroError::InvalidAvroHeader(_) => todo!(),
+            AvroError::ParseAvroValue(_) => todo!(),
+            AvroError::ParseJsonValue(_) => todo!(),
         }
     }
 }
 
 impl From<AdminError> for LibError {
     fn from(value: AdminError) -> Self {
-        LibError::Generic {
-            message: "Unable to create the admin client".into(),
-        }
+        todo!()
     }
 }
