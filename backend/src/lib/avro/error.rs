@@ -1,5 +1,3 @@
-use crate::lib::Error;
-
 #[derive(Debug)]
 pub enum AvroError {
     InvalidNumber(String),

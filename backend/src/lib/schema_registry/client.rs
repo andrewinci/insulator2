@@ -137,4 +137,21 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         }
         Ok(schemas)
     }
+
+    pub async fn get_last_schema(&self, subject_name: &str) -> Result<ResolvedAvroSchema> {
+        let schemas = self.get_versions(subject_name).await?;
+        let last = schemas.iter().max_by(|x, y| x.version.cmp(&y.version));
+
+        if let Some(last) = last {
+            let schema =
+                AvroSchema::parse_str(last.schema.as_str()).map_err(|err| SchemaRegistryError::SchemaParsing {
+                    message: format!("{}\n{}", "Unable to parse the schema from schema registry", err),
+                })?;
+            Ok(ResolvedAvroSchema::from(last.id, schema))
+        } else {
+            Err(SchemaRegistryError::SchemaNotFound {
+                message: format!("Schema {} not found", subject_name),
+            })
+        }
+    }
 }

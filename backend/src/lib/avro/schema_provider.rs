@@ -18,6 +18,8 @@ impl SchemaProvider for CachedSchemaRegistry {
             .map_err(|_| AvroError::SchemaProvider(format!("Unable to retrieve the schema id {}", id)))
     }
     async fn get_schema_by_name(&self, name: &str) -> AvroResult<ResolvedAvroSchema> {
-        self.get_schema_by_name(name).await
+        self.get_last_schema(name).await.map_err(|err| {
+            AvroError::SchemaProvider(format!("Unable to retrieve the schema {}. {}", name, err.to_string()))
+        })
     }
 }

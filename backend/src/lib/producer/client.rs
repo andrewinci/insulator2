@@ -26,7 +26,7 @@ impl<P: KafkaRecordParser> KafkaProducer<P> {
     pub async fn produce(&self, topic: &str, key: &str, value: Option<&str>) -> Result<()> {
         let mut record = BaseRecord::to(topic).key(key);
         if let Some(payload) = value {
-            let payload = self.parser.parse_to_kafka_payload(payload).await?;
+            let payload = self.parser.parse_to_kafka_payload(payload, topic).await?;
             record = record.payload(&payload);
             Ok(self.producer.send(record).map_err(|err| err.0)?)
         } else {
