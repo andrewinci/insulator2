@@ -1,9 +1,9 @@
-use crate::lib::Error;
+use crate::lib::LibError;
 use rusqlite::{ffi, Error as SqlError};
 
-impl From<SqlError> for Error {
+impl From<SqlError> for LibError {
     fn from(error: SqlError) -> Self {
-        Error::SqlError {
+        LibError::SqlError {
             message: match error {
                 SqlError::SqliteFailure(ffi::Error { code, .. }, ..) => match code {
                     rusqlite::ErrorCode::OperationInterrupted => "Operation timed out".into(),

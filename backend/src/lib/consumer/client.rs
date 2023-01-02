@@ -1,7 +1,7 @@
 use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     consumer::types::{ConsumerConfiguration, ConsumerSessionConfiguration, ConsumerState},
-    error::{Error, Result},
+    error::{LibError, LibResult},
     record_store::TopicStore,
     types::{ErrorCallback, RawKafkaRecord},
 };
@@ -46,7 +46,7 @@ impl KafkaConsumer {
         topics: &[&str],
         config: &ConsumerSessionConfiguration,
         tmo: Duration,
-    ) -> Result<()> {
+    ) -> LibResult<()> {
         let metadata = consumer.fetch_metadata(if topics.len() == 1 { Some(topics[0]) } else { None }, tmo)?;
         let topic_partition: Vec<_> = metadata
             .topics()
@@ -85,11 +85,11 @@ impl KafkaConsumer {
         Ok(())
     }
 
-    pub async fn start(&self, consumer_config: &ConsumerConfiguration) -> Result<()> {
+    pub async fn start(&self, consumer_config: &ConsumerConfiguration) -> LibResult<()> {
         let topic = self.topic.clone();
         if self.loop_handle.lock().await.is_some() {
             warn!("Try to start an already running consumer");
-            return Err(Error::Consumer {
+            return Err(LibError::Consumer {
                 message: format!("A consumer is already running for {}", topic),
             });
         }
@@ -121,11 +121,11 @@ impl KafkaConsumer {
         Ok(())
     }
 
-    pub async fn stop(&self) -> Result<()> {
+    pub async fn stop(&self) -> LibResult<()> {
         _stop(self.loop_handle.clone()).await
     }
 
-    pub async fn get_consumer_state(&self) -> Result<ConsumerState> {
+    pub async fn get_consumer_state(&self) -> LibResult<ConsumerState> {
         Ok(ConsumerState {
             is_running: self.loop_handle.clone().lock().await.is_some(),
             record_count: self.topic_store.get_records_count()?,
@@ -169,7 +169,7 @@ async fn consumer_loop(
             }
             Some(Err(err)) => {
                 error!("An error occurs consuming from kafka: {}", err);
-                error_callback(Error::Consumer {
+                error_callback(LibError::Consumer {
                     message: err.to_string(),
                 });
                 _stop(loop_handle.clone()).await.expect("Unable to stop the consumer");
@@ -212,7 +212,7 @@ async fn handle_consumed_message(
     }
 }
 
-async fn _stop(loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>) -> Result<()> {
+async fn _stop(loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>) -> LibResult<()> {
     debug!("Consumer stopped");
     if let Some(handle) = &*loop_handle.lock().await {
         handle.abort();

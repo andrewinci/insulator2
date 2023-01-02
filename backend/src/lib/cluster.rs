@@ -3,7 +3,8 @@ use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::lib::{
-    admin::KafkaAdmin, consumer::KafkaConsumer, record_store::TopicStore, schema_registry::CachedSchemaRegistry, Result,
+    admin::KafkaAdmin, consumer::KafkaConsumer, record_store::TopicStore, schema_registry::CachedSchemaRegistry,
+    LibResult,
 };
 
 use super::{
@@ -26,7 +27,7 @@ pub struct Cluster {
 }
 
 impl Cluster {
-    pub fn new(cluster_id: &str, config: &InsulatorConfig, error_callback: ErrorCallback) -> Result<Self> {
+    pub fn new(cluster_id: &str, config: &InsulatorConfig, error_callback: ErrorCallback) -> LibResult<Self> {
         let cluster_config = config.get_cluster_config(cluster_id)?;
         let (schema_registry_client, parser) = {
             if let Some(s_config) = &cluster_config.schema_registry {

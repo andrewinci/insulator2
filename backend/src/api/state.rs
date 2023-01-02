@@ -5,7 +5,7 @@ use tauri::Manager;
 use tokio::sync::RwLock;
 
 use crate::lib::{
-    configuration::ConfigurationProvider, schema_registry::CachedSchemaRegistry, types::ErrorCallback, Cluster, Result,
+    configuration::ConfigurationProvider, schema_registry::CachedSchemaRegistry, types::ErrorCallback, Cluster, LibResult,
 };
 
 use super::error::ApiError;
@@ -29,7 +29,7 @@ impl AppState {
         }
     }
 
-    pub async fn get_cluster(&self, cluster_id: &str) -> Result<Arc<Cluster>> {
+    pub async fn get_cluster(&self, cluster_id: &str) -> LibResult<Arc<Cluster>> {
         {
             if let Some(cluster) = self.clusters.read().await.get(cluster_id) {
                 return Ok(cluster.clone());
@@ -44,12 +44,12 @@ impl AppState {
         }
     }
 
-    pub async fn get_schema_reg_client(&self, cluster_id: &str) -> Result<Option<Arc<CachedSchemaRegistry>>> {
+    pub async fn get_schema_reg_client(&self, cluster_id: &str) -> LibResult<Option<Arc<CachedSchemaRegistry>>> {
         let cluster = self.get_cluster(cluster_id).await?;
         Ok(cluster.schema_registry_client.as_ref().cloned())
     }
 
-    fn build_new_cluster(&self, cluster_id: &str, error_callback: ErrorCallback) -> Result<Cluster> {
+    fn build_new_cluster(&self, cluster_id: &str, error_callback: ErrorCallback) -> LibResult<Cluster> {
         debug!("Init cluster {}", cluster_id);
         let configuration = self.configuration_provider.get_configuration()?;
         Cluster::new(cluster_id, &configuration, error_callback)

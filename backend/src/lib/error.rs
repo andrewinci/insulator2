@@ -4,7 +4,7 @@ use serde::Serialize;
 use super::avro::AvroError;
 
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
-pub enum Error {
+pub enum LibError {
     Generic { message: String },
     AvroParse { message: String },
     IO { message: String },
@@ -16,49 +16,49 @@ pub enum Error {
     LegacyConfiguration { message: String },
 }
 
-pub type Result<T> = core::result::Result<T, Error>;
+pub type LibResult<T> = core::result::Result<T, LibError>;
 
-impl From<std::io::Error> for Error {
+impl From<std::io::Error> for LibError {
     fn from(error: std::io::Error) -> Self {
-        Error::IO {
+        LibError::IO {
             message: error.to_string(),
         }
     }
 }
 
-impl From<serde_json::Error> for Error {
+impl From<serde_json::Error> for LibError {
     fn from(error: serde_json::Error) -> Self {
-        Error::JSONSerde {
+        LibError::JSONSerde {
             message: error.to_string(),
         }
     }
 }
 
-impl From<toml::de::Error> for Error {
+impl From<toml::de::Error> for LibError {
     fn from(error: toml::de::Error) -> Self {
-        Error::TOMLSerde {
+        LibError::TOMLSerde {
             message: error.to_string(),
         }
     }
 }
 
-impl From<toml::ser::Error> for Error {
+impl From<toml::ser::Error> for LibError {
     fn from(error: toml::ser::Error) -> Self {
-        Error::TOMLSerde {
+        LibError::TOMLSerde {
             message: error.to_string(),
         }
     }
 }
 
-impl From<KafkaError> for Error {
+impl From<KafkaError> for LibError {
     fn from(error: KafkaError) -> Self {
-        Error::Kafka {
+        LibError::Kafka {
             message: format!("{}", error),
         }
     }
 }
 
-impl From<AvroError> for Error {
+impl From<AvroError> for LibError {
     fn from(value: AvroError) -> Self {
         match value {
             AvroError::InvalidNumber(m) => Self::AvroParse { message: m },

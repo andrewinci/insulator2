@@ -1,13 +1,13 @@
-use crate::lib::error::{Error, Result};
+use crate::lib::error::{LibError, LibResult};
 
-pub(super) fn get_schema_id_from_record_header(raw: &[u8]) -> Result<i32> {
+pub(super) fn get_schema_id_from_record_header(raw: &[u8]) -> LibResult<i32> {
     const AVRO_MAGIC_BYTE: u8 = 0x00;
     if raw.len() <= 5 || raw[0] != AVRO_MAGIC_BYTE {
-        return Err(Error::AvroParse {
+        return Err(LibError::AvroParse {
             message: "Supported avro messages should start with 0x00 follow by the schema id (4 bytes)".into(),
         });
     }
-    let arr = <[u8; 4]>::try_from(&raw[1..5]).map_err(|_| Error::AvroParse {
+    let arr = <[u8; 4]>::try_from(&raw[1..5]).map_err(|_| LibError::AvroParse {
         message: "Invalid record. Unable to extract the schema id.".into(),
     })?;
     Ok(i32::from_be_bytes(arr))

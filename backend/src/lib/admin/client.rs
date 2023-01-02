@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use crate::lib::configuration::{build_kafka_client_config, ClusterConfig};
-use crate::lib::error::Result;
+use crate::lib::error::LibResult;
 use log::debug;
 use rdkafka::admin::AdminClient;
 use rdkafka::{client::DefaultClientContext, consumer::BaseConsumer};
@@ -18,7 +18,7 @@ pub struct KafkaAdmin {
 }
 
 impl KafkaAdmin {
-    pub fn new(config: &ClusterConfig, kafka_timeout: Duration) -> Result<Self> {
+    pub fn new(config: &ClusterConfig, kafka_timeout: Duration) -> LibResult<Self> {
         Ok(KafkaAdmin {
             config: config.clone(),
             timeout: kafka_timeout,
@@ -28,7 +28,7 @@ impl KafkaAdmin {
         })
     }
 
-    pub(super) async fn get_all_topic_partition_list(&self, ignore_cache: bool) -> Result<TopicPartitionList> {
+    pub(super) async fn get_all_topic_partition_list(&self, ignore_cache: bool) -> LibResult<TopicPartitionList> {
         {
             let topic_partition_list = self.all_topic_partition_list.read().await;
             if !ignore_cache && topic_partition_list.count() > 0 {

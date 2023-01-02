@@ -1,4 +1,4 @@
-use crate::lib::{schema_registry::SchemaRegistryError, Error};
+use crate::lib::{schema_registry::SchemaRegistryError, LibError};
 use serde::{Deserialize, Serialize};
 
 pub type ApiResult<T> = std::result::Result<T, ApiError>;
@@ -10,18 +10,18 @@ pub struct ApiError {
     pub message: String,
 }
 
-impl From<Error> for ApiError {
-    fn from(err: Error) -> Self {
+impl From<LibError> for ApiError {
+    fn from(err: LibError) -> Self {
         let (error_type, message) = match err {
-            Error::Generic { message } => ("Generic error", message),
-            Error::AvroParse { message } => ("Avro parser error", message),
-            Error::IO { message } => ("IO error", message),
-            Error::JSONSerde { message } => ("JSON Serde error", message),
-            Error::Consumer { message } => ("Kafka Consumer error", message),
-            Error::Kafka { message } => ("Kafka error", message),
-            Error::SqlError { message } => ("SQLite error", message),
-            Error::LegacyConfiguration { message } => ("Import legacy config error", message),
-            Error::TOMLSerde { message } => ("TOML Serde error", message),
+            LibError::Generic { message } => ("Generic error", message),
+            LibError::AvroParse { message } => ("Avro parser error", message),
+            LibError::IO { message } => ("IO error", message),
+            LibError::JSONSerde { message } => ("JSON Serde error", message),
+            LibError::Consumer { message } => ("Kafka Consumer error", message),
+            LibError::Kafka { message } => ("Kafka error", message),
+            LibError::SqlError { message } => ("SQLite error", message),
+            LibError::LegacyConfiguration { message } => ("Import legacy config error", message),
+            LibError::TOMLSerde { message } => ("TOML Serde error", message),
         };
         ApiError {
             error_type: error_type.into(),

@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::lib::{
     avro::{AvroParser, SchemaProvider},
-    error::{Error, Result},
+    error::{LibError, LibResult},
     schema_registry::CachedSchemaRegistry,
     types::{ParsedKafkaRecord, RawKafkaRecord},
 };
@@ -24,7 +24,11 @@ impl<C: SchemaProvider> Parser<C> {
         }
     }
 
-    pub async fn parse_from_kafka_record(&self, record: &RawKafkaRecord, mode: ParserMode) -> Result<ParsedKafkaRecord> {
+    pub async fn parse_from_kafka_record(
+        &self,
+        record: &RawKafkaRecord,
+        mode: ParserMode,
+    ) -> LibResult<ParsedKafkaRecord> {
         let RawKafkaRecord {
             payload,
             key,
@@ -36,7 +40,7 @@ impl<C: SchemaProvider> Parser<C> {
         let (key, payload) = match mode {
             ParserMode::String => (key.map(|v| parse_string(&v)), payload.map(|v| parse_string(&v))),
             ParserMode::Avro => {
-                let avro_parser = self.avro_parser.as_ref().ok_or(Error::AvroParse {
+                let avro_parser = self.avro_parser.as_ref().ok_or(LibError::AvroParse {
                     message: "Missing avro parser".into(),
                 })?;
                 (
@@ -58,13 +62,13 @@ impl<C: SchemaProvider> Parser<C> {
         })
     }
 
-    pub async fn parse_payload_to_avro(&self, payload: &str, topic_name: &str) -> Result<Vec<u8>> {
+    pub async fn parse_payload_to_avro(&self, payload: &str, topic_name: &str) -> LibResult<Vec<u8>> {
         if let Some(avro_parser) = self.avro_parser.as_ref() {
             Ok(avro_parser
                 .json_to_avro(payload, &format!("{}-value", topic_name))
                 .await?)
         } else {
-            Err(Error::AvroParse {
+            Err(LibError::AvroParse {
                 message: "Missing avro configuration".into(),
             })
         }

@@ -6,19 +6,19 @@ use serde_json::Value as JsonValue;
 use super::{
     avro_parser::AvroParser, error::AvroResult, helpers::build_record_header, schema_provider::SchemaProvider, AvroError,
 };
-use crate::lib::{error::Result, schema_registry::ResolvedAvroSchema, Error};
+use crate::lib::{error::LibResult, schema_registry::ResolvedAvroSchema, LibError};
 
 impl<S: SchemaProvider> AvroParser<S> {
-    pub async fn json_to_avro(&self, json: &str, schema_name: &str) -> Result<Vec<u8>> {
+    pub async fn json_to_avro(&self, json: &str, schema_name: &str) -> LibResult<Vec<u8>> {
         let schema = self.schema_provider.get_schema_by_name(schema_name).await?;
         Self::json_to_avro_with_schema(self, json, schema)
     }
 
-    pub fn json_to_avro_with_schema(&self, json: &str, schema: ResolvedAvroSchema) -> Result<Vec<u8>> {
+    pub fn json_to_avro_with_schema(&self, json: &str, schema: ResolvedAvroSchema) -> LibResult<Vec<u8>> {
         let json_value = JsonValue::from_str(json)?;
         let mut res = build_record_header(schema.schema_id);
         let avro_value = Self::json_to_avro_map(json_value, &schema)?;
-        let mut avro_record = to_avro_datum(&schema.schema, avro_value).map_err(|err| Error::AvroParse {
+        let mut avro_record = to_avro_datum(&schema.schema, avro_value).map_err(|err| LibError::AvroParse {
             message: format!("{}\n{}", "Unable to parse the avro record", err),
         })?;
         res.append(&mut avro_record);

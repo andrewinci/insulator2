@@ -1,7 +1,7 @@
 use core::time;
 use std::time::{Duration, Instant};
 
-use crate::lib::{types::ParsedKafkaRecord, Result};
+use crate::lib::{types::ParsedKafkaRecord, LibResult};
 use log::debug;
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -10,10 +10,10 @@ use rusqlite::{backup::Backup, named_params, Connection, OpenFlags};
 use super::query::Query;
 
 pub trait RecordStore {
-    fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()>;
-    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> Result<Vec<ParsedKafkaRecord>>;
-    fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()>;
-    fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()>;
+    fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> LibResult<()>;
+    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> LibResult<Vec<ParsedKafkaRecord>>;
+    fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> LibResult<()>;
+    fn destroy(&self, cluster_id: &str, topic_name: &str) -> LibResult<()>;
 }
 
 pub struct SqliteStore {
@@ -22,7 +22,7 @@ pub struct SqliteStore {
 }
 
 impl RecordStore for SqliteStore {
-    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> Result<Vec<ParsedKafkaRecord>> {
+    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> LibResult<Vec<ParsedKafkaRecord>> {
         let parsed_query = Self::parse_query(query);
         // closure that actually execute the query
         let _get_records = move |connection: &r2d2::PooledConnection<SqliteConnectionManager>| {
@@ -55,7 +55,7 @@ impl RecordStore for SqliteStore {
         result
     }
 
-    fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> Result<()> {
+    fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> LibResult<()> {
         let connection = self.pool.get().unwrap();
         self.destroy(cluster_id, topic_name)?;
         connection
@@ -81,7 +81,7 @@ impl RecordStore for SqliteStore {
         Ok(())
     }
 
-    fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> Result<()> {
+    fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> LibResult<()> {
         let connection = self.pool.get().unwrap();
         connection.execute(
             format!(
@@ -101,7 +101,7 @@ impl RecordStore for SqliteStore {
         Ok(())
     }
 
-    fn destroy(&self, cluster_id: &str, topic_name: &str) -> Result<()> {
+    fn destroy(&self, cluster_id: &str, topic_name: &str) -> LibResult<()> {
         let connection = self.pool.get().unwrap();
         connection
             .execute(
@@ -136,20 +136,20 @@ impl SqliteStore {
     }
 
     #[cfg(test)]
-    fn get_size(&self, query: &Query) -> Result<usize> {
+    fn get_size(&self, query: &Query) -> LibResult<usize> {
         let connection = self.pool.get().unwrap();
         let mut stmt = connection.prepare(format!("SELECT count(*) FROM ({})", Self::parse_query(query)).as_str())?;
         let rows: Vec<_> = stmt.query_map([], |row| row.get::<_, i64>(0))?.collect();
         if let Some(Ok(size)) = rows.first() {
             Ok(*size as usize)
         } else {
-            Err(crate::lib::Error::SqlError {
+            Err(crate::lib::LibError::SqlError {
                 message: "Unable to get the table size".into(),
             })
         }
     }
 
-    pub fn export_db(&self, output_path: &str) -> Result<()> {
+    pub fn export_db(&self, output_path: &str) -> LibResult<()> {
         let src = self.pool.get().unwrap();
         let mut dst = Connection::open(output_path)?;
         let backup = Backup::new(&src, &mut dst)?;
@@ -268,7 +268,7 @@ mod tests {
         // assert
         assert_eq!(
             records_back.err().unwrap(),
-            crate::lib::Error::SqlError {
+            crate::lib::LibError::SqlError {
                 message: "Operation timed out".into()
             }
         );

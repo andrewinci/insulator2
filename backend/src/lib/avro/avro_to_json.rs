@@ -4,7 +4,7 @@ use super::{
     helpers::get_schema_id_from_record_header,
     schema_provider::SchemaProvider,
 };
-use crate::lib::{Error, Result};
+use crate::lib::{LibError, LibResult};
 use apache_avro::{from_avro_datum, schema::Name, types::Value as AvroValue, Schema};
 use num_bigint::BigInt;
 use rust_decimal::Decimal;
@@ -12,7 +12,7 @@ use serde_json::{json, Map, Value as JsonValue};
 use std::{collections::HashMap, io::Cursor};
 
 impl<S: SchemaProvider> AvroParser<S> {
-    pub async fn avro_to_json(&self, raw: &[u8]) -> Result<String> {
+    pub async fn avro_to_json(&self, raw: &[u8]) -> LibResult<String> {
         // retrieve the schema from the id on the record header
         let id = get_schema_id_from_record_header(raw)?;
 
@@ -20,11 +20,11 @@ impl<S: SchemaProvider> AvroParser<S> {
         let mut data = Cursor::new(&raw[5..]);
 
         // parse the avro record into an AvroValue
-        let record = from_avro_datum(&schema.schema, &mut data, None).map_err(|err| Error::AvroParse {
+        let record = from_avro_datum(&schema.schema, &mut data, None).map_err(|err| LibError::AvroParse {
             message: format!("{}\n{}", "Unable to parse the avro record", err),
         })?;
         let json = map(&record, &schema.schema, &None, &schema.resolved_schemas)?;
-        let res = serde_json::to_string(&json).map_err(|err| Error::AvroParse {
+        let res = serde_json::to_string(&json).map_err(|err| LibError::AvroParse {
             message: format!("{}\n{}", "Unable to map the avro record to json", err),
         })?;
         Ok(res)
