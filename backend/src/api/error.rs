@@ -15,13 +15,22 @@ pub struct ApiError {
 
 impl From<SchemaRegistryError> for ApiError {
     fn from(err: SchemaRegistryError) -> Self {
-        ApiError {
-            error_type: "Schema registry error".into(),
-            message: match err {
-                SchemaRegistryError::HttpClient(msg) => msg,
-                SchemaRegistryError::SchemaParsing(msg) => msg,
-                SchemaRegistryError::SchemaNotFound(msg) => msg,
-                SchemaRegistryError::InvalidUrl => "Invalid url".into(),
+        match err {
+            SchemaRegistryError::SchemaNotFound(message) => ApiError {
+                error_type: "Schema registry error: Schema not found".into(),
+                message,
+            },
+            SchemaRegistryError::SchemaParsing(message) => ApiError {
+                error_type: "Schema registry error: Unable to parse the schema".into(),
+                message,
+            },
+            SchemaRegistryError::HttpClient(message) => ApiError {
+                error_type: "Schema registry error: HTTPClient".into(),
+                message,
+            },
+            SchemaRegistryError::InvalidUrl(message) => ApiError {
+                error_type: "Schema registry error: Invalid URL".into(),
+                message,
             },
         }
     }
@@ -48,7 +57,17 @@ impl From<StoreError> for ApiError {
 
 impl From<ConsumerError> for ApiError {
     fn from(value: ConsumerError) -> Self {
-        todo!()
+        match value {
+            ConsumerError::RDKafka(message) => ApiError {
+                error_type: "Consumer error: RDKafkaLib".into(),
+                message,
+            },
+            ConsumerError::RecordStore(_, records_store_error) => records_store_error.into(),
+            ConsumerError::AlreadyRunning(message) => ApiError {
+                error_type: "Consumer error".into(),
+                message,
+            },
+        }
     }
 }
 
