@@ -1,6 +1,6 @@
 use crate::lib::{
-    admin::AdminError, configuration::ConfigError, record_store::StoreError, schema_registry::SchemaRegistryError,
-    LibError,
+    admin::AdminError, configuration::ConfigError, producer::ProducerError, record_store::StoreError,
+    schema_registry::SchemaRegistryError, LibError,
 };
 use serde::{Deserialize, Serialize};
 
@@ -100,6 +100,25 @@ impl From<ConfigError> for ApiError {
             ConfigError::ClusterNotFound(cluster_id) => ApiError {
                 error_type: "User configuration error".into(),
                 message: format!("Cluster {} not found", cluster_id),
+            },
+        }
+    }
+}
+
+impl From<ProducerError> for ApiError {
+    fn from(value: ProducerError) -> Self {
+        match value {
+            ProducerError::MissingAvroConfiguration => Self {
+                error_type: "Missing avro configuration".into(),
+                message: "Unable to parse the record to avro".into(),
+            },
+            ProducerError::RDKafka(message) => ApiError {
+                error_type: "RDKafkaLib error trying to produce".into(),
+                message,
+            },
+            ProducerError::AvroParse(avro_error) => ApiError {
+                error_type: "Avro serialization error".into(),
+                message: "Missing avro error".into(),
             },
         }
     }

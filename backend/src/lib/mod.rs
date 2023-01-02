@@ -6,7 +6,8 @@ mod avro;
 pub mod configuration;
 pub mod consumer;
 pub mod parser;
-mod producer;
+
+pub mod producer;
 pub mod record_store;
 pub mod schema_registry;
 pub mod types;
