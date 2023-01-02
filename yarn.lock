@@ -656,12 +656,12 @@
     "@mantine/utils" "5.9.5"
     react-transition-group "4.4.2"
 
-"@mantine/prism@^5.9.5":
-  version "5.9.5"
-  resolved "https://registry.yarnpkg.com/@mantine/prism/-/prism-5.9.5.tgz#f85562c567023d3d2136e81a58d9ee057289a1d6"
-  integrity sha512-Z3qO4t1OP1GS07ywUmPxf1vgZRaZj3VjQnPhr8Ludbqz4CY8LjPfclpcUHeZLbFsOi+P98JWzH4E/R4UNqiWOA==
+"@mantine/prism@^5.9.6":
+  version "5.9.6"
+  resolved "https://registry.yarnpkg.com/@mantine/prism/-/prism-5.9.6.tgz#628dc314dde94fb36e890827d5bde97b732232cb"
+  integrity sha512-V0I1jfkETSOI7uLZ/0cTxIiGVUWSomhUvXs/JQq1TsOfDE556vIySbvoA6nuxtUPLWWt9r1lgOvNoA1bTSPZGg==
   dependencies:
-    "@mantine/utils" "5.9.5"
+    "@mantine/utils" "5.9.6"
     prism-react-renderer "^1.2.1"
 
 "@mantine/styles@5.9.5":
