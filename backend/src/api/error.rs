@@ -1,4 +1,4 @@
-use crate::lib::{admin::AdminError, schema_registry::SchemaRegistryError, LibError};
+use crate::lib::{admin::AdminError, configuration::ConfigError, schema_registry::SchemaRegistryError, LibError};
 use serde::{Deserialize, Serialize};
 
 pub type ApiResult<T> = std::result::Result<T, ApiError>;
@@ -56,6 +56,33 @@ impl From<AdminError> for ApiError {
                 message,
             },
             AdminError::ConsumerError(consumer_error) => consumer_error.into(),
+        }
+    }
+}
+
+impl From<ConfigError> for ApiError {
+    fn from(value: ConfigError) -> Self {
+        match value {
+            ConfigError::IO(msg) => ApiError {
+                error_type: "IO error handling user configurations".into(),
+                message: msg,
+            },
+            ConfigError::JSONSerde(msg) => ApiError {
+                error_type: "JSON error handling user configurations".into(),
+                message: msg,
+            },
+            ConfigError::TOMLSerde(msg) => ApiError {
+                error_type: "TOML error handling user configurations".into(),
+                message: msg,
+            },
+            ConfigError::LegacyConfiguration(msg) => ApiError {
+                error_type: "Error loading the legacy configuration".into(),
+                message: msg,
+            },
+            ConfigError::ClusterNotFound(cluster_id) => ApiError {
+                error_type: "User configuration error".into(),
+                message: format!("Cluster {} not found", cluster_id),
+            },
         }
     }
 }

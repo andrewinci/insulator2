@@ -24,6 +24,7 @@ impl From<RDKafkaErrorCode> for AdminError {
         AdminError::RDKafka(value.to_string())
     }
 }
+//todo: change with the consumer error
 impl From<LibError> for AdminError {
     fn from(value: LibError) -> Self {
         AdminError::ConsumerError(value)

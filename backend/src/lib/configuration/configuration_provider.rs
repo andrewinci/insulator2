@@ -1,7 +1,7 @@
+use super::error::ConfigResult;
 use super::legacy_config::LegacyConfiguration;
 use super::store_types::StoreConfig;
 use super::InsulatorConfig;
-use crate::lib::error::LibResult;
 use dirs::home_dir;
 use std::path::PathBuf;
 use std::{fs, path::Path};
@@ -24,7 +24,7 @@ impl ConfigurationProvider {
         }
     }
 
-    pub fn get_configuration(&self) -> LibResult<InsulatorConfig> {
+    pub fn get_configuration(&self) -> ConfigResult<InsulatorConfig> {
         match Path::exists(&self.config_path) {
             // read file content
             true => {
@@ -47,7 +47,7 @@ impl ConfigurationProvider {
         }
     }
 
-    pub fn write_configuration(&self, configuration: &InsulatorConfig) -> LibResult<()> {
+    pub fn write_configuration(&self, configuration: &InsulatorConfig) -> ConfigResult<()> {
         // validate input
         configuration.clusters.iter().for_each(|c| {
             assert!(!c.endpoint.is_empty());

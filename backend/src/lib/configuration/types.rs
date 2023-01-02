@@ -1,7 +1,8 @@
 use std::time::Duration;
 
-use crate::lib::{LibError, LibResult};
 use serde::{Deserialize, Serialize};
+
+use super::error::{ConfigError, ConfigResult};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct InsulatorConfig {
@@ -24,14 +25,12 @@ impl InsulatorConfig {
     pub fn get_sql_tmo(&self) -> Duration {
         Duration::from_secs(self.sql_timeout_secs as u64)
     }
-    pub fn get_cluster_config(&self, cluster_id: &str) -> LibResult<ClusterConfig> {
+    pub fn get_cluster_config(&self, cluster_id: &str) -> ConfigResult<ClusterConfig> {
         self.clusters
             .iter()
             .find(|c| c.id == cluster_id)
             .cloned()
-            .ok_or(LibError::Generic {
-                message: format!("Unable to load the configuration for the cluster {}", cluster_id),
-            })
+            .ok_or(ConfigError::ClusterNotFound(cluster_id.to_string()))
     }
 }
 

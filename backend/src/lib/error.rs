@@ -1,7 +1,7 @@
 use rdkafka::error::KafkaError;
 use serde::Serialize;
 
-use super::{admin::AdminError, avro::AvroError};
+use super::{admin::AdminError, avro::AvroError, configuration::ConfigError};
 
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub enum LibError {
@@ -21,30 +21,6 @@ pub type LibResult<T> = core::result::Result<T, LibError>;
 impl From<std::io::Error> for LibError {
     fn from(error: std::io::Error) -> Self {
         LibError::IO {
-            message: error.to_string(),
-        }
-    }
-}
-
-impl From<serde_json::Error> for LibError {
-    fn from(error: serde_json::Error) -> Self {
-        LibError::JSONSerde {
-            message: error.to_string(),
-        }
-    }
-}
-
-impl From<toml::de::Error> for LibError {
-    fn from(error: toml::de::Error) -> Self {
-        LibError::TOMLSerde {
-            message: error.to_string(),
-        }
-    }
-}
-
-impl From<toml::ser::Error> for LibError {
-    fn from(error: toml::ser::Error) -> Self {
-        LibError::TOMLSerde {
             message: error.to_string(),
         }
     }
@@ -77,6 +53,12 @@ impl From<AvroError> for LibError {
 
 impl From<AdminError> for LibError {
     fn from(value: AdminError) -> Self {
+        todo!()
+    }
+}
+
+impl From<ConfigError> for LibError {
+    fn from(value: ConfigError) -> Self {
         todo!()
     }
 }
