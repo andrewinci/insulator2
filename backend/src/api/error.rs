@@ -1,6 +1,6 @@
 use crate::lib::{
-    admin::AdminError, configuration::ConfigError, producer::ProducerError, record_store::StoreError,
-    schema_registry::SchemaRegistryError, LibError,
+    admin::AdminError, configuration::ConfigError, consumer::ConsumerError, producer::ProducerError,
+    record_store::StoreError, schema_registry::SchemaRegistryError, LibError,
 };
 use serde::{Deserialize, Serialize};
 
@@ -59,6 +59,12 @@ impl From<StoreError> for ApiError {
                 message,
             },
         }
+    }
+}
+
+impl From<ConsumerError> for ApiError {
+    fn from(value: ConsumerError) -> Self {
+        todo!()
     }
 }
 

@@ -5,17 +5,17 @@ use tauri::Manager;
 use tokio::sync::RwLock;
 
 use crate::lib::{
-    configuration::ConfigurationProvider, schema_registry::CachedSchemaRegistry, types::ErrorCallback, Cluster, LibResult,
+    configuration::ConfigurationProvider, error_callback::ErrorCallback, schema_registry::CachedSchemaRegistry, LibResult,
 };
 
-use super::error::ApiError;
+use super::{cluster::Cluster, error::ApiError};
 
 type ClusterId = String;
 
 pub struct AppState {
     clusters: Arc<RwLock<HashMap<ClusterId, Arc<Cluster>>>>,
     pub configuration_provider: Arc<ConfigurationProvider>,
-    error_callback: ErrorCallback,
+    error_callback: ErrorCallback<ApiError>,
 }
 
 impl AppState {
@@ -49,7 +49,7 @@ impl AppState {
         Ok(cluster.schema_registry_client.as_ref().cloned())
     }
 
-    fn build_new_cluster(&self, cluster_id: &str, error_callback: ErrorCallback) -> LibResult<Cluster> {
+    fn build_new_cluster(&self, cluster_id: &str, error_callback: ErrorCallback<ApiError>) -> LibResult<Cluster> {
         debug!("Init cluster {}", cluster_id);
         let configuration = self.configuration_provider.get_configuration()?;
         Cluster::new(cluster_id, &configuration, error_callback)

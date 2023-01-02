@@ -1,4 +1,5 @@
 pub mod admin;
+mod cluster;
 pub mod configuration;
 pub mod consumer;
 mod error;

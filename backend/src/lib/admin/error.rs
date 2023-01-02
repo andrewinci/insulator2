@@ -1,6 +1,6 @@
 use rdkafka::{error::KafkaError, types::RDKafkaErrorCode};
 
-use crate::lib::LibError;
+use crate::lib::consumer::ConsumerError;
 
 #[derive(Debug)]
 pub enum AdminError {
@@ -8,8 +8,8 @@ pub enum AdminError {
     TopicNotFound(String),
     /// RDKafka errors
     RDKafka(String),
-    // Lib errors
-    ConsumerError(LibError),
+    // Consumer error
+    ConsumerError(ConsumerError),
 }
 
 pub type AdminResult<T> = Result<T, AdminError>;
@@ -25,8 +25,8 @@ impl From<RDKafkaErrorCode> for AdminError {
     }
 }
 //todo: change with the consumer error
-impl From<LibError> for AdminError {
-    fn from(value: LibError) -> Self {
+impl From<ConsumerError> for AdminError {
+    fn from(value: ConsumerError) -> Self {
         AdminError::ConsumerError(value)
     }
 }

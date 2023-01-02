@@ -30,7 +30,6 @@ pub enum ParserMode {
 
 pub type RawKafkaRecord = KafkaRecord<Vec<u8>>;
 pub type ParsedKafkaRecord = KafkaRecord<String>;
-pub type ErrorCallback = Arc<dyn Fn(LibError) + Send + Sync>;
 
 impl ParsedKafkaRecord {
     pub fn to_csv_line(&self, parse_timestamp: bool) -> String {

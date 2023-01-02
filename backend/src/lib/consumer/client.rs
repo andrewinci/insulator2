@@ -2,8 +2,9 @@ use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     consumer::types::{ConsumerConfiguration, ConsumerSessionConfiguration, ConsumerState},
     error::{LibError, LibResult},
+    error_callback::ErrorCallback,
     record_store::TopicStore,
-    types::{ErrorCallback, RawKafkaRecord},
+    types::RawKafkaRecord,
 };
 use futures::{lock::Mutex, StreamExt};
 use log::{debug, error, warn};
@@ -14,11 +15,14 @@ use rdkafka::{
 };
 use std::{sync::Arc, time::Duration};
 use tauri::async_runtime::JoinHandle;
+
+use super::error::{ConsumerError, ConsumerResult};
+
 pub struct KafkaConsumer {
     cluster_config: ClusterConfig,
     topic: String,
     loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>,
-    error_callback: ErrorCallback,
+    error_callback: ErrorCallback<ConsumerError>,
     pub topic_store: Arc<TopicStore>,
     timeout: Duration,
 }
@@ -28,7 +32,7 @@ impl KafkaConsumer {
         cluster_config: &ClusterConfig,
         topic: &str,
         topic_store: TopicStore,
-        error_cb: ErrorCallback,
+        error_cb: ErrorCallback<ConsumerError>,
         timeout: Duration,
     ) -> Self {
         KafkaConsumer {
@@ -46,7 +50,7 @@ impl KafkaConsumer {
         topics: &[&str],
         config: &ConsumerSessionConfiguration,
         tmo: Duration,
-    ) -> LibResult<()> {
+    ) -> ConsumerResult<()> {
         let metadata = consumer.fetch_metadata(if topics.len() == 1 { Some(topics[0]) } else { None }, tmo)?;
         let topic_partition: Vec<_> = metadata
             .topics()
@@ -152,7 +156,7 @@ async fn consumer_loop(
     consumer: &StreamConsumer,
     consumer_config: &ConsumerConfiguration,
     topic_store: &TopicStore,
-    error_callback: &ErrorCallback,
+    error_callback: &ErrorCallback<ConsumerError>,
     loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>,
 ) {
     let stop_timestamp = get_stop_timestamp(consumer_config);
@@ -171,9 +175,7 @@ async fn consumer_loop(
             }
             Some(Err(err)) => {
                 error!("An error occurs consuming from kafka: {}", err);
-                error_callback(LibError::Consumer {
-                    message: err.to_string(),
-                });
+                error_callback(err.into());
                 _stop(loop_handle.clone()).await.expect("Unable to stop the consumer");
                 break;
             }
@@ -190,15 +192,14 @@ async fn handle_consumed_message(
     topic_store: &TopicStore,
     stop_timestamp: Option<u64>,
     consumer: &StreamConsumer,
-    error_callback: &ErrorCallback,
+    error_callback: &ErrorCallback<ConsumerError>,
 ) {
     let record = map_kafka_record(msg);
     if record.timestamp.unwrap_or(u64::MIN) < stop_timestamp.unwrap_or(u64::MAX) {
-        topic_store.insert_record(&record).await.unwrap_or_else(|_| {
-            error_callback(LibError::SqlError {
-                message: "Unable to insert record".into(),
-            })
-        });
+        topic_store
+            .insert_record(&record)
+            .await
+            .map_err(|err| ConsumerError::RecordStore("Unable to store the record".to_string(), err));
     } else {
         // pause consumption on the record partition
         let mut tpl = TopicPartitionList::new();
