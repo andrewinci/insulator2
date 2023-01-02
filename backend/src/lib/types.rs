@@ -1,12 +1,7 @@
-use std::{
-    sync::Arc,
-    time::{Duration, UNIX_EPOCH},
-};
+use std::time::{Duration, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 use time::format_description::well_known;
-
-use super::LibError;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct KafkaRecord<T> {

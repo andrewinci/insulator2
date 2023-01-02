@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use crate::lib::{error::LibResult, parser::Parser};
+use crate::lib::parser::Parser;
 
 use super::error::ProducerResult;
 

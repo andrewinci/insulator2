@@ -1,7 +1,6 @@
 use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
     consumer::types::{ConsumerConfiguration, ConsumerSessionConfiguration, ConsumerState},
-    error::{LibError, LibResult},
     error_callback::ErrorCallback,
     record_store::TopicStore,
     types::RawKafkaRecord,
@@ -89,13 +88,14 @@ impl KafkaConsumer {
         Ok(())
     }
 
-    pub async fn start(&self, consumer_config: &ConsumerConfiguration) -> LibResult<()> {
+    pub async fn start(&self, consumer_config: &ConsumerConfiguration) -> ConsumerResult<()> {
         let topic = self.topic.clone();
         if self.loop_handle.lock().await.is_some() {
             warn!("Try to start an already running consumer");
-            return Err(LibError::Consumer {
-                message: format!("A consumer is already running for {}", topic),
-            });
+            return Err(ConsumerError::AlreadyRunning(format!(
+                "A consumer is already running for {}",
+                topic
+            )));
         }
         // set the handle to the consumer loop
         *self.loop_handle.clone().lock().await = Some(tauri::async_runtime::spawn({
@@ -125,16 +125,17 @@ impl KafkaConsumer {
         Ok(())
     }
 
-    pub async fn stop(&self) -> LibResult<()> {
+    pub async fn stop(&self) -> ConsumerResult<()> {
         _stop(self.loop_handle.clone()).await
     }
 
-    pub async fn get_consumer_state(&self) -> LibResult<ConsumerState> {
+    pub async fn get_consumer_state(&self) -> ConsumerResult<ConsumerState> {
         Ok(ConsumerState {
             is_running: self.loop_handle.clone().lock().await.is_some(),
-            record_count: self.topic_store.get_records_count().map_err(|_| LibError::SqlError {
-                message: "Unable to get the records count".into(),
-            })?,
+            record_count: self
+                .topic_store
+                .get_records_count()
+                .map_err(|err| ConsumerError::RecordStore("Unable to retrieve the records count".into(), err))?,
         })
     }
 }
@@ -196,10 +197,12 @@ async fn handle_consumed_message(
 ) {
     let record = map_kafka_record(msg);
     if record.timestamp.unwrap_or(u64::MIN) < stop_timestamp.unwrap_or(u64::MAX) {
-        topic_store
-            .insert_record(&record)
-            .await
-            .map_err(|err| ConsumerError::RecordStore("Unable to store the record".to_string(), err));
+        topic_store.insert_record(&record).await.unwrap_or_else(|err| {
+            error_callback(ConsumerError::RecordStore(
+                "Unable to store the record".to_string(),
+                err,
+            ))
+        });
     } else {
         // pause consumption on the record partition
         let mut tpl = TopicPartitionList::new();
@@ -216,7 +219,7 @@ async fn handle_consumed_message(
     }
 }
 
-async fn _stop(loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>) -> LibResult<()> {
+async fn _stop(loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>) -> ConsumerResult<()> {
     debug!("Consumer stopped");
     if let Some(handle) = &*loop_handle.lock().await {
         handle.abort();

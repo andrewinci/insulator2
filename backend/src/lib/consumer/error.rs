@@ -4,6 +4,7 @@ use rdkafka::error::KafkaError;
 pub enum ConsumerError {
     RDKafka(String),
     RecordStore(String, crate::lib::record_store::StoreError),
+    AlreadyRunning(String),
 }
 pub type ConsumerResult<T> = Result<T, ConsumerError>;
 
