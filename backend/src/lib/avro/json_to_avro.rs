@@ -100,6 +100,41 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
         (Schema::Decimal { scale, .. }, JsonValue::Number(n)) => {
             Ok(AvroValue::Decimal(parse_decimal(&n.to_string(), *scale as u32)?))
         }
+        // time
+        (Schema::Date, JsonValue::Number(n)) => {
+            let n = n
+                .as_i64()
+                .and_then(|v| i32::try_from(v).ok())
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to a valid Date.", n)))?;
+            Ok(AvroValue::Date(n))
+        }
+        (Schema::TimeMillis, JsonValue::Number(n)) => {
+            let n = n
+                .as_i64()
+                .and_then(|v| i32::try_from(v).ok())
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to a valid TimeMillis.", n)))?;
+            Ok(AvroValue::TimeMillis(n))
+        }
+        (Schema::TimestampMillis, JsonValue::Number(n)) => {
+            let n = n.as_i64().ok_or_else(|| {
+                AvroError::InvalidNumber(format!("Unable to convert {} to a valid TimestampMillis.", n))
+            })?;
+            Ok(AvroValue::TimestampMillis(n))
+        }
+        (Schema::TimeMicros, JsonValue::Number(n)) => {
+            let n = n
+                .as_i64()
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to a valid TimeMicros.", n)))?;
+            Ok(AvroValue::TimeMicros(n))
+        }
+        (Schema::TimestampMicros, JsonValue::Number(n)) => {
+            let n = n.as_i64().ok_or_else(|| {
+                AvroError::InvalidNumber(format!("Unable to convert {} to a valid TimestampMicros.", n))
+            })?;
+            Ok(AvroValue::TimestampMicros(n))
+        }
+
+        // (Schema::Duration,  => todo!(),
         // references
         (Schema::Ref { name }, value) => {
             let schema = ref_map
@@ -108,29 +143,13 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
             json_to_avro_map(value, schema, ref_map)
         }
 
-        // (
-        //     Schema::Decimal {
-        //         precision,
-        //         scale,
-        //         inner,
-        //     },
-        //     JsonValue::Number(n),
-        // ) => todo!(),
-
         // Schema::Fixed { name, aliases, doc, size } => todo!(),
         // Schema::Uuid => todo!(),
-        // // time
-        // Schema::Date => todo!(),
-        // Schema::TimeMillis => todo!(),
-        // Schema::TimeMicros => todo!(),
-        // Schema::TimestampMillis => todo!(),
-        // Schema::TimestampMicros => todo!(),
-        // Schema::Duration => todo!(),
-        // todo:
         //(Schema::Bytes, JsonValue::String(s)) => todo!(),
+        // todo
         (schema, value) => Err(AvroError::Unsupported(format!(
-            "Unsupported Schema-JsonValue tuple: \n\n{:?}\n\n{:?}",
-            schema, value
+            "Unable to set the value {:?} to schema {:?}",
+            value, schema
         ))),
     }
 }

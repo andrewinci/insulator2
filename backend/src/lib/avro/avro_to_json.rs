@@ -57,12 +57,12 @@ fn map(
         (AvroValue::Uuid(v), Schema::Uuid) => Ok(json!(*v)),
         (AvroValue::Bytes(v), Schema::Bytes) => Ok(json!(*v)),
         (AvroValue::Decimal(v), Schema::Decimal { scale, .. }) => parse_decimal(v, scale),
-        (AvroValue::Duration(v), Schema::Duration) => Ok(json!(format!(
-            "{:?} months {:?} days {:?} millis",
-            v.months(),
-            v.days(),
-            v.millis()
-        ))),
+        // (AvroValue::Duration(v), Schema::Duration) => Ok(json!(format!(
+        //     "{:?} months {:?} days {:?} millis",
+        //     v.months(),
+        //     v.days(),
+        //     v.millis()
+        // ))),
         (AvroValue::Union(i, v), Schema::Union(s)) => {
             if *v == Box::new(AvroValue::Null) {
                 Ok(JsonValue::Null)

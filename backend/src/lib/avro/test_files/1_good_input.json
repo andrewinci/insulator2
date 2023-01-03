@@ -15,5 +15,10 @@
   "OptionalStringField": null,
   "OptionalStringField2": { "string": "this is a test" },
   "UnionField": { "float": 1.5 },
-  "DecimalField": 1.3
+  "DecimalField": 1.3,
+  "DateField": 1234568,
+  "TimeMillisField": 3215234,
+  "TimeMicrosField": 3456678412,
+  "TimestampMillisField": 123457637,
+  "TimestampMicrosField": 84596712
 }
