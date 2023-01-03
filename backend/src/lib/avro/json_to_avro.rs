@@ -3,6 +3,7 @@ use std::{collections::HashMap, str::FromStr};
 use apache_avro::{schema::Name, to_avro_datum, types::Value as AvroValue, Schema};
 use log::error;
 use num_bigint::BigInt;
+use uuid::Uuid;
 
 use super::{
     avro_parser::AvroParser,
@@ -133,8 +134,6 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
             })?;
             Ok(AvroValue::TimestampMicros(n))
         }
-
-        // (Schema::Duration,  => todo!(),
         // references
         (Schema::Ref { name }, value) => {
             let schema = ref_map
@@ -142,11 +141,16 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
                 .ok_or_else(|| AvroError::MissingAvroSchemaReference(format!("Unable to resolve reference {}", name)))?;
             json_to_avro_map(value, schema, ref_map)
         }
+        (Schema::Uuid, JsonValue::String(v)) => {
+            let uuid =
+                Uuid::parse_str(v).map_err(|_| AvroError::InvalidUUID(format!("Unable to parse {} into a uuid", v)))?;
+            Ok(AvroValue::Uuid(uuid))
+        }
 
-        // Schema::Fixed { name, aliases, doc, size } => todo!(),
-        // Schema::Uuid => todo!(),
-        //(Schema::Bytes, JsonValue::String(s)) => todo!(),
         // todo
+        // Schema::Fixed { name, aliases, doc, size } => todo!(),
+        //(Schema::Bytes, JsonValue::String(s)) => todo!(),
+        // (Schema::Duration,  => todo!(),
         (schema, value) => Err(AvroError::Unsupported(format!(
             "Unable to set the value {:?} to schema {:?}",
             value, schema

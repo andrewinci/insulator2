@@ -12,6 +12,7 @@ pub enum AvroError {
     ParseAvroValue(String),
     ParseJsonValue(String),
     InvalidEnum(String),
+    InvalidUUID(String),
 }
 
 pub type AvroResult<T> = std::result::Result<T, AvroError>;

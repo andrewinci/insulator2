@@ -173,6 +173,10 @@ impl From<AvroError> for ApiError {
                 error_type: "Avro error: InvalidEnum".into(),
                 message,
             },
+            AvroError::InvalidUUID(message) => ApiError {
+                error_type: "Avro error: InvalidUUID".into(),
+                message,
+            },
         }
     }
 }

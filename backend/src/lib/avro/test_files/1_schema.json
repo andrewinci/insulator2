@@ -23,6 +23,7 @@
     { "name": "TimeMillisField", "type": { "type": "int", "logicalType": "time-millis" } },
     { "name": "TimeMicrosField", "type": { "type": "long", "logicalType": "time-micros" } },
     { "name": "TimestampMillisField", "type": { "type": "long", "logicalType": "timestamp-millis" } },
-    { "name": "TimestampMicrosField", "type": { "type": "long", "logicalType": "timestamp-micros" } }
+    { "name": "TimestampMicrosField", "type": { "type": "long", "logicalType": "timestamp-micros" } },
+    { "name": "UuidField", "type": { "type": "string", "logicalType": "uuid" } }
   ]
 }

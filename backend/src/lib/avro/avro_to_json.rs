@@ -54,7 +54,7 @@ fn map(
         (AvroValue::TimeMicros(v), Schema::TimeMicros) => Ok(json!(*v)),
         (AvroValue::TimestampMillis(v), Schema::TimestampMillis) => Ok(json!(*v)),
         (AvroValue::TimestampMicros(v), Schema::TimestampMicros) => Ok(json!(*v)),
-        (AvroValue::Uuid(v), Schema::Uuid) => Ok(json!(*v)),
+        (AvroValue::Uuid(v), Schema::Uuid) => Ok(json!(v.to_string())),
         (AvroValue::Bytes(v), Schema::Bytes) => Ok(json!(*v)),
         (AvroValue::Decimal(v), Schema::Decimal { scale, .. }) => parse_decimal(v, scale),
         // (AvroValue::Duration(v), Schema::Duration) => Ok(json!(format!(
