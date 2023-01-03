@@ -1,6 +1,6 @@
 use crate::lib::schema_registry::SchemaRegistryError;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum AvroError {
     InvalidNumber(String),
     MissingAvroSchemaReference(String),
@@ -9,8 +9,8 @@ pub enum AvroError {
     InvalidUnion(String),
     Unsupported(String),
     InvalidAvroHeader(String),
-    ParseAvroValue(apache_avro::Error),
-    ParseJsonValue(serde_json::Error),
+    ParseAvroValue(String),
+    ParseJsonValue(String),
 }
 
 pub type AvroResult<T> = std::result::Result<T, AvroError>;

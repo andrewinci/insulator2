@@ -19,9 +19,10 @@ impl<S: SchemaProvider> AvroParser<S> {
         let mut data = Cursor::new(&raw[5..]);
 
         // parse the avro record into an AvroValue
-        let record = from_avro_datum(&schema.schema, &mut data, None).map_err(AvroError::ParseAvroValue)?;
+        let record =
+            from_avro_datum(&schema.schema, &mut data, None).map_err(|err| AvroError::ParseAvroValue(err.to_string()))?;
         let json = map(&record, &schema.schema, &None, &schema.resolved_schemas)?;
-        let res = serde_json::to_string(&json).map_err(AvroError::ParseJsonValue)?;
+        let res = serde_json::to_string(&json).map_err(|err| AvroError::ParseJsonValue(err.to_string()))?;
         Ok(res)
     }
 }

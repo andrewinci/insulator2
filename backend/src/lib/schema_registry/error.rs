@@ -1,6 +1,6 @@
 use super::http_client::HttpClientError;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum SchemaRegistryError {
     SchemaNotFound(String),
     SchemaParsing(String),

@@ -107,7 +107,6 @@ export const TopicPageMenu = (props: TopicPageMenuProps) => {
           </Button>
         </Group>
         <Button
-          disabled
           leftIcon={<IconArrowBarToUp size={16} />}
           color={"orange"}
           size="xs"

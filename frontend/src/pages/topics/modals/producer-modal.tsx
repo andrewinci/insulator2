@@ -49,7 +49,13 @@ export const ProducerModal = ({ topic, clusterId, opened, onClose }: AddSchemaMo
       <form style={{ height: "100%" }} onSubmit={form.onSubmit(onSubmit)}>
         <Stack spacing={3} style={{ height: "100%" }}>
           <TextInput label="Topic name" readOnly value={topic} />
-          <TextInput label="Key" {...form.getInputProps("key")} />
+          <TextInput
+            label="Key"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            {...form.getInputProps("key")}
+          />
           <Group position="apart">
             <Input.Wrapper label="Serialization">
               <Chip.Group position="left" multiple={false} {...form.getInputProps("mode")}>

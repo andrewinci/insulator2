@@ -1,12 +1,12 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
-use apache_avro::{to_avro_datum, types::Value as AvroValue};
-use serde_json::Value as JsonValue;
+use apache_avro::{schema::Name, to_avro_datum, types::Value as AvroValue, Schema};
 
 use super::{
     avro_parser::AvroParser, error::AvroResult, helpers::build_record_header, schema_provider::SchemaProvider, AvroError,
 };
 use crate::lib::schema_registry::ResolvedAvroSchema;
+use serde_json::Value as JsonValue;
 
 impl<S: SchemaProvider> AvroParser<S> {
     pub async fn json_to_avro(&self, json: &str, schema_name: &str) -> AvroResult<Vec<u8>> {
@@ -15,52 +15,183 @@ impl<S: SchemaProvider> AvroParser<S> {
     }
 
     pub fn json_to_avro_with_schema(&self, json: &str, schema: ResolvedAvroSchema) -> AvroResult<Vec<u8>> {
-        let json_value = JsonValue::from_str(json).map_err(AvroError::ParseJsonValue)?;
+        let json_value = JsonValue::from_str(json).map_err(|err| AvroError::ParseJsonValue(err.to_string()))?;
         let mut res = build_record_header(schema.schema_id);
-        let avro_value = Self::json_to_avro_map(json_value, &schema)?;
-        let mut avro_record = to_avro_datum(&schema.schema, avro_value).map_err(AvroError::ParseAvroValue)?;
+        let avro_value = json_to_avro_map(&json_value, &schema.schema, &schema.resolved_schemas)?;
+        let mut avro_record =
+            to_avro_datum(&schema.schema, avro_value).map_err(|err| AvroError::ParseAvroValue(err.to_string()))?;
         res.append(&mut avro_record);
         Ok(res)
     }
+}
 
-    fn json_to_avro_map(_j: JsonValue, _s: &ResolvedAvroSchema) -> AvroResult<AvroValue> {
-        Err(AvroError::Unsupported("Parse Json to avro is not supported yet".into()))
-        // match (&s.schema, j) {
-        //     (Schema::Null, JsonValue::Null) => Ok(AvroValue::Null),
-        //     (Schema::Boolean, JsonValue::Bool(v)) => Ok(AvroValue::Boolean(v)),
-        //     (Schema::String, JsonValue::String(s)) => Ok(AvroValue::String(s)),
-        //     // numbers
-        //     (Schema::Int, JsonValue::Number(n)) => Ok(AvroValue::Int(n.as_i64().unwrap() as i32)), //todo: handle
-        //     // (Schema::Long, JsonValue::Number(n)) => todo!(),
-        //     // (Schema::Float, JsonValue::Number(n)) => todo!(),
-        //     // (Schema::Double, JsonValue::Number(n)) => todo!(),
-        //     // (
-        //     //     Schema::Decimal {
-        //     //         precision,
-        //     //         scale,
-        //     //         inner,
-        //     //     },
-        //     //     JsonValue::Number(n),
-        //     // ) => todo!(),
-        //     // Schema::Array(_) => todo!(),
-        //     // Schema::Map(_) => todo!(),
-        //     // Schema::Union(_) => todo!(),
-        //     // Schema::Record { name, aliases, doc, fields, lookup } => todo!(),
-        //     // Schema::Enum { name, aliases, doc, symbols } => todo!(),
-        //     // Schema::Fixed { name, aliases, doc, size } => todo!(),
-        //     // Schema::Uuid => todo!(),
-        //     // // time
-        //     // Schema::Date => todo!(),
-        //     // Schema::TimeMillis => todo!(),
-        //     // Schema::TimeMicros => todo!(),
-        //     // Schema::TimestampMillis => todo!(),
-        //     // Schema::TimestampMicros => todo!(),
-        //     // Schema::Duration => todo!(),
-        //     // // ref
-        //     // Schema::Ref { name } => todo!(),
-        //     // todo:
-        //     //(Schema::Bytes, JsonValue::String(s)) => todo!(),
-        //     (_, _) => Err(AvroError::Unsupported("Unsupported Schema-JsonValue tuple".into())),
-        // }
+fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) -> AvroResult<AvroValue> {
+    match (&s, j) {
+        // complex types
+        (Schema::Record { fields, .. }, JsonValue::Object(obj)) => map_json_fields_to_record(fields, obj, ref_map),
+        // simple types
+        (Schema::Null, JsonValue::Null) => Ok(AvroValue::Null),
+        (Schema::Boolean, JsonValue::Bool(v)) => Ok(AvroValue::Boolean(v.clone())),
+        (Schema::String, JsonValue::String(s)) => Ok(AvroValue::String(s.clone())),
+        // numbers
+        (Schema::Int, JsonValue::Number(n)) => {
+            let n = n
+                .as_i64()
+                .and_then(|v| i32::try_from(v).ok())
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Int", n)))?
+                as i32;
+            Ok(AvroValue::Int(n))
+        }
+        (Schema::Long, JsonValue::Number(n)) => {
+            let n = n
+                .as_i64()
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Long", n)))?;
+            Ok(AvroValue::Long(n))
+        }
+        (Schema::Float, JsonValue::Number(n)) => {
+            let n = n
+                .as_f64()
+                .map(|v| v as f32)
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Float", n)))?;
+            Ok(AvroValue::Float(n))
+        }
+        (Schema::Double, JsonValue::Number(n)) => {
+            let n = n
+                .as_f64()
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Double", n)))?;
+            Ok(AvroValue::Double(n))
+        }
+
+        // (
+        //     Schema::Decimal {
+        //         precision,
+        //         scale,
+        //         inner,
+        //     },
+        //     JsonValue::Number(n),
+        // ) => todo!(),
+        // Schema::Array(_) => todo!(),
+        // Schema::Map(_) => todo!(),
+        // Schema::Union(_) => todo!(),
+
+        // Schema::Enum { name, aliases, doc, symbols } => todo!(),
+        // Schema::Fixed { name, aliases, doc, size } => todo!(),
+        // Schema::Uuid => todo!(),
+        // // time
+        // Schema::Date => todo!(),
+        // Schema::TimeMillis => todo!(),
+        // Schema::TimeMicros => todo!(),
+        // Schema::TimestampMillis => todo!(),
+        // Schema::TimestampMicros => todo!(),
+        // Schema::Duration => todo!(),
+        // // ref
+        // Schema::Ref { name } => todo!(),
+        // todo:
+        //(Schema::Bytes, JsonValue::String(s)) => todo!(),
+        (_, _) => Err(AvroError::Unsupported("Unsupported Schema-JsonValue tuple".into())),
+    }
+}
+
+fn map_json_fields_to_record(
+    fields: &Vec<apache_avro::schema::RecordField>,
+    obj: &serde_json::Map<String, JsonValue>,
+    ref_map: &HashMap<Name, Schema>,
+) -> Result<AvroValue, AvroError> {
+    let mut record_fields: Vec<(String, AvroValue)> = vec![];
+    for field in fields {
+        let field_value = obj
+            .get(&field.name)
+            .ok_or_else(|| AvroError::MissingField(field.name.clone()))?;
+        let avro_field = json_to_avro_map(field_value, &field.schema, ref_map)?;
+        record_fields.push((field.name.clone(), avro_field));
+    }
+    Ok(AvroValue::Record(record_fields))
+}
+
+#[cfg(test)]
+mod tests {
+
+    use std::collections::BTreeMap;
+    use std::collections::HashMap;
+
+    use apache_avro::{schema::RecordField, Schema};
+
+    use super::map_json_fields_to_record;
+    use crate::lib::avro::AvroError;
+
+    use apache_avro::types::Value as AvroValue;
+    use serde_json::json;
+    use serde_json::Value as JsonValue;
+
+    #[test]
+    fn test_map_record() {
+        let obj = {
+            let mut obj_map = serde_json::Map::new();
+            obj_map.insert("sample".to_string(), json!(1));
+            obj_map
+        };
+        let fields = vec![build_record_field("sample", apache_avro::Schema::Int)];
+
+        // happy path
+        {
+            let res = map_json_fields_to_record(&fields, &obj, &HashMap::new());
+            assert_eq!(
+                res,
+                Ok(AvroValue::Record(vec![("sample".to_string(), AvroValue::Int(1))]))
+            );
+        }
+
+        // parse a json object with a missing field return an error
+        {
+            let fields = vec![
+                build_record_field("sample", apache_avro::Schema::Int),
+                build_record_field("sample_2", apache_avro::Schema::Int),
+            ];
+            let res = map_json_fields_to_record(&fields, &obj, &HashMap::new());
+            assert_eq!(res, Err(AvroError::MissingField("sample_2".into())))
+        }
+
+        // parse nested record
+        {
+            let obj_parent = {
+                let mut obj_map = serde_json::Map::new();
+                obj_map.insert("sample".into(), json!(2));
+                obj_map.insert("nested".into(), JsonValue::Object(obj));
+                obj_map
+            };
+            let nested_schema = Schema::Record {
+                name: "Nested".into(),
+                aliases: None,
+                doc: None,
+                fields: fields,
+                lookup: BTreeMap::<String, usize>::new(),
+            };
+            let fields = vec![
+                build_record_field("sample", apache_avro::Schema::Int),
+                build_record_field("nested", nested_schema),
+            ];
+            let res = map_json_fields_to_record(&fields, &obj_parent, &HashMap::new());
+            assert_eq!(
+                res,
+                Ok(AvroValue::Record(vec![
+                    ("sample".to_string(), AvroValue::Int(2)),
+                    (
+                        "nested".to_string(),
+                        AvroValue::Record(vec![("sample".into(), AvroValue::Int(1))])
+                    ),
+                ]))
+            );
+        }
+    }
+
+    fn build_record_field(name: &str, schema: Schema) -> RecordField {
+        RecordField {
+            name: name.into(),
+            doc: Default::default(),
+            default: Default::default(),
+            schema: schema,
+            order: apache_avro::schema::RecordFieldOrder::Ignore,
+            position: Default::default(),
+        }
     }
 }
