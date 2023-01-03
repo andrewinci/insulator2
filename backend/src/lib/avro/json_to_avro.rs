@@ -29,6 +29,7 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
     match (&s, j) {
         // complex types
         (Schema::Record { fields, .. }, JsonValue::Object(obj)) => map_json_fields_to_record(fields, obj, ref_map),
+        (Schema::Array(items_schema), JsonValue::Array(values)) => map_json_array_to_avro(values, items_schema, ref_map),
         // simple types
         (Schema::Null, JsonValue::Null) => Ok(AvroValue::Null),
         (Schema::Boolean, JsonValue::Bool(v)) => Ok(AvroValue::Boolean(v.clone())),
@@ -61,7 +62,6 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
                 .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Double", n)))?;
             Ok(AvroValue::Double(n))
         }
-
         // (
         //     Schema::Decimal {
         //         precision,
@@ -70,9 +70,8 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
         //     },
         //     JsonValue::Number(n),
         // ) => todo!(),
-        // Schema::Array(_) => todo!(),
+
         // Schema::Map(_) => todo!(),
-        // Schema::Union(_) => todo!(),
 
         // Schema::Enum { name, aliases, doc, symbols } => todo!(),
         // Schema::Fixed { name, aliases, doc, size } => todo!(),
@@ -90,6 +89,19 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
         //(Schema::Bytes, JsonValue::String(s)) => todo!(),
         (_, _) => Err(AvroError::Unsupported("Unsupported Schema-JsonValue tuple".into())),
     }
+}
+
+fn map_json_array_to_avro(
+    values: &Vec<JsonValue>,
+    items_schema: &Box<Schema>,
+    ref_map: &HashMap<Name, Schema>,
+) -> Result<AvroValue, AvroError> {
+    let mut vec = vec![];
+    for value in values {
+        let avro_value = json_to_avro_map(value, items_schema, ref_map)?;
+        vec.push(avro_value);
+    }
+    Ok(AvroValue::Array(vec))
 }
 
 fn map_json_fields_to_record(
