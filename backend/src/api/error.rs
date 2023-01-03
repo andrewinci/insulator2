@@ -1,5 +1,5 @@
 use crate::lib::{
-    admin::AdminError, configuration::ConfigError, consumer::ConsumerError, producer::ProducerError,
+    admin::AdminError, avro::AvroError, configuration::ConfigError, consumer::ConsumerError, producer::ProducerError,
     record_store::StoreError, schema_registry::SchemaRegistryError,
 };
 use serde::{Deserialize, Serialize};
@@ -125,9 +125,49 @@ impl From<ProducerError> for ApiError {
                 error_type: "RDKafkaLib error trying to produce".into(),
                 message,
             },
-            ProducerError::AvroParse(_avro_error) => ApiError {
-                error_type: "Avro serialization error".into(),
-                message: "Missing avro error".into(),
+            ProducerError::AvroParse(avro_error) => avro_error.into(),
+        }
+    }
+}
+
+impl From<AvroError> for ApiError {
+    fn from(value: AvroError) -> Self {
+        match value {
+            AvroError::InvalidNumber(message) => ApiError {
+                error_type: "Avro error: InvalidNumber".into(),
+                message,
+            },
+            AvroError::MissingAvroSchemaReference(message) => ApiError {
+                error_type: "Avro error: MissingAvroSchemaReference".into(),
+                message,
+            },
+            AvroError::MissingField(message) => ApiError {
+                error_type: "Avro error: MissingField".into(),
+                message,
+            },
+            AvroError::SchemaProvider(message, _) => ApiError {
+                error_type: "Avro error: SchemaProvider".into(),
+                message,
+            },
+            AvroError::InvalidUnion(message) => ApiError {
+                error_type: "Avro error: InvalidUnion".into(),
+                message,
+            },
+            AvroError::Unsupported(message) => ApiError {
+                error_type: "Avro error: Unsupported".into(),
+                message,
+            },
+            AvroError::InvalidAvroHeader(message) => ApiError {
+                error_type: "Avro error: InvalidAvroHeader".into(),
+                message,
+            },
+            AvroError::ParseAvroValue(message) => ApiError {
+                error_type: "Avro error: ParseAvroValue".into(),
+                message,
+            },
+            AvroError::ParseJsonValue(message) => ApiError {
+                error_type: "Avro error: ParseJsonValue".into(),
+                message,
             },
         }
     }

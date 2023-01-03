@@ -1,6 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use apache_avro::{schema::Name, to_avro_datum, types::Value as AvroValue, Schema};
+use log::error;
 
 use super::{
     avro_parser::AvroParser, error::AvroResult, helpers::build_record_header, schema_provider::SchemaProvider, AvroError,
@@ -18,8 +19,13 @@ impl<S: SchemaProvider> AvroParser<S> {
         let json_value = JsonValue::from_str(json).map_err(|err| AvroError::ParseJsonValue(err.to_string()))?;
         let mut res = build_record_header(schema.schema_id);
         let avro_value = json_to_avro_map(&json_value, &schema.schema, &schema.resolved_schemas)?;
-        let mut avro_record =
-            to_avro_datum(&schema.schema, avro_value).map_err(|err| AvroError::ParseAvroValue(err.to_string()))?;
+        let mut avro_record = to_avro_datum(&schema.schema, avro_value.clone()).map_err(|err| {
+            error!(
+                "\n\tUnable to parse {:?}\n\tUsing schema: {:?}\n\tError: {:?}",
+                avro_value, &schema.schema, err
+            );
+            AvroError::ParseAvroValue(err.to_string())
+        })?;
         res.append(&mut avro_record);
         Ok(res)
     }
@@ -30,17 +36,26 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
         // complex types
         (Schema::Record { fields, .. }, JsonValue::Object(obj)) => map_json_fields_to_record(fields, obj, ref_map),
         (Schema::Array(items_schema), JsonValue::Array(values)) => map_json_array_to_avro(values, items_schema, ref_map),
+        (Schema::Union(union_schema), JsonValue::Null) => {
+            let (position, _) = union_schema.find_schema(&AvroValue::Null).ok_or_else(|| {
+                AvroError::InvalidUnion(format!(
+                    "Cannot set null to the union. Supported options are: {:?}",
+                    union_schema.variants()
+                ))
+            })?;
+            Ok(AvroValue::Union(position as u32, AvroValue::Null.into()))
+        }
+        (Schema::Union(union_schema), JsonValue::Object(obj)) => map_union(obj, union_schema, ref_map),
         // simple types
         (Schema::Null, JsonValue::Null) => Ok(AvroValue::Null),
-        (Schema::Boolean, JsonValue::Bool(v)) => Ok(AvroValue::Boolean(v.clone())),
+        (Schema::Boolean, JsonValue::Bool(v)) => Ok(AvroValue::Boolean(*v)),
         (Schema::String, JsonValue::String(s)) => Ok(AvroValue::String(s.clone())),
         // numbers
         (Schema::Int, JsonValue::Number(n)) => {
             let n = n
                 .as_i64()
                 .and_then(|v| i32::try_from(v).ok())
-                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Int", n)))?
-                as i32;
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Int", n)))?;
             Ok(AvroValue::Int(n))
         }
         (Schema::Long, JsonValue::Number(n)) => {
@@ -91,9 +106,59 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
     }
 }
 
+fn map_union(
+    obj: &serde_json::Map<String, JsonValue>,
+    union_schema: &apache_avro::schema::UnionSchema,
+    ref_map: &HashMap<Name, Schema>,
+) -> Result<AvroValue, AvroError> {
+    let fields_vec: Vec<(&String, &JsonValue)> = obj.iter().collect();
+    if fields_vec.len() != 1 {
+        Err(AvroError::InvalidUnion(format!(
+            "Invalid union. Expected one of: {:?}",
+            union_schema.variants()
+        )))
+    } else {
+        let (union_branch_name, value) = *fields_vec.first().unwrap();
+        let index_schema = union_schema
+            .variants()
+            .iter()
+            .enumerate()
+            .find(|(_, s)| get_schema_name(s).eq(union_branch_name));
+        if let Some((index, current_schema)) = index_schema {
+            let value = json_to_avro_map(value, current_schema, ref_map)?;
+            Ok(AvroValue::Union(index as u32, value.into()))
+        } else {
+            Err(AvroError::InvalidUnion(format!(
+                "Unsupported union specifier: {}",
+                union_branch_name
+            )))
+        }
+    }
+}
+
+fn get_schema_name(s: &Schema) -> &str {
+    match s {
+        Schema::Null => "null",
+        Schema::Boolean => "boolean",
+        Schema::Int => "int",
+        Schema::Long => "long",
+        Schema::Float => "float",
+        Schema::Double => "double",
+        Schema::Bytes => "bytes",
+        Schema::String => "string",
+        Schema::Record { name, .. } => &name.name,
+        _ => {
+            //todo: support the other types
+            let message = format!("Unable to retrieve the name of the schema {:?}", s);
+            error!("{}", message);
+            panic!("{}", message);
+        }
+    }
+}
+
 fn map_json_array_to_avro(
     values: &Vec<JsonValue>,
-    items_schema: &Box<Schema>,
+    items_schema: &Schema,
     ref_map: &HashMap<Name, Schema>,
 ) -> Result<AvroValue, AvroError> {
     let mut vec = vec![];
