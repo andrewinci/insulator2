@@ -46,10 +46,25 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
             Ok(AvroValue::Union(position as u32, AvroValue::Null.into()))
         }
         (Schema::Union(union_schema), JsonValue::Object(obj)) => map_union(obj, union_schema, ref_map),
+        (Schema::Map(schema), JsonValue::Object(obj)) => {
+            let mut avro_map = HashMap::new();
+            for (key, value) in obj {
+                avro_map.insert(key.to_string(), json_to_avro_map(value, schema, ref_map)?);
+            }
+            Ok(AvroValue::Map(avro_map))
+        }
         // simple types
         (Schema::Null, JsonValue::Null) => Ok(AvroValue::Null),
         (Schema::Boolean, JsonValue::Bool(v)) => Ok(AvroValue::Boolean(*v)),
         (Schema::String, JsonValue::String(s)) => Ok(AvroValue::String(s.clone())),
+        (Schema::Enum { symbols, .. }, JsonValue::String(s)) => {
+            let (index, value) = symbols
+                .iter()
+                .enumerate()
+                .find(|(_, v)| v.to_string().eq(s))
+                .ok_or_else(|| AvroError::InvalidEnum(format!("Invalid enum {} expected one of {:?}", s, symbols)))?;
+            Ok(AvroValue::Enum(index as u32, value.into()))
+        }
         // numbers
         (Schema::Int, JsonValue::Number(n)) => {
             let n = n
@@ -77,6 +92,12 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
                 .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Double", n)))?;
             Ok(AvroValue::Double(n))
         }
+        (Schema::Ref { name }, value) => {
+            let schema = ref_map.get(name).ok_or_else(|| {
+                AvroError::MissingAvroSchemaReference(format!("Unable to resolve reference {}", name.to_string()))
+            })?;
+            json_to_avro_map(value, schema, ref_map)
+        }
         // (
         //     Schema::Decimal {
         //         precision,
@@ -86,9 +107,6 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
         //     JsonValue::Number(n),
         // ) => todo!(),
 
-        // Schema::Map(_) => todo!(),
-
-        // Schema::Enum { name, aliases, doc, symbols } => todo!(),
         // Schema::Fixed { name, aliases, doc, size } => todo!(),
         // Schema::Uuid => todo!(),
         // // time
@@ -98,11 +116,12 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
         // Schema::TimestampMillis => todo!(),
         // Schema::TimestampMicros => todo!(),
         // Schema::Duration => todo!(),
-        // // ref
-        // Schema::Ref { name } => todo!(),
         // todo:
         //(Schema::Bytes, JsonValue::String(s)) => todo!(),
-        (_, _) => Err(AvroError::Unsupported("Unsupported Schema-JsonValue tuple".into())),
+        (schema, value) => Err(AvroError::Unsupported(format!(
+            "Unsupported Schema-JsonValue tuple: \n\n{:?}\n\n{:?}",
+            schema, value
+        ))),
     }
 }
 

@@ -169,6 +169,10 @@ impl From<AvroError> for ApiError {
                 error_type: "Avro error: ParseJsonValue".into(),
                 message,
             },
+            AvroError::InvalidEnum(message) => ApiError {
+                error_type: "Avro error: InvalidEnum".into(),
+                message,
+            },
         }
     }
 }
