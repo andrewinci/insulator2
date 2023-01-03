@@ -1,0 +1,19 @@
+{
+  "type": "record",
+  "name": "Record",
+  "fields": [
+    { "name": "NullField", "type": "null" },
+    { "name": "BooleanField", "type": "boolean" },
+    { "name": "IntField", "type": "int" },
+    { "name": "LongField", "type": "long" },
+    { "name": "FloatField", "type": "float" },
+    { "name": "DoubleField", "type": "double" },
+    { "name": "StringField", "type": "string" },
+    {
+      "name": "EnumField",
+      "type": { "type": "enum", "name": "Suit", "symbols": ["SPADES", "HEARTS", "DIAMONDS", "CLUBS"] }
+    },
+    { "name": "ArrayField", "type": { "type": "array", "items": "long" } },
+    { "name": "MapField", "type": { "type": "map", "values": "string" } }
+  ]
+}

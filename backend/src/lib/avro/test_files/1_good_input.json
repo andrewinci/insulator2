@@ -1,0 +1,15 @@
+{
+  "NullField": null,
+  "BooleanField": true,
+  "IntField": 123,
+  "LongField": 321123321,
+  "FloatField": 1111.25,
+  "DoubleField": 11123.123,
+  "StringField": "this is a test string",
+  "EnumField": "DIAMONDS",
+  "ArrayField": [1, 2, 3, 4, 5, 6, 100],
+  "MapField": {
+    "f1": "Example map field 1",
+    "f2": "Example map field 2"
+  }
+}
