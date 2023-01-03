@@ -11,5 +11,8 @@
   "MapField": {
     "f1": "Example map field 1",
     "f2": "Example map field 2"
-  }
+  },
+  "OptionalStringField": null,
+  "OptionalStringField2": { "string": "this is a test" },
+  "UnionField": { "float": 1.5 }
 }

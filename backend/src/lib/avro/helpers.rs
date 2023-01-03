@@ -1,3 +1,6 @@
+use apache_avro::Schema;
+use log::error;
+
 use super::error::{AvroError, AvroResult};
 
 pub(super) fn get_schema_id_from_record_header(raw: &[u8]) -> AvroResult<i32> {
@@ -17,6 +20,27 @@ pub(super) fn build_record_header(schema_id: i32) -> Vec<u8> {
     let mut id = Vec::from(schema_id.to_be_bytes());
     res.append(&mut id);
     res
+}
+
+/// retrieve the schema name to be used in Json unions
+pub(super) fn get_schema_name(s: &Schema) -> &str {
+    match s {
+        Schema::Null => "null",
+        Schema::Boolean => "boolean",
+        Schema::Int => "int",
+        Schema::Long => "long",
+        Schema::Float => "float",
+        Schema::Double => "double",
+        Schema::Bytes => "bytes",
+        Schema::String => "string",
+        Schema::Record { name, .. } => &name.name,
+        _ => {
+            //todo: support the other types
+            let message = format!("Unable to retrieve the name of the schema {:?}", s);
+            error!("{}", message);
+            panic!("{}", message);
+        }
+    }
 }
 
 #[cfg(test)]

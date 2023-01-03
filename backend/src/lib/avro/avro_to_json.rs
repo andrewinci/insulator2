@@ -1,7 +1,7 @@
 use super::{
     avro_parser::AvroParser,
     error::{AvroError, AvroResult},
-    helpers::get_schema_id_from_record_header,
+    helpers::{get_schema_id_from_record_header, get_schema_name},
     schema_provider::SchemaProvider,
 };
 use apache_avro::{from_avro_datum, schema::Name, types::Value as AvroValue, Schema};
@@ -71,11 +71,15 @@ fn map(
             v.millis()
         ))),
         (AvroValue::Union(i, v), Schema::Union(s)) => {
-            let schema = s
-                .variants()
-                .get(*i as usize)
-                .ok_or_else(|| AvroError::InvalidUnion(format!("Missing schema index {} in the union {:?}", *i, s)))?;
-            map(v, schema, parent_ns, ref_cache)
+            if *v == Box::new(AvroValue::Null) {
+                Ok(JsonValue::Null)
+            } else {
+                let schema = s.variants().get(*i as usize).ok_or_else(|| {
+                    AvroError::InvalidUnion(format!("Missing schema index {} in the union {:?}", *i, s))
+                })?;
+                let value = map(v, schema, parent_ns, ref_cache)?;
+                Ok(json!({ get_schema_name(schema): value }))
+            }
         }
         (AvroValue::Enum(_, v), Schema::Enum { name: _, .. }) => Ok(json!(*v)),
         (AvroValue::Fixed(_, v), Schema::Fixed { .. }) => Ok(json!(*v)),

@@ -4,7 +4,11 @@ use apache_avro::{schema::Name, to_avro_datum, types::Value as AvroValue, Schema
 use log::error;
 
 use super::{
-    avro_parser::AvroParser, error::AvroResult, helpers::build_record_header, schema_provider::SchemaProvider, AvroError,
+    avro_parser::AvroParser,
+    error::AvroResult,
+    helpers::{build_record_header, get_schema_name},
+    schema_provider::SchemaProvider,
+    AvroError,
 };
 use crate::lib::schema_registry::ResolvedAvroSchema;
 use serde_json::Value as JsonValue;
@@ -93,9 +97,9 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
             Ok(AvroValue::Double(n))
         }
         (Schema::Ref { name }, value) => {
-            let schema = ref_map.get(name).ok_or_else(|| {
-                AvroError::MissingAvroSchemaReference(format!("Unable to resolve reference {}", name.to_string()))
-            })?;
+            let schema = ref_map
+                .get(name)
+                .ok_or_else(|| AvroError::MissingAvroSchemaReference(format!("Unable to resolve reference {}", name)))?;
             json_to_avro_map(value, schema, ref_map)
         }
         // (
@@ -151,26 +155,6 @@ fn map_union(
                 "Unsupported union specifier: {}",
                 union_branch_name
             )))
-        }
-    }
-}
-
-fn get_schema_name(s: &Schema) -> &str {
-    match s {
-        Schema::Null => "null",
-        Schema::Boolean => "boolean",
-        Schema::Int => "int",
-        Schema::Long => "long",
-        Schema::Float => "float",
-        Schema::Double => "double",
-        Schema::Bytes => "bytes",
-        Schema::String => "string",
-        Schema::Record { name, .. } => &name.name,
-        _ => {
-            //todo: support the other types
-            let message = format!("Unable to retrieve the name of the schema {:?}", s);
-            error!("{}", message);
-            panic!("{}", message);
         }
     }
 }
