@@ -56,14 +56,7 @@ fn map(
         (AvroValue::TimestampMicros(v), Schema::TimestampMicros) => Ok(json!(*v)),
         (AvroValue::Uuid(v), Schema::Uuid) => Ok(json!(*v)),
         (AvroValue::Bytes(v), Schema::Bytes) => Ok(json!(*v)),
-        (
-            AvroValue::Decimal(v),
-            Schema::Decimal {
-                precision: _,
-                scale,
-                inner: _,
-            },
-        ) => parse_decimal(v, scale),
+        (AvroValue::Decimal(v), Schema::Decimal { scale, .. }) => parse_decimal(v, scale),
         (AvroValue::Duration(v), Schema::Duration) => Ok(json!(format!(
             "{:?} months {:?} days {:?} millis",
             v.months(),
@@ -109,11 +102,17 @@ fn parse_ref(
 }
 
 fn parse_decimal(v: &apache_avro::Decimal, scale: &usize) -> AvroResult<JsonValue> {
+    // the representation of the decimal in avro is the number in binary with
+    // the scale encoded in the schema. Therefore we convert the bin array into a big int
+    // and then use rust_decimal to set the scale to the big int ending up with a decimal value.
+    // Since decimal is not supported by json_serde we need to convert it to the f64 in order to show it
+    // as json number.
     let arr = <Vec<u8>>::try_from(v).map_err(|err| AvroError::InvalidNumber(err.to_string()))?;
     let value = BigInt::from_signed_bytes_be(&arr);
     let num = i64::try_from(value).map_err(|err| AvroError::InvalidNumber(err.to_string()))?;
     let decimal = Decimal::new(num, scale.to_owned() as u32);
-    Ok(json!(decimal))
+    let float: f64 = decimal.to_string().parse().unwrap();
+    Ok(json!(float))
 }
 
 fn parse_record(

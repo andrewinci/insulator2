@@ -14,5 +14,6 @@
   },
   "OptionalStringField": null,
   "OptionalStringField2": { "string": "this is a test" },
-  "UnionField": { "float": 1.5 }
+  "UnionField": { "float": 1.5 },
+  "DecimalField": 1.3
 }

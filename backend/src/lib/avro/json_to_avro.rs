@@ -2,6 +2,7 @@ use std::{collections::HashMap, str::FromStr};
 
 use apache_avro::{schema::Name, to_avro_datum, types::Value as AvroValue, Schema};
 use log::error;
+use num_bigint::BigInt;
 
 use super::{
     avro_parser::AvroParser,
@@ -96,12 +97,17 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
                 .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Double", n)))?;
             Ok(AvroValue::Double(n))
         }
+        (Schema::Decimal { scale, .. }, JsonValue::Number(n)) => {
+            Ok(AvroValue::Decimal(parse_decimal(&n.to_string(), *scale as u32)?))
+        }
+        // references
         (Schema::Ref { name }, value) => {
             let schema = ref_map
                 .get(name)
                 .ok_or_else(|| AvroError::MissingAvroSchemaReference(format!("Unable to resolve reference {}", name)))?;
             json_to_avro_map(value, schema, ref_map)
         }
+
         // (
         //     Schema::Decimal {
         //         precision,
@@ -127,6 +133,22 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
             schema, value
         ))),
     }
+}
+
+fn parse_decimal(n: &str, scale: u32) -> AvroResult<apache_avro::Decimal> {
+    let mut decimal = rust_decimal::Decimal::from_str(n)
+        .map_err(|_| AvroError::InvalidNumber(format!("Unable to convert {} to Decimal", n)))?;
+    if decimal.scale() > scale {
+        return Err(AvroError::InvalidNumber(format!(
+            "Unable to convert {} to Decimal. Max scale must be {}",
+            n, scale
+        )));
+    }
+    decimal.rescale(scale);
+    let str_number = decimal.to_string().replace(".", "");
+    let bi: BigInt = str_number.parse().unwrap();
+    let vec: Vec<u8> = bi.to_signed_bytes_be();
+    Ok(apache_avro::Decimal::from(vec))
 }
 
 fn map_union(
@@ -197,11 +219,30 @@ mod tests {
     use apache_avro::{schema::RecordField, Schema};
 
     use super::map_json_fields_to_record;
+    use super::parse_decimal;
     use crate::lib::avro::AvroError;
 
     use apache_avro::types::Value as AvroValue;
     use serde_json::json;
     use serde_json::Value as JsonValue;
+
+    #[test]
+    fn test_decimal() {
+        // happy path
+        {
+            let res = parse_decimal("12.3", 2_u32).unwrap();
+            assert_eq!(format!("{:?}", res), "Decimal { value: 1230, len: 2 }");
+        }
+        {
+            let res = parse_decimal("12.3", 1_u32).unwrap();
+            assert_eq!(format!("{:?}", res), "Decimal { value: 123, len: 1 }");
+        }
+        // error when unable to scale
+        {
+            let res = parse_decimal("12.334", 1_u32);
+            assert!(res.is_err())
+        }
+    }
 
     #[test]
     fn test_map_record() {
