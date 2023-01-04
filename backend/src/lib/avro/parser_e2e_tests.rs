@@ -6,10 +6,7 @@ mod tests {
     use async_trait::async_trait;
     use serde_json::Value as JsonValue;
 
-    use crate::lib::{
-        avro::{error::AvroResult, AvroParser, SchemaProvider},
-        schema_registry::ResolvedAvroSchema,
-    };
+    use crate::lib::avro::{error::AvroResult, AvroParser, ResolvedAvroSchema, SchemaProvider};
 
     #[tokio::test]
     async fn test_unnested() {
@@ -31,13 +28,13 @@ mod tests {
         async fn get_schema_by_id(&self, id: i32) -> AvroResult<ResolvedAvroSchema> {
             Ok(ResolvedAvroSchema::from(
                 id,
-                ApacheAvroSchema::parse_str(&self.schema).unwrap(),
+                &ApacheAvroSchema::parse_str(&self.schema).unwrap(),
             ))
         }
         async fn get_schema_by_name(&self, _name: &str) -> AvroResult<ResolvedAvroSchema> {
             Ok(ResolvedAvroSchema::from(
                 123,
-                ApacheAvroSchema::parse_str(&self.schema).unwrap(),
+                &ApacheAvroSchema::parse_str(&self.schema).unwrap(),
             ))
         }
     }

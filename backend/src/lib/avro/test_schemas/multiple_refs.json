@@ -5,6 +5,14 @@
   "fields": [
     { "name": "value", "type": "long" },
     {
+      "name": "valueNested",
+      "type": {
+        "type": "record",
+        "name": "NestedRecord",
+        "fields": [{ "name": "value", "type": "long" }]
+      }
+    },
+    {
       "name": "nested",
       "type": {
         "type": "record",
@@ -22,6 +30,8 @@
         ]
       }
     },
-    { "name": "ref", "type": "nested.ns.testTarget" }
+    { "name": "ref", "type": "nested.ns.testTarget" },
+    { "name": "value1", "type": "nested.ns.userInfo2" },
+    { "name": "value2", "type": ["nested.ns.userInfo2", "nested.ns.testTarget", "NestedRecord"] }
   ]
 }

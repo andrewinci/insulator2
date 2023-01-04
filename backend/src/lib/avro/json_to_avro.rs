@@ -1,7 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 
 use apache_avro::{schema::Name, to_avro_datum, types::Value as AvroValue, Schema};
-use log::error;
 use num_bigint::BigInt;
 use uuid::Uuid;
 
@@ -10,9 +9,9 @@ use super::{
     error::AvroResult,
     helpers::{build_record_header, get_schema_name},
     schema_provider::SchemaProvider,
-    AvroError,
+    AvroError, ResolvedAvroSchema,
 };
-use crate::lib::schema_registry::ResolvedAvroSchema;
+
 use serde_json::Value as JsonValue;
 
 impl<S: SchemaProvider> AvroParser<S> {

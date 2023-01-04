@@ -10,5 +10,6 @@ mod schema_provider;
 mod parser_e2e_tests;
 
 pub use avro_parser::AvroParser;
+pub use avro_schema::ResolvedAvroSchema;
 pub use error::AvroError;
 pub use schema_provider::SchemaProvider;
