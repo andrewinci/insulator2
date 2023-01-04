@@ -1,0 +1,19 @@
+{
+  "type": "record",
+  "name": "Record",
+  "namespace": "root",
+  "fields": [
+    {
+      "name": "a",
+      "type": { "type": "enum", "name": "A", "symbols": ["A_1", "A_2"] }
+    },
+    {
+      "name": "b",
+      "type": { "type": "enum", "name": "B", "symbols": ["B_1", "B_2"] }
+    },
+    {
+      "name": "union_a_b",
+      "type": ["A", "B"]
+    }
+  ]
+}

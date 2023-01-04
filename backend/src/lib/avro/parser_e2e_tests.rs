@@ -16,6 +16,11 @@ mod tests {
         test_parsing_loop("1_schema.json", "1_good_input.json").await
     }
 
+    #[tokio::test]
+    async fn test_enum_union_with_refs() {
+        test_parsing_loop("2_schema.json", "2_good_input.json").await
+    }
+
     /// test fixture
     struct MockSchemaRegistry {
         schema: String,
@@ -45,7 +50,11 @@ mod tests {
         // act/assert
         let json_to_avro_result = sut.json_to_avro(&avro_json_in, "schema_name").await;
 
-        assert!(json_to_avro_result.is_ok());
+        assert!(
+            json_to_avro_result.is_ok(),
+            "Expected Ok, received: {:?}",
+            json_to_avro_result
+        );
 
         let avro_to_json_result = sut.avro_to_json(&json_to_avro_result.unwrap()).await;
 
