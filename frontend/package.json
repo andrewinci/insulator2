@@ -17,7 +17,7 @@
     "@mantine/core": "^5.10.0",
     "@mantine/dates": "^5.10.0",
     "@mantine/form": "^5.9.0",
-    "@mantine/hooks": "^5.9.6",
+    "@mantine/hooks": "^5.10.0",
     "@mantine/modals": "^5.9.6",
     "@mantine/notifications": "^5.9.5",
     "@mantine/prism": "^5.9.6",
