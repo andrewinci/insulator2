@@ -19,7 +19,7 @@
     "@mantine/form": "^5.9.0",
     "@mantine/hooks": "^5.10.0",
     "@mantine/modals": "^5.9.6",
-    "@mantine/notifications": "^5.9.5",
+    "@mantine/notifications": "^5.10.0",
     "@mantine/prism": "^5.9.6",
     "@monaco-editor/react": "^4.4.6",
     "@tabler/icons": "^1.119.0",
