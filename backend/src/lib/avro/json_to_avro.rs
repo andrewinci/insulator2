@@ -24,24 +24,29 @@ impl<S: SchemaProvider> AvroParser<S> {
     pub fn json_to_avro_with_schema(&self, json: &str, schema: ResolvedAvroSchema) -> AvroResult<Vec<u8>> {
         let json_value = JsonValue::from_str(json).map_err(|err| AvroError::ParseJsonValue(err.to_string()))?;
         let mut res = build_record_header(schema.schema_id);
-        let avro_value = json_to_avro_map(&json_value, &schema.schema, &schema.resolved_schemas)?;
-        let mut avro_record = to_avro_datum(&schema.schema, avro_value.clone()).map_err(|err| {
-            error!(
-                "\n\tUnable to parse {:?}\n\tUsing schema: {:?}\n\tError: {:?}",
-                avro_value, &schema.schema, err
-            );
-            AvroError::ParseAvroValue(err.to_string())
-        })?;
+        let avro_value = json_to_avro_map(&json_value, &schema.schema, None, &schema.resolved_schemas)?;
+        println!("Parsing: {:?}\n\tUsing schema: {:?}", avro_value, &schema.schema);
+        let mut avro_record = to_avro_datum(&schema.schema, avro_value.clone())
+            .map_err(|err| AvroError::ParseAvroValue(err.to_string()))?;
         res.append(&mut avro_record);
         Ok(res)
     }
 }
 
-fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) -> AvroResult<AvroValue> {
-    match (&s, j) {
+fn json_to_avro_map(
+    json_value: &JsonValue,
+    schema: &Schema,
+    parent_ns: Option<&str>,
+    ref_map: &HashMap<Name, Schema>,
+) -> AvroResult<AvroValue> {
+    match (&schema, json_value) {
         // complex types
-        (Schema::Record { fields, .. }, JsonValue::Object(obj)) => map_json_fields_to_record(fields, obj, ref_map),
-        (Schema::Array(items_schema), JsonValue::Array(values)) => map_json_array_to_avro(values, items_schema, ref_map),
+        (Schema::Record { fields, name, .. }, JsonValue::Object(obj)) => {
+            map_json_fields_to_record(fields, obj, name.namespace.clone().as_deref(), ref_map)
+        }
+        (Schema::Array(items_schema), JsonValue::Array(values)) => {
+            map_json_array_to_avro(values, items_schema, parent_ns, ref_map)
+        }
         (Schema::Union(union_schema), JsonValue::Null) => {
             let (position, _) = union_schema.find_schema(&AvroValue::Null).ok_or_else(|| {
                 AvroError::InvalidUnion(format!(
@@ -51,11 +56,11 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
             })?;
             Ok(AvroValue::Union(position as u32, AvroValue::Null.into()))
         }
-        (Schema::Union(union_schema), JsonValue::Object(obj)) => map_union(obj, union_schema, ref_map),
+        (Schema::Union(union_schema), JsonValue::Object(obj)) => map_union(obj, union_schema, parent_ns, ref_map),
         (Schema::Map(schema), JsonValue::Object(obj)) => {
             let mut avro_map = HashMap::new();
             for (key, value) in obj {
-                avro_map.insert(key.to_string(), json_to_avro_map(value, schema, ref_map)?);
+                avro_map.insert(key.to_string(), json_to_avro_map(value, schema, parent_ns, ref_map)?);
             }
             Ok(AvroValue::Map(avro_map))
         }
@@ -136,10 +141,14 @@ fn json_to_avro_map(j: &JsonValue, s: &Schema, ref_map: &HashMap<Name, Schema>) 
         }
         // references
         (Schema::Ref { name }, value) => {
+            let ns_name = Name {
+                name: name.name.clone(),
+                namespace: name.namespace.clone().or_else(|| parent_ns.map(str::to_string)),
+            };
             let schema = ref_map
-                .get(name)
+                .get(&ns_name)
                 .ok_or_else(|| AvroError::MissingAvroSchemaReference(format!("Unable to resolve reference {}", name)))?;
-            json_to_avro_map(value, schema, ref_map)
+            json_to_avro_map(value, schema, parent_ns, ref_map)
         }
         (Schema::Uuid, JsonValue::String(v)) => {
             let uuid =
@@ -177,6 +186,7 @@ fn parse_decimal(n: &str, scale: u32) -> AvroResult<apache_avro::Decimal> {
 fn map_union(
     obj: &serde_json::Map<String, JsonValue>,
     union_schema: &apache_avro::schema::UnionSchema,
+    parent_ns: Option<&str>,
     ref_map: &HashMap<Name, Schema>,
 ) -> Result<AvroValue, AvroError> {
     let fields_vec: Vec<(&String, &JsonValue)> = obj.iter().collect();
@@ -191,14 +201,19 @@ fn map_union(
             .variants()
             .iter()
             .enumerate()
-            .find(|(_, s)| get_schema_name(s).eq(union_branch_name));
+            .find(|(_, schema)| get_schema_name(schema, parent_ns).eq(union_branch_name));
         if let Some((index, current_schema)) = index_schema {
-            let value = json_to_avro_map(value, current_schema, ref_map)?;
+            let value = json_to_avro_map(value, current_schema, parent_ns, ref_map)?;
             Ok(AvroValue::Union(index as u32, value.into()))
         } else {
+            let union_variants: Vec<_> = union_schema
+                .variants()
+                .iter()
+                .map(|schema| get_schema_name(schema, parent_ns))
+                .collect();
             Err(AvroError::InvalidUnion(format!(
-                "Unsupported union specifier: {}",
-                union_branch_name
+                "Unsupported union specifier: {}. Supported variants are: {:?}",
+                union_branch_name, union_variants
             )))
         }
     }
@@ -207,11 +222,12 @@ fn map_union(
 fn map_json_array_to_avro(
     values: &Vec<JsonValue>,
     items_schema: &Schema,
+    parent_ns: Option<&str>,
     ref_map: &HashMap<Name, Schema>,
 ) -> Result<AvroValue, AvroError> {
     let mut vec = vec![];
     for value in values {
-        let avro_value = json_to_avro_map(value, items_schema, ref_map)?;
+        let avro_value = json_to_avro_map(value, items_schema, parent_ns, ref_map)?;
         vec.push(avro_value);
     }
     Ok(AvroValue::Array(vec))
@@ -220,6 +236,7 @@ fn map_json_array_to_avro(
 fn map_json_fields_to_record(
     fields: &Vec<apache_avro::schema::RecordField>,
     obj: &serde_json::Map<String, JsonValue>,
+    parent_ns: Option<&str>,
     ref_map: &HashMap<Name, Schema>,
 ) -> Result<AvroValue, AvroError> {
     let mut record_fields: Vec<(String, AvroValue)> = vec![];
@@ -227,7 +244,7 @@ fn map_json_fields_to_record(
         let field_value = obj
             .get(&field.name)
             .ok_or_else(|| AvroError::MissingField(field.name.clone()))?;
-        let avro_field = json_to_avro_map(field_value, &field.schema, ref_map)?;
+        let avro_field = json_to_avro_map(field_value, &field.schema, parent_ns, ref_map)?;
         record_fields.push((field.name.clone(), avro_field));
     }
     Ok(AvroValue::Record(record_fields))
@@ -278,7 +295,7 @@ mod tests {
 
         // happy path
         {
-            let res = map_json_fields_to_record(&fields, &obj, &HashMap::new());
+            let res = map_json_fields_to_record(&fields, &obj, None, &HashMap::new());
             assert_eq!(
                 res,
                 Ok(AvroValue::Record(vec![("sample".to_string(), AvroValue::Int(1))]))
@@ -291,7 +308,7 @@ mod tests {
                 build_record_field("sample", apache_avro::Schema::Int),
                 build_record_field("sample_2", apache_avro::Schema::Int),
             ];
-            let res = map_json_fields_to_record(&fields, &obj, &HashMap::new());
+            let res = map_json_fields_to_record(&fields, &obj, None, &HashMap::new());
             assert_eq!(res, Err(AvroError::MissingField("sample_2".into())))
         }
 
@@ -308,13 +325,14 @@ mod tests {
                 aliases: None,
                 doc: None,
                 fields: fields,
-                lookup: BTreeMap::<String, usize>::new(),
+                lookup: BTreeMap::new(),
+                attributes: BTreeMap::new(),
             };
             let fields = vec![
                 build_record_field("sample", apache_avro::Schema::Int),
                 build_record_field("nested", nested_schema),
             ];
-            let res = map_json_fields_to_record(&fields, &obj_parent, &HashMap::new());
+            let res = map_json_fields_to_record(&fields, &obj_parent, None, &HashMap::new());
             assert_eq!(
                 res,
                 Ok(AvroValue::Record(vec![
@@ -336,6 +354,7 @@ mod tests {
             schema: schema,
             order: apache_avro::schema::RecordFieldOrder::Ignore,
             position: Default::default(),
+            custom_attributes: BTreeMap::new(),
         }
     }
 }

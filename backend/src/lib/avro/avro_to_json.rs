@@ -71,7 +71,7 @@ fn map(
                     AvroError::InvalidUnion(format!("Missing schema index {} in the union {:?}", *i, s))
                 })?;
                 let value = map(v, schema, parent_ns, ref_cache)?;
-                Ok(json!({ get_schema_name(schema): value }))
+                Ok(json!({ get_schema_name(schema, parent_ns.as_deref()): value }))
             }
         }
         (AvroValue::Enum(_, v), Schema::Enum { name: _, .. }) => Ok(json!(*v)),
