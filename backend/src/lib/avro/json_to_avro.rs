@@ -141,10 +141,7 @@ fn json_to_avro_map(
         }
         // references
         (Schema::Ref { name }, value) => {
-            let ns_name = Name {
-                name: name.name.clone(),
-                namespace: name.namespace.clone().or_else(|| parent_ns.map(str::to_string)),
-            };
+            let ns_name = name.fully_qualified_name(&parent_ns.map(|v| v.to_string()));
             let schema = ref_map
                 .get(&ns_name)
                 .ok_or_else(|| AvroError::MissingAvroSchemaReference(format!("Unable to resolve reference {}", name)))?;
