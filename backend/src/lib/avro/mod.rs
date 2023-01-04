@@ -1,4 +1,5 @@
 mod avro_parser;
+mod avro_schema;
 mod avro_to_json;
 mod error;
 mod helpers;
