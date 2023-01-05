@@ -20,7 +20,7 @@ reqwest = { version = "0.11", features = ["json", "blocking"] }
 url = { version = "2", features = ["serde"] }
 tokio = { version = "1", features = ["full"] }
 futures = { version = "0.3" }
-apache-avro = { version = "0.14.0" }
+apache-avro = { git = "https://github.com/apache/avro", rev = "05099c3263081e264eb95ee41609095d44a0acfd" }
 log = { version = "0.4" }
 env_logger = { version = "0.10.0" }
 async-trait = "0.1.60"
@@ -34,6 +34,7 @@ toml = "0.5"
 rand = "0.8.5"
 time = "0.3.17"
 sys-locale = "0.2.3"
+uuid = "1.2.2"
 
 [target.'cfg(windows)'.dependencies]
 rdkafka = { version = "0.29", features = [

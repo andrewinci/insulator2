@@ -1,0 +1,29 @@
+{
+  "type": "record",
+  "name": "Record",
+  "fields": [
+    { "name": "NullField", "type": "null" },
+    { "name": "BooleanField", "type": "boolean" },
+    { "name": "IntField", "type": "int" },
+    { "name": "LongField", "type": "long" },
+    { "name": "FloatField", "type": "float" },
+    { "name": "DoubleField", "type": "double" },
+    { "name": "StringField", "type": "string" },
+    {
+      "name": "EnumField",
+      "type": { "type": "enum", "name": "Suit", "symbols": ["SPADES", "HEARTS", "DIAMONDS", "CLUBS"] }
+    },
+    { "name": "ArrayField", "type": { "type": "array", "items": "long" } },
+    { "name": "MapField", "type": { "type": "map", "values": "string" } },
+    { "name": "OptionalStringField", "type": ["null", "string"] },
+    { "name": "OptionalStringField2", "type": ["null", "string"] },
+    { "name": "UnionField", "type": ["long", "string", "float"] },
+    { "name": "DecimalField", "type": { "type": "bytes", "logicalType": "decimal", "precision": 4, "scale": 2 } },
+    { "name": "DateField", "type": { "type": "int", "logicalType": "date" } },
+    { "name": "TimeMillisField", "type": { "type": "int", "logicalType": "time-millis" } },
+    { "name": "TimeMicrosField", "type": { "type": "long", "logicalType": "time-micros" } },
+    { "name": "TimestampMillisField", "type": { "type": "long", "logicalType": "timestamp-millis" } },
+    { "name": "TimestampMicrosField", "type": { "type": "long", "logicalType": "timestamp-micros" } },
+    { "name": "UuidField", "type": { "type": "string", "logicalType": "uuid" } }
+  ]
+}
