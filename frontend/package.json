@@ -18,7 +18,7 @@
     "@mantine/dates": "^5.10.0",
     "@mantine/form": "^5.9.0",
     "@mantine/hooks": "^5.10.0",
-    "@mantine/modals": "^5.9.6",
+    "@mantine/modals": "^5.10.0",
     "@mantine/notifications": "^5.10.0",
     "@mantine/prism": "^5.9.6",
     "@monaco-editor/react": "^4.4.6",
