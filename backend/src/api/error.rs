@@ -137,10 +137,6 @@ impl From<AvroError> for ApiError {
                 error_type: "Avro error: InvalidNumber".into(),
                 message,
             },
-            AvroError::MissingAvroSchemaReference(message) => ApiError {
-                error_type: "Avro error: MissingAvroSchemaReference".into(),
-                message,
-            },
             AvroError::MissingField(message) => ApiError {
                 error_type: "Avro error: MissingField".into(),
                 message,

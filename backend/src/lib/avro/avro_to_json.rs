@@ -1,10 +1,11 @@
+use super::avro_schema::{AvroSchema as Schema, RecordField};
 use super::{
     avro_parser::AvroParser,
     error::{AvroError, AvroResult},
     helpers::{get_schema_id_from_record_header, get_schema_name},
     schema_provider::SchemaProvider,
 };
-use apache_avro::{from_avro_datum, schema::Name, types::Value as AvroValue, Schema};
+use apache_avro::{from_avro_datum, schema::Name, types::Value as AvroValue};
 use num_bigint::BigInt;
 use rust_decimal::Decimal;
 use serde_json::{json, Map, Value as JsonValue};
@@ -19,9 +20,9 @@ impl<S: SchemaProvider> AvroParser<S> {
         let mut data = Cursor::new(&raw[5..]);
 
         // parse the avro record into an AvroValue
-        let record =
-            from_avro_datum(&schema.schema, &mut data, None).map_err(|err| AvroError::ParseAvroValue(err.to_string()))?;
-        let json = map(&record, &schema.schema, &None, &schema.resolved_schemas)?;
+        let record = from_avro_datum(&schema.inner_schema, &mut data, None)
+            .map_err(|err| AvroError::ParseAvroValue(err.to_string()))?;
+        let json = map(&record, &schema.schema, &None, &HashMap::new())?;
         let res = serde_json::to_string(&json).map_err(|err| AvroError::ParseJsonValue(err.to_string()))?;
         Ok(res)
     }
@@ -67,7 +68,7 @@ fn map(
             if *v == Box::new(AvroValue::Null) {
                 Ok(JsonValue::Null)
             } else {
-                let schema = s.variants().get(*i as usize).ok_or_else(|| {
+                let schema = s.get(*i as usize).ok_or_else(|| {
                     AvroError::InvalidUnion(format!("Missing schema index {} in the union {:?}", *i, s))
                 })?;
                 let value = map(v, schema, parent_ns, ref_cache)?;
@@ -76,29 +77,11 @@ fn map(
         }
         (AvroValue::Enum(_, v), Schema::Enum { name: _, .. }) => Ok(json!(*v)),
         (AvroValue::Fixed(_, v), Schema::Fixed { .. }) => Ok(json!(*v)),
-        (value, Schema::Ref { name }) => parse_ref(ref_cache, name, parent_ns, value),
         (_, s) => Err(AvroError::Unsupported(format!(
             "Unexpected value/schema tuple. Schema: {:?}",
             s
         ))),
     }
-}
-
-fn parse_ref(
-    ref_cache: &HashMap<Name, Schema>,
-    name: &Name,
-    parent_ns: &Option<String>,
-    value: &AvroValue,
-) -> AvroResult<JsonValue> {
-    let schema = ref_cache
-        .get(
-            &(Name {
-                namespace: name.namespace.clone().or_else(|| parent_ns.to_owned()),
-                name: name.name.clone(),
-            }),
-        )
-        .ok_or_else(|| AvroError::MissingAvroSchemaReference(name.to_string()))?;
-    map(value, schema, &name.namespace, ref_cache)
 }
 
 fn parse_decimal(v: &apache_avro::Decimal, scale: &usize) -> AvroResult<JsonValue> {
@@ -118,7 +101,7 @@ fn parse_decimal(v: &apache_avro::Decimal, scale: &usize) -> AvroResult<JsonValu
 fn parse_record(
     vec: &[(String, AvroValue)],
     lookup: &std::collections::BTreeMap<String, usize>,
-    fields: &[apache_avro::schema::RecordField],
+    fields: &[RecordField],
     name: &Name,
     parent_ns: &Option<String>,
     ref_cache: &HashMap<Name, Schema>,
@@ -172,7 +155,7 @@ mod tests {
     use apache_avro::{to_avro_datum, types::Record, types::Value as AvroValue, Schema as ApacheAvroSchema, Writer};
     use async_trait::async_trait;
 
-    use crate::lib::{avro::error::AvroResult, schema_registry::ResolvedAvroSchema};
+    use crate::lib::avro::{error::AvroResult, ResolvedAvroSchema};
 
     use super::{AvroParser, SchemaProvider};
     struct MockSchemaRegistry {
@@ -184,7 +167,7 @@ mod tests {
         async fn get_schema_by_id(&self, _: i32) -> AvroResult<ResolvedAvroSchema> {
             Ok(ResolvedAvroSchema::from(
                 123,
-                ApacheAvroSchema::parse_str(&self.schema).unwrap(),
+                &ApacheAvroSchema::parse_str(&self.schema).unwrap(),
             ))
         }
         async fn get_schema_by_name(&self, _name: &str) -> AvroResult<ResolvedAvroSchema> {

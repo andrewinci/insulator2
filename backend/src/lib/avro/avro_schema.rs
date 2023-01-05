@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use apache_avro::{schema::Name, Schema};
 
@@ -29,16 +29,30 @@ pub enum AvroSchema {
     Array(Box<AvroSchema>),
     Map(Box<AvroSchema>),
     Union(Vec<AvroSchema>),
-    Record { name: Name, fields: Vec<RecordField> },
-    Enum { name: Name, symbols: Vec<String> },
-    Fixed { name: Name, size: usize },
-    Decimal { precision: usize, scale: usize },
+    Record {
+        name: Name,
+        fields: Vec<RecordField>,
+        lookup: BTreeMap<String, usize>,
+    },
+    Enum {
+        name: Name,
+        symbols: Vec<String>,
+    },
+    Fixed {
+        name: Name,
+        size: usize,
+    },
+    Decimal {
+        precision: usize,
+        scale: usize,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ResolvedAvroSchema {
     pub id: i32,
     pub schema: AvroSchema,
+    pub inner_schema: Schema,
 }
 
 impl ResolvedAvroSchema {
@@ -67,8 +81,11 @@ impl ResolvedAvroSchema {
                 Schema::Union(s) => {
                     AvroSchema::Union(s.variants().iter().map(|s| map(s, parent_ns, references)).collect())
                 }
-                Schema::Record { name, fields, .. } => AvroSchema::Record {
+                Schema::Record {
+                    name, fields, lookup, ..
+                } => AvroSchema::Record {
                     name: name.clone(),
+                    lookup: lookup.clone(),
                     fields: fields
                         .iter()
                         .map(|i| RecordField {
@@ -99,6 +116,7 @@ impl ResolvedAvroSchema {
         Self {
             id,
             schema: map(schema, &None, &references),
+            inner_schema: schema.clone(),
         }
     }
 }

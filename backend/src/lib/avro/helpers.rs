@@ -1,4 +1,5 @@
-use apache_avro::{schema::Name, Schema};
+use super::avro_schema::AvroSchema as Schema;
+use apache_avro::schema::Name;
 use log::error;
 
 use super::error::{AvroError, AvroResult};
@@ -44,7 +45,6 @@ pub(super) fn get_schema_name<'a>(s: &'a Schema, parent_ns: Option<&'a str>) -> 
         Schema::String => "string".into(),
         Schema::Record { name, .. } => ns_name(name, parent_ns),
         Schema::Enum { name, .. } => ns_name(name, parent_ns),
-        Schema::Ref { name, .. } => ns_name(name, parent_ns),
         _ => {
             //todo: support the other types
             let message = format!("Unable to retrieve the name of the schema {:?}", s);
