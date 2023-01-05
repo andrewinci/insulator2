@@ -1,7 +1,3 @@
-use super::avro_schema::AvroSchema as Schema;
-use apache_avro::schema::Name;
-use log::error;
-
 use super::error::{AvroError, AvroResult};
 
 pub(super) fn get_schema_id_from_record_header(raw: &[u8]) -> AvroResult<i32> {
@@ -21,37 +17,6 @@ pub(super) fn build_record_header(schema_id: i32) -> Vec<u8> {
     let mut id = Vec::from(schema_id.to_be_bytes());
     res.append(&mut id);
     res
-}
-
-fn ns_name(name: &Name, parent_ns: Option<&str>) -> String {
-    let namespace = name.namespace.clone().or_else(|| parent_ns.map(|n| n.to_string()));
-    if let Some(namespace) = namespace {
-        format!("{}.{}", namespace, name.name)
-    } else {
-        name.name.clone()
-    }
-}
-
-/// retrieve the schema name to be used in Json
-pub(super) fn get_schema_name<'a>(s: &'a Schema, parent_ns: Option<&'a str>) -> String {
-    match s {
-        Schema::Null => "null".into(),
-        Schema::Boolean => "boolean".into(),
-        Schema::Int => "int".into(),
-        Schema::Long => "long".into(),
-        Schema::Float => "float".into(),
-        Schema::Double => "double".into(),
-        Schema::Bytes => "bytes".into(),
-        Schema::String => "string".into(),
-        Schema::Record { name, .. } => ns_name(name, parent_ns),
-        Schema::Enum { name, .. } => ns_name(name, parent_ns),
-        _ => {
-            //todo: support the other types
-            let message = format!("Unable to retrieve the name of the schema {:?}", s);
-            error!("{}", message);
-            panic!("{}", message);
-        }
-    }
 }
 
 #[cfg(test)]

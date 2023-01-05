@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use apache_avro::{schema::Name, Schema};
+use log::error;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordField {
@@ -48,6 +49,35 @@ pub enum AvroSchema {
     },
 }
 
+impl AvroSchema {
+    pub fn fqn(&self) -> String {
+        fn fqn(name: Name) -> String {
+            match name.namespace {
+                Some(namespace) => format!("{}.{}", namespace, name.name),
+                None => name.name,
+            }
+        }
+        match self {
+            AvroSchema::Null => "null".into(),
+            AvroSchema::Boolean => "boolean".into(),
+            AvroSchema::Int => "int".into(),
+            AvroSchema::Long => "long".into(),
+            AvroSchema::Float => "float".into(),
+            AvroSchema::Double => "double".into(),
+            AvroSchema::Bytes => "bytes".into(),
+            AvroSchema::String => "string".into(),
+            AvroSchema::Record { name, .. } => fqn(name.clone()),
+            AvroSchema::Enum { name, .. } => fqn(name.clone()),
+            _ => {
+                //todo: support the other types
+                let message = format!("Unable to retrieve the name of the schema {:?}", self);
+                error!("{}", message);
+                panic!("{}", message);
+            }
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct ResolvedAvroSchema {
     pub id: i32,
@@ -90,7 +120,11 @@ impl ResolvedAvroSchema {
                         .iter()
                         .map(|i| RecordField {
                             name: i.name.clone(),
-                            schema: map(&i.schema, &name.namespace.clone().or(parent_ns.clone()), references),
+                            schema: map(
+                                &i.schema,
+                                &name.namespace.clone().or_else(|| parent_ns.clone()),
+                                references,
+                            ),
                         })
                         .collect(),
                 },
@@ -100,11 +134,11 @@ impl ResolvedAvroSchema {
                 },
                 Schema::Fixed { name, size, .. } => AvroSchema::Fixed {
                     name: name.clone(),
-                    size: size.clone(),
+                    size: *size,
                 },
                 Schema::Decimal { precision, scale, .. } => AvroSchema::Decimal {
-                    precision: precision.clone(),
-                    scale: scale.clone(),
+                    precision: *precision,
+                    scale: *scale,
                 },
                 Schema::Ref { name } => references
                     .get(&name.fully_qualified_name(parent_ns))
