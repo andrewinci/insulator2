@@ -1,8 +1,11 @@
 use async_trait::async_trait;
 
-use crate::lib::schema_registry::{CachedSchemaRegistry, ResolvedAvroSchema};
+use crate::lib::schema_registry::CachedSchemaRegistry;
 
-use super::error::{AvroError, AvroResult};
+use super::{
+    error::{AvroError, AvroResult},
+    ResolvedAvroSchema,
+};
 
 #[async_trait]
 pub trait SchemaProvider: Send + Sync {

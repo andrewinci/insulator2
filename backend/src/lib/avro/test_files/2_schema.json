@@ -1,0 +1,45 @@
+{
+  "type": "record",
+  "name": "Record",
+  "namespace": "root",
+  "fields": [
+    {
+      "name": "a",
+      "type": { "type": "enum", "name": "A", "symbols": ["A_1", "A_2"] }
+    },
+    {
+      "name": "b",
+      "type": { "type": "enum", "name": "B", "symbols": ["B_1", "B_2"] }
+    },
+    {
+      "name": "c",
+      "type": {
+        "type": "record",
+        "name": "NestedRecord",
+        "namespace": "nested",
+        "fields": [
+          {
+            "name": "a",
+            "type": { "type": "enum", "name": "ANested", "symbols": ["NA_1", "NA_2"] }
+          },
+          {
+            "name": "b",
+            "type": { "type": "enum", "name": "BNested", "symbols": ["NB_1", "NB_2"] }
+          },
+          {
+            "name": "union_a_b",
+            "type": ["root.A", "root.B"]
+          }
+        ]
+      }
+    },
+    {
+      "name": "union_a_b",
+      "type": ["A", "B"]
+    },
+    {
+      "name": "union_nested_a_b",
+      "type": ["nested.ANested", "nested.ANested"]
+    }
+  ]
+}
