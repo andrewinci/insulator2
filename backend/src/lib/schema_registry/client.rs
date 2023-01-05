@@ -7,9 +7,11 @@ use url::Url;
 
 use apache_avro::Schema as AvroSchema;
 
+use crate::lib::avro::ResolvedAvroSchema;
+
 use super::error::{SchemaRegistryError, SchemaRegistryResult};
 use super::http_client::{HttpClient, ReqwestClient};
-use super::types::{BasicAuth, ResolvedAvroSchema, Schema, Subject};
+use super::types::{BasicAuth, Schema, Subject};
 
 #[derive(Deserialize)]
 struct GetSchemaByIdResult {
@@ -106,7 +108,7 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
             let schema = AvroSchema::parse_str(schema.schema.as_str()).map_err(|err| {
                 SchemaRegistryError::SchemaParsing(format!("Unable to parse the schema from schema registry\n{}", err))
             })?;
-            let res = ResolvedAvroSchema::from(id, schema);
+            let res = ResolvedAvroSchema::from(id, &schema);
             self.schema_cache_by_id.write().await.insert(id, res.clone());
             Ok(res)
         }
@@ -143,7 +145,7 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
             let schema = AvroSchema::parse_str(last.schema.as_str()).map_err(|err| {
                 SchemaRegistryError::SchemaParsing(format!("Unable to parse the schema from schema registry\n{}", err))
             })?;
-            Ok(ResolvedAvroSchema::from(last.id, schema))
+            Ok(ResolvedAvroSchema::from(last.id, &schema))
         } else {
             Err(SchemaRegistryError::SchemaNotFound(format!(
                 "Schema {} not found",

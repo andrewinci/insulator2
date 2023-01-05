@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-
-use apache_avro::schema::{Name, Schema as AvroSchema};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -21,11 +18,4 @@ pub struct Schema {
 pub struct BasicAuth {
     pub username: String,
     pub password: Option<String>,
-}
-
-#[derive(Debug, Clone)]
-pub struct ResolvedAvroSchema {
-    pub schema_id: i32,
-    pub schema: AvroSchema,
-    pub resolved_schemas: HashMap<Name, AvroSchema>,
 }

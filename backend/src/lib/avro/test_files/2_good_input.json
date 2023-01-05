@@ -1,0 +1,11 @@
+{
+  "a": "A_1",
+  "b": "B_2",
+  "c": {
+    "a": "NA_1",
+    "b": "NB_2",
+    "union_a_b": { "B": "B_1" }
+  },
+  "union_a_b": { "B": "B_1" },
+  "union_nested_a_b": { "ANested": "NA_2" }
+}
