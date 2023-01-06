@@ -21,5 +21,6 @@
   "TimeMicrosField": 3456678412,
   "TimestampMillisField": 123457637,
   "TimestampMicrosField": 84596712,
-  "UuidField": "6ba7b814-9dad-11d1-80b4-00c04fd430c8"
+  "UuidField": "6ba7b814-9dad-11d1-80b4-00c04fd430c8",
+  "UnionLong": { "decimal": 1231.12 }
 }
