@@ -7,7 +7,7 @@ import { getLastOffsets, getTopicInfo } from "../../../tauri/admin";
 import { Allotment } from "allotment";
 import { ToolsMenu } from "./tools-menu";
 import { TopicPageMenu } from "./topic-menu";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useCache } from "../../../hooks";
 import { ExportRecordsModal } from "../modals/export-records-modal";
 import { ConsumerConfigurationModal } from "../modals/consumer-configuration-modal";
@@ -129,6 +129,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
 
 const useConsumer = (clusterId: string, topicName: string) => {
   const [refetchInterval, setRefetchInterval] = useState<number | false>(false);
+  const [isRunning, setIsRunning] = useState(false);
   const {
     data: consumerState,
     isLoading,
@@ -137,10 +138,17 @@ const useConsumer = (clusterId: string, topicName: string) => {
     refetchInterval,
   });
 
+  useMemo(() => {
+    if (consumerState) {
+      setIsRunning(consumerState.isRunning);
+    }
+  }, [consumerState]);
+
   // consumer modal
   const [consumerModalOpened, setConsumerModalOpened] = useState(false);
 
   const _startConsumer = async (config: ConsumerConfiguration) => {
+    setIsRunning(true);
     setRefetchInterval(1000);
     await startConsumer(clusterId, topicName, config);
     refetch();
@@ -157,7 +165,7 @@ const useConsumer = (clusterId: string, topicName: string) => {
     },
     onConsumerModalClose: () => setConsumerModalOpened(false),
     consumerModalOpened,
-    isRunning: consumerState?.isRunning ?? false,
+    isRunning,
     consumedRecordsCount: consumerState?.recordCount ?? 0,
     isLoading,
   };
