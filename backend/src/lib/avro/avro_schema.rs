@@ -68,12 +68,18 @@ impl AvroSchema {
             AvroSchema::String => "string".into(),
             AvroSchema::Record { name, .. } => fqn(name.clone()),
             AvroSchema::Enum { name, .. } => fqn(name.clone()),
-            _ => {
-                //todo: support the other types
-                let message = format!("Unable to retrieve the name of the schema {:?}", self);
-                error!("{}", message);
-                panic!("{}", message);
-            }
+            AvroSchema::Uuid => "uuid".into(),
+            AvroSchema::Date => "date".into(),
+            AvroSchema::TimeMillis => "time-millis".into(),
+            AvroSchema::TimeMicros => "time-micros".into(),
+            AvroSchema::TimestampMillis => "timestamp-millis".into(),
+            AvroSchema::TimestampMicros => "timestamp-micros".into(),
+            AvroSchema::Decimal { .. } => "decimal".into(),
+            AvroSchema::Duration => "duration".into(),
+            AvroSchema::Array(_) => "array".into(),
+            AvroSchema::Map(_) => "map".into(),
+            AvroSchema::Union(_) => "union".into(),
+            AvroSchema::Fixed { .. } => "fixed".into(),
         }
     }
 }
