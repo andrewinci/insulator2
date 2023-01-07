@@ -1,12 +1,74 @@
 import { Center, Text } from "@mantine/core";
 import { useSessionStorage } from "@mantine/hooks";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { useFavorites } from "../../hooks/use-favorites";
 import { useUserSettings } from "../../providers";
-import { TwoColumnPage } from "../common";
+import { listSubjects } from "../../tauri/schema-registry";
+import { ItemList, TwoColumnPage } from "../common";
+import { AddSchemaModal } from "./add-schema-modal";
 import { Schema } from "./schema";
-import { SchemaList } from "./schema-list";
 
 export const SchemasPage = () => {
+  const { clusterId, isSchemaRegistryConfigured, activeSchemaName, setActiveSchemaName } = useSchemaRegistry();
+  const {
+    data: subjects,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useQuery(["getSchemaNamesList", clusterId], () => listSubjects(clusterId));
+  const [addSchemaModalOpened, setAddSchemaModalOpened] = useState(false);
+  const { favorites, toggleFavorite } = useFavorites(clusterId, "schemas");
+  const onDeleteSubject = (name: string) => {
+    if (activeSchemaName == name) {
+      setActiveSchemaName(undefined);
+    }
+    refetch();
+  };
+  if (isSchemaRegistryConfigured && clusterId) {
+    // a schema has been selected, show the allotment
+    return (
+      <TwoColumnPage
+        title="Schema registry"
+        left={
+          <>
+            <ItemList
+              title="Schemas"
+              listId={`schemas-${clusterId}`}
+              isLoading={isLoading}
+              isBackgroundRefreshing={isFetching}
+              favorites={favorites}
+              onFavToggled={toggleFavorite}
+              items={subjects ?? []}
+              onAddClick={() => setAddSchemaModalOpened(true)}
+              onItemSelected={setActiveSchemaName}
+              onRefreshList={refetch}
+            />
+            <AddSchemaModal
+              opened={addSchemaModalOpened}
+              onClose={() => refetch().then((_) => setAddSchemaModalOpened(false))}
+              clusterId={clusterId}
+              subjects={subjects ?? []}
+            />
+          </>
+        }
+        right={
+          activeSchemaName && (
+            <Schema clusterId={clusterId} schemaName={activeSchemaName} onSubjectDeleted={onDeleteSubject} />
+          )
+        }
+      />
+    );
+  } else
+    return (
+      <Center mt={20}>
+        <Text>Missing schema registry configuration</Text>
+      </Center>
+    );
+};
+
+const useSchemaRegistry = () => {
   const { clusterId, schemaName: navSchemaName } = useParams();
   const [state, setState] = useSessionStorage({
     key: `schema-main-${clusterId}`,
@@ -16,20 +78,11 @@ export const SchemasPage = () => {
   });
   const { userSettings: appState } = useUserSettings();
   const schemaRegistry = appState.clusters.find((c) => c.id == clusterId)?.schemaRegistry;
-
-  if (schemaRegistry && schemaRegistry.endpoint && clusterId) {
-    // a schema has been selected, show the allotment
-    return (
-      <TwoColumnPage
-        title="Schema registry"
-        left={<SchemaList clusterId={clusterId} onSubjectSelected={(schemaName) => setState({ schemaName })} />}
-        right={state.schemaName && <Schema clusterId={clusterId} schemaName={state.schemaName} />}
-      />
-    );
-  } else
-    return (
-      <Center mt={20}>
-        <Text>Missing schema registry configuration</Text>
-      </Center>
-    );
+  if (!clusterId) throw "Cluster id must be set";
+  return {
+    clusterId,
+    isSchemaRegistryConfigured: schemaRegistry && schemaRegistry.endpoint,
+    activeSchemaName: state.schemaName,
+    setActiveSchemaName: (schemaName: string | undefined) => setState({ schemaName }),
+  };
 };

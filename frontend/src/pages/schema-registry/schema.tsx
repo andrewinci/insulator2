@@ -1,25 +1,24 @@
-import { ActionIcon, Center, Container, Group, Loader, Menu, Select, Tooltip, Text } from "@mantine/core";
-import { openConfirmModal } from "@mantine/modals";
-import { IconFileExport, IconTool, IconTrash, IconVersions } from "@tabler/icons";
+import { Center, Container, Group, Loader, Select, Tooltip } from "@mantine/core";
+import { IconVersions } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
-import { fs } from "@tauri-apps/api";
-import { save } from "@tauri-apps/api/dialog";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { CodeEditor, PageHeader } from "../../components";
 import { pretty } from "../../helpers/json";
-import { useNotifications } from "../../providers";
-import { deleteSubject, deleteSubjectVersion, getSubject } from "../../tauri/schema-registry";
+import { getSubject } from "../../tauri/schema-registry";
+import { ToolsMenu } from "./tools-menu";
 
 type SchemaProps = {
   schemaName: string;
   clusterId: string;
+  onSubjectDeleted: (schemaName: string) => void;
 };
 
-export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
-  const { data: subject, isLoading } = useQuery(["getSchemaVersions", clusterId, schemaName], () =>
-    getSubject(clusterId, schemaName)
-  );
+export const Schema = ({ schemaName, clusterId, onSubjectDeleted }: SchemaProps) => {
+  const {
+    data: subject,
+    isLoading,
+    refetch,
+  } = useQuery(["getSchemaVersions", clusterId, schemaName], () => getSubject(clusterId, schemaName));
 
   const [state, setState] = useState({
     version: undefined as number | undefined,
@@ -38,7 +37,14 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
     <Container fluid>
       <PageHeader title={schemaName} subtitle={`Compatibility level: ${subject?.compatibility}`}>
         {state?.version && (
-          <Tools clusterId={clusterId} subject={schemaName} version={state.version} currentSchema={currentSchema} />
+          <ToolsMenu
+            clusterId={clusterId}
+            subject={schemaName}
+            version={state.version}
+            currentSchema={currentSchema}
+            onSubjectDeleted={onSubjectDeleted}
+            onVersionDeleted={() => refetch()}
+          />
         )}
       </PageHeader>
       {!isLoading && subject && (
@@ -68,87 +74,5 @@ export const Schema = ({ schemaName, clusterId }: SchemaProps) => {
         />
       </Container>
     </Container>
-  );
-};
-
-const Tools = ({
-  clusterId,
-  subject,
-  version,
-  currentSchema,
-}: {
-  clusterId: string;
-  subject: string;
-  version: number;
-  currentSchema: string;
-}) => {
-  const navigate = useNavigate();
-  const { success, alert } = useNotifications();
-  const openDeleteSubjectModal = () =>
-    openConfirmModal({
-      title: "Are you sure to delete this subject?",
-      children: (
-        <Text color="red" size="sm">
-          All versions of the {subject} schema will be deleted. This action is not reversible!
-        </Text>
-      ),
-      labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: async () =>
-        await deleteSubject(clusterId, subject).then((_) => {
-          success("Schema deleted successfully");
-          navigate(`/cluster/${clusterId}/schemas`);
-        }),
-    });
-
-  const openDeleteVersionModal = () =>
-    openConfirmModal({
-      title: "Are you sure to delete this version of the schema?",
-      children: (
-        <Text color="red" size="sm">
-          The version {version} of {subject} will be deleted. This action is not reversible!
-        </Text>
-      ),
-      labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: async () =>
-        await deleteSubjectVersion(clusterId, subject, version).then((_) => {
-          success(`Schema version ${version} deleted successfully`);
-          navigate(`/cluster/${clusterId}/schemas`);
-        }),
-    });
-
-  const onExport = async () => {
-    const path = await save({
-      defaultPath: `${subject}.json`,
-    });
-    if (path) {
-      try {
-        await fs.writeTextFile(path, currentSchema);
-        success(`Schema saved to ${path}`);
-      } catch (err) {
-        alert("Unable to save the schema locally", JSON.stringify(err));
-      }
-    }
-  };
-
-  return (
-    <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
-      <Menu.Target>
-        <ActionIcon size={28} sx={{ marginRight: "10px" }}>
-          <IconTool />
-        </ActionIcon>
-      </Menu.Target>
-      <Menu.Dropdown>
-        <Menu.Label>Tools</Menu.Label>
-        <Menu.Item icon={<IconFileExport size={14} />} onClick={onExport}>
-          Download schema
-        </Menu.Item>
-        <Menu.Item color="red" icon={<IconTrash size={14} />} onClick={openDeleteVersionModal}>
-          Delete selected version
-        </Menu.Item>
-        <Menu.Item color="red" icon={<IconTrash size={14} />} onClick={openDeleteSubjectModal}>
-          Delete subject
-        </Menu.Item>
-      </Menu.Dropdown>
-    </Menu>
   );
 };
