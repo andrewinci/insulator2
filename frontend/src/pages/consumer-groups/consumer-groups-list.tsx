@@ -24,7 +24,7 @@ export const ConsumerGroupsList = (props: SchemaListProps) => {
         title="Consumers"
         listId={`consumer-groups-${clusterId}`}
         onAddClick={() => setOpened(true)}
-        isFetching={isFetching}
+        isBackgroundRefreshing={isFetching}
         isLoading={isLoading}
         favorites={favorites}
         onFavToggled={toggleFavorite}

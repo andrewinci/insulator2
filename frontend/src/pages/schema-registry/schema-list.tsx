@@ -27,7 +27,7 @@ export const SchemaList = (props: SchemaListProps) => {
         title="Schemas"
         listId={`schemas-${clusterId}`}
         isLoading={isLoading}
-        isFetching={isFetching}
+        isBackgroundRefreshing={isFetching}
         favorites={favorites}
         onFavToggled={toggleFavorite}
         items={subjects ?? []}

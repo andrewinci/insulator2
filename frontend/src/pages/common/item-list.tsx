@@ -31,7 +31,7 @@ type ItemListProps = {
   listId: string;
   items: string[];
   isLoading: boolean;
-  isFetching: boolean;
+  isBackgroundRefreshing?: boolean;
   favorites: string[];
   onFavToggled: (item: string) => void;
   onItemSelected: (item: string) => void;
@@ -42,7 +42,7 @@ type ItemListProps = {
 // Common list page component
 export const ItemList = (props: ItemListProps) => {
   const { onItemSelected, onRefreshList, onAddClick, onFavToggled } = props;
-  const { listId, items, title, isLoading, isFetching, favorites } = props;
+  const { listId, items, title, isLoading, isBackgroundRefreshing, favorites } = props;
   const [searchText, setSearchText] = useState<string>("");
   const [focus, setOnFocus] = useState<string | undefined>(undefined);
   const [state, setState] = useSessionStorage<{
@@ -107,7 +107,7 @@ export const ItemList = (props: ItemListProps) => {
             </ActionIcon>
           </Tooltip>
           <Tooltip label="Refresh list">
-            <ActionIcon loading={isFetching} size="sm" onClick={onRefreshList}>
+            <ActionIcon loading={isBackgroundRefreshing} size="sm" onClick={onRefreshList}>
               <IconRefresh></IconRefresh>
             </ActionIcon>
           </Tooltip>

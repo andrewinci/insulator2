@@ -31,7 +31,7 @@ export const TopicList = (props: TopicListProps) => {
       isLoading={isLoading}
       favorites={favorites}
       onFavToggled={toggleFavorite}
-      isFetching={isFetching}
+      isBackgroundRefreshing={isFetching}
       items={data ?? []}
       onItemSelected={onTopicSelected}
       onRefreshList={refetch}
