@@ -1,10 +1,69 @@
 import { useSessionStorage } from "@mantine/hooks";
 import { useParams } from "react-router-dom";
 import { Topic } from "./topic/main";
-import { TopicList } from "./topic-list";
 import { TwoColumnPage } from "../common";
+import { ItemList } from "../common";
+import { listTopics } from "../../tauri/admin";
+import { Modal, Title } from "@mantine/core";
+import { useQuery } from "@tanstack/react-query";
+import { useFavorites } from "../../hooks/use-favorites";
+import { CreateTopicModal } from "./modals/create-topic-modal";
+import { useState } from "react";
 
 export const TopicsPage = () => {
+  const { clusterId, activeTopicName, setActiveTopicName } = useTopic();
+  const { isFetching, isLoading, data, refetch } = useQuery(["listTopics", clusterId], () => listTopics(clusterId));
+
+  const { favorites, toggleFavorite } = useFavorites(clusterId, "topics");
+  const [addTopicModalOpened, setAddTopicModalOpened] = useState(false);
+  const onTopicDeleted = (name: string) => {
+    if (activeTopicName == name) {
+      setActiveTopicName(undefined);
+    }
+    refetch();
+  };
+
+  return (
+    <TwoColumnPage
+      title="Topics"
+      left={
+        <>
+          <ItemList
+            title="Topics"
+            listId={`topic-${clusterId}`}
+            isLoading={isLoading}
+            favorites={favorites}
+            onFavToggled={toggleFavorite}
+            isBackgroundRefreshing={isFetching}
+            items={data ?? []}
+            onItemSelected={setActiveTopicName}
+            onRefreshList={refetch}
+            onAddClick={() => setAddTopicModalOpened(true)}
+          />
+          <Modal
+            closeOnEscape={false}
+            closeOnClickOutside={false}
+            opened={addTopicModalOpened}
+            onClose={() => setAddTopicModalOpened(false)}
+            title={<Title order={3}>Consumer settings</Title>}>
+            <CreateTopicModal
+              clusterId={clusterId}
+              onClose={() => {
+                setAddTopicModalOpened(false);
+                refetch();
+              }}
+            />
+          </Modal>
+        </>
+      }
+      right={
+        activeTopicName && <Topic clusterId={clusterId} topicName={activeTopicName} onTopicDeleted={onTopicDeleted} />
+      }
+    />
+  );
+};
+
+const useTopic = () => {
   const { clusterId, topicName } = useParams();
   const [state, setState] = useSessionStorage({
     key: `topic-main-${clusterId}`,
@@ -12,19 +71,12 @@ export const TopicsPage = () => {
   });
 
   if (!clusterId) {
-    throw Error("Missing clusterId in path!");
+    throw Error("Invalid path. Missing clusterId.");
   }
 
-  return (
-    <TwoColumnPage
-      title="Topics"
-      left={
-        <TopicList
-          clusterId={clusterId}
-          onTopicSelected={(activeTopic) => setState((s) => ({ ...s, topicName: activeTopic }))}
-        />
-      }
-      right={state.topicName && <Topic clusterId={clusterId} topicName={state.topicName} />}
-    />
-  );
+  return {
+    clusterId,
+    activeTopicName: state.topicName,
+    setActiveTopicName: (name: string | undefined) => setState({ topicName: name }),
+  };
 };

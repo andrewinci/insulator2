@@ -13,7 +13,14 @@ import { ExportRecordsModal } from "../modals/export-records-modal";
 import { ConsumerConfigurationModal } from "../modals/consumer-configuration-modal";
 import { ConsumerConfiguration } from "../../../models";
 
-export const Topic = ({ clusterId, topicName }: { clusterId: string; topicName: string }) => {
+type TopicProps = {
+  clusterId: string;
+  topicName: string;
+  onTopicDeleted: (topicName: string) => void;
+};
+
+export const Topic = (props: TopicProps) => {
+  const { clusterId, topicName, onTopicDeleted } = props;
   // cached query across navigation
   const [queryState, setQueryState] = useCache(
     {
@@ -71,6 +78,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
                 topic={topicName}
                 onExportClick={() => setExportState({ modalOpened: true, exportInProgress: false })}
                 exportInProgress={exportState.exportInProgress}
+                onTopicDeleted={onTopicDeleted}
               />
             </PageHeader>
             {isLoading && (

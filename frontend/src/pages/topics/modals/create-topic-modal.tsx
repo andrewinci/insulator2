@@ -1,6 +1,5 @@
 import { createTopic } from "../../../tauri/admin";
 import { Button, Checkbox, Group, NumberInput, Stack, TextInput } from "@mantine/core";
-import { useModals } from "@mantine/modals";
 import { useForm } from "@mantine/form";
 
 type CreateTopicForm = {
@@ -10,14 +9,12 @@ type CreateTopicForm = {
   compacted: boolean;
 };
 
-export const CreateTopicModal = ({
-  clusterId,
-  updateTopicList,
-}: {
+type CreateTopicModalProps = {
   clusterId: string;
-  updateTopicList: () => void;
-}) => {
-  const { closeAll } = useModals();
+  onClose: () => void;
+};
+
+export const CreateTopicModal = ({ clusterId, onClose }: CreateTopicModalProps) => {
   const form = useForm<CreateTopicForm>({
     initialValues: {
       name: "",
@@ -36,7 +33,8 @@ export const CreateTopicModal = ({
     },
   });
   const onSubmit = async (v: CreateTopicForm) => {
-    await createTopic(clusterId, v.name, v.partitions, v.isr, v.compacted).then(closeAll).then(updateTopicList);
+    await createTopic(clusterId, v.name, v.partitions, v.isr, v.compacted);
+    onClose();
   };
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>

@@ -1,7 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 
 use apache_avro::{schema::Name, Schema};
-use log::error;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordField {

@@ -1,15 +1,20 @@
 import { ActionIcon, Text, Menu, Title } from "@mantine/core";
 import { IconFileExport, IconInfoCircle, IconTool, IconTrash } from "@tabler/icons";
 import { deleteTopic, getTopicInfo } from "../../../tauri/admin";
-import { useNavigate } from "react-router-dom";
 import { openConfirmModal, openModal } from "@mantine/modals";
 import { useNotifications } from "../../../providers";
 import { TopicInfoModal } from "../modals/topic-info-modal";
 
-type ToolsMenuProps = { clusterId: string; topic: string; exportInProgress: boolean; onExportClick: () => void };
+type ToolsMenuProps = {
+  clusterId: string;
+  topic: string;
+  exportInProgress: boolean;
+  onExportClick: () => void;
+  onTopicDeleted: (topicName: string) => void;
+};
 
-export const ToolsMenu = ({ clusterId, topic, exportInProgress, onExportClick }: ToolsMenuProps) => {
-  const navigate = useNavigate();
+export const ToolsMenu = (props: ToolsMenuProps) => {
+  const { clusterId, topic, exportInProgress, onExportClick, onTopicDeleted } = props;
   const { success } = useNotifications();
   const openDeleteTopicModal = () =>
     openConfirmModal({
@@ -26,7 +31,7 @@ export const ToolsMenu = ({ clusterId, topic, exportInProgress, onExportClick }:
       onConfirm: async () =>
         await deleteTopic(clusterId, topic).then((_) => {
           success(`Topic ${topic} deleted successfully`);
-          navigate(`/cluster/${clusterId}/topics`);
+          onTopicDeleted(topic);
         }),
     });
 
