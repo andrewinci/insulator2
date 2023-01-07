@@ -19,6 +19,9 @@ export const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: stri
     <Stack spacing={0}>
       <TextInput
         required
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
         value={state.name}
         onChange={(event) => {
           if (event && event.target) setState((s) => ({ ...s, name: event?.target?.value }));
