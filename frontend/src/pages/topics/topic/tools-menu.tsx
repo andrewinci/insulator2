@@ -1,9 +1,10 @@
 import { ActionIcon, Text, Menu, Title } from "@mantine/core";
-import { IconFileExport, IconInfoCircle, IconTool, IconTrash } from "@tabler/icons";
+import { IconFileExport, IconInfoCircle, IconSatellite, IconTool, IconTrash } from "@tabler/icons";
 import { deleteTopic, getTopicInfo } from "../../../tauri/admin";
 import { openConfirmModal, openModal } from "@mantine/modals";
 import { useNotifications } from "../../../providers";
 import { TopicInfoModal } from "../modals/topic-info-modal";
+import { useWindowHandler } from "../../../components";
 
 type ToolsMenuProps = {
   clusterId: string;
@@ -16,6 +17,7 @@ type ToolsMenuProps = {
 export const ToolsMenu = (props: ToolsMenuProps) => {
   const { clusterId, topic, exportInProgress, onExportClick, onTopicDeleted } = props;
   const { success } = useNotifications();
+  const { openNewWindow } = useWindowHandler();
   const openDeleteTopicModal = () =>
     openConfirmModal({
       title: "Are you sure to delete this topic?",
@@ -44,6 +46,11 @@ export const ToolsMenu = (props: ToolsMenuProps) => {
     });
   };
 
+  const openSchema = async () => {
+    const url = `/modal/cluster/${clusterId}/schema/${topic}-value`;
+    await openNewWindow({ url, windowTitle: `Schema ${topic}-value` });
+  };
+
   return (
     <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
       <Menu.Target>
@@ -52,6 +59,9 @@ export const ToolsMenu = (props: ToolsMenuProps) => {
         </ActionIcon>
       </Menu.Target>
       <Menu.Dropdown>
+        <Menu.Item icon={<IconSatellite size={14} />} onClick={openSchema} disabled={exportInProgress}>
+          Show schema
+        </Menu.Item>
         <Menu.Label>Tools</Menu.Label>
         <Menu.Item icon={<IconFileExport size={14} />} onClick={onExportClick} disabled={exportInProgress}>
           Export records

@@ -18,7 +18,8 @@
       "window": {
         "create": true,
         "setTitle": true,
-        "setMinSize": true
+        "setMinSize": true,
+        "setFocus": true
       },
       "dialog": {
         "save": true,
