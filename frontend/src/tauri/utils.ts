@@ -9,7 +9,6 @@ export const exportDatastore = async (clusterId: string, outputPath: string): Pr
     });
   } catch (err) {
     addNotification({ type: "error", title: "Database export failed", description: "" });
-    console.log(err);
     throw err;
   }
 };

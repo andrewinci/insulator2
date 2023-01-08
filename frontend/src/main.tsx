@@ -19,6 +19,7 @@ import { ClusterListPage } from "./pages/clusters";
 import { Topic } from "./pages/topics/topic/main";
 import { Schema } from "./pages/schema-registry/schema";
 import { withPropsFromUrlParams } from "./helpers/with-props-from-url";
+import { useInitMonaco } from "./init-monaco";
 
 const AppContainer = () => {
   return (
@@ -50,6 +51,37 @@ const ModalContainer = () => {
 const SingleTopicPage = withPropsFromUrlParams(Topic);
 const SingleSchemaPage = withPropsFromUrlParams(Schema);
 
+const InsulatorRoutes = () => {
+  useInitMonaco();
+
+  return (
+    <Routes>
+      <Route path="/modal" element={<ModalContainer />}>
+        <Route path="cluster/:clusterId/topic/:topicName" element={<SingleTopicPage />} />
+        <Route path="cluster/:clusterId/schema/:schemaName" element={<SingleSchemaPage />} />
+      </Route>
+      <Route path="/" element={<AppContainer />}>
+        {/* Clusters */}
+        <Route index element={<ClusterListPage />} />
+        <Route path="/clusters" element={<ClusterListPage />} />
+        <Route path="/cluster/:clusterId/clusters" element={<ClusterListPage />} />
+        {/* Topics */}
+        <Route path="/cluster/:clusterId/topics" element={<TopicsPage />} />
+        <Route path="/cluster/:clusterId/topic/:topicName" element={<TopicsPage />} />
+        {/* Schemas */}
+        <Route path="/cluster/:clusterId/schemas" element={<SchemasPage />} />
+        <Route path="/cluster/:clusterId/schema/:schemaName" element={<SchemasPage />} />
+        {/* Consumer groups */}
+        <Route path="/cluster/:clusterId/consumers" element={<ConsumerGroupsPage />} />
+        <Route path="/cluster/:clusterId/consumer/:consumerName" element={<ConsumerGroupsPage />} />
+        {/* Settings */}
+        <Route path="/cluster/:clusterId/settings" element={<Settings />} />
+        <Route path="/settings" element={<Settings />} />
+      </Route>
+    </Routes>
+  );
+};
+
 const App = () => {
   const { userSettings: appState } = useUserSettings();
   const { alert } = useNotifications();
@@ -66,30 +98,7 @@ const App = () => {
       <NotificationsProvider>
         <ModalsProvider>
           <QueryClientProvider client={queryClient}>
-            <Routes>
-              <Route path="/modal" element={<ModalContainer />}>
-                <Route path="cluster/:clusterId/topic/:topicName" element={<SingleTopicPage />} />
-                <Route path="cluster/:clusterId/schema/:schemaName" element={<SingleSchemaPage />} />
-              </Route>
-              <Route path="/" element={<AppContainer />}>
-                {/* Clusters */}
-                <Route index element={<ClusterListPage />} />
-                <Route path="/clusters" element={<ClusterListPage />} />
-                <Route path="/cluster/:clusterId/clusters" element={<ClusterListPage />} />
-                {/* Topics */}
-                <Route path="/cluster/:clusterId/topics" element={<TopicsPage />} />
-                <Route path="/cluster/:clusterId/topic/:topicName" element={<TopicsPage />} />
-                {/* Schemas */}
-                <Route path="/cluster/:clusterId/schemas" element={<SchemasPage />} />
-                <Route path="/cluster/:clusterId/schema/:schemaName" element={<SchemasPage />} />
-                {/* Consumer groups */}
-                <Route path="/cluster/:clusterId/consumers" element={<ConsumerGroupsPage />} />
-                <Route path="/cluster/:clusterId/consumer/:consumerName" element={<ConsumerGroupsPage />} />
-                {/* Settings */}
-                <Route path="/cluster/:clusterId/settings" element={<Settings />} />
-                <Route path="/settings" element={<Settings />} />
-              </Route>
-            </Routes>
+            <InsulatorRoutes />
           </QueryClientProvider>
         </ModalsProvider>
       </NotificationsProvider>

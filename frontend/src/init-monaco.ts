@@ -1,4 +1,6 @@
 import { loader } from "@monaco-editor/react";
+import { useMantineTheme } from "@mantine/core";
+import { useMonaco } from "@monaco-editor/react";
 
 import * as monaco from "monaco-editor";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
@@ -28,3 +30,24 @@ self.MonacoEnvironment = {
 loader.config({ monaco });
 
 loader.init();
+
+export const useInitMonaco = () => {
+  const mantineTheme = useMantineTheme();
+  const monaco = useMonaco();
+
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // useEffect(() => setTheme(monaco), [monaco, mantineTheme]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const setTheme = (monaco: any) => {
+    monaco?.editor.defineTheme("custom", {
+      base: mantineTheme.colorScheme == "dark" ? "vs-dark" : "vs",
+      inherit: true,
+      rules: [],
+      colors: {
+        "editor.background": mantineTheme.colorScheme == "dark" ? "#141517" : "#F8F9FA",
+      },
+    });
+    monaco?.editor.setTheme("custom");
+  };
+  setTheme(monaco);
+};
