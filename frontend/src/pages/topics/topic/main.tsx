@@ -1,7 +1,7 @@
-import { Center, Container, Loader } from "@mantine/core";
+import { Center, Container, Group, Loader } from "@mantine/core";
 import { RecordsList, RecordsListRef } from "./record-list";
 import { getConsumerState, startConsumer, stopConsumer } from "../../../tauri/consumer";
-import { PageHeader } from "../../../components";
+import { NewWindowButton, PageHeader } from "../../../components";
 import { useQuery } from "@tanstack/react-query";
 import { getLastOffsets, getTopicInfo } from "../../../tauri/admin";
 import { Allotment } from "allotment";
@@ -19,7 +19,7 @@ type TopicProps = {
   onTopicDeleted: (topicName: string) => void;
 };
 
-export const Topic = (props: TopicProps) => {
+export const Topic = (props: TopicProps & JSX.IntrinsicAttributes) => {
   const { clusterId, topicName, onTopicDeleted } = props;
   // cached query across navigation
   const [queryState, setQueryState] = useCache(
@@ -73,13 +73,19 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
               subtitle={`Estimated Records: ${estimatedRecords ?? "..."}, Cleanup policy: ${
                 topicInfo?.cleanupPolicy ?? "..."
               }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}>
-              <ToolsMenu
-                clusterId={clusterId}
-                topic={topicName}
-                onExportClick={() => setExportState({ modalOpened: true, exportInProgress: false })}
-                exportInProgress={exportState.exportInProgress}
-                onTopicDeleted={onTopicDeleted}
-              />
+              <Group spacing={0}>
+                <ToolsMenu
+                  clusterId={clusterId}
+                  topic={topicName}
+                  onExportClick={() => setExportState({ modalOpened: true, exportInProgress: false })}
+                  exportInProgress={exportState.exportInProgress}
+                  onTopicDeleted={onTopicDeleted}
+                />
+                <NewWindowButton
+                  url={`/modal/cluster/${clusterId}/topic/${topicName}`}
+                  windowTitle={`Topic ${topicName}`}
+                />
+              </Group>
             </PageHeader>
             {isLoading && (
               <Center mt={10}>

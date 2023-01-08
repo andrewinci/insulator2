@@ -2,23 +2,16 @@ import { Text, Divider, Image, Box, Center, Group, Navbar, Title, Stack } from "
 import { SidebarItem } from "./sidebar-item";
 import { IconCircleDashed, IconLine, IconSatellite, IconServer, IconSettings } from "@tabler/icons";
 import logo from "../../../icons/128x128.png";
-import { matchPath, useLocation } from "react-router-dom";
-import { useMemo, useState } from "react";
-import { useUserSettings } from "../providers";
+import { useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { useQuery } from "@tanstack/react-query";
 import { appWindow } from "@tauri-apps/api/window";
 import { MinimizeButton } from "./minimize-button";
+import { useParsedUrl } from "../hooks";
 
 export const SideBar = () => {
-  const { userSettings: appState } = useUserSettings();
-  const location = useLocation();
   const { data: appVersion } = useQuery(["insulatorVersion"], getVersion);
-  const { clusterName, clusterId, activeItem } = useMemo(() => {
-    const { clusterId, activeItem } = matchPath("/cluster/:clusterId/:activeItem/*", location.pathname)?.params ?? {};
-    const clusterName = appState.clusters.find((c) => c.id == clusterId)?.name;
-    return { clusterName, clusterId, activeItem };
-  }, [location, appState]);
+  const { clusterName, clusterId, activeItem } = useParsedUrl();
 
   const [minimized, setMinimized] = useState(false);
   appWindow.setTitle(clusterName ? `Insulator 2 - ${clusterName}` : `Insulator 2`);

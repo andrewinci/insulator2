@@ -16,6 +16,7 @@
         "all": true
       },
       "window": {
+        "create": true,
         "setTitle": true,
         "setMinSize": true
       },
