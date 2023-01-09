@@ -1,3 +1,26 @@
+# [2.9.0](https://github.com/andrewinci/insulator2/compare/v2.8.0...v2.9.0) (2023-01-09)
+
+### Bug Fixes
+
+- disable autocomplete in add consumer group ([5ce0280](https://github.com/andrewinci/insulator2/commit/5ce0280f1b01da12d39afa38147adb2da02ed502))
+- disable autocomplete/autocapitalize in create topic modal ([0bfa38a](https://github.com/andrewinci/insulator2/commit/0bfa38a2b5b6042809758da12422ca2fe15bde38))
+- favourites removed when a cluster is updated ([a67accf](https://github.com/andrewinci/insulator2/commit/a67accf45919cef342da08e113c5f2724018f947))
+- remove consumer group from the UI when deleted ([e983727](https://github.com/andrewinci/insulator2/commit/e983727b800e8a9dd8af844c67b6aacf2fae691e))
+- remove schema from the UI when deleted ([3134e35](https://github.com/andrewinci/insulator2/commit/3134e3598ca181d65bd8cbd7a1273afd2c614f61))
+- remove topic from the UI when deleted ([15c5050](https://github.com/andrewinci/insulator2/commit/15c505080dbd411a912749790a86295a4e60d5cf))
+- start consumer loader as soon as the consumer is started ([aa0c9dc](https://github.com/andrewinci/insulator2/commit/aa0c9dc514549f5b150db1ed3e9e344c0e8d7ebe))
+- support logical types in avro unions ([1118c9c](https://github.com/andrewinci/insulator2/commit/1118c9c5b16a0c62908f88ae327f86c472fec9d5))
+- wrong code theme in new windows ([a9150e0](https://github.com/andrewinci/insulator2/commit/a9150e0af571ed8cd0edce854d0177fdc09dcf69))
+
+### Features
+
+- add avro producer ([#307](https://github.com/andrewinci/insulator2/issues/307)) ([e7bb6a4](https://github.com/andrewinci/insulator2/commit/e7bb6a471219807cd076af25219335791097e9c9))
+- add external windonw button to record details modal ([ab80738](https://github.com/andrewinci/insulator2/commit/ab807387b923956d414421e8b7bd2f7413bfab6f))
+- add kafka timeout settings ([889f07a](https://github.com/andrewinci/insulator2/commit/889f07afdbb0ca69e0839be818dd248611f77823))
+- add shortcut to jump to the schema from the topic ([cb56b58](https://github.com/andrewinci/insulator2/commit/cb56b58c76eb4623f58ae1bce052771298ebe026))
+- add string producer ([#300](https://github.com/andrewinci/insulator2/issues/300)) ([bb0ab30](https://github.com/andrewinci/insulator2/commit/bb0ab30526fc9fc4aba7b0c4da2558c8d61a02c5))
+- allow user to open the topic and the schema registry to a new window ([151d50d](https://github.com/andrewinci/insulator2/commit/151d50d6ece9f5125df7d5c34e19ab0e51d64c89))
+
 # [2.8.0](https://github.com/andrewinci/insulator2/compare/v2.7.1...v2.8.0) (2022-12-21)
 
 ### Bug Fixes
