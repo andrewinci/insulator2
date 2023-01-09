@@ -168,6 +168,7 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
       </div>
       {recordModalState.record && (
         <RecordDetailsModal
+          clusterId={clusterId}
           record={recordModalState.record}
           onClose={() => setRecordModalState((s) => ({ ...s, opened: false }))}
           opened={recordModalState.opened}

@@ -20,6 +20,7 @@ import { Topic } from "./pages/topics/topic/main";
 import { Schema } from "./pages/schema-registry/schema";
 import { withPropsFromUrlParams } from "./helpers/with-props-from-url";
 import { useInitMonaco } from "./init-monaco";
+import { RecordDetailsWindow } from "./pages/topics/modals/record-view-modal";
 
 const AppContainer = () => {
   return (
@@ -50,6 +51,7 @@ const ModalContainer = () => {
 // modal pages
 const SingleTopicPage = withPropsFromUrlParams(Topic);
 const SingleSchemaPage = withPropsFromUrlParams(Schema);
+const SingleRecordPage = withPropsFromUrlParams(RecordDetailsWindow);
 
 const InsulatorRoutes = () => {
   useInitMonaco();
@@ -58,6 +60,7 @@ const InsulatorRoutes = () => {
     <Routes>
       <Route path="/modal" element={<ModalContainer />}>
         <Route path="cluster/:clusterId/topic/:topicName" element={<SingleTopicPage />} />
+        <Route path="cluster/:clusterId/topic/:topicName/record/:id" element={<SingleRecordPage />} />
         <Route path="cluster/:clusterId/schema/:schemaName" element={<SingleSchemaPage />} />
       </Route>
       <Route path="/" element={<AppContainer />}>
