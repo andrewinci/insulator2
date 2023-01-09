@@ -37,7 +37,7 @@
     "rimraf": "^3.0.2",
     "semantic-release": "^19.0.5",
     "vite": "^4.0.4",
-    "vitest": "^0.26.3"
+    "vitest": "^0.27.0"
   },
   "prettier": {
     "bracketSameLine": true,
