@@ -24,7 +24,7 @@
     "@monaco-editor/react": "^4.4.6",
     "@tabler/icons": "^1.119.0",
     "@tanstack/react-query": "^4.20.9",
-    "@tanstack/react-virtual": "^3.0.0-beta.35",
+    "@tanstack/react-virtual": "^3.0.0-beta.36",
     "@tauri-apps/api": "^1.1.0",
     "@types/react-window": "^1.8.5",
     "allotment": "^1.17.1",
