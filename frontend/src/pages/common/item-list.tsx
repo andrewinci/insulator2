@@ -25,6 +25,28 @@ const getWindowSize = () => {
   return { innerWidth, innerHeight };
 };
 
+type Tabs = { all: string[]; recent: string[]; favorites: string[] };
+export const filterTabs = (searchText: string | undefined, tabs: Tabs, useRegex: boolean) => {
+  searchText = searchText ?? (useRegex ? "." : "");
+  const parsedSearchText = searchText.trim().toLowerCase();
+  try {
+    const regex = new RegExp(parsedSearchText, "i");
+    const test = useRegex ? (s: string) => regex.test(s) : (s: string) => s.toLowerCase().includes(parsedSearchText);
+    const allFiltered = tabs.all.filter((t) => test(t)).sort();
+    return {
+      all: allFiltered,
+      recent: tabs.recent.filter((v) => allFiltered.includes(v)).reverse(),
+      favorites: tabs.favorites.filter((f) => allFiltered.includes(f)),
+    };
+  } catch {
+    return {
+      all: [],
+      recent: [],
+      favorites: [],
+    };
+  }
+};
+
 type ItemListProps = {
   title: string;
   //unique identifier for the list used for local storage of recent visited items
@@ -56,25 +78,15 @@ export const ItemList = (props: ItemListProps) => {
   });
   const { userSettings } = useUserSettings();
 
-  const filteredItems = useMemo(() => {
-    try {
-      const regex = new RegExp(searchText ?? ".", "i");
-      const test = userSettings.useRegex
-        ? (s: string) => regex.test(s)
-        : (s: string) => s.toLowerCase().includes(searchText ?? "");
-      return {
-        all: items.filter((t) => test(t)).sort(),
-        recent: state.recent.filter((t) => items.includes(t) && test(t)).reverse(),
-        favorites: favorites.filter((f) => items.includes(f)),
-      };
-    } catch {
-      return {
-        all: [],
-        recent: [],
-        favorites: [],
-      };
-    }
-  }, [searchText, userSettings.useRegex, items, state.recent, favorites]);
+  const filteredItems = filterTabs(
+    searchText,
+    {
+      all: items,
+      recent: state.recent,
+      favorites: favorites,
+    },
+    userSettings.useRegex ?? true
+  );
 
   const onItemSelectedOnTab = (selectedItem: string) => {
     // remove any item in focus
