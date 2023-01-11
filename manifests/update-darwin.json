@@ -1,15 +1,15 @@
 {
-  "version": "v2.9.0",
-  "notes": "# [2.9.0](https://github.com/andrewinci/insulator2/compare/v2.8.0...v2.9.0) (2023-01-09)\n\n\n### Bug Fixes\n\n* disable autocomplete in add consumer group ([5ce0280](https://github.com/andrewinci/insulator2/commit/5ce0280f1b01da12d39afa38147adb2da02ed502))\n* disable autocomplete/autocapitalize in create topic modal ([0bfa38a](https://github.com/andrewinci/insulator2/commit/0bfa38a2b5b6042809758da12422ca2fe15bde38))\n* favourites removed when a cluster is updated ([a67accf](https://github.com/andrewinci/insulator2/commit/a67accf45919cef342da08e113c5f2724018f947))\n* remove consumer group from the UI when deleted ([e983727](https://github.com/andrewinci/insulator2/commit/e983727b800e8a9dd8af844c67b6aacf2fae691e))\n* remove schema from the UI when deleted ([3134e35](https://github.com/andrewinci/insulator2/commit/3134e3598ca181d65bd8cbd7a1273afd2c614f61))\n* remove topic from the UI when deleted ([15c5050](https://github.com/andrewinci/insulator2/commit/15c505080dbd411a912749790a86295a4e60d5cf))\n* start consumer loader as soon as the consumer is started ([aa0c9dc](https://github.com/andrewinci/insulator2/commit/aa0c9dc514549f5b150db1ed3e9e344c0e8d7ebe))\n* support logical types in avro unions ([1118c9c](https://github.com/andrewinci/insulator2/commit/1118c9c5b16a0c62908f88ae327f86c472fec9d5))\n* wrong code theme in new windows ([a9150e0](https://github.com/andrewinci/insulator2/commit/a9150e0af571ed8cd0edce854d0177fdc09dcf69))\n\n\n### Features\n\n* add avro producer ([#307](https://github.com/andrewinci/insulator2/issues/307)) ([e7bb6a4](https://github.com/andrewinci/insulator2/commit/e7bb6a471219807cd076af25219335791097e9c9))\n* add external windonw button to record details modal ([ab80738](https://github.com/andrewinci/insulator2/commit/ab807387b923956d414421e8b7bd2f7413bfab6f))\n* add kafka timeout settings ([889f07a](https://github.com/andrewinci/insulator2/commit/889f07afdbb0ca69e0839be818dd248611f77823))\n* add shortcut to jump to the schema from the topic ([cb56b58](https://github.com/andrewinci/insulator2/commit/cb56b58c76eb4623f58ae1bce052771298ebe026))\n* add string producer ([#300](https://github.com/andrewinci/insulator2/issues/300)) ([bb0ab30](https://github.com/andrewinci/insulator2/commit/bb0ab30526fc9fc4aba7b0c4da2558c8d61a02c5))\n* allow user to open the topic and the schema registry to a new window ([151d50d](https://github.com/andrewinci/insulator2/commit/151d50d6ece9f5125df7d5c34e19ab0e51d64c89))\n\n\n\n",
-  "pub_date": "2023-01-09T18:23:15Z",
+  "version": "v2.9.1",
+  "notes": "## [2.9.1](https://github.com/andrewinci/insulator2/compare/v2.9.0...v2.9.1) (2023-01-11)\n\n\n### Bug Fixes\n\n* make search case insensitive ([899d72c](https://github.com/andrewinci/insulator2/commit/899d72c04e2e42b388c1457d79631c4fdb39e83a))\n* mitigate empty code editor ([095fe02](https://github.com/andrewinci/insulator2/commit/095fe02b0f291fe07e6beae35eeaba3854a3952c))\n* truncate long titles to avoid overlap with tools button ([ffbd152](https://github.com/andrewinci/insulator2/commit/ffbd152660eaf5d884aa10c714a398ec73068741))\n\n\n\n",
+  "pub_date": "2023-01-11T07:17:13Z",
   "platforms": {
     "darwin-x86_64": {
       "signature": "----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.9.0/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.9.1/Insulator.2.app.tar.gz"
     },
     "darwin-aarch64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.9.0/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.9.1/Insulator.2.app.tar.gz"
     }
   }
 }

@@ -1,3 +1,11 @@
+## [2.9.1](https://github.com/andrewinci/insulator2/compare/v2.9.0...v2.9.1) (2023-01-11)
+
+### Bug Fixes
+
+- make search case insensitive ([899d72c](https://github.com/andrewinci/insulator2/commit/899d72c04e2e42b388c1457d79631c4fdb39e83a))
+- mitigate empty code editor ([095fe02](https://github.com/andrewinci/insulator2/commit/095fe02b0f291fe07e6beae35eeaba3854a3952c))
+- truncate long titles to avoid overlap with tools button ([ffbd152](https://github.com/andrewinci/insulator2/commit/ffbd152660eaf5d884aa10c714a398ec73068741))
+
 # [2.9.0](https://github.com/andrewinci/insulator2/compare/v2.8.0...v2.9.0) (2023-01-09)
 
 ### Bug Fixes
