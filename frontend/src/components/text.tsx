@@ -18,7 +18,7 @@ export const PageHeader = ({
 }) => (
   <>
     <Group mt={13} align={"center"} position={"apart"} noWrap>
-      <Stack spacing={0}>
+      <Stack spacing={0} style={{ maxWidth: "calc(100% - 90px)" }}>
         <SingleLineTitle size={19}>{title}</SingleLineTitle>
         <Text size={13}>{subtitle}</Text>
       </Stack>
