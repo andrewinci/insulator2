@@ -22,7 +22,7 @@ export const CodeEditor = ({
     <Editor
       height={height || 0}
       defaultLanguage={defaultLanguage}
-      value={value}
+      value={value ?? ""}
       onChange={(v) => {
         if (onChange && v) {
           onChange(v);
@@ -44,7 +44,10 @@ export const CodeEditor = ({
         lineDecorationsWidth: hideLineNumbers ? 0 : 10,
       }}
       beforeMount={(monaco) => monaco.editor.setTheme("custom")}
-      onMount={(_, monaco) => monaco.editor.setTheme("custom")}
+      onMount={(editor, monaco) => {
+        monaco.editor.setTheme("custom");
+        editor.setValue(value ?? "");
+      }}
     />
   );
 };
