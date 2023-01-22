@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ConsumerConfiguration {
     pub compactify: bool,
-    pub consumer_start_config: ConsumerSessionConfiguration,
+    pub consumer_start_config: ConsumerOffsetConfiguration,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum ConsumerSessionConfiguration {
+pub enum ConsumerOffsetConfiguration {
     Beginning,
     End,
     Custom {

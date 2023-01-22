@@ -1,6 +1,6 @@
 use crate::lib::{
     configuration::{build_kafka_client_config, ClusterConfig},
-    consumer::types::{ConsumerConfiguration, ConsumerSessionConfiguration, ConsumerState},
+    consumer::types::{ConsumerConfiguration, ConsumerOffsetConfiguration, ConsumerState},
     error_callback::ErrorCallback,
     record_store::TopicStore,
     types::RawKafkaRecord,
@@ -47,7 +47,7 @@ impl KafkaConsumer {
     pub fn update_consumer_assignment(
         consumer: &rdkafka::consumer::StreamConsumer,
         topics: &[&str],
-        config: &ConsumerSessionConfiguration,
+        config: &ConsumerOffsetConfiguration,
         tmo: Duration,
     ) -> ConsumerResult<()> {
         let metadata = consumer.fetch_metadata(if topics.len() == 1 { Some(topics[0]) } else { None }, tmo)?;
@@ -58,33 +58,53 @@ impl KafkaConsumer {
             .flat_map(|t| t.partitions().iter().map(|p| (t.name(), p.id())))
             .collect();
 
-        let mut timestamp_assignment = consumer.assignment()?;
+        let end_offset_assignment = {
+            let mut timestamp_assignment = consumer.assignment()?;
+            for (t, p) in &topic_partition {
+                timestamp_assignment.add_partition_offset(t, *p, Offset::End)?;
+            }
+            consumer.offsets_for_times(timestamp_assignment, tmo)?
+        };
+
         match config {
-            ConsumerSessionConfiguration::Beginning => {
-                for (t, p) in topic_partition {
-                    timestamp_assignment.add_partition_offset(t, p, Offset::Beginning)?;
+            ConsumerOffsetConfiguration::Beginning => {
+                let mut beginning_assignment = consumer.assignment()?;
+                for (t, p) in &topic_partition {
+                    beginning_assignment.add_partition_offset(t, *p, Offset::Offset(0))?;
                 }
+                debug!("Partition to assign {:?}", end_offset_assignment);
+                consumer.assign(&beginning_assignment)?;
             }
-            ConsumerSessionConfiguration::End => {
-                for (t, p) in topic_partition {
-                    timestamp_assignment.add_partition_offset(t, p, Offset::End)?;
-                }
+            ConsumerOffsetConfiguration::End => {
+                debug!("Partition to assign {:?}", end_offset_assignment);
+                consumer.assign(&end_offset_assignment)?;
             }
-            ConsumerSessionConfiguration::Custom {
-                start_timestamp,
-                stop_timestamp: _,
-            } => {
+            ConsumerOffsetConfiguration::Custom { start_timestamp, .. } => {
+                let mut custom_assignment = consumer.assignment()?;
                 // note: the offsets_for_times function takes a TopicPartitionList in which the
                 // offset is the timestamp in ms (instead of the actual offset) and returns a
                 // new TopicPartitionList with the actual offset
-                for (t, p) in topic_partition {
-                    timestamp_assignment.add_partition_offset(t, p, Offset::Offset(*start_timestamp))?;
+                for (t, p) in &topic_partition {
+                    custom_assignment.add_partition_offset(t, *p, Offset::Offset(*start_timestamp))?;
                 }
+                let assignment = consumer.offsets_for_times(custom_assignment, tmo)?;
+                let mut custom_assignment = assignment.clone();
+                // if there is no offset for the specified timestamp (for example if the timestamp is in the future)
+                // the assignment will return Offset::End instead of the actual offset.
+                for e in assignment.elements().iter() {
+                    if e.offset() == Offset::End {
+                        let end_offset = end_offset_assignment
+                            .find_partition(e.topic(), e.partition())
+                            .unwrap()
+                            .offset();
+                        custom_assignment.set_partition_offset(e.topic(), e.partition(), end_offset)?;
+                    }
+                }
+                debug!("Partition to assign {:?}", custom_assignment);
+                consumer.assign(&custom_assignment)?;
             }
         }
-        let assignment = consumer.offsets_for_times(timestamp_assignment, tmo)?;
-        consumer.assign(&assignment)?;
-        debug!("Partition assigned {:?}", assignment);
+        debug!("Partition assigned");
         Ok(())
     }
 
@@ -142,7 +162,7 @@ impl KafkaConsumer {
 
 fn get_stop_timestamp(consumer_config: &ConsumerConfiguration) -> Option<u64> {
     // retrieve the stop timestamp if specified
-    if let ConsumerSessionConfiguration::Custom {
+    if let ConsumerOffsetConfiguration::Custom {
         stop_timestamp: Some(stop),
         ..
     } = &consumer_config.consumer_start_config

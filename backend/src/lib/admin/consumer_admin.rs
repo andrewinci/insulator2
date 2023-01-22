@@ -4,7 +4,7 @@ use super::{error::AdminResult, ConsumerGroupInfo, KafkaAdmin};
 use crate::lib::{
     admin::TopicPartitionOffset,
     configuration::build_kafka_client_config,
-    consumer::{types::ConsumerSessionConfiguration, KafkaConsumer},
+    consumer::{types::ConsumerOffsetConfiguration, KafkaConsumer},
 };
 use rdkafka::{
     admin::AdminOptions,
@@ -30,12 +30,12 @@ impl KafkaAdmin {
         &self,
         consumer_group_name: &str,
         topic_names: &[&str],
-        config: &ConsumerSessionConfiguration,
+        offset_configuration: &ConsumerOffsetConfiguration,
     ) -> AdminResult<()> {
         let consumer = build_kafka_client_config(&self.config, Some(consumer_group_name)).create()?;
 
         debug!("assign offsets for each topic");
-        KafkaConsumer::update_consumer_assignment(&consumer, topic_names, config, self.timeout)?;
+        KafkaConsumer::update_consumer_assignment(&consumer, topic_names, offset_configuration, self.timeout)?;
 
         debug!("store offset to commit");
         for t in consumer.assignment()?.elements() {
