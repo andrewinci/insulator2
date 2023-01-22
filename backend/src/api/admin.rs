@@ -4,7 +4,7 @@ use log::debug;
 
 use crate::lib::{
     admin::{ConsumerGroupInfo, PartitionOffset, Topic, TopicInfo},
-    consumer::types::ConsumerSessionConfiguration,
+    consumer::types::ConsumerOffsetConfiguration,
 };
 
 use super::{error::ApiResult, AppState};
@@ -91,10 +91,13 @@ pub async fn set_consumer_group(
     cluster_id: &str,
     consumer_group_name: &str,
     topics: Vec<&str>,
-    offset_config: ConsumerSessionConfiguration,
+    offset_config: ConsumerOffsetConfiguration,
     state: tauri::State<'_, AppState>,
 ) -> ApiResult<()> {
-    debug!("Create consumer group {}", consumer_group_name);
+    debug!(
+        "Set consumer group {} to offset {:?}",
+        consumer_group_name, offset_config
+    );
     let cluster = state.get_cluster(cluster_id).await?;
     Ok(cluster
         .kafka_admin_client

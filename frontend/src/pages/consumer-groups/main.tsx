@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useFavorites } from "../../hooks/use-favorites";
 import { getConsumerGroups } from "../../tauri/admin";
 import { ItemList } from "../common";
-import { CreateConsumerGroupModal } from "./create-consumer-group-modal";
+import { UpsertConsumerGroupModal } from "./upsert-consumer-group-modal";
 
 export const ConsumerGroupsPage = () => {
   const { clusterId, activeConsumerGroupName, setActiveConsumerGroupName } = useConsumerGroup();
@@ -50,9 +50,9 @@ export const ConsumerGroupsPage = () => {
             opened={addCGModalOpened}
             onClose={() => setAddCGModalOpened(false)}
             title={<Title order={3}>Create consumer group</Title>}>
-            <CreateConsumerGroupModal
+            <UpsertConsumerGroupModal
               clusterId={clusterId}
-              close={() => {
+              onClose={() => {
                 setAddCGModalOpened(false);
                 refetch();
               }}
