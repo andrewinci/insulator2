@@ -29,7 +29,7 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
       {/* padding required to avoid to have the scroll bar on top of the password eye  */}
       <ScrollArea>
         <Stack spacing={4}>
-          <TextInput label="Custer name" placeholder="My cool cluster" {...form.getInputProps("name")} />
+          <TextInput label="Cluster name" placeholder="My cool cluster" {...form.getInputProps("name")} />
           <TextInput label="Endpoint" placeholder="localhost:9092" {...form.getInputProps("endpoint")} />
           <Title mt={10} order={3}>
             Authentication
