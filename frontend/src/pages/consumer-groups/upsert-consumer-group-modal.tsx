@@ -18,37 +18,30 @@ type ConsumerGroupModalState = {
   time: Date | null;
 };
 
-const mapOffset = ({
-  offset,
-  date,
-  time,
-}: {
-  offset: string;
-  date: Date | null;
-  time: Date | null;
-}): ConsumerOffsetConfiguration => {
-  switch (offset) {
-    case "Beginning":
-      return "Beginning";
-    case "End":
-      return "End";
-    case "Time":
-      if (date && time) {
-        return { Custom: { start_timestamp: dateTimeToUnixTimeMs(date, time) } };
-      } else throw "Unable to set the offset timestamp: Missing date and time";
-    default:
-      throw "Invalid offset";
-  }
+type UpsertConsumerGroupModalProps = {
+  name?: string;
+  topics?: string[];
+  readonlyName?: boolean;
+  showWarning?: boolean;
+  clusterId: string;
+  onClose: () => void;
 };
 
-export const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: string; close: () => void }) => {
+export const UpsertConsumerGroupModal = ({
+  clusterId,
+  readonlyName,
+  name,
+  topics,
+  showWarning,
+  onClose,
+}: UpsertConsumerGroupModalProps) => {
   const { data } = useQuery(["listTopics", clusterId], () => listTopics(clusterId));
   const nowUTC = dayjs.utc().toDate();
   const zeroUTC = dayjs().set("h", 0).set("m", 0).set("s", 0).toDate();
 
   const [state, setState] = useState<ConsumerGroupModalState>({
-    name: "",
-    topics: [],
+    name: name ?? "",
+    topics: topics ?? [],
     offset: "Beginning",
     isCreating: false,
     date: nowUTC,
@@ -56,9 +49,9 @@ export const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: stri
   });
 
   return (
-    <Stack>
+    <Stack spacing={10}>
       <TextInput
-        required
+        readOnly={readonlyName}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
@@ -94,7 +87,7 @@ export const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: stri
         searchable
       />
       <Center>
-        <Text weight={"bold"}>Topics to include in the consumer group</Text>
+        <Text weight={"bold"}>Topics to setup</Text>
       </Center>
       <Stack spacing={3}>
         {state.topics.map((t) => (
@@ -113,19 +106,46 @@ export const CreateConsumerGroupModal = ({ clusterId, close }: { clusterId: stri
           </Center>
         )}
       </Stack>
-      <Group mt={10} position="right">
+      <Text hidden={!showWarning} size={13} color={"red"}>
+        Note: This action will reset the consumer group and its not reversible. Make sure all settings are correct
+        before applying.
+      </Text>
+      <Group position="right">
         <Button
           onClick={async () => {
             setState((s) => ({ ...s, isCreating: true }));
             await setConsumerGroup(clusterId, state.name, state.topics, mapOffset(state));
             setState((s) => ({ ...s, isCreating: false }));
-            close();
+            onClose();
           }}
           type="submit"
           loading={state.isCreating}>
-          Create
+          Apply
         </Button>
       </Group>
     </Stack>
   );
+};
+
+export const mapOffset = ({
+  offset,
+  date,
+  time,
+}: {
+  offset: string;
+  date: Date | null;
+  time: Date | null;
+}): ConsumerOffsetConfiguration => {
+  switch (offset) {
+    case "Beginning":
+      return "Beginning";
+    case "End":
+      return "End";
+    case "Time":
+      if (date && time) {
+        return { Custom: { start_timestamp: dateTimeToUnixTimeMs(date, time) } };
+      } else throw "Unable to set the offset timestamp: Missing date and time";
+    default:
+      throw "Invalid offset";
+  }
 };

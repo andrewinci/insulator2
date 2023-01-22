@@ -1,10 +1,11 @@
-import { Text, Loader, Menu, ActionIcon } from "@mantine/core";
-import { useSetState } from "@mantine/hooks";
+import { Text, Loader, Menu, ActionIcon, Modal } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
-import { IconFlag, IconPlayerPlay, IconRefresh, IconTool, IconTrash } from "@tabler/icons";
+import { IconAdjustments, IconFlag, IconPlayerPlay, IconRefresh, IconTool, IconTrash } from "@tabler/icons";
+import { useState } from "react";
 import { ConsumerOffsetConfiguration, ConsumerGroupInfo } from "../../models";
 import { useNotifications } from "../../providers";
 import { deleteConsumerGroup, setConsumerGroup } from "../../tauri/admin";
+import { UpsertConsumerGroupModal } from "./upsert-consumer-group-modal";
 
 type ToolsMenuProps = {
   loading: boolean;
@@ -17,23 +18,19 @@ type ToolsMenuProps = {
 
 export const ToolsMenu = (props: ToolsMenuProps) => {
   const { clusterId, loading, disabled, data, onRefresh, onDeleteConsumerGroup } = props;
-  const [state, setState] = useSetState<{ isResetting: boolean }>({ isResetting: false });
   const { success } = useNotifications();
+  const topics = [...new Set(data.offsets.map((o) => o.topic))];
 
+  const [isResetting, setIsResetting] = useState(false);
   const resetOffset = async (offset: ConsumerOffsetConfiguration) => {
-    setState({ isResetting: true });
+    setIsResetting(true);
     try {
-      await setConsumerGroup(
-        clusterId,
-        data.name,
-        data.offsets.map((o) => o.topic),
-        offset
-      ).then((_) => {
+      await setConsumerGroup(clusterId, data.name, topics, offset).then((_) => {
         success("Consumer group updated successfully");
         onRefresh();
       });
     } finally {
-      setState({ isResetting: false });
+      setIsResetting(false);
     }
   };
 
@@ -76,34 +73,59 @@ export const ToolsMenu = (props: ToolsMenuProps) => {
         }),
     });
 
+  const [customOffsetModal, setCustomOffsetModal] = useState({ opened: false });
+  const openCustomOffsetModal = () => {
+    setCustomOffsetModal((s) => ({ ...s, opened: true }));
+  };
+
   return (
-    <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
-      <Menu.Target>
-        <ActionIcon size={28} sx={{ marginRight: "10px" }}>
-          {state.isResetting || loading || disabled ? <Loader /> : <IconTool />}
-        </ActionIcon>
-      </Menu.Target>
-      <Menu.Dropdown>
-        <Menu.Label>Tools</Menu.Label>
-        <Menu.Item icon={<IconRefresh size={14} />} onClick={() => onRefresh()} disabled={loading || disabled}>
-          Refresh
-        </Menu.Item>
-        <Menu.Label>Reset offset</Menu.Label>
-        <Menu.Item
-          color={"orange"}
-          onClick={() => showResetOffsetModal("Beginning")}
-          icon={<IconPlayerPlay size={14} />}>
-          Reset to the beginning
-        </Menu.Item>
-        <Menu.Item color={"orange"} onClick={() => showResetOffsetModal("End")} icon={<IconFlag size={14} />}>
-          Reset to end
-        </Menu.Item>
-        {/* <Menu.Item icon={<IconClock size={14} />}>Reset to a point in time</Menu.Item> */}
-        <Menu.Label>Danger</Menu.Label>
-        <Menu.Item color={"red"} icon={<IconTrash size={14} />} onClick={() => openDeleteGroupModal()}>
-          Delete
-        </Menu.Item>
-      </Menu.Dropdown>
-    </Menu>
+    <>
+      <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
+        <Menu.Target>
+          <ActionIcon size={28} sx={{ marginRight: "10px" }}>
+            {isResetting || loading || disabled ? <Loader /> : <IconTool />}
+          </ActionIcon>
+        </Menu.Target>
+        <Menu.Dropdown>
+          <Menu.Label>Tools</Menu.Label>
+          <Menu.Item icon={<IconRefresh size={14} />} onClick={() => onRefresh()} disabled={loading || disabled}>
+            Refresh
+          </Menu.Item>
+          <Menu.Label>Reset offset</Menu.Label>
+          <Menu.Item
+            color={"orange"}
+            onClick={() => showResetOffsetModal("Beginning")}
+            icon={<IconPlayerPlay size={14} />}>
+            Reset to the beginning
+          </Menu.Item>
+          <Menu.Item color={"orange"} onClick={() => showResetOffsetModal("End")} icon={<IconFlag size={14} />}>
+            Reset to end
+          </Menu.Item>
+          <Menu.Item color={"orange"} onClick={() => openCustomOffsetModal()} icon={<IconAdjustments size={14} />}>
+            Custom
+          </Menu.Item>
+          <Menu.Label>Danger zone</Menu.Label>
+          <Menu.Item color={"red"} icon={<IconTrash size={14} />} onClick={() => openDeleteGroupModal()}>
+            Delete
+          </Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
+      <Modal
+        title="Reset consumer group offset"
+        opened={customOffsetModal.opened}
+        onClose={() => setCustomOffsetModal((s) => ({ ...s, opened: false }))}>
+        <UpsertConsumerGroupModal
+          showWarning
+          readonlyName
+          name={data.name}
+          clusterId={clusterId}
+          onClose={() => {
+            setCustomOffsetModal((s) => ({ ...s, opened: false }));
+            onRefresh();
+          }}
+          topics={topics}
+        />
+      </Modal>
+    </>
   );
 };
