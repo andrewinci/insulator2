@@ -1,3 +1,13 @@
+# [2.10.0](https://github.com/andrewinci/insulator2/compare/v2.9.1...v2.10.0) (2023-01-23)
+
+### Bug Fixes
+
+- typo in add cluster form ([4502855](https://github.com/andrewinci/insulator2/commit/45028552a1b614aa72a81dde41a4950c91789197))
+
+### Features
+
+- reset consumer group to a point in time ([#349](https://github.com/andrewinci/insulator2/issues/349)) ([0fc06d9](https://github.com/andrewinci/insulator2/commit/0fc06d9fc4c10e46aa13ca5a483e3bcb46ecb720))
+
 ## [2.9.1](https://github.com/andrewinci/insulator2/compare/v2.9.0...v2.9.1) (2023-01-11)
 
 ### Bug Fixes

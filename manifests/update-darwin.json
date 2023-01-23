@@ -1,15 +1,15 @@
 {
-  "version": "v2.9.1",
-  "notes": "## [2.9.1](https://github.com/andrewinci/insulator2/compare/v2.9.0...v2.9.1) (2023-01-11)\n\n\n### Bug Fixes\n\n* make search case insensitive ([899d72c](https://github.com/andrewinci/insulator2/commit/899d72c04e2e42b388c1457d79631c4fdb39e83a))\n* mitigate empty code editor ([095fe02](https://github.com/andrewinci/insulator2/commit/095fe02b0f291fe07e6beae35eeaba3854a3952c))\n* truncate long titles to avoid overlap with tools button ([ffbd152](https://github.com/andrewinci/insulator2/commit/ffbd152660eaf5d884aa10c714a398ec73068741))\n\n\n\n",
-  "pub_date": "2023-01-11T07:17:13Z",
+  "version": "v2.10.0",
+  "notes": "# [2.10.0](https://github.com/andrewinci/insulator2/compare/v2.9.1...v2.10.0) (2023-01-23)\n\n\n### Bug Fixes\n\n* typo in add cluster form ([4502855](https://github.com/andrewinci/insulator2/commit/45028552a1b614aa72a81dde41a4950c91789197))\n\n\n### Features\n\n* reset consumer group to a point in time ([#349](https://github.com/andrewinci/insulator2/issues/349)) ([0fc06d9](https://github.com/andrewinci/insulator2/commit/0fc06d9fc4c10e46aa13ca5a483e3bcb46ecb720))\n\n\n\n",
+  "pub_date": "2023-01-23T08:14:21Z",
   "platforms": {
     "darwin-x86_64": {
       "signature": "----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.9.1/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.10.0/Insulator.2.app.tar.gz"
     },
     "darwin-aarch64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.9.1/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.10.0/Insulator.2.app.tar.gz"
     }
   }
 }
