@@ -14,6 +14,7 @@ type OpenNewWindowParams = {
 type NewWindowButtonProps = {
   iconSize?: number;
 } & OpenNewWindowParams;
+
 export const NewWindowButton = (props: NewWindowButtonProps) => {
   const { iconSize } = props;
   const { isModal, openNewWindow } = useWindowHandler();

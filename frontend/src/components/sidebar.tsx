@@ -3,18 +3,16 @@ import { SidebarItem } from "./sidebar-item";
 import { IconCircleDashed, IconLine, IconSatellite, IconServer, IconSettings } from "@tabler/icons";
 import logo from "../../../icons/128x128.png";
 import { useState } from "react";
-import { getVersion } from "@tauri-apps/api/app";
-import { useQuery } from "@tanstack/react-query";
-import { appWindow } from "@tauri-apps/api/window";
 import { MinimizeButton } from "./minimize-button";
 import { useParsedUrl } from "../hooks";
+import { setWindowTitle, useAppVersion } from "../tauri/helpers";
 
 export const SideBar = () => {
-  const { data: appVersion } = useQuery(["insulatorVersion"], getVersion);
+  const appVersion = useAppVersion();
   const { clusterName, clusterId, activeItem } = useParsedUrl();
 
   const [minimized, setMinimized] = useState(false);
-  appWindow.setTitle(clusterName ? `Insulator 2 - ${clusterName}` : `Insulator 2`);
+  setWindowTitle(clusterName ? `Insulator 2 - ${clusterName}` : `Insulator 2`);
   const iconSize = minimized ? 20 : 16;
   return (
     <Navbar width={{ base: minimized ? 63 : 220 }} p="xs">
