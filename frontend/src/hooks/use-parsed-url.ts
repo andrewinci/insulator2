@@ -6,7 +6,9 @@ export const useParsedUrl = () => {
   const location = useLocation();
   const { userSettings: appState } = useUserSettings();
   const { base } = matchPath("/:base/*", location.pathname)?.params ?? {};
-  const { clusterId, activeItem } = matchPath("/cluster/:clusterId/:activeItem/*", location.pathname)?.params ?? {};
+  const pathPattern =
+    base === "modal" ? "/modal/cluster/:clusterId/:activeItem/*" : "/cluster/:clusterId/:activeItem/*";
+  const { clusterId, activeItem } = matchPath(pathPattern, location.pathname)?.params ?? {};
   const clusterName = appState.clusters.find((c) => c.id == clusterId)?.name;
   return {
     isModal: base === "modal",
