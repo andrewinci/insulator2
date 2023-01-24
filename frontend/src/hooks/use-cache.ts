@@ -4,7 +4,7 @@ export type CacheProps<T> = {
   key: string;
   initialValue: T;
 };
-
+//todo: this is only used in the topic component, so it should be moved there or removed
 export function useCache<T>(props: CacheProps<T>, deps: unknown[]): [T, (reducer: (prev: T) => T) => void] {
   const [state, _setState] = useState(props.initialValue);
   if (!sessionStorage.getItem(props.key)) {

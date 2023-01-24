@@ -1,7 +1,8 @@
+import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { filterTabs } from "./item-list";
+import { filterTabs, ItemList } from "./item-list";
 
-describe("filter tabs", () => {
+describe("filterTabs", () => {
   it("is case insensitive", () => {
     const res = filterTabs("TeSt", { all: ["tEsT"], favorites: [], recent: [] }, false);
     const resRegex = filterTabs("TeSt", { all: ["tEsT"], favorites: [], recent: [] }, true);
@@ -27,5 +28,26 @@ describe("filter tabs", () => {
     const res2 = filterTabs(undefined, expected, false);
     expect(res1).toStrictEqual(expected);
     expect(res2).toStrictEqual(expected);
+  });
+});
+
+describe("ItemList", () => {
+  it("should render", () => {
+    const { container } = render(
+      <ItemList
+        title={""}
+        listId={""}
+        items={["item-1", "item-2"]}
+        isLoading={false}
+        favorites={[]}
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        onFavToggled={() => {}}
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        onItemSelected={() => {}}
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        onRefreshList={() => {}}
+      />
+    );
+    expect(container).toBeTruthy();
   });
 });

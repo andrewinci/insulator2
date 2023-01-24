@@ -1,6 +1,7 @@
 import { IconClock } from "@tabler/icons";
 import { render } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
+import { SidebarItem } from "./sidebar-item";
 
 vi.mock("react-router-dom", () => {
   return {
@@ -9,8 +10,6 @@ vi.mock("react-router-dom", () => {
     },
   };
 });
-
-import { SidebarItem } from "./sidebar-item";
 
 describe("SidebarItem", () => {
   it("should render", () => {
