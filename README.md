@@ -113,6 +113,13 @@ docker run -d --name=redpanda-1 --rm \
     --check=false
 ```
 
+### Serve documentation with Jekyll
+
+```bash
+cd docs
+bundle exec jekyll serve
+```
+
 ### Build
 
 To build the application locally run
