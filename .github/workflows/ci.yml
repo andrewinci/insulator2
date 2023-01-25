@@ -20,12 +20,7 @@ jobs:
         os: [macos-12, ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v3
-
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14.x
-          cache: "yarn"
+      - uses: volta-cli/action@v3
 
       - name: Use node cache
         uses: actions/cache@v3
