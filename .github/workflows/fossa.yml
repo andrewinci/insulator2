@@ -1,8 +1,12 @@
-name: License check
+name: fossa license check
 
 on:
   push:
     branches: ["main"]
+
+concurrency:
+  group: ${{ github.ref }}-fossa
+  cancel-in-progress: true
 
 jobs:
   fossa-scan:
