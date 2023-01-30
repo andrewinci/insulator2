@@ -1,3 +1,10 @@
+## [2.10.1](https://github.com/andrewinci/insulator2/compare/v2.10.0...v2.10.1) (2023-01-30)
+
+### Bug Fixes
+
+- check list of topics to update to prevent an internal error ([2124059](https://github.com/andrewinci/insulator2/commit/2124059ff58cc99218e110d8bd62aae229e8bd54))
+- parse http error from POST schema registry ([64cc709](https://github.com/andrewinci/insulator2/commit/64cc7092a59b800c8d3f0802299ce717fe774471))
+
 # [2.10.0](https://github.com/andrewinci/insulator2/compare/v2.9.1...v2.10.0) (2023-01-23)
 
 ### Bug Fixes
