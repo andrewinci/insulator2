@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::lib::{
+use crate::core::{
     consumer::{types::ConsumerState, ConsumerConfiguration},
     record_store::types::ExportOptions,
 };

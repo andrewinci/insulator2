@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use log::debug;
 
-use crate::lib::{
+use crate::core::{
     admin::{ConsumerGroupInfo, PartitionOffset, Topic, TopicInfo},
     consumer::types::ConsumerOffsetConfiguration,
 };

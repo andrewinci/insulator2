@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::lib::configuration::InsulatorConfig;
+use crate::core::configuration::InsulatorConfig;
 
 use super::{error::ApiResult, AppState};
 

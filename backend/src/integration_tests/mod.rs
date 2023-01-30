@@ -5,7 +5,7 @@ use rdkafka::{config::FromClientConfig, ClientConfig};
 use std::time::Duration;
 use testcontainers::{clients, images::kafka};
 
-use crate::lib::configuration::{ClusterConfig, Favorites};
+use crate::core::configuration::{ClusterConfig, Favorites};
 
 mod consumer_group_admin_it;
 mod topic_admin_it;
@@ -51,7 +51,7 @@ impl<'a> KafkaTest<'a> {
             id: "cluster-id".into(),
             name: "test-cluster-name".into(),
             endpoint: self.bootstrap_servers.to_string(),
-            authentication: crate::lib::configuration::AuthenticationConfig::None,
+            authentication: crate::core::configuration::AuthenticationConfig::None,
             schema_registry: None,
             favorites: Favorites::default(),
         }

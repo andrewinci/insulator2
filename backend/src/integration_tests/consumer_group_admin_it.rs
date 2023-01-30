@@ -5,7 +5,7 @@ use rdkafka::{
 };
 use std::time::Duration;
 
-use crate::{integration_tests::KafkaTest, lib::admin::KafkaAdmin};
+use crate::{core::admin::KafkaAdmin, integration_tests::KafkaTest};
 
 #[tokio::test]
 async fn test_consumer_groups_admin_client() {
@@ -45,7 +45,7 @@ async fn test_consumer_groups_admin_client() {
         let res = sut.set_consumer_group(
             test_consumer_group,
             &[&test_topic_name],
-            &crate::lib::consumer::types::ConsumerOffsetConfiguration::Beginning,
+            &crate::core::consumer::types::ConsumerOffsetConfiguration::Beginning,
         );
         // assert
         assert!(res.is_ok());
@@ -66,7 +66,7 @@ async fn test_consumer_groups_admin_client() {
         sut.set_consumer_group(
             test_consumer_group,
             &[&test_topic_name],
-            &crate::lib::consumer::types::ConsumerOffsetConfiguration::Beginning,
+            &crate::core::consumer::types::ConsumerOffsetConfiguration::Beginning,
         )
         .expect("Unable to create the consumer group for the test");
         // act
@@ -90,7 +90,7 @@ async fn test_consumer_groups_admin_client() {
         sut.set_consumer_group(
             test_consumer_group,
             &[&test_topic_name],
-            &crate::lib::consumer::types::ConsumerOffsetConfiguration::Beginning,
+            &crate::core::consumer::types::ConsumerOffsetConfiguration::Beginning,
         )
         .expect("Unable to create the consumer group for the test");
         // act

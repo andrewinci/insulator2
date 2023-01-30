@@ -2,7 +2,7 @@ use log::{debug, trace};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
-use crate::lib::{
+use crate::core::{
     admin::KafkaAdmin,
     configuration::InsulatorConfig,
     consumer::{ConsumerError, KafkaConsumer},

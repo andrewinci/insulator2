@@ -1,4 +1,4 @@
-use crate::lib::{
+use crate::core::{
     admin::AdminError, avro::AvroError, configuration::ConfigError, consumer::ConsumerError, producer::ProducerError,
     record_store::StoreError, schema_registry::SchemaRegistryError,
 };

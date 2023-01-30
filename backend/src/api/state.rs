@@ -4,7 +4,7 @@ use log::debug;
 use tauri::Manager;
 use tokio::sync::RwLock;
 
-use crate::lib::{
+use crate::core::{
     configuration::ConfigurationProvider, error_callback::ErrorCallback, schema_registry::CachedSchemaRegistry,
 };
 

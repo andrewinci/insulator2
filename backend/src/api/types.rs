@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::lib::types::ParsedKafkaRecord;
+use crate::core::types::ParsedKafkaRecord;
 
 #[derive(Serialize, Debug)]
 pub struct GetPageResponse {

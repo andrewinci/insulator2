@@ -1,4 +1,4 @@
-use crate::lib::schema_registry::Subject;
+use crate::core::schema_registry::Subject;
 use log::debug;
 
 use super::{

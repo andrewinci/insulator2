@@ -5,7 +5,7 @@ extern crate log;
 mod integration_tests;
 
 mod api;
-mod lib;
+mod core;
 mod telemetry;
 
 use crate::api::{
