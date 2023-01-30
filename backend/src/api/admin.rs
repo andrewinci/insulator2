@@ -7,7 +7,10 @@ use crate::core::{
     consumer::types::ConsumerOffsetConfiguration,
 };
 
-use super::{error::ApiResult, AppState};
+use super::{
+    error::{ApiError, ApiResult},
+    AppState,
+};
 
 #[tauri::command]
 pub async fn list_topics(cluster_id: &str, state: tauri::State<'_, AppState>) -> ApiResult<Vec<Topic>> {
@@ -98,6 +101,12 @@ pub async fn set_consumer_group(
         "Set consumer group {} to offset {:?}",
         consumer_group_name, offset_config
     );
+    if topics.is_empty() {
+        return Err(ApiError {
+            error_type: "Update consumer group error".into(),
+            message: "Empty list of topics to update. Specify at least one topic to update".into(),
+        });
+    }
     let cluster = state.get_cluster(cluster_id).await?;
     Ok(cluster
         .kafka_admin_client
