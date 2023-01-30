@@ -8,6 +8,7 @@ use url::Url;
 use apache_avro::Schema as AvroSchema;
 
 use crate::core::avro::ResolvedAvroSchema;
+use crate::core::schema_registry::http_client::HttpClientError;
 
 use super::error::{SchemaRegistryError, SchemaRegistryResult};
 use super::http_client::{HttpClient, ReqwestClient};
@@ -59,9 +60,23 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         }
         let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions", subject_name).as_str())?;
         let request = PostRequest { schema: schema.into() };
-        match AvroSchema::parse_str(schema) {
-            Ok(_) => Ok(self.http_client.post(url.as_str(), request).await?),
-            Err(err) => Err(SchemaRegistryError::SchemaParsing(format!("Invalid schema {}", err))),
+        if let Err(err) = AvroSchema::parse_str(schema) {
+            return Err(SchemaRegistryError::SchemaParsing(format!("Invalid schema {}", err)));
+        };
+        let post_result = self.http_client.post(url.as_str(), request).await;
+        debug!("Schema posted: {:?}", post_result);
+        match post_result {
+            Ok(_) => Ok(()),
+            Err(err) => match err {
+                HttpClientError::Unknown(message) => Err(SchemaRegistryError::GenericError(message)),
+                HttpClientError::Decode(message) => Err(SchemaRegistryError::UnsupportedResponse(message)),
+                HttpClientError::Code(error_code) => match error_code {
+                    409 => Err(SchemaRegistryError::IncompatibleSchema),
+                    _ => Err(SchemaRegistryError::GenericError(format!(
+                        "HTTP client error code ${error_code}"
+                    ))),
+                },
+            },
         }
     }
 

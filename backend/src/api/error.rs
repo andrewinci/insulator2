@@ -32,6 +32,18 @@ impl From<SchemaRegistryError> for ApiError {
                 error_type: "Schema registry error: Invalid URL".into(),
                 message,
             },
+            SchemaRegistryError::UnsupportedResponse(message) => ApiError {
+                error_type: "Schema registry error: Unsupported response".into(),
+                message,
+            },
+            SchemaRegistryError::GenericError(message) => ApiError {
+                error_type: "Schema registry error".into(),
+                message,
+            },
+            SchemaRegistryError::IncompatibleSchema => ApiError {
+                error_type: "Schema registry error: Post new schema".into(),
+                message: "Schema being registered is incompatible with an earlier schema for subject, try to change the compatibility level.".into(),
+            },
         }
     }
 }

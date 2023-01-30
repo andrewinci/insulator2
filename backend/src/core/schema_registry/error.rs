@@ -6,6 +6,9 @@ pub enum SchemaRegistryError {
     SchemaParsing(String),
     HttpClient(String),
     InvalidUrl(String),
+    UnsupportedResponse(String),
+    GenericError(String),
+    IncompatibleSchema,
 }
 
 pub type SchemaRegistryResult<T> = core::result::Result<T, SchemaRegistryError>;
