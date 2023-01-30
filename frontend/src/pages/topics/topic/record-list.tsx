@@ -48,7 +48,6 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
         try {
           return await getRecordsPage(clusterId, topic, pageParam ?? 0, state.query);
         } catch (err) {
-          console.error(err);
           return empty;
         }
       } else return empty;

@@ -46,7 +46,6 @@ export const ToolsMenu = (props: ToolsMenuProps) => {
       labels: { confirm: "Confirm", cancel: "Cancel" },
       onConfirm: async () =>
         await deleteSubjectVersion(clusterId, subject, version).then((_) => {
-          success(`Schema version ${version} deleted successfully`);
           onVersionDeleted();
         }),
     });

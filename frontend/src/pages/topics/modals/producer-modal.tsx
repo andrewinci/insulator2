@@ -2,7 +2,6 @@ import { Button, Checkbox, Chip, Group, Input, Stack, Text, TextInput } from "@m
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { CodeEditor, ResizableModal } from "../../../components";
-import { useNotifications } from "../../../providers";
 import { produceRecord } from "../../../tauri/producer";
 
 type FormType = { key: string; value: string; tombstone: boolean; mode: "Avro" | "String" };
@@ -27,13 +26,12 @@ export const ProducerModal = ({ topic, clusterId, opened, onClose }: AddSchemaMo
       key: (v) => (v === null || v.length === 0 ? "Record key must be non empty" : null),
     },
   });
-  const { success } = useNotifications();
+
   const onSubmit = async (v: FormType) => {
     setState({ isProducing: true });
     try {
       await produceRecord(clusterId, topic, v.key, v.tombstone ? null : v.value, v.mode);
       onClose();
-      success("Record produced to kafka");
     } finally {
       setState({ isProducing: false });
     }

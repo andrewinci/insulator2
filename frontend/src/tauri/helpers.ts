@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { invoke } from "@tauri-apps/api";
 import { platform } from "@tauri-apps/api/os";
-import { addNotification } from "../providers";
-import { format, ApiError } from "./error";
+import { withNotifications } from "./error";
 import { appWindow, LogicalSize } from "@tauri-apps/api/window";
 import { getVersion } from "@tauri-apps/api/app";
 
@@ -39,21 +38,13 @@ export const useAppVersion = (): string | undefined => {
   return appVersion;
 };
 
-export const parseTruststore = async (location: string, password: string | undefined): Promise<string> => {
-  return await invoke<string>("parse_truststore", { location, password }).catch((err: ApiError) => {
-    addNotification({ type: "error", title: "Parse truststore failed", description: format(err) });
-    return Promise.reject(err);
-  });
-};
+export const parseTruststore = (location: string, password: string | undefined): Promise<string> =>
+  withNotifications(() => invoke<string>("parse_truststore", { location, password }));
 
 type UserCertificate = {
   certificate: string;
   key: string;
 };
 
-export const parseKeystore = async (location: string, password: string | undefined): Promise<UserCertificate> => {
-  return await invoke<UserCertificate>("parse_keystore", { location, password }).catch((err: ApiError) => {
-    addNotification({ type: "error", title: "Parse keystore failed", description: format(err) });
-    return Promise.reject(err);
-  });
-};
+export const parseKeystore = (location: string, password: string | undefined): Promise<UserCertificate> =>
+  withNotifications(() => invoke<UserCertificate>("parse_keystore", { location, password }));

@@ -2,7 +2,6 @@ import { Autocomplete, Button, Group, Input, Stack, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { CodeEditor, ResizableModal } from "../../components";
-import { useNotifications } from "../../providers";
 import { postSchema } from "../../tauri/schema-registry";
 
 type FormType = { subjectName: string; avroSchema: string };
@@ -42,13 +41,10 @@ export const AddSchemaModal = ({ subjects, clusterId, opened, onClose }: AddSche
       },
     },
   });
-  const { success } = useNotifications();
   const onSubmit = async (v: FormType) => {
     setState({ isUploading: true });
     try {
-      await postSchema(clusterId, v.subjectName, v.avroSchema)
-        .then((_) => success(`Schema ${v.subjectName} successfully created`))
-        .then((_) => onClose());
+      await postSchema(clusterId, v.subjectName, v.avroSchema).then((_) => onClose());
     } finally {
       setState({ isUploading: false });
     }

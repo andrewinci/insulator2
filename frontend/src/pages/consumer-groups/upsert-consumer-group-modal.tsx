@@ -39,6 +39,8 @@ export const UpsertConsumerGroupModal = ({
   const nowUTC = dayjs.utc().toDate();
   const zeroUTC = dayjs().set("h", 0).set("m", 0).set("s", 0).toDate();
 
+  //todo: useForm and validate before submit
+
   const [state, setState] = useState<ConsumerGroupModalState>({
     name: name ?? "",
     topics: topics ?? [],

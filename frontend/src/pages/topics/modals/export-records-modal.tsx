@@ -1,5 +1,4 @@
 import { Text, Checkbox, Modal, Title, NumberInput, Stack, Group, Button } from "@mantine/core";
-import { useNotifications } from "../../../providers";
 import { save } from "@tauri-apps/api/dialog";
 import { useState } from "react";
 import { exportRecords } from "../../../tauri/consumer";
@@ -19,8 +18,6 @@ export const ExportRecordsModal = (props: ExportRecordsModalProps) => {
   const { onClose, onExportComplete, onExportStart } = props;
 
   // export records
-  const { success } = useNotifications();
-
   const [exportState, setExportState] = useState({
     exportAll: false,
     limit: undefined as number | undefined,
@@ -45,7 +42,6 @@ export const ExportRecordsModal = (props: ExportRecordsModalProps) => {
         })
           .then((_) => onClose())
           .then((_) => {
-            success("Records exported successfully");
             onExportComplete();
           });
       }

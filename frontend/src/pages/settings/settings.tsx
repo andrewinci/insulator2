@@ -6,13 +6,11 @@ import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { PageHeader } from "../../components";
 import { AppTheme } from "../../models";
-import { useNotifications } from "../../providers";
 import { useUserSettings } from "../../providers/user-settings-provider";
 import { exportDatastore } from "../../tauri/utils";
 
 export const Settings = () => {
   const { clusterId } = useParams();
-  const { success } = useNotifications();
   const { userSettings, setUserSettings } = useUserSettings();
   const clusterName = useMemo(
     () => userSettings.clusters.find((c) => c.id == clusterId)?.name,
@@ -33,7 +31,6 @@ export const Settings = () => {
     setExportStatus((_) => ({ inProgress: true }));
     try {
       await exportDatastore(clusterId, outputPath);
-      success(`Database for ${clusterName} successfully exported to ${outputPath}`);
     } finally {
       setExportStatus((_) => ({ inProgress: false }));
     }

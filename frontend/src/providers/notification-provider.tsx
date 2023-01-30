@@ -11,7 +11,7 @@ export type Notification = {
 export const addNotification = (n: Notification) => {
   showNotification({
     id: n.description,
-    autoClose: n.type == "ok" ? 5000 : false,
+    autoClose: n.type == "ok" ? 3000 : false,
     title: n.title,
     message: n.description,
     color: n.type == "ok" ? "teal" : "red",

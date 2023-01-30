@@ -1,22 +1,17 @@
 import { invoke } from "@tauri-apps/api";
 import { ConsumerConfiguration, ConsumerState, KafkaRecord } from "../models/kafka";
-import { addNotification } from "../providers";
-import { format, ApiError } from "./error";
+import { withNotifications } from "./error";
 
 export const getConsumerState = (clusterId: string, topic: string): Promise<ConsumerState> =>
-  invoke<ConsumerState>("get_consumer_state", { clusterId, topic }).catch((err: ApiError) => {
-    addNotification({ type: "error", title: "Get Kafka consumer state", description: format(err) });
-    throw err;
-  });
+  withNotifications(() => invoke<ConsumerState>("get_consumer_state", { clusterId, topic }));
 
 export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
-  invoke<void>("stop_consumer", { clusterId, topic }).catch((err: ApiError) =>
-    addNotification({ type: "error", title: "Stop Kafka record", description: format(err) })
-  );
+  withNotifications(() => invoke<void>("stop_consumer", { clusterId, topic }), `Consumer for topic ${topic} stopped`);
 
 export const startConsumer = (clusterId: string, topic: string, config: ConsumerConfiguration): Promise<void> =>
-  invoke<void>("start_consumer", { clusterId, topic, config }).catch((err: ApiError) =>
-    addNotification({ type: "error", title: "Start Kafka record", description: format(err) })
+  withNotifications(
+    () => invoke<void>("start_consumer", { clusterId, topic, config }),
+    `Consumer for topic ${topic} started`
   );
 
 type GetRecordsPageResponse = {
@@ -31,10 +26,7 @@ export const getRecordsPage = (
   pageNumber: number,
   query?: string
 ): Promise<GetRecordsPageResponse> =>
-  invoke<GetRecordsPageResponse>("get_records_page", { clusterId, topic, query, pageNumber }).catch((err: ApiError) => {
-    addNotification({ type: "error", title: "Get Kafka records page", description: format(err) });
-    throw err;
-  });
+  withNotifications(() => invoke<GetRecordsPageResponse>("get_records_page", { clusterId, topic, query, pageNumber }));
 
 type ExportOptions = {
   query: string;
@@ -45,10 +37,12 @@ type ExportOptions = {
 };
 
 export const exportRecords = (clusterId: string, topic: string, options: ExportOptions): Promise<void> =>
-  invoke<void>("export_records", {
-    clusterId,
-    topic,
-    options,
-  }).catch((err: ApiError) =>
-    addNotification({ type: "error", title: "Export records to csv file.", description: format(err) })
+  withNotifications(
+    () =>
+      invoke<void>("export_records", {
+        clusterId,
+        topic,
+        options,
+      }),
+    `Records from ${topic} exported`
   );
