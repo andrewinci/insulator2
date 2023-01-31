@@ -73,7 +73,7 @@ export const ConsumerGroupsPage = () => {
   );
 };
 
-const useConsumerGroup = () => {
+export const useConsumerGroup = () => {
   const { clusterId, consumerName: navConsumerName } = useParams();
   const [state, setState] = useSessionStorage({
     key: `consumer-main-${clusterId}`,

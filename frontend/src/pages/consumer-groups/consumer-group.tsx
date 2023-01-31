@@ -78,7 +78,7 @@ export const ConsumerGroup = (props: ConsumerGroupProps) => {
   );
 };
 
-const ConsumerGroupTopicDetails = ({
+export const ConsumerGroupTopicDetails = ({
   clusterId,
   topicName,
   offsets,
