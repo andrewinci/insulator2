@@ -1,11 +1,11 @@
 {
-  "version": "v2.10.0",
-  "notes": "# [2.10.0](https://github.com/andrewinci/insulator2/compare/v2.9.1...v2.10.0) (2023-01-23)\n\n\n### Bug Fixes\n\n* typo in add cluster form ([4502855](https://github.com/andrewinci/insulator2/commit/45028552a1b614aa72a81dde41a4950c91789197))\n\n\n### Features\n\n* reset consumer group to a point in time ([#349](https://github.com/andrewinci/insulator2/issues/349)) ([0fc06d9](https://github.com/andrewinci/insulator2/commit/0fc06d9fc4c10e46aa13ca5a483e3bcb46ecb720))\n\n\n\n",
-  "pub_date": "2023-01-23T08:14:21Z",
+  "version": "v2.10.1",
+  "notes": "## [2.10.1](https://github.com/andrewinci/insulator2/compare/v2.10.0...v2.10.1) (2023-01-31)\n\n\n### Bug Fixes\n\n* check list of topics to update to prevent an internal error ([8a7ce90](https://github.com/andrewinci/insulator2/commit/8a7ce902eef15c677ea8d935ed07f4d15d2c6e07))\n* parse http error from POST schema registry ([5ef5858](https://github.com/andrewinci/insulator2/commit/5ef58583784b6408bf9b7d7126fd2bb5db2387ac))\n\n\n\n",
+  "pub_date": "2023-01-31T05:37:15Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.10.0/insulator-2_2.10.0_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.10.1/insulator-2_2.10.1_amd64.AppImage.tar.gz"
     }
   }
 }
