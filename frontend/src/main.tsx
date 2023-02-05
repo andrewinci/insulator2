@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./init-monaco"; //initialize monaco-js
 import { createBrowserRouter, Outlet, Route, RouterProvider, Routes } from "react-router-dom";
-import { UserSettingsProvider, useNotifications } from "./providers";
+import { UserSettingsProvider } from "./providers";
 import { AppShell, MantineProvider } from "@mantine/core";
 import { useUserSettings } from "./providers/user-settings-provider";
 import { SideBar } from "./components";
@@ -21,6 +21,7 @@ import { Schema } from "./pages/schema-registry/schema";
 import { withPropsFromUrlParams } from "./helpers/with-props-from-url";
 import { useInitMonaco } from "./init-monaco";
 import { RecordDetailsWindow } from "./pages/topics/modals/record-view-modal";
+import { notifyFailure } from "./helpers/notification";
 
 const AppContainer = () => {
   return (
@@ -87,11 +88,10 @@ const InsulatorRoutes = () => {
 
 const App = () => {
   const { userSettings: appState } = useUserSettings();
-  const { alert } = useNotifications();
   const queryClient = new QueryClient();
   // listen for errors emitted by the backend
   listen<ApiError>("error", (event) => {
-    alert(event.payload.errorType, event.payload.message);
+    notifyFailure(event.payload.errorType, event.payload.message);
   });
   return (
     <MantineProvider

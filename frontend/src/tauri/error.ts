@@ -1,4 +1,4 @@
-import { addNotification } from "../providers";
+import { notifyFailure, notifySuccess } from "../helpers/notification";
 
 export type ApiError = {
   errorType: string;
@@ -12,22 +12,12 @@ export const withNotifications = async <T>(
 ): Promise<T> => {
   try {
     const res = await action();
-    if (successTitle) {
-      addNotification({
-        type: "ok",
-        title: successTitle,
-        description: successDescription,
-      });
-    }
+    if (successTitle) notifySuccess(successTitle, successDescription);
     return res;
   } catch (err) {
     console.error(err);
     const { errorType, message } = err as ApiError;
-    addNotification({
-      type: "error",
-      title: errorType,
-      description: message,
-    });
+    notifyFailure(errorType, message);
     return Promise.reject(err);
   }
 };

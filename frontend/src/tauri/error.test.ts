@@ -1,10 +1,8 @@
 import { withNotifications } from "./error";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { addNotification } from "../providers";
+import { addNotification, notifyFailure, notifySuccess } from "../helpers/notification";
 
-vi.mock("../providers", () => ({
-  addNotification: vi.fn(),
-}));
+vi.mock("../helpers/notification");
 
 describe("withNotifications", () => {
   beforeEach(() => {
@@ -20,11 +18,7 @@ describe("withNotifications", () => {
   it('calls addNotification with type "ok" and provided success title/description when action succeeds', async () => {
     const action = vi.fn().mockReturnValue(Promise.resolve(42));
     await withNotifications(action, "Success", "Action completed");
-    expect(addNotification).toHaveBeenCalledWith({
-      type: "ok",
-      title: "Success",
-      description: "Action completed",
-    });
+    expect(notifySuccess).toHaveBeenCalledWith("Success", "Action completed");
   });
 
   it('calls addNotification with type "error" and error message when action throws', async () => {
@@ -34,11 +28,7 @@ describe("withNotifications", () => {
     } catch (err) {
       /* empty */
     }
-    expect(addNotification).toHaveBeenCalledWith({
-      type: "error",
-      title: "Error",
-      description: "Test error",
-    });
+    expect(notifyFailure).toHaveBeenCalledWith("Error", "Test error");
   });
 
   it("returns rejected Promise with error when action throws", async () => {

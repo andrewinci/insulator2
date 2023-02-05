@@ -2,7 +2,6 @@ import { ActionIcon, Text, Menu, Title } from "@mantine/core";
 import { IconFileExport, IconInfoCircle, IconSatellite, IconTool, IconTrash } from "@tabler/icons";
 import { deleteTopic, getTopicInfo } from "../../../tauri/admin";
 import { openConfirmModal, openModal } from "@mantine/modals";
-import { useNotifications } from "../../../providers";
 import { TopicInfoModal } from "../modals/topic-info-modal";
 import { useWindowHandler } from "../../../components";
 
@@ -16,7 +15,6 @@ type ToolsMenuProps = {
 
 export const ToolsMenu = (props: ToolsMenuProps) => {
   const { clusterId, topic, exportInProgress, onExportClick, onTopicDeleted } = props;
-  const { success } = useNotifications();
   const { openNewWindow } = useWindowHandler();
   const openDeleteTopicModal = () =>
     openConfirmModal({
@@ -30,11 +28,10 @@ export const ToolsMenu = (props: ToolsMenuProps) => {
         </>
       ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: async () =>
-        await deleteTopic(clusterId, topic).then((_) => {
-          success(`Topic ${topic} deleted successfully`);
-          onTopicDeleted(topic);
-        }),
+      onConfirm: async () => {
+        await deleteTopic(clusterId, topic);
+        onTopicDeleted(topic);
+      },
     });
 
   const openInfoModal = async () => {

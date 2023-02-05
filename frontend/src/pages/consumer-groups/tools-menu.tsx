@@ -3,7 +3,6 @@ import { openConfirmModal } from "@mantine/modals";
 import { IconAdjustments, IconFlag, IconPlayerPlay, IconRefresh, IconTool, IconTrash } from "@tabler/icons";
 import { useState } from "react";
 import { ConsumerOffsetConfiguration, ConsumerGroupInfo } from "../../models";
-import { useNotifications } from "../../providers";
 import { deleteConsumerGroup, setConsumerGroup } from "../../tauri/admin";
 import { UpsertConsumerGroupModal } from "./upsert-consumer-group-modal";
 
@@ -18,17 +17,14 @@ type ToolsMenuProps = {
 
 export const ToolsMenu = (props: ToolsMenuProps) => {
   const { clusterId, loading, disabled, data, onRefresh, onDeleteConsumerGroup } = props;
-  const { success } = useNotifications();
   const topics = [...new Set(data.offsets.map((o) => o.topic))];
 
   const [isResetting, setIsResetting] = useState(false);
   const resetOffset = async (offset: ConsumerOffsetConfiguration) => {
-    setIsResetting(true);
     try {
-      await setConsumerGroup(clusterId, data.name, topics, offset).then((_) => {
-        success("Consumer group updated successfully");
-        onRefresh();
-      });
+      setIsResetting(true);
+      await setConsumerGroup(clusterId, data.name, topics, offset);
+      onRefresh();
     } finally {
       setIsResetting(false);
     }
@@ -66,11 +62,10 @@ export const ToolsMenu = (props: ToolsMenuProps) => {
         </>
       ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: async () =>
-        await deleteConsumerGroup(clusterId, data.name).then((_) => {
-          success(`Consumer group ${data.name} deleted successfully`);
-          onDeleteConsumerGroup(data.name);
-        }),
+      onConfirm: async () => {
+        await deleteConsumerGroup(clusterId, data.name);
+        onDeleteConsumerGroup(data.name);
+      },
     });
 
   const [customOffsetModal, setCustomOffsetModal] = useState({ opened: false });

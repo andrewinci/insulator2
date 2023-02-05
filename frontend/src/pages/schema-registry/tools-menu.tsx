@@ -1,10 +1,9 @@
 import { ActionIcon, Menu, Text } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { IconFileExport, IconTool, IconTrash } from "@tabler/icons";
-import { fs } from "@tauri-apps/api";
-import { save } from "@tauri-apps/api/dialog";
-import { useNotifications } from "../../providers";
+
 import { deleteSubject, deleteSubjectVersion } from "../../tauri/schema-registry";
+import { saveTextFile } from "../../tauri/utils";
 
 type ToolsMenuProps = {
   clusterId: string;
@@ -18,7 +17,6 @@ type ToolsMenuProps = {
 export const ToolsMenu = (props: ToolsMenuProps) => {
   const { clusterId, subject, version, currentSchema } = props;
   const { onSubjectDeleted, onVersionDeleted } = props;
-  const { success, alert } = useNotifications();
   const openDeleteSubjectModal = () =>
     openConfirmModal({
       title: "Are you sure to delete this subject?",
@@ -28,11 +26,10 @@ export const ToolsMenu = (props: ToolsMenuProps) => {
         </Text>
       ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
-      onConfirm: async () =>
-        await deleteSubject(clusterId, subject).then((_) => {
-          success("Schema deleted successfully");
-          onSubjectDeleted(subject);
-        }),
+      onConfirm: async () => {
+        await deleteSubject(clusterId, subject);
+        onSubjectDeleted(subject);
+      },
     });
 
   const openDeleteVersionModal = () =>
@@ -50,19 +47,7 @@ export const ToolsMenu = (props: ToolsMenuProps) => {
         }),
     });
 
-  const onExport = async () => {
-    const path = await save({
-      defaultPath: `${subject}.json`,
-    });
-    if (path) {
-      try {
-        await fs.writeTextFile(path, currentSchema);
-        success(`Schema saved to ${path}`);
-      } catch (err) {
-        alert("Unable to save the schema locally", JSON.stringify(err));
-      }
-    }
-  };
+  const onExport = () => saveTextFile(subject, currentSchema);
 
   return (
     <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>
