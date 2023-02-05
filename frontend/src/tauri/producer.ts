@@ -8,7 +8,7 @@ export const produceRecord = (
   value: string | null,
   mode: "Avro" | "String"
 ): Promise<void> =>
-  withNotifications(
-    () => invoke<void>("produce_record", { clusterId, topic, key, value, mode }),
-    `Record with key ${key} produced to topic ${topic}`
-  );
+  withNotifications({
+    action: () => invoke<void>("produce_record", { clusterId, topic, key, value, mode }),
+    successTitle: `Record with key ${key} produced to topic ${topic}`,
+  });

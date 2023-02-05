@@ -1,6 +1,6 @@
 import { withNotifications } from "./error";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { addNotification, notifyFailure, notifySuccess } from "../helpers/notification";
+import { notifyFailure, notifySuccess } from "../helpers/notification";
 
 vi.mock("../helpers/notification");
 
@@ -11,20 +11,28 @@ describe("withNotifications", () => {
 
   it("calls action and returns its result if no error is thrown", async () => {
     const action = vi.fn().mockReturnValue(Promise.resolve(42));
-    const result = await withNotifications(action, "Success", "Action completed");
+    const result = await withNotifications({
+      action,
+      successTitle: "Success",
+      successDescription: "Action completed",
+    });
     expect(result).toBe(42);
     expect(action).toHaveBeenCalled();
   });
   it('calls addNotification with type "ok" and provided success title/description when action succeeds', async () => {
     const action = vi.fn().mockReturnValue(Promise.resolve(42));
-    await withNotifications(action, "Success", "Action completed");
+    await withNotifications({
+      action,
+      successTitle: "Success",
+      successDescription: "Action completed",
+    });
     expect(notifySuccess).toHaveBeenCalledWith("Success", "Action completed");
   });
 
   it('calls addNotification with type "error" and error message when action throws', async () => {
     const action = vi.fn().mockReturnValue(Promise.reject({ errorType: "Error", message: "Test error" }));
     try {
-      await withNotifications(action, "Success", "Action completed");
+      await withNotifications({ action, successTitle: "Success", successDescription: "Action completed" });
     } catch (err) {
       /* empty */
     }
@@ -35,7 +43,11 @@ describe("withNotifications", () => {
     const error = new Error("Test error");
     const action = vi.fn().mockReturnValue(Promise.reject(error));
     try {
-      await withNotifications(action, "Success", "Action completed");
+      await withNotifications({
+        action,
+        successTitle: "Success",
+        successDescription: "Action completed",
+      });
     } catch (err) {
       expect(err).toBe(error);
     }
@@ -46,7 +58,11 @@ describe("withNotifications", () => {
     const action = vi.fn().mockReturnValue(Promise.reject(error));
     const spy = vi.spyOn(console, "error");
     try {
-      await withNotifications(action, "Success", "Action completed");
+      await withNotifications({
+        action,
+        successTitle: "Success",
+        successDescription: "Action completed",
+      });
     } catch (err) {
       /* empty */
     }
@@ -55,7 +71,8 @@ describe("withNotifications", () => {
 
   it("does not call addNotification with success title/description when they are not provided", async () => {
     const action = vi.fn().mockReturnValue(Promise.resolve(42));
-    await withNotifications(action);
-    expect(addNotification).not.toHaveBeenCalled();
+    await withNotifications({ action });
+    expect(notifyFailure).not.toHaveBeenCalled();
+    expect(notifySuccess).not.toHaveBeenCalled();
   });
 });

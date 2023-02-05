@@ -5,14 +5,18 @@ export type ApiError = {
   message: string;
 };
 
-export const withNotifications = async <T>(
-  action: () => Promise<T>,
-  successTitle?: string,
-  successDescription?: string
-): Promise<T> => {
+type withNotificationsProps<T> = {
+  action: () => Promise<T>;
+  successTitle?: string;
+  successDescription?: string;
+  showInModal?: boolean;
+};
+
+export const withNotifications = async <T>(props: withNotificationsProps<T>): Promise<T> => {
+  const { action, successTitle, successDescription } = props;
   try {
     const res = await action();
-    if (successTitle) notifySuccess(successTitle, successDescription);
+    if (successTitle) notifySuccess(successTitle, successDescription, props.showInModal);
     return res;
   } catch (err) {
     console.error(err);

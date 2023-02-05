@@ -3,22 +3,28 @@ import { Subject } from "../models";
 import { withNotifications } from "./error";
 
 export const listSubjects = (clusterId: string): Promise<string[]> =>
-  withNotifications(() => invoke<string[]>("list_subjects", { clusterId }), "List of subjects loaded");
+  withNotifications({
+    action: () => invoke<string[]>("list_subjects", { clusterId }),
+    successTitle: "List of subjects loaded",
+  });
 
 export const getSubject = (clusterId: string, subjectName: string): Promise<Subject> =>
-  withNotifications(() => invoke<Subject>("get_subject", { clusterId, subjectName }));
+  withNotifications({ action: () => invoke<Subject>("get_subject", { clusterId, subjectName }) });
 
 export const deleteSubject = (clusterId: string, subjectName: string): Promise<void> =>
-  withNotifications(() => invoke<void>("delete_subject", { clusterId, subjectName }), `Subject ${subjectName} deleted`);
+  withNotifications({
+    action: () => invoke<void>("delete_subject", { clusterId, subjectName }),
+    successTitle: `Subject ${subjectName} deleted`,
+  });
 
 export const deleteSubjectVersion = (clusterId: string, subjectName: string, version: number): Promise<void> =>
-  withNotifications(
-    () => invoke<void>("delete_subject_version", { clusterId, subjectName, version }),
-    `Version ${version} of subject ${subjectName} deleted`
-  );
+  withNotifications({
+    action: () => invoke<void>("delete_subject_version", { clusterId, subjectName, version }),
+    successTitle: `Version ${version} of subject ${subjectName} deleted`,
+  });
 
 export const postSchema = (clusterId: string, subjectName: string, schema: string): Promise<void> =>
-  withNotifications(
-    () => invoke<void>("post_schema", { clusterId, subjectName, schema }),
-    `New version for ${subjectName} created`
-  );
+  withNotifications({
+    action: () => invoke<void>("post_schema", { clusterId, subjectName, schema }),
+    successTitle: `New version for ${subjectName} created`,
+  });

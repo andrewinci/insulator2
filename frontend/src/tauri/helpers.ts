@@ -39,7 +39,7 @@ export const useAppVersion = (): string | undefined => {
 };
 
 export const parseTruststore = (location: string, password: string | undefined): Promise<string> =>
-  withNotifications(() => invoke<string>("parse_truststore", { location, password }));
+  withNotifications({ action: () => invoke<string>("parse_truststore", { location, password }) });
 
 type UserCertificate = {
   certificate: string;
@@ -47,4 +47,4 @@ type UserCertificate = {
 };
 
 export const parseKeystore = (location: string, password: string | undefined): Promise<UserCertificate> =>
-  withNotifications(() => invoke<UserCertificate>("parse_keystore", { location, password }));
+  withNotifications({ action: () => invoke<UserCertificate>("parse_keystore", { location, password }) });

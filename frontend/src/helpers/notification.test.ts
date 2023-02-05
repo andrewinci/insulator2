@@ -1,12 +1,12 @@
 import { showNotification } from "@mantine/notifications";
 import { vi, describe, it, expect } from "vitest";
-import { addNotification } from "./notification";
+import { _addNotification } from "./notification";
 
 vi.mock("@mantine/notifications");
 
 describe("addNotification", () => {
   it('calls showNotification with expected arguments when n.type is "ok"', () => {
-    addNotification({
+    _addNotification({
       title: "title",
       description: "description",
       type: "ok",
@@ -23,7 +23,7 @@ describe("addNotification", () => {
   });
 
   it('calls showNotification with expected arguments when n.type is not "ok"', () => {
-    addNotification({
+    _addNotification({
       title: "title",
       description: "description",
       type: "error",

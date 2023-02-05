@@ -3,16 +3,21 @@ import { ConsumerConfiguration, ConsumerState, KafkaRecord } from "../models/kaf
 import { withNotifications } from "./error";
 
 export const getConsumerState = (clusterId: string, topic: string): Promise<ConsumerState> =>
-  withNotifications(() => invoke<ConsumerState>("get_consumer_state", { clusterId, topic }));
+  withNotifications({
+    action: () => invoke<ConsumerState>("get_consumer_state", { clusterId, topic }),
+  });
 
 export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
-  withNotifications(() => invoke<void>("stop_consumer", { clusterId, topic }), `Consumer for topic ${topic} stopped`);
+  withNotifications({
+    action: () => invoke<void>("stop_consumer", { clusterId, topic }),
+    successTitle: `Consumer for topic ${topic} stopped`,
+  });
 
 export const startConsumer = (clusterId: string, topic: string, config: ConsumerConfiguration): Promise<void> =>
-  withNotifications(
-    () => invoke<void>("start_consumer", { clusterId, topic, config }),
-    `Consumer for topic ${topic} started`
-  );
+  withNotifications({
+    action: () => invoke<void>("start_consumer", { clusterId, topic, config }),
+    successTitle: `Consumer for topic ${topic} started`,
+  });
 
 type GetRecordsPageResponse = {
   records: KafkaRecord[];
@@ -26,7 +31,9 @@ export const getRecordsPage = (
   pageNumber: number,
   query?: string
 ): Promise<GetRecordsPageResponse> =>
-  withNotifications(() => invoke<GetRecordsPageResponse>("get_records_page", { clusterId, topic, query, pageNumber }));
+  withNotifications({
+    action: () => invoke<GetRecordsPageResponse>("get_records_page", { clusterId, topic, query, pageNumber }),
+  });
 
 type ExportOptions = {
   query: string;
@@ -37,12 +44,12 @@ type ExportOptions = {
 };
 
 export const exportRecords = (clusterId: string, topic: string, options: ExportOptions): Promise<void> =>
-  withNotifications(
-    () =>
+  withNotifications({
+    successTitle: `Records from ${topic} exported`,
+    action: () =>
       invoke<void>("export_records", {
         clusterId,
         topic,
         options,
       }),
-    `Records from ${topic} exported`
-  );
+  });

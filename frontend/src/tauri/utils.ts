@@ -5,14 +5,14 @@ import { fs } from "@tauri-apps/api";
 import { save } from "@tauri-apps/api/dialog";
 
 export const exportDatastore = async (clusterId: string, outputPath: string): Promise<void> =>
-  withNotifications(
-    () =>
+  await withNotifications({
+    action: () =>
       invoke<void>("export_datastore", {
         clusterId,
         outputPath,
       }),
-    `Database successfully exported to ${outputPath}`
-  );
+    successDescription: `Database successfully exported to ${outputPath}`,
+  });
 
 export const saveTextFile = async (subject: string, schema: string) => {
   const path = await save({

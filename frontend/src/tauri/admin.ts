@@ -8,25 +8,28 @@ export const setConsumerGroup = (
   topics: string[],
   offsetConfig: ConsumerOffsetConfiguration
 ): Promise<void> =>
-  withNotifications(
-    () => invoke<void>("set_consumer_group", { clusterId, consumerGroupName, topics, offsetConfig }),
-    `Consumer group ${consumerGroupName} updated`
-  );
+  withNotifications({
+    action: () => invoke<void>("set_consumer_group", { clusterId, consumerGroupName, topics, offsetConfig }),
+    successTitle: `Consumer group ${consumerGroupName} updated`,
+  });
 
 export const getConsumerGroupState = (clusterId: string, consumerGroupName: string): Promise<string> =>
-  withNotifications(() => invoke<string>("get_consumer_group_state", { clusterId, consumerGroupName }));
+  withNotifications({ action: () => invoke<string>("get_consumer_group_state", { clusterId, consumerGroupName }) });
 
 export const describeConsumerGroup = (
   clusterId: string,
   consumerGroupName: string,
   ignoreCache: boolean
 ): Promise<ConsumerGroupInfo> =>
-  withNotifications(() =>
-    invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, ignoreCache })
-  );
+  withNotifications({
+    action: () => invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, ignoreCache }),
+  });
 
 export const getConsumerGroups = (clusterId: string): Promise<string[]> =>
-  withNotifications(() => invoke<string[]>("list_consumer_groups", { clusterId }), "List of consumer groups loaded");
+  withNotifications({
+    action: () => invoke<string[]>("list_consumer_groups", { clusterId }),
+    successTitle: "List of consumer groups loaded",
+  });
 
 export const createTopic = (
   clusterId: string,
@@ -35,28 +38,33 @@ export const createTopic = (
   isr: number,
   compacted: boolean
 ): Promise<void> =>
-  withNotifications(
-    () => invoke<void>("create_topic", { clusterId, topicName, partitions, isr, compacted }),
-    `Topic ${topicName} created`
-  );
+  withNotifications({
+    action: () => invoke<void>("create_topic", { clusterId, topicName, partitions, isr, compacted }),
+    successTitle: `Topic ${topicName} created`,
+  });
 
 export const listTopics = (clusterId: string): Promise<string[]> =>
-  withNotifications(
-    () => invoke<{ name: string }[]>("list_topics", { clusterId }).then((topics) => topics.map((t) => t.name)),
-    "List of topics loaded"
-  );
+  withNotifications({
+    action: () => invoke<{ name: string }[]>("list_topics", { clusterId }).then((topics) => topics.map((t) => t.name)),
+    successTitle: "List of topics loaded",
+  });
 
 export const getTopicInfo = (clusterId: string, topicName: string): Promise<TopicInfo> =>
-  withNotifications(() => invoke<TopicInfo>("get_topic_info", { clusterId, topicName }));
+  withNotifications({ action: () => invoke<TopicInfo>("get_topic_info", { clusterId, topicName }) });
 
 export const getLastOffsets = (clusterId: string, topicNames: [string]): Promise<Record<string, [PartitionOffset]>> =>
-  withNotifications(() => invoke<Record<string, [PartitionOffset]>>("get_last_offsets", { clusterId, topicNames }));
+  withNotifications({
+    action: () => invoke<Record<string, [PartitionOffset]>>("get_last_offsets", { clusterId, topicNames }),
+  });
 
 export const deleteTopic = (clusterId: string, topicName: string): Promise<void> =>
-  withNotifications(() => invoke<void>("delete_topic", { clusterId, topicName }), `Topic ${topicName} deleted`);
+  withNotifications({
+    action: () => invoke<void>("delete_topic", { clusterId, topicName }),
+    successDescription: `Topic ${topicName} deleted`,
+  });
 
 export const deleteConsumerGroup = (clusterId: string, consumerGroupName: string): Promise<void> =>
-  withNotifications(
-    () => invoke<void>("delete_consumer_group", { clusterId, consumerGroupName }),
-    `Consumer group ${consumerGroupName} deleted`
-  );
+  withNotifications({
+    action: () => invoke<void>("delete_consumer_group", { clusterId, consumerGroupName }),
+    successTitle: `Consumer group ${consumerGroupName} deleted`,
+  });
