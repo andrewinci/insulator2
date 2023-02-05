@@ -1,4 +1,5 @@
-import { Input, Group, Stack, TextInput, Container, Title } from "@mantine/core";
+import { Input, Group, Stack, TextInput, Container, Title, Text } from "@mantine/core";
+import { IconEraser } from "@tabler/icons";
 
 import dayjs from "dayjs";
 import { CodeEditor, ResizableModal } from "../../../components";
@@ -29,9 +30,16 @@ const RecordDetailsForm = (props: RecordDetailsModalProps & { heightOffset: numb
         </Group>
         <TextInput readOnly label="Key" value={record.key} />
       </Stack>
-      <Input.Wrapper mt={3} style={{ height: `calc(100% - ${heightOffset}px)` }} label="Value">
-        <CodeEditor path={topic} language="json" height={"100%"} value={pretty(record.payload)} readOnly />
-      </Input.Wrapper>
+      {record.payload && (
+        <Input.Wrapper mt={3} style={{ height: `calc(100% - ${heightOffset}px)` }} label="Value">
+          <CodeEditor path={topic} language="json" height={"100%"} value={pretty(record.payload)} readOnly />
+        </Input.Wrapper>
+      )}
+      {!record.payload && (
+        <Text align="center" mt={20}>
+          <IconEraser size={20} /> This record is a tombstone
+        </Text>
+      )}
     </>
   );
 };

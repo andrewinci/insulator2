@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { Paper, Text, Group, ActionIcon, Tooltip } from "@mantine/core";
 import { useClipboard } from "@mantine/hooks";
 import { Prism } from "@mantine/prism";
-import { IconCopy, IconEye } from "@tabler/icons";
+import { IconCopy, IconEraser, IconEye } from "@tabler/icons";
 import dayjs from "dayjs";
 import React, { useMemo, useState } from "react";
 import { pretty } from "../../../helpers/json";
@@ -31,6 +31,13 @@ export const KafkaRecordCard = ({ record, index, style, height, onOpenDetails }:
           {index} - {record?.key}
         </Text>
         <Group position="right" spacing={0}>
+          {!record.payload && (
+            <Tooltip label="This record is a tombstone">
+              <ActionIcon>
+                <IconEraser size={20} />
+              </ActionIcon>
+            </Tooltip>
+          )}
           <Tooltip label="Copy record" color={copyState.color}>
             <ActionIcon
               onClick={() => {
