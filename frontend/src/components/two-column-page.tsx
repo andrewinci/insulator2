@@ -1,7 +1,7 @@
 import { useSessionStorage } from "@mantine/hooks";
 import { Allotment, LayoutPriority } from "allotment";
 import { useParams } from "react-router-dom";
-import { MinimizeButton } from "../../components";
+import { MinimizeButton } from ".";
 import { Title } from "@mantine/core";
 
 type TwoColumnPageProps = {

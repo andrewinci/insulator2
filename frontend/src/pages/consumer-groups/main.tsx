@@ -1,14 +1,13 @@
 import { useSessionStorage } from "@mantine/hooks";
 import { useParams } from "react-router-dom";
-import { TwoColumnPage } from "../common";
 import { ConsumerGroup } from "./consumer-group";
 import { Modal, Title } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useFavorites } from "../../hooks/use-favorites";
 import { getConsumerGroups } from "../../tauri/admin";
-import { ItemList } from "../common";
 import { UpsertConsumerGroupModal } from "./upsert-consumer-group-modal";
+import { ItemList, TwoColumnPage } from "../../components";
 
 export const ConsumerGroupsPage = () => {
   const { clusterId, activeConsumerGroupName, setActiveConsumerGroupName } = useConsumerGroup();

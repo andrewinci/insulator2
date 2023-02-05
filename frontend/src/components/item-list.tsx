@@ -17,8 +17,8 @@ import { useSessionStorage } from "@mantine/hooks";
 import { IconChevronRight, IconClock, IconList, IconPlus, IconRefresh, IconStar } from "@tabler/icons";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList } from "react-window";
-import { PageHeader, SearchInput } from "../../components";
-import { useUserSettings } from "../../providers";
+import { PageHeader, SearchInput } from ".";
+import { useUserSettings } from "../providers";
 
 const getWindowSize = () => {
   const { innerWidth, innerHeight } = window;

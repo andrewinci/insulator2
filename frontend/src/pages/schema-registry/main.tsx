@@ -6,9 +6,9 @@ import { useParams } from "react-router-dom";
 import { useFavorites } from "../../hooks/use-favorites";
 import { useUserSettings } from "../../providers";
 import { listSubjects } from "../../tauri/schema-registry";
-import { ItemList, TwoColumnPage } from "../common";
-import { AddSchemaModal } from "./add-schema-modal";
 import { Schema } from "./schema";
+import { AddSchemaModal } from "./add-schema-modal";
+import { ItemList, TwoColumnPage } from "../../components";
 
 export const SchemasPage = () => {
   const { clusterId, isSchemaRegistryConfigured, activeSchemaName, setActiveSchemaName } = useSchemaRegistry();
