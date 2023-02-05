@@ -68,8 +68,7 @@ fn map(value: &AvroValue, schema: &Schema) -> AvroResult<JsonValue> {
         (AvroValue::Enum(_, v), Schema::Enum { name: _, .. }) => Ok(json!(*v)),
         (AvroValue::Fixed(_, v), Schema::Fixed { .. }) => Ok(json!(*v)),
         (v, s) => Err(AvroError::Unsupported(format!(
-            "Unexpected value {:?} for schema {:?}",
-            v, s
+            "Unexpected value {v:?} for schema {s:?}"
         ))),
     }
 }

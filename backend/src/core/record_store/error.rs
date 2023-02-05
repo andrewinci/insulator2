@@ -14,7 +14,7 @@ impl From<SqlError> for StoreError {
         StoreError::SqlError(match error {
             SqlError::SqliteFailure(ffi::Error { code, .. }, ..) => match code {
                 rusqlite::ErrorCode::OperationInterrupted => "Operation timed out".into(),
-                _ => format!("{} {:?}", error, code),
+                _ => format!("{error} {code:?}"),
             },
             _ => error.to_string(),
         })

@@ -77,7 +77,7 @@ impl RecordStore for SqliteStore {
                 .as_str(),
                 [],
             )
-            .unwrap_or_else(|e| panic!("Unable to create the table for {} {} {:?}", cluster_id, topic_name, e));
+            .unwrap_or_else(|e| panic!("Unable to create the table for {cluster_id} {topic_name} {e:?}"));
         Ok(())
     }
 
@@ -108,7 +108,7 @@ impl RecordStore for SqliteStore {
                 format!("DROP TABLE IF EXISTS {}", Self::get_table_name(cluster_id, topic_name)).as_str(),
                 [],
             )
-            .unwrap_or_else(|_| panic!("Unable to create the table for {} {}", cluster_id, topic_name));
+            .unwrap_or_else(|_| panic!("Unable to create the table for {cluster_id} {topic_name}"));
         Ok(())
     }
 }
@@ -189,7 +189,7 @@ impl SqliteStore {
     }
 
     fn get_table_name(cluster_id: &str, topic_name: &str) -> String {
-        format!("\'[{}].[{}]\'", cluster_id, topic_name)
+        format!("\'[{cluster_id}].[{topic_name}]\'")
     }
 }
 

@@ -58,10 +58,10 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         struct PostRequest {
             schema: String,
         }
-        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions", subject_name).as_str())?;
+        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{subject_name}/versions").as_str())?;
         let request = PostRequest { schema: schema.into() };
         if let Err(err) = AvroSchema::parse_str(schema) {
-            return Err(SchemaRegistryError::SchemaParsing(format!("Invalid schema {}", err)));
+            return Err(SchemaRegistryError::SchemaParsing(format!("Invalid schema {err}")));
         };
         let post_result = self.http_client.post(url.as_str(), request).await;
         debug!("Schema posted: {:?}", post_result);
@@ -97,14 +97,13 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
 
     pub async fn delete_subject(&self, subject_name: &str) -> SchemaRegistryResult<()> {
         debug!("Deleting subject {}", subject_name);
-        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}", subject_name).as_str())?;
+        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{subject_name}").as_str())?;
         Ok(self.http_client.delete(url.as_str()).await?)
     }
 
     pub async fn delete_version(&self, subject_name: &str, version: i32) -> SchemaRegistryResult<()> {
         debug!("Deleting subject {} version {}", subject_name, version);
-        let url =
-            Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/{}", subject_name, version).as_str())?;
+        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{subject_name}/versions/{version}").as_str())?;
         Ok(self.http_client.delete(url.as_str()).await?)
     }
 
@@ -118,10 +117,10 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         }
         {
             trace!("Schema not found in cache, retrieving");
-            let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{}", id).as_str())?;
+            let url = Url::parse(&self.endpoint)?.join(format!("/schemas/ids/{id}").as_str())?;
             let schema: GetSchemaByIdResult = self.http_client.get(url.as_str()).await?;
             let schema = AvroSchema::parse_str(schema.schema.as_str()).map_err(|err| {
-                SchemaRegistryError::SchemaParsing(format!("Unable to parse the schema from schema registry\n{}", err))
+                SchemaRegistryError::SchemaParsing(format!("Unable to parse the schema from schema registry\n{err}"))
             })?;
             let res = ResolvedAvroSchema::from(id, &schema);
             self.schema_cache_by_id.write().await.insert(id, res.clone());
@@ -135,13 +134,13 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
             #[serde(alias = "compatibilityLevel")]
             compatibility_level: String,
         }
-        let url = Url::parse(&self.endpoint)?.join(format!("/config/{}?defaultToGlobal=true", subject_name).as_str())?;
+        let url = Url::parse(&self.endpoint)?.join(format!("/config/{subject_name}?defaultToGlobal=true").as_str())?;
         let response: CompatibilityResponse = self.http_client.get(url.as_ref()).await?;
         Ok(response.compatibility_level)
     }
 
     async fn get_versions(&self, subject_name: &str) -> SchemaRegistryResult<Vec<Schema>> {
-        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{}/versions/", subject_name).as_str())?;
+        let url = Url::parse(&self.endpoint)?.join(format!("/subjects/{subject_name}/versions/").as_str())?;
         let versions: Vec<i32> = self.http_client.get(url.as_ref()).await?;
         let mut schemas = Vec::<Schema>::new();
         for v in versions {
@@ -158,13 +157,12 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
 
         if let Some(last) = last {
             let schema = AvroSchema::parse_str(last.schema.as_str()).map_err(|err| {
-                SchemaRegistryError::SchemaParsing(format!("Unable to parse the schema from schema registry\n{}", err))
+                SchemaRegistryError::SchemaParsing(format!("Unable to parse the schema from schema registry\n{err}"))
             })?;
             Ok(ResolvedAvroSchema::from(last.id, &schema))
         } else {
             Err(SchemaRegistryError::SchemaNotFound(format!(
-                "Schema {} not found",
-                subject_name
+                "Schema {subject_name} not found"
             )))
         }
     }

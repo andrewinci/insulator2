@@ -66,7 +66,7 @@ impl<C: SchemaProvider> Parser<C> {
     pub async fn parse_payload_to_avro(&self, payload: &str, topic_name: &str) -> ParserResult<Vec<u8>> {
         if let Some(avro_parser) = self.avro_parser.as_ref() {
             Ok(avro_parser
-                .json_to_avro(payload, &format!("{}-value", topic_name))
+                .json_to_avro(payload, &format!("{topic_name}-value"))
                 .await?)
         } else {
             Err(ParserError::MissingAvroConfiguration)

@@ -88,7 +88,7 @@ impl From<AdminError> for ApiError {
         match value {
             AdminError::TopicNotFound(topic_name) => ApiError {
                 error_type: "Admin client".into(),
-                message: format!("Topic {} not found.", topic_name),
+                message: format!("Topic {topic_name} not found."),
             },
             AdminError::RDKafka(message) => ApiError {
                 error_type: "RDKafkaLib error".into(),
@@ -120,7 +120,7 @@ impl From<ConfigError> for ApiError {
             },
             ConfigError::ClusterNotFound(cluster_id) => ApiError {
                 error_type: "User configuration error".into(),
-                message: format!("Cluster {} not found", cluster_id),
+                message: format!("Cluster {cluster_id} not found"),
             },
         }
     }

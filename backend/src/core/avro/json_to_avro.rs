@@ -46,8 +46,7 @@ fn json_to_avro_map(json_value: &JsonValue, schema: &Schema) -> AvroResult<AvroV
                 .find(|(_, s)| *s == &Schema::Null)
                 .ok_or_else(|| {
                     AvroError::InvalidUnion(format!(
-                        "Cannot set null to the union. Supported options are: {:?}",
-                        union_schemas
+                        "Cannot set null to the union. Supported options are: {union_schemas:?}"
                     ))
                 })?;
             Ok(AvroValue::Union(position as u32, AvroValue::Null.into()))
@@ -69,7 +68,7 @@ fn json_to_avro_map(json_value: &JsonValue, schema: &Schema) -> AvroResult<AvroV
                 .iter()
                 .enumerate()
                 .find(|(_, v)| v.to_string().eq(s))
-                .ok_or_else(|| AvroError::InvalidEnum(format!("Invalid enum {} expected one of {:?}", s, symbols)))?;
+                .ok_or_else(|| AvroError::InvalidEnum(format!("Invalid enum {s} expected one of {symbols:?}")))?;
             Ok(AvroValue::Enum(index as u32, value.into()))
         }
         // numbers
@@ -77,26 +76,26 @@ fn json_to_avro_map(json_value: &JsonValue, schema: &Schema) -> AvroResult<AvroV
             let n = n
                 .as_i64()
                 .and_then(|v| i32::try_from(v).ok())
-                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Int", n)))?;
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {n} to Int")))?;
             Ok(AvroValue::Int(n))
         }
         (Schema::Long, JsonValue::Number(n)) => {
             let n = n
                 .as_i64()
-                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Long", n)))?;
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {n} to Long")))?;
             Ok(AvroValue::Long(n))
         }
         (Schema::Float, JsonValue::Number(n)) => {
             let n = n
                 .as_f64()
                 .map(|v| v as f32)
-                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Float", n)))?;
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {n} to Float")))?;
             Ok(AvroValue::Float(n))
         }
         (Schema::Double, JsonValue::Number(n)) => {
             let n = n
                 .as_f64()
-                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to Double", n)))?;
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {n} to Double")))?;
             Ok(AvroValue::Double(n))
         }
         (Schema::Decimal { scale, .. }, JsonValue::Number(n)) => {
@@ -107,37 +106,37 @@ fn json_to_avro_map(json_value: &JsonValue, schema: &Schema) -> AvroResult<AvroV
             let n = n
                 .as_i64()
                 .and_then(|v| i32::try_from(v).ok())
-                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to a valid Date.", n)))?;
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {n} to a valid Date.")))?;
             Ok(AvroValue::Date(n))
         }
         (Schema::TimeMillis, JsonValue::Number(n)) => {
             let n = n
                 .as_i64()
                 .and_then(|v| i32::try_from(v).ok())
-                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to a valid TimeMillis.", n)))?;
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {n} to a valid TimeMillis.")))?;
             Ok(AvroValue::TimeMillis(n))
         }
         (Schema::TimestampMillis, JsonValue::Number(n)) => {
-            let n = n.as_i64().ok_or_else(|| {
-                AvroError::InvalidNumber(format!("Unable to convert {} to a valid TimestampMillis.", n))
-            })?;
+            let n = n
+                .as_i64()
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {n} to a valid TimestampMillis.")))?;
             Ok(AvroValue::TimestampMillis(n))
         }
         (Schema::TimeMicros, JsonValue::Number(n)) => {
             let n = n
                 .as_i64()
-                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {} to a valid TimeMicros.", n)))?;
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {n} to a valid TimeMicros.")))?;
             Ok(AvroValue::TimeMicros(n))
         }
         (Schema::TimestampMicros, JsonValue::Number(n)) => {
-            let n = n.as_i64().ok_or_else(|| {
-                AvroError::InvalidNumber(format!("Unable to convert {} to a valid TimestampMicros.", n))
-            })?;
+            let n = n
+                .as_i64()
+                .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {n} to a valid TimestampMicros.")))?;
             Ok(AvroValue::TimestampMicros(n))
         }
         (Schema::Uuid, JsonValue::String(v)) => {
             let uuid =
-                Uuid::parse_str(v).map_err(|_| AvroError::InvalidUUID(format!("Unable to parse {} into a uuid", v)))?;
+                Uuid::parse_str(v).map_err(|_| AvroError::InvalidUUID(format!("Unable to parse {v} into a uuid")))?;
             Ok(AvroValue::Uuid(uuid))
         }
 
@@ -146,19 +145,17 @@ fn json_to_avro_map(json_value: &JsonValue, schema: &Schema) -> AvroResult<AvroV
         //(Schema::Bytes, JsonValue::String(s)) => todo!(),
         // (Schema::Duration,  => todo!(),
         (schema, value) => Err(AvroError::Unsupported(format!(
-            "Unable to use value {:?} for schema {:?}",
-            value, schema
+            "Unable to use value {value:?} for schema {schema:?}"
         ))),
     }
 }
 
 fn parse_decimal(n: &str, scale: u32) -> AvroResult<apache_avro::Decimal> {
     let mut decimal = rust_decimal::Decimal::from_str(n)
-        .map_err(|_| AvroError::InvalidNumber(format!("Unable to convert {} to Decimal", n)))?;
+        .map_err(|_| AvroError::InvalidNumber(format!("Unable to convert {n} to Decimal")))?;
     if decimal.scale() > scale {
         return Err(AvroError::InvalidNumber(format!(
-            "Unable to convert {} to Decimal. Max scale must be {}",
-            n, scale
+            "Unable to convert {n} to Decimal. Max scale must be {scale}"
         )));
     }
     decimal.rescale(scale);
@@ -172,8 +169,7 @@ fn map_union(obj: &serde_json::Map<String, JsonValue>, union_schemas: &Vec<Schem
     let fields_vec: Vec<(&String, &JsonValue)> = obj.iter().collect();
     if fields_vec.len() != 1 {
         Err(AvroError::InvalidUnion(format!(
-            "Invalid union. Expected one of: {:?}",
-            union_schemas
+            "Invalid union. Expected one of: {union_schemas:?}"
         )))
     } else {
         let (union_branch_name, value) = *fields_vec.first().unwrap();
@@ -187,8 +183,7 @@ fn map_union(obj: &serde_json::Map<String, JsonValue>, union_schemas: &Vec<Schem
         } else {
             let union_variants: Vec<_> = union_schemas.iter().map(|schema| schema.fqn()).collect();
             Err(AvroError::InvalidUnion(format!(
-                "Unsupported union specifier: {}. Supported variants are: {:?}",
-                union_branch_name, union_variants
+                "Unsupported union specifier: {union_branch_name}. Supported variants are: {union_variants:?}"
             )))
         }
     }
@@ -238,11 +233,11 @@ mod tests {
         // happy path
         {
             let res = parse_decimal("12.3", 2_u32).unwrap();
-            assert_eq!(format!("{:?}", res), "Decimal { value: 1230, len: 2 }");
+            assert_eq!(format!("{res:?}"), "Decimal { value: 1230, len: 2 }");
         }
         {
             let res = parse_decimal("12.3", 1_u32).unwrap();
-            assert_eq!(format!("{:?}", res), "Decimal { value: 123, len: 1 }");
+            assert_eq!(format!("{res:?}"), "Decimal { value: 123, len: 1 }");
         }
         // error when unable to scale
         {

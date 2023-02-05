@@ -35,6 +35,6 @@ impl From<toml::ser::Error> for ConfigError {
 
 impl From<rust_keystore::error::Error> for ConfigError {
     fn from(err: rust_keystore::error::Error) -> Self {
-        Self::LegacyConfiguration(format!("{:?}", err))
+        Self::LegacyConfiguration(format!("{err:?}"))
     }
 }

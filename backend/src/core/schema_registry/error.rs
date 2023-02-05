@@ -20,6 +20,6 @@ impl From<url::ParseError> for SchemaRegistryError {
 }
 impl From<HttpClientError> for SchemaRegistryError {
     fn from(err: HttpClientError) -> Self {
-        SchemaRegistryError::HttpClient(format!("Http client error {:?}", err))
+        SchemaRegistryError::HttpClient(format!("Http client error {err:?}"))
     }
 }

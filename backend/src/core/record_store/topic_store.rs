@@ -32,12 +32,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
     pub fn from_record_store(store: Arc<S>, parser: Arc<P>, cluster_id: &str, topic_name: &str) -> Self {
         store
             .create_or_replace_topic_table(cluster_id, topic_name, false)
-            .unwrap_or_else(|_| {
-                panic!(
-                    "Unable to create the table to store the records from topic {}",
-                    topic_name
-                )
-            });
+            .unwrap_or_else(|_| panic!("Unable to create the table to store the records from topic {topic_name}"));
         TopicStore {
             cluster_id: cluster_id.to_string(),
             topic_name: topic_name.to_string(),

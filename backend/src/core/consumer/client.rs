@@ -113,8 +113,7 @@ impl KafkaConsumer {
         if self.loop_handle.lock().await.is_some() {
             warn!("Try to start an already running consumer");
             return Err(ConsumerError::AlreadyRunning(format!(
-                "A consumer is already running for {}",
-                topic
+                "A consumer is already running for {topic}"
             )));
         }
         // set the handle to the consumer loop
