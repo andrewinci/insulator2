@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { filterTabs, ItemList } from "./item-list";
@@ -33,6 +34,7 @@ describe("filterTabs", () => {
 
 describe("ItemList", () => {
   it("should render", () => {
+    const queryClient = new QueryClient();
     const { container } = render(
       <ItemList
         title={""}
@@ -46,8 +48,12 @@ describe("ItemList", () => {
         onItemSelected={() => {}}
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         onRefreshList={() => {}}
-      />
+      />,
+      {
+        wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+      }
     );
+
     expect(container).toBeTruthy();
   });
 });

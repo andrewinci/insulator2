@@ -19,6 +19,7 @@ describe("withNotifications", () => {
     expect(result).toBe(42);
     expect(action).toHaveBeenCalled();
   });
+
   it('calls addNotification with type "ok" and provided success title/description when action succeeds', async () => {
     const action = vi.fn().mockReturnValue(Promise.resolve(42));
     await withNotifications({
@@ -26,7 +27,7 @@ describe("withNotifications", () => {
       successTitle: "Success",
       successDescription: "Action completed",
     });
-    expect(notifySuccess).toHaveBeenCalledWith("Success", "Action completed");
+    expect(notifySuccess).toHaveBeenCalledWith("Success", "Action completed", undefined);
   });
 
   it('calls addNotification with type "error" and error message when action throws', async () => {

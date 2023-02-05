@@ -25,6 +25,7 @@ export default defineConfig({
     sourcemap: !!process.env.TAURI_DEBUG,
   },
   test: {
+    environment: "happy-dom",
     setupFiles: ["./src/test-setup.ts"],
     coverage: {
       all: true,

@@ -6,6 +6,8 @@ vi.mock("@mantine/notifications");
 
 describe("addNotification", () => {
   it('calls showNotification with expected arguments when n.type is "ok"', () => {
+    // make sure we are not in a modal to see the notification
+    window.location.href = "http://localhost:9093/cluster/cluster-1/queries";
     _addNotification({
       title: "title",
       description: "description",
@@ -23,6 +25,8 @@ describe("addNotification", () => {
   });
 
   it('calls showNotification with expected arguments when n.type is not "ok"', () => {
+    // make sure we are not in a modal to see the notification
+    window.location.href = "http://localhost:9093/cluster/cluster-1/queries";
     _addNotification({
       title: "title",
       description: "description",

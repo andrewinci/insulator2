@@ -12,7 +12,7 @@ describe("mapOffset", () => {
 
 vi.mock("../../tauri/admin", () => ({
   setConsumerGroup: vi.fn(),
-  listTopics: vi.fn(),
+  listTopics: vi.fn().mockResolvedValue(["topic1", "topic2"]),
 }));
 
 describe("UpsertConsumerGroupModal", () => {

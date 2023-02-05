@@ -2,6 +2,8 @@ import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { SideBar } from "./sidebar";
 
+vi.mock("../tauri/helpers");
+
 vi.mock("../hooks", () => {
   return {
     useParsedUrl: () => {
