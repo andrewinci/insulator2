@@ -1,4 +1,4 @@
-import { Badge, Button, Group, Text, Anchor, Tooltip, Loader, Menu } from "@mantine/core";
+import { Badge, Button, Group, Text, Anchor, Tooltip, Loader, Menu, TextInput } from "@mantine/core";
 import {
   IconAdjustments,
   IconArrowBarToDown,
@@ -9,6 +9,7 @@ import {
   IconHourglassLow,
   IconPlayerPlay,
   IconSearch,
+  IconSwitchVertical,
 } from "@tabler/icons";
 import { useState } from "react";
 import { CodeEditor } from "../../../components";
@@ -30,6 +31,18 @@ type TopicPageMenuProps = {
 export const TopicPageMenu = (props: TopicPageMenuProps) => {
   const { consumedRecords, isConsumerRunning, height, query, topicName, clusterId } = props;
   const { onQueryChange, onConsumerChange, onQuery } = props;
+  const [queryMode, setQueryMode] = useState(false);
+  const [simpleSearchText, setSimpleSearchText] = useState("");
+  const onSimpleSearchTextChange = (text: string) => {
+    setSimpleSearchText(text);
+    text = text.trim();
+    onQueryChange(`SELECT partition, offset, timestamp, key, payload 
+FROM {:topic}
+-- query by json fields with the json_extract function
+-- WHERE json_extract(payload, "$.fieldName") = "something"
+WHERE key like '%${text}%' OR payload like '%${text}%'
+ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}`);
+  };
 
   const { consumeLast15Minutes, consumeLastHour, consumeLastDay, consumeFromNow, consumeFromBeginning } =
     consumeFromFunctions(onConsumerChange);
@@ -56,20 +69,36 @@ export const TopicPageMenu = (props: TopicPageMenuProps) => {
 
   return (
     <>
-      <Text my={5} size={"xs"}>
-        Note: use json syntax to filter by field in the payload{" "}
-        <Anchor href="https://www.sqlite.org/json1.html" target="tauri">
-          https://www.sqlite.org/json1.html
-        </Anchor>
-      </Text>
-      <CodeEditor
-        path={topicName}
-        hideLineNumbers={true}
-        height={height ?? 20}
-        language="sql"
-        value={query}
-        onChange={(v) => onQueryChange(v)}
-      />
+      {queryMode && (
+        <>
+          <Text my={5} size={"xs"}>
+            Note: use json syntax to filter by field in the payload{" "}
+            <Anchor href="https://www.sqlite.org/json1.html" target="tauri">
+              https://www.sqlite.org/json1.html
+            </Anchor>
+          </Text>
+          <CodeEditor
+            path={topicName}
+            hideLineNumbers={true}
+            height={height ?? 20}
+            language="sql"
+            value={query}
+            onChange={(v) => onQueryChange(v)}
+          />
+        </>
+      )}
+      {!queryMode && (
+        <div style={{ minHeight: height ?? 20 }}>
+          <TextInput
+            pt={12}
+            autoCapitalize="off"
+            autoComplete="off"
+            autoCorrect="off"
+            label="Text to search (Click the Query button to apply)"
+            value={simpleSearchText}
+            onChange={(v) => onSimpleSearchTextChange(v.target.value)}></TextInput>
+        </div>
+      )}
       <Group mt={5} position="apart">
         <Group>
           {isConsumerRunning && <StopButton />}
@@ -104,6 +133,13 @@ export const TopicPageMenu = (props: TopicPageMenuProps) => {
           )}
           <Button leftIcon={<IconSearch size={16} />} size="xs" onClick={onQuery}>
             Query
+          </Button>
+          <Button
+            color="teal"
+            leftIcon={<IconSwitchVertical size={16} />}
+            size="xs"
+            onClick={() => setQueryMode((s) => !s)}>
+            {queryMode ? "Simple Search" : "SQL Search"}
           </Button>
         </Group>
         <Button
