@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getLastOffsets, getTopicInfo } from "../../../tauri/admin";
 import { Allotment } from "allotment";
 import { ToolsMenu } from "./tools-menu";
-import { TopicPageMenu } from "./topic-menu";
+import { TopicPageMenu } from "./topic-page-menu";
 import { useMemo, useRef, useState } from "react";
 import { useCache } from "../../../hooks";
 import { ExportRecordsModal } from "../modals/export-records-modal";
@@ -163,10 +163,10 @@ const useConsumer = (clusterId: string, topicName: string) => {
 
   const _startConsumer = async (config: ConsumerConfiguration) => {
     setIsRunning(true);
-    setRefetchInterval(1000);
+    setConsumerModalOpened(false);
     await startConsumer(clusterId, topicName, config);
     refetch();
-    setConsumerModalOpened(false);
+    setRefetchInterval(1000);
   };
 
   return {
