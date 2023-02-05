@@ -10,9 +10,10 @@ import {
   Tooltip,
   ActionIcon,
   Modal,
+  Menu,
 } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
-import { IconPlus } from "@tabler/icons";
+import { IconAdjustmentsHorizontal, IconPlus, IconRocket, IconTool, IconTrash } from "@tabler/icons";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader, SearchInput } from "../../components";
@@ -83,18 +84,28 @@ export const ClusterList = ({ clusters, onClusterSelected, onClusterDelete }: Cl
                       <Title order={3}>{c.name}</Title>
                       <Text size={13}>{c.endpoint}</Text>
                     </div>
-                    <Group position="right">
-                      <Button.Group>
-                        <Button onClick={() => onClusterDelete(c)} color={"red"}>
-                          Delete
-                        </Button>
-                        <Button onClick={() => setState((s) => ({ ...s, editClusterId: c.id }))} color={"teal"}>
-                          Edit
-                        </Button>
-                        <Button ref={i == 0 ? ref : null} onClick={() => onClusterSelected(c)}>
-                          Use
-                        </Button>
-                      </Button.Group>
+                    <Group spacing={1} position="right">
+                      <Menu position="bottom-start" trigger="hover" openDelay={100} closeDelay={400}>
+                        <Menu.Target>
+                          <ActionIcon size={28} sx={{ marginRight: "10px" }}>
+                            <IconTool />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item
+                            color="orange"
+                            icon={<IconAdjustmentsHorizontal size={14} />}
+                            onClick={() => setState((s) => ({ ...s, editClusterId: c.id }))}>
+                            Edit cluster
+                          </Menu.Item>
+                          <Menu.Item color="red" icon={<IconTrash size={14} />} onClick={() => onClusterDelete(c)}>
+                            Delete cluster
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                      <Button ref={i == 0 ? ref : null} onClick={() => onClusterSelected(c)}>
+                        Use <IconRocket />
+                      </Button>
                     </Group>
                   </Group>
                 </Paper>
