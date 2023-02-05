@@ -11,12 +11,14 @@ export const stopConsumer = (clusterId: string, topic: string): Promise<void> =>
   withNotifications({
     action: () => invoke<void>("stop_consumer", { clusterId, topic }),
     successTitle: `Consumer for topic ${topic} stopped`,
+    showInModal: true,
   });
 
 export const startConsumer = (clusterId: string, topic: string, config: ConsumerConfiguration): Promise<void> =>
   withNotifications({
     action: () => invoke<void>("start_consumer", { clusterId, topic, config }),
     successTitle: `Consumer for topic ${topic} started`,
+    showInModal: true,
   });
 
 type GetRecordsPageResponse = {
@@ -52,4 +54,5 @@ export const exportRecords = (clusterId: string, topic: string, options: ExportO
         topic,
         options,
       }),
+    showInModal: true,
   });

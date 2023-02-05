@@ -3,7 +3,7 @@ import { openConfirmModal } from "@mantine/modals";
 import { IconFileExport, IconTool, IconTrash } from "@tabler/icons";
 
 import { deleteSubject, deleteSubjectVersion } from "../../tauri/schema-registry";
-import { saveTextFile } from "../../tauri/utils";
+import { saveTextFile } from "../../tauri/helpers";
 
 type ToolsMenuProps = {
   clusterId: string;

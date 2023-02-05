@@ -11,4 +11,5 @@ export const produceRecord = (
   withNotifications({
     action: () => invoke<void>("produce_record", { clusterId, topic, key, value, mode }),
     successTitle: `Record with key ${key} produced to topic ${topic}`,
+    showInModal: true,
   });

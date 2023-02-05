@@ -61,10 +61,12 @@ export const deleteTopic = (clusterId: string, topicName: string): Promise<void>
   withNotifications({
     action: () => invoke<void>("delete_topic", { clusterId, topicName }),
     successDescription: `Topic ${topicName} deleted`,
+    showInModal: true,
   });
 
 export const deleteConsumerGroup = (clusterId: string, consumerGroupName: string): Promise<void> =>
   withNotifications({
     action: () => invoke<void>("delete_consumer_group", { clusterId, consumerGroupName }),
     successTitle: `Consumer group ${consumerGroupName} deleted`,
+    showInModal: true,
   });

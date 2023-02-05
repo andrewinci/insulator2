@@ -15,12 +15,14 @@ export const deleteSubject = (clusterId: string, subjectName: string): Promise<v
   withNotifications({
     action: () => invoke<void>("delete_subject", { clusterId, subjectName }),
     successTitle: `Subject ${subjectName} deleted`,
+    showInModal: true,
   });
 
 export const deleteSubjectVersion = (clusterId: string, subjectName: string, version: number): Promise<void> =>
   withNotifications({
     action: () => invoke<void>("delete_subject_version", { clusterId, subjectName, version }),
     successTitle: `Version ${version} of subject ${subjectName} deleted`,
+    showInModal: true,
   });
 
 export const postSchema = (clusterId: string, subjectName: string, schema: string): Promise<void> =>

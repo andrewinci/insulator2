@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 import { PageHeader } from "../../components";
 import { AppTheme } from "../../models";
 import { useUserSettings } from "../../providers/user-settings-provider";
-import { exportDatastore } from "../../tauri/utils";
+import { exportDatastore } from "../../tauri/helpers";
 
 export const Settings = () => {
   const { clusterId } = useParams();
