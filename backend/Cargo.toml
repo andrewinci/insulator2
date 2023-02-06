@@ -23,7 +23,7 @@ futures = { version = "0.3" }
 apache-avro = { git = "https://github.com/apache/avro", rev = "05099c3263081e264eb95ee41609095d44a0acfd" }
 log = { version = "0.4" }
 env_logger = { version = "0.10.0" }
-async-trait = "0.1.63"
+async-trait = "0.1.64"
 num-bigint = "0.4"
 rust_decimal = "1.28"
 rusqlite = { version = "0.28.0", features = ["bundled", "backup", "hooks"] }
@@ -34,7 +34,7 @@ toml = "0.7"
 rand = "0.8.5"
 time = "0.3.17"
 sys-locale = "0.2.3"
-uuid = "1.2.2"
+uuid = "1.3.0"
 
 [target.'cfg(windows)'.dependencies]
 rdkafka = { version = "0.29", features = [
