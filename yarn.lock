@@ -1205,17 +1205,17 @@
     "@tanstack/query-core" "4.24.4"
     use-sync-external-store "^1.2.0"
 
-"@tanstack/react-virtual@^3.0.0-beta.36":
-  version "3.0.0-beta.36"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.0.0-beta.36.tgz#fd749ff99894fdbd64a04bb5fcffe91f052bcfdb"
-  integrity sha512-BTMkgGSh0kpw/615+dsQuEW86Fqu6uOMwJEknXufOTkkZIIyQcZGatmmbzlrkndYY4z/hcYYZ9VQ/9SB7rw2TA==
+"@tanstack/react-virtual@^3.0.0-beta.44":
+  version "3.0.0-beta.44"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.0.0-beta.44.tgz#0e03424f37cc14ee5a7b8b737a8f638604fde946"
+  integrity sha512-96OPL/+Y7s9EpaykJLc003H9SFdq0CYHOUFpwaUCdk36wlBipGrRzWo3+dvxFL5t9XbKQx21OR2l/3FiOGafQA==
   dependencies:
-    "@tanstack/virtual-core" "3.0.0-beta.36"
+    "@tanstack/virtual-core" "3.0.0-beta.44"
 
-"@tanstack/virtual-core@3.0.0-beta.36":
-  version "3.0.0-beta.36"
-  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.0.0-beta.36.tgz#2a180ec6b4051bc446ef6ea01ab652d341c42c66"
-  integrity sha512-XAgRDiXrtXic+OkZTYwmeCIz3cySL2sVVtUpBdDKFBjVQ2RYiIzrcEyL2QXmjD0096K9C0PoG54VtB3UZ0sn6A==
+"@tanstack/virtual-core@3.0.0-beta.44":
+  version "3.0.0-beta.44"
+  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.0.0-beta.44.tgz#c7185e2e48b0749933c62188b13ddbc7bb82f8de"
+  integrity sha512-gwE4s5OIlMwwaDr8WoRtuMaA4ONbH7Y9pPEi96ZSWWRbu7thXJNAgDygTvFPRUh4Fm0RUPF4VBL8XyrCfZMUtg==
 
 "@tauri-apps/api@^1.1.0":
   version "1.2.0"
