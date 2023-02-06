@@ -1,11 +1,11 @@
 {
-  "version": "v2.10.1",
-  "notes": "## [2.10.1](https://github.com/andrewinci/insulator2/compare/v2.10.0...v2.10.1) (2023-01-31)\n\n\n### Bug Fixes\n\n* check list of topics to update to prevent an internal error ([8a7ce90](https://github.com/andrewinci/insulator2/commit/8a7ce902eef15c677ea8d935ed07f4d15d2c6e07))\n* parse http error from POST schema registry ([5ef5858](https://github.com/andrewinci/insulator2/commit/5ef58583784b6408bf9b7d7126fd2bb5db2387ac))\n\n\n\n",
-  "pub_date": "2023-01-31T05:37:15Z",
+  "version": "v2.11.0",
+  "notes": "# [2.11.0](https://github.com/andrewinci/insulator2/compare/v2.10.1...v2.11.0) (2023-02-06)\n\n\n### Bug Fixes\n\n* hide custom consumer modal on submit without waiting for the consumer to start ([738024e](https://github.com/andrewinci/insulator2/commit/738024ec766ed5e5b6378cc732f388a7f2da954d))\n\n\n### Features\n\n* experimental search records by text ([8d44d61](https://github.com/andrewinci/insulator2/commit/8d44d61d16fdf9bbaa9b5b1c8e4f178ba317d311))\n* hide delete and edit cluster buttons ([e2ed032](https://github.com/andrewinci/insulator2/commit/e2ed032a45bf514a5ffaf5f4879abf5aea8d23f0))\n* show an icon when a tombstone is consumed ([e683abd](https://github.com/andrewinci/insulator2/commit/e683abddd2fb760ae5abbeaacef3cb7627d7be67))\n\n\n\n",
+  "pub_date": "2023-02-06T08:15:18Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.10.1/Insulator.2_2.10.1_x64_en-US.msi.zip"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.11.0/Insulator.2_2.11.0_x64_en-US.msi.zip"
     }
   }
 }
