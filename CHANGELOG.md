@@ -1,3 +1,15 @@
+# [2.11.0](https://github.com/andrewinci/insulator2/compare/v2.10.1...v2.11.0) (2023-02-07)
+
+### Bug Fixes
+
+- hide custom consumer modal on submit without waiting for the consumer to start ([738024e](https://github.com/andrewinci/insulator2/commit/738024ec766ed5e5b6378cc732f388a7f2da954d))
+
+### Features
+
+- experimental search records by text ([8d44d61](https://github.com/andrewinci/insulator2/commit/8d44d61d16fdf9bbaa9b5b1c8e4f178ba317d311))
+- hide delete and edit cluster buttons ([e2ed032](https://github.com/andrewinci/insulator2/commit/e2ed032a45bf514a5ffaf5f4879abf5aea8d23f0))
+- show an icon when a tombstone is consumed ([e683abd](https://github.com/andrewinci/insulator2/commit/e683abddd2fb760ae5abbeaacef3cb7627d7be67))
+
 ## [2.10.1](https://github.com/andrewinci/insulator2/compare/v2.10.0...v2.10.1) (2023-01-31)
 
 ### Bug Fixes
