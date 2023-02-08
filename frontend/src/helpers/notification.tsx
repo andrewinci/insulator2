@@ -9,10 +9,10 @@ export type Notification = {
   showInModal?: boolean;
 };
 
-export const _addNotification = (n: Notification) => {
+export const addNotification = (n: Notification) => {
   // Don't show notifications in modal if they are not explicitly allowed
   // or if they are not errors
-  if (isRunningInModal() && !n.showInModal && n.type !== "error") return;
+  if (isRunningInModal(window.location.pathname) && !n.showInModal && n.type !== "error") return;
   showNotification({
     id: n.description,
     autoClose: n.type === "ok" ? 3000 : false,
@@ -29,7 +29,7 @@ export const _addNotification = (n: Notification) => {
  * If the app is running in a modal, the notification is only visible if showInModal is true.
  */
 export const notifySuccess = (title: string, description?: string, showInModal?: boolean) => {
-  _addNotification({
+  addNotification({
     type: "ok",
     title,
     description,
@@ -42,7 +42,7 @@ export const notifySuccess = (title: string, description?: string, showInModal?:
  * Always visible, even if the app is running in a modal.
  */
 export const notifyFailure = (title: string, description?: string) => {
-  _addNotification({
+  addNotification({
     type: "error",
     title,
     description,
