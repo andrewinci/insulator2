@@ -1,3 +1,9 @@
+## [2.11.1](https://github.com/andrewinci/insulator2/compare/v2.11.0...v2.11.1) (2023-02-08)
+
+### Bug Fixes
+
+- sidebar not updated on navigation ([de14c29](https://github.com/andrewinci/insulator2/commit/de14c29cad5fda682ee9290daa48c259a21c2cb6))
+
 # [2.11.0](https://github.com/andrewinci/insulator2/compare/v2.10.1...v2.11.0) (2023-02-07)
 
 ### Bug Fixes

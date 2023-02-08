@@ -1,15 +1,15 @@
 {
-  "version": "v2.11.0",
-  "notes": "# [2.11.0](https://github.com/andrewinci/insulator2/compare/v2.10.1...v2.11.0) (2023-02-07)\n\n\n### Bug Fixes\n\n* hide custom consumer modal on submit without waiting for the consumer to start ([738024e](https://github.com/andrewinci/insulator2/commit/738024ec766ed5e5b6378cc732f388a7f2da954d))\n\n\n### Features\n\n* experimental search records by text ([8d44d61](https://github.com/andrewinci/insulator2/commit/8d44d61d16fdf9bbaa9b5b1c8e4f178ba317d311))\n* hide delete and edit cluster buttons ([e2ed032](https://github.com/andrewinci/insulator2/commit/e2ed032a45bf514a5ffaf5f4879abf5aea8d23f0))\n* show an icon when a tombstone is consumed ([e683abd](https://github.com/andrewinci/insulator2/commit/e683abddd2fb760ae5abbeaacef3cb7627d7be67))\n\n\n\n",
-  "pub_date": "2023-02-07T06:09:40Z",
+  "version": "v2.11.1",
+  "notes": "## [2.11.1](https://github.com/andrewinci/insulator2/compare/v2.11.0...v2.11.1) (2023-02-08)\n\n\n### Bug Fixes\n\n* sidebar not updated on navigation ([de14c29](https://github.com/andrewinci/insulator2/commit/de14c29cad5fda682ee9290daa48c259a21c2cb6))\n\n\n\n",
+  "pub_date": "2023-02-08T06:48:37Z",
   "platforms": {
     "darwin-x86_64": {
       "signature": "----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.11.0/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.11.1/Insulator.2.app.tar.gz"
     },
     "darwin-aarch64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.11.0/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.11.1/Insulator.2.app.tar.gz"
     }
   }
 }
