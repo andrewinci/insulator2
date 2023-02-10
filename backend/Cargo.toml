@@ -54,10 +54,10 @@ rdkafka = { version = "0.29", features = [
 # Enables OpenSSL ENGINE support during cross compilation to musl
 # TODO remove this branch and instead use the openssl-src feature flag once it is available
 #    (see https://github.com/vectordotdev/vector/issues/13695)
-openssl-src = { git = "https://github.com/vectordotdev/openssl-src-rs.git", branch = "enable_engine" }
+openssl-src = { git = "https://github.com/andrewinci/openssl-src-rs.git", rev = "cedc64b" }
 # Delete a consumer group is not supported in the upstream lib
 # TODO: delete when https://github.com/fede1024/rust-rdkafka/pull/510 is merged
-rdkafka = { git = "https://github.com/andrewinci/rust-rdkafka.git", rev = "0793d819ca8433a86985be2baa5f1f04a5153d63" }
+rdkafka = { git = "https://github.com/andrewinci/rust-rdkafka.git", rev = "35177be" }
 
 [dev-dependencies]
 mockall = "0.11.3"
