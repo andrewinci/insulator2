@@ -26,13 +26,17 @@ type TopicPageMenuProps = {
   onQueryChange: (query: string) => void;
   onQuery: () => void;
   onConsumerChange: (config: "Custom" | ConsumerConfiguration | "Stop") => void;
+  onModeChange?: (mode: "SQL" | "Simple") => void;
 };
 
 export const TopicPageMenu = (props: TopicPageMenuProps) => {
   const { consumedRecords, isConsumerRunning, height, query, topicName, clusterId } = props;
-  const { onQueryChange, onConsumerChange, onQuery } = props;
+  const { onQueryChange, onConsumerChange, onQuery, onModeChange } = props;
   const [queryMode, setQueryMode] = useState(false);
   const [simpleSearchText, setSimpleSearchText] = useState("");
+
+  onModeChange?.(queryMode ? "SQL" : "Simple");
+
   const onSimpleSearchTextChange = (text: string) => {
     setSimpleSearchText(text);
     text = text.trim();
@@ -90,7 +94,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}`);
       {!queryMode && (
         <div style={{ minHeight: height ?? 20 }}>
           <TextInput
-            pt={12}
+            pb={5}
             autoCapitalize="off"
             autoComplete="off"
             autoCorrect="off"
@@ -99,7 +103,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}`);
             onChange={(v) => onSimpleSearchTextChange(v.target.value)}></TextInput>
         </div>
       )}
-      <Group mt={5} position="apart">
+      <Group my={5} position="apart">
         <Group>
           {isConsumerRunning && <StopButton />}
           {!isConsumerRunning && (

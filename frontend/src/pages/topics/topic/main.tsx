@@ -60,13 +60,17 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
 
   // export records modal
   const [exportState, setExportState] = useState({ modalOpened: false, exportInProgress: false });
-
+  const [canResizeTopAllotment, setCanResizeTopAllotment] = useState(false);
+  console.log(canResizeTopAllotment);
   return (
     <>
       <Allotment
         vertical
         onChange={([s1, s2]) => setPaneHeights((s) => ({ ...s, headerHeight: s1, recordsHeight: s2 }))}>
-        <Allotment.Pane preferredSize={230} minSize={242}>
+        <Allotment.Pane
+          preferredSize={230}
+          minSize={canResizeTopAllotment ? 245 : 195}
+          maxSize={canResizeTopAllotment ? 1000 : 195}>
           <Container style={{ maxWidth: "100%" }}>
             <PageHeader
               title={topicName}
@@ -97,6 +101,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
                 clusterId={clusterId}
                 topicName={topicName}
                 height={paneHeights.headerHeight - 150}
+                onModeChange={(m) => setCanResizeTopAllotment(m === "SQL" ? true : false)}
                 onConsumerChange={(config) => {
                   if (config == "Custom") configureConsumer();
                   else if (config == "Stop") onStopConsumer();
@@ -111,6 +116,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
             )}
           </Container>
         </Allotment.Pane>
+
         <Allotment.Pane minSize={400}>
           <Container mt={10} style={{ maxWidth: "100%" }}>
             <RecordsList
