@@ -61,7 +61,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
   // export records modal
   const [exportState, setExportState] = useState({ modalOpened: false, exportInProgress: false });
   const [canResizeTopAllotment, setCanResizeTopAllotment] = useState(false);
-  console.log(canResizeTopAllotment);
+
   return (
     <>
       <Allotment
