@@ -80,8 +80,10 @@ export const ProducerModal = ({ topic, clusterId, opened, onClose }: AddSchemaMo
               {...form.getInputProps("value")}
             />
           </Input.Wrapper>
-          <Group position="apart">
-            <Text color={"red"}></Text>
+          <Text hidden={form.values.mode == "Avro"} color={"red"}>
+            The producer will create a string record. Make sure downstream consumer do not expect Avro before producing.
+          </Text>
+          <Group position="right">
             <Button loading={state.isProducing} type="submit" size="sm">
               Validate and submit
             </Button>
