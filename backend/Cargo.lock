@@ -2689,8 +2689,9 @@ checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
 
 [[package]]
 name = "openssl-src"
-version = "111.22.0+1.1.1q"
-source = "git+https://github.com/vectordotdev/openssl-src-rs.git?branch=enable_engine#52be5ec9f548ea825f602d514ebf322aa828c932"
+version = "111.25.0+1.1.1t"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3173cd3626c43e3854b1b727422a276e568d9ec5fe8cec197822cf52cfb743d6"
 dependencies = [
  "cc",
 ]
@@ -3254,7 +3255,7 @@ dependencies = [
 [[package]]
 name = "rdkafka"
 version = "0.29.0"
-source = "git+https://github.com/andrewinci/rust-rdkafka.git?rev=0793d819ca8433a86985be2baa5f1f04a5153d63#0793d819ca8433a86985be2baa5f1f04a5153d63"
+source = "git+https://github.com/andrewinci/rust-rdkafka.git#2a81c86359efaf901dc28c2c91c81b6134b30337"
 dependencies = [
  "futures-channel",
  "futures-util",
@@ -3271,7 +3272,7 @@ dependencies = [
 [[package]]
 name = "rdkafka-sys"
 version = "4.3.0+1.9.2"
-source = "git+https://github.com/andrewinci/rust-rdkafka.git?rev=0793d819ca8433a86985be2baa5f1f04a5153d63#0793d819ca8433a86985be2baa5f1f04a5153d63"
+source = "git+https://github.com/andrewinci/rust-rdkafka.git#2a81c86359efaf901dc28c2c91c81b6134b30337"
 dependencies = [
  "cmake",
  "libc",
