@@ -1,6 +1,6 @@
 use crate::core::schema_registry::SchemaRegistryError;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum AvroError {
     InvalidNumber(String),
     MissingField(String),
