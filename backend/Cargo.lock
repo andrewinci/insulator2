@@ -1997,6 +1997,7 @@ dependencies = [
  "rand 0.8.5",
  "rdkafka",
  "reqwest",
+ "rlimit",
  "rusqlite",
  "rust-keystore",
  "rust_decimal",
@@ -3436,6 +3437,15 @@ name = "rle-decode-fast"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3582f63211428f83597b51b2ddb88e2a91a9d52d12831f9d08f5e624e8977422"
+
+[[package]]
+name = "rlimit"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8a29d87a652dc4d43c586328706bb5cdff211f3f39a530f240b53f7221dab8e"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "rusqlite"

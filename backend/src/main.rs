@@ -20,11 +20,14 @@ use crate::api::{
     utils::{export_datastore, parse_keystore, parse_truststore},
 };
 use api::AppState;
+use log::debug;
 use tauri::Manager;
 use telemetry::log_active_user;
 
 fn main() {
     env_logger::init();
+    // rdkafka is opening a lot of FD and is hitting the limit on mac os.
+    assert!(rlimit::increase_nofile_limit(10240).is_ok());
     log_active_user();
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
