@@ -27,7 +27,7 @@ export const TwoColumnPage = ({ title, left, right }: TwoColumnPageProps) => {
   return (
     <Allotment>
       <Allotment.Pane
-        minSize={state.minimized ? minimizedSize : 430}
+        minSize={state.minimized ? minimizedSize : 420}
         preferredSize={right ? 600 : "100%"}
         maxSize={state.minimized ? minimizedSize : undefined}>
         {state.minimized && (
@@ -52,7 +52,7 @@ export const TwoColumnPage = ({ title, left, right }: TwoColumnPageProps) => {
           />
         )}
       </Allotment.Pane>
-      <Allotment.Pane priority={LayoutPriority.High} preferredSize={right ? "100%" : 0} minSize={right ? 520 : 0}>
+      <Allotment.Pane priority={LayoutPriority.High} preferredSize={right ? "100%" : 0} minSize={right ? 530 : 0}>
         {right}
       </Allotment.Pane>
     </Allotment>

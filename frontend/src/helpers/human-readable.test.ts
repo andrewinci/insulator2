@@ -1,5 +1,5 @@
 import { it, describe, expect } from "vitest";
-import { parseBytesToHumanReadable, parseMsToHumanReadable } from "./human-readable";
+import { parseBytesToHumanReadable, parseMsToHumanReadable, parseNumberToHumanReadable } from "./human-readable";
 
 describe("parseMsToHumanReadable", () => {
   it("parse positive and negative entities", () => {
@@ -30,5 +30,17 @@ describe("parseBytesToHumanReadable", () => {
     expect(parseBytesToHumanReadable(-670_900)).toBe("(~ -0.67 MB)");
     expect(parseBytesToHumanReadable(670_900_000)).toBe("(~ 0.67 GB)");
     expect(parseBytesToHumanReadable(-670_900_000)).toBe("(~ -0.67 GB)");
+  });
+});
+
+describe("parseBytesToHumanReadable", () => {
+  it("parse positive and negative entities", () => {
+    expect(parseNumberToHumanReadable(0)).toBe("0");
+    expect(parseNumberToHumanReadable(33800)).toBe("33.8K");
+    expect(parseNumberToHumanReadable(-33800)).toBe("-33.8K");
+    expect(parseNumberToHumanReadable(338000)).toBe("338.0K");
+    expect(parseNumberToHumanReadable(-338000)).toBe("-338.0K");
+    expect(parseNumberToHumanReadable(338_000_000)).toBe("338.0M");
+    expect(parseNumberToHumanReadable(-338_000_000)).toBe("-338.0M");
   });
 });

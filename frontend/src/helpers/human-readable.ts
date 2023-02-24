@@ -21,3 +21,11 @@ export const parseBytesToHumanReadable = (b: number): string => {
   else if (b > 500 || b < -500) return `(~ ${KB.toFixed(2)} KB)`;
   else return "";
 };
+
+export const parseNumberToHumanReadable = (n: number | undefined): string => {
+  if (n === undefined || n === null) return "...";
+  const [m, k] = [n / 1_000_000.0, n / 1000.0];
+  if (n > 1_000_000.0 || n < -1_000_000.0) return `${m.toFixed(1)}M`;
+  else if (n > 10_000.0 || n < -10_000.0) return `${k.toFixed(1)}K`;
+  else return `${n}`;
+};

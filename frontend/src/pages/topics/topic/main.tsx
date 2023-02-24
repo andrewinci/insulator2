@@ -12,6 +12,7 @@ import { useCache } from "../../../hooks";
 import { ExportRecordsModal } from "../modals/export-records-modal";
 import { ConsumerConfigurationModal } from "../modals/consumer-configuration-modal";
 import { ConsumerConfiguration } from "../../../models";
+import { parseNumberToHumanReadable } from "../../../helpers/human-readable";
 
 type TopicProps = {
   clusterId: string;
@@ -74,7 +75,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
           <Container style={{ maxWidth: "100%" }}>
             <PageHeader
               title={topicName}
-              subtitle={`Estimated Records: ${estimatedRecords ?? "..."}, Cleanup policy: ${
+              subtitle={`Records: ~${parseNumberToHumanReadable(estimatedRecords) ?? "..."}, Cleanup: ${
                 topicInfo?.cleanupPolicy ?? "..."
               }, Partitions: ${topicInfo?.partitionCount ?? "..."}`}>
               <Group spacing={0}>
