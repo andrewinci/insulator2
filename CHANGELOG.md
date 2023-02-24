@@ -1,3 +1,12 @@
+## [2.11.2](https://github.com/andrewinci/insulator2/compare/v2.11.1...v2.11.2) (2023-02-24)
+
+### Bug Fixes
+
+- disable resize in simple search mode ([5a17baa](https://github.com/andrewinci/insulator2/commit/5a17baa57ecc56de82d3cbfedae754e9181303f9))
+- increase number of FD limit ([52352c6](https://github.com/andrewinci/insulator2/commit/52352c60463e4ca7c77d16af96c5ca3e3cf4e28b))
+- missing human readable time ([b46e846](https://github.com/andrewinci/insulator2/commit/b46e84614b1837513ef4401d8739610a8dc98c5e))
+- mitigate subtitle overload in the topic ([8c209fa](https://github.com/andrewinci/insulator2/commit/8c209fae1fa8cd77f26c308425ced337c82288a4))
+
 ## [2.11.1](https://github.com/andrewinci/insulator2/compare/v2.11.0...v2.11.1) (2023-02-08)
 
 ### Bug Fixes

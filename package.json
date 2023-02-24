@@ -1,7 +1,7 @@
 {
   "name": "insulator2",
   "private": true,
-  "version": "2.11.1",
+  "version": "2.11.2",
   "type": "module",
   "workspaces": [
     "frontend",
