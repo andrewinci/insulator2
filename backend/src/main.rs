@@ -20,7 +20,6 @@ use crate::api::{
     utils::{export_datastore, parse_keystore, parse_truststore},
 };
 use api::AppState;
-use log::debug;
 use tauri::Manager;
 use telemetry::log_active_user;
 
