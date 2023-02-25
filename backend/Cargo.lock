@@ -2716,8 +2716,8 @@ checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
 
 [[package]]
 name = "openssl-src"
-version = "111.22.0+1.1.1q"
-source = "git+https://github.com/vectordotdev/openssl-src-rs.git?branch=enable_engine#52be5ec9f548ea825f602d514ebf322aa828c932"
+version = "111.25.0+1.1.1t"
+source = "git+https://github.com/andrewinci/openssl-src-rs.git?branch=release/111#7c965abbe8d9375334a2e32b357a792a04283471"
 dependencies = [
  "cc",
 ]
@@ -3289,7 +3289,7 @@ dependencies = [
 [[package]]
 name = "rdkafka"
 version = "0.29.0"
-source = "git+https://github.com/andrewinci/rust-rdkafka.git#981e8bc00a8c6ce1fc18c9bcda07067d4967d0e9"
+source = "git+https://github.com/andrewinci/rust-rdkafka.git#d7296d70d07dfe588b2b19805f2dd8fb606fcdad"
 dependencies = [
  "futures-channel",
  "futures-util",
@@ -3306,7 +3306,7 @@ dependencies = [
 [[package]]
 name = "rdkafka-sys"
 version = "4.3.0+2.0.2"
-source = "git+https://github.com/andrewinci/rust-rdkafka.git#981e8bc00a8c6ce1fc18c9bcda07067d4967d0e9"
+source = "git+https://github.com/andrewinci/rust-rdkafka.git#d7296d70d07dfe588b2b19805f2dd8fb606fcdad"
 dependencies = [
  "cmake",
  "libc",
