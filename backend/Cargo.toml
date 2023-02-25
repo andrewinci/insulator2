@@ -51,15 +51,7 @@ rdkafka = { git = "https://github.com/andrewinci/rust-rdkafka.git", features = [
 ] }
 
 [patch.crates-io]
-# from: https://github.com/vectordotdev/vector/blob/master/Cargo.toml#L369
-# Enables OpenSSL ENGINE support during cross compilation to musl
-# TODO remove this branch and instead use the openssl-src feature flag once it is available
-#    (see https://github.com/vectordotdev/vector/issues/13695)
-# openssl-src = { git = "https://github.com/andrewinci/openssl-src-rs.git" }
 openssl-src = { git = "https://github.com/andrewinci/openssl-src-rs.git", branch = "release/111" }
-# Delete a consumer group is not supported in the upstream lib
-# TODO: delete when https://github.com/fede1024/rust-rdkafka/pull/510 is merged
-#rdkafka = {  }
 
 [dev-dependencies]
 mockall = "0.11.3"
