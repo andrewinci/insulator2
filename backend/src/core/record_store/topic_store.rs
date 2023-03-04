@@ -12,7 +12,7 @@ use std::{
 
 use super::{
     error::StoreResult,
-    query::{Query, QueryRow},
+    query::{Query, QueryResultRow},
     record_parser::KafkaRecordParser,
     sqlite_store::{RecordStore, SqliteStore},
     types::ExportOptions,
@@ -52,7 +52,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
         offset: i64,
         limit: i64,
         timeout: Option<Duration>,
-    ) -> StoreResult<Vec<QueryRow>> {
+    ) -> StoreResult<Vec<QueryResultRow>> {
         self.store.query_records(
             &Query {
                 cluster_id: self.cluster_id.clone(),
@@ -180,12 +180,12 @@ mod test {
 
     use super::TopicStore;
     use crate::core::record_store::error::StoreResult;
-    use crate::core::record_store::query::{Query, QueryRow};
+    use crate::core::record_store::query::{Query, QueryResultRow};
     use crate::core::record_store::record_parser::KafkaRecordParser;
     use crate::core::record_store::sqlite_store::RecordStore;
     use crate::core::record_store::topic_store::sort_columns;
     use crate::core::record_store::types::ExportOptions;
-    use crate::core::record_store::QueryRowValue;
+    use crate::core::record_store::QueryResultRowItem;
     use crate::core::types::{ParsedKafkaRecord, RawKafkaRecord};
     use async_trait::async_trait;
 
@@ -199,7 +199,7 @@ mod test {
     mock! {
         Store {}
         impl RecordStore for Store {
-            fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryRow>>;
+            fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryResultRow>>;
             fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> StoreResult<()>;
             fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> StoreResult<()>;
             fn destroy(&self, cluster_id: &str, topic_name: &str) -> StoreResult<()>;
@@ -348,13 +348,13 @@ mod test {
         }
     }
 
-    fn create_test_record(i: i32) -> QueryRow {
+    fn create_test_record(i: i32) -> QueryResultRow {
         HashMap::from([
-            (Query::PAYLOAD.into(), QueryRowValue::Text("payload".into())),
-            (Query::KEY.into(), QueryRowValue::Text("key".into())),
-            (Query::TIMESTAMP.into(), QueryRowValue::Integer(123123)),
-            (Query::PARTITION.into(), QueryRowValue::Integer(i.into())),
-            (Query::OFFSET.into(), QueryRowValue::Integer(0)),
+            (Query::PAYLOAD.into(), QueryResultRowItem::Text("payload".into())),
+            (Query::KEY.into(), QueryResultRowItem::Text("key".into())),
+            (Query::TIMESTAMP.into(), QueryResultRowItem::Integer(123123)),
+            (Query::PARTITION.into(), QueryResultRowItem::Integer(i.into())),
+            (Query::OFFSET.into(), QueryResultRowItem::Integer(0)),
         ])
     }
 }

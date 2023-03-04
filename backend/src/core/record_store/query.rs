@@ -15,7 +15,9 @@ pub struct Query {
 }
 
 impl Query {
+    #[cfg(test)]
     pub const PARTITION: &str = "partition";
+    #[cfg(test)]
     pub const OFFSET: &str = "offset";
     pub const TIMESTAMP: &str = "timestamp";
     pub const KEY: &str = "key";
@@ -35,9 +37,9 @@ impl Query {
     }
 }
 
-pub type QueryRow = HashMap<String, QueryRowValue>;
+pub type QueryResultRow = HashMap<String, QueryResultRowItem>;
 #[derive(Debug, Clone)]
-pub enum QueryRowValue {
+pub enum QueryResultRowItem {
     Null,
     Integer(i64),
     Real(f64),
@@ -45,9 +47,9 @@ pub enum QueryRowValue {
     Blob(Vec<u8>),
 }
 
-impl QueryRowValue {
+impl QueryResultRowItem {
     pub fn extract_timestamp(&self, parse_timestamp: bool) -> String {
-        if let QueryRowValue::Integer(unix_timestamp) = self {
+        if let QueryResultRowItem::Integer(unix_timestamp) = self {
             if parse_timestamp {
                 // Creates a new SystemTime from the specified number of whole seconds
                 let d = UNIX_EPOCH + Duration::from_millis(unix_timestamp.to_u64().unwrap());
@@ -62,29 +64,29 @@ impl QueryRowValue {
     }
 }
 
-impl ToString for QueryRowValue {
+impl ToString for QueryResultRowItem {
     fn to_string(&self) -> String {
         match self {
-            QueryRowValue::Null => "null".to_string(),
-            QueryRowValue::Integer(v) => v.to_string(),
-            QueryRowValue::Real(v) => v.to_string(),
-            QueryRowValue::Text(v) => v.to_string(),
-            QueryRowValue::Blob(_) => "byte array".to_string(), //todo: support
+            QueryResultRowItem::Null => "null".to_string(),
+            QueryResultRowItem::Integer(v) => v.to_string(),
+            QueryResultRowItem::Real(v) => v.to_string(),
+            QueryResultRowItem::Text(v) => v.to_string(),
+            QueryResultRowItem::Blob(_) => "byte array".to_string(), //todo: support
         }
     }
 }
 
-impl Serialize for QueryRowValue {
+impl Serialize for QueryResultRowItem {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
         match self {
-            QueryRowValue::Integer(v) => serializer.serialize_i64(*v),
-            QueryRowValue::Real(v) => serializer.serialize_f64(*v),
-            QueryRowValue::Text(v) => serializer.serialize_str(v),
-            QueryRowValue::Blob(v) => serializer.serialize_bytes(v),
-            QueryRowValue::Null => serializer.serialize_none(),
+            QueryResultRowItem::Integer(v) => serializer.serialize_i64(*v),
+            QueryResultRowItem::Real(v) => serializer.serialize_f64(*v),
+            QueryResultRowItem::Text(v) => serializer.serialize_str(v),
+            QueryResultRowItem::Blob(v) => serializer.serialize_bytes(v),
+            QueryResultRowItem::Null => serializer.serialize_none(),
         }
     }
 }

@@ -12,13 +12,13 @@ use rusqlite::{backup::Backup, named_params, Connection, OpenFlags};
 
 use super::{
     error::StoreResult,
-    query::{Query, QueryRow},
-    QueryRowValue,
+    query::{Query, QueryResultRow},
+    QueryResultRowItem,
 };
 
 pub trait RecordStore {
     fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> StoreResult<()>;
-    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryRow>>;
+    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryResultRow>>;
     fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> StoreResult<()>;
     fn destroy(&self, cluster_id: &str, topic_name: &str) -> StoreResult<()>;
 }
@@ -29,7 +29,7 @@ pub struct SqliteStore {
 }
 
 impl RecordStore for SqliteStore {
-    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryRow>> {
+    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryResultRow>> {
         let parsed_query = Self::parse_query(query);
         // closure that actually execute the query
         let _get_records = move |connection: &r2d2::PooledConnection<SqliteConnectionManager>| {
@@ -46,11 +46,11 @@ impl RecordStore for SqliteStore {
                     for (i, c) in columns.iter() {
                         let value = row.get_ref(i.to_owned())?;
                         let value = match value {
-                            rusqlite::types::ValueRef::Null => QueryRowValue::Null,
-                            rusqlite::types::ValueRef::Integer(v) => QueryRowValue::Integer(v),
-                            rusqlite::types::ValueRef::Real(v) => QueryRowValue::Real(v),
-                            rusqlite::types::ValueRef::Text(_) => QueryRowValue::Text(value.as_str()?.into()),
-                            rusqlite::types::ValueRef::Blob(v) => QueryRowValue::Blob(v.into()),
+                            rusqlite::types::ValueRef::Null => QueryResultRowItem::Null,
+                            rusqlite::types::ValueRef::Integer(v) => QueryResultRowItem::Integer(v),
+                            rusqlite::types::ValueRef::Real(v) => QueryResultRowItem::Real(v),
+                            rusqlite::types::ValueRef::Text(_) => QueryResultRowItem::Text(value.as_str()?.into()),
+                            rusqlite::types::ValueRef::Blob(v) => QueryResultRowItem::Blob(v.into()),
                         };
                         tmp.insert(c.to_owned(), value);
                     }
@@ -218,7 +218,7 @@ impl SqliteStore {
 #[cfg(test)]
 mod tests {
     use crate::core::{
-        record_store::{error::StoreError, sqlite_store::Query, QueryRow},
+        record_store::{error::StoreError, sqlite_store::Query, QueryResultRow},
         types::ParsedKafkaRecord,
     };
     use std::{
@@ -511,16 +511,16 @@ mod tests {
         }
     }
 
-    fn parse_row(row: &QueryRow, topic_name: &str) -> ParsedKafkaRecord {
+    fn parse_row(row: &QueryResultRow, topic_name: &str) -> ParsedKafkaRecord {
         ParsedKafkaRecord {
             payload: match row.get(Query::PAYLOAD) {
                 None => None,
-                Some(crate::core::record_store::QueryRowValue::Text(v)) => Some(v.to_string()),
+                Some(crate::core::record_store::QueryResultRowItem::Text(v)) => Some(v.to_string()),
                 _ => panic!("invalid type"),
             },
             key: match row.get(Query::KEY) {
                 None => None,
-                Some(crate::core::record_store::QueryRowValue::Text(v)) => Some(v.to_string()),
+                Some(crate::core::record_store::QueryResultRowItem::Text(v)) => Some(v.to_string()),
                 _ => panic!("invalid type"),
             },
             // the topic name is not part of the table since can be retrieved
@@ -528,15 +528,15 @@ mod tests {
             topic: topic_name.into(),
             timestamp: match row.get(Query::TIMESTAMP) {
                 None => None,
-                Some(crate::core::record_store::QueryRowValue::Integer(v)) => Some((*v).try_into().unwrap()),
+                Some(crate::core::record_store::QueryResultRowItem::Integer(v)) => Some((*v).try_into().unwrap()),
                 _ => panic!("invalid type"),
             },
             partition: match row.get(Query::PARTITION) {
-                Some(crate::core::record_store::QueryRowValue::Integer(v)) => (*v).try_into().unwrap(),
+                Some(crate::core::record_store::QueryResultRowItem::Integer(v)) => (*v).try_into().unwrap(),
                 _ => panic!("invalid type"),
             },
             offset: match row.get(Query::OFFSET) {
-                Some(crate::core::record_store::QueryRowValue::Integer(v)) => *v,
+                Some(crate::core::record_store::QueryResultRowItem::Integer(v)) => *v,
                 _ => panic!("invalid type"),
             },
         }
