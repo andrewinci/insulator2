@@ -110,11 +110,24 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
         let mut writer = LineWriter::new(out_file);
         let query_result = self.get_records(query.as_deref(), 0, query_limit, Some(Duration::from_secs(3 * 60)))?;
         trace!("Write records to the out file");
-        writer.write_all(ParsedKafkaRecord::to_string_header().to_bytes())?;
-        for record in query_result {
-            writer.write_all(b"\n")?;
-            //todo: fix to csv
-            //writer.write_all(record.to_csv_line(*parse_timestamp).to_bytes())?;
+        // assumption: all rows in the query_result have the same keys
+        let columns = query_result.get(0).map(|r| r.keys().collect::<Vec<_>>());
+        if let Some(columns) = columns {
+            let header = columns.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(";");
+            // write the csv header
+            writer.write_all(header.to_bytes())?;
+            for record in query_result.iter() {
+                writer.write_all(b"\n")?;
+                let row: Vec<_> = columns
+                    .iter()
+                    .map(|&c| record.get(c).map(|v| v.to_string()).unwrap_or_default())
+                    .collect();
+                // todo: support parse timestamp
+                writer.write_all(row.join(";").to_bytes())?;
+            }
+        } else {
+            writer.write_all("The query didn't return any result".to_bytes())?;
+            debug!("The query didn't return any result");
         }
         writer.flush()?;
         debug!("Export completed");
@@ -179,7 +192,7 @@ mod test {
 
         let test_file = format!("{}/{}", temp_dir().to_str().unwrap(), rand::random::<usize>());
         println!("{}", test_file);
-        let select_all_query = "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+        let select_all_query = "SELECT timestamp, partition, offset, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
         // act
         let options = ExportOptions {
             query: Some(select_all_query.to_string()),
@@ -226,7 +239,7 @@ mod test {
         // assert
         let exported_data = fs::read_to_string(test_file).unwrap();
         assert!(res.is_ok());
-        assert_eq!(exported_data, "timestamp;partition;offset;key;payload");
+        assert_eq!(exported_data, "The query didn't return any result");
     }
 
     #[test]
@@ -271,7 +284,6 @@ mod test {
         HashMap::from([
             ("payload".into(), QueryRowValue::Text("payload".into())),
             ("key".into(), QueryRowValue::Text("key".into())),
-            ("topic".into(), QueryRowValue::Text("topic".into())),
             ("timestamp".into(), QueryRowValue::Integer(123123)),
             ("partition".into(), QueryRowValue::Integer(i.into())),
             ("offset".into(), QueryRowValue::Integer(0)),

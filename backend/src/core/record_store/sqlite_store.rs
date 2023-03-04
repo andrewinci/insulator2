@@ -174,9 +174,10 @@ impl SqliteStore {
         let src = self.pool.get().unwrap();
         let mut dst = Connection::open(output_path)?;
         let backup = Backup::new(&src, &mut dst)?;
+        // update the completion percentage in debug
         backup.run_to_completion(
-            1000,
-            time::Duration::from_millis(100),
+            1000,                             // number of pages per step
+            time::Duration::from_millis(100), // pause between steps
             Some(|p| {
                 debug!(
                     "Export in progress: {}%",
@@ -217,7 +218,7 @@ impl SqliteStore {
 #[cfg(test)]
 mod tests {
     use crate::core::{
-        record_store::{error::StoreError, sqlite_store::Query},
+        record_store::{error::StoreError, sqlite_store::Query, QueryRow},
         types::ParsedKafkaRecord,
     };
     use std::{
@@ -273,10 +274,7 @@ mod tests {
             .unwrap();
         // assert
         assert_eq!(records_back.len(), 1);
-        assert_eq!(
-            TryInto::<ParsedKafkaRecord>::try_into(records_back[0]).unwrap(),
-            test_record
-        );
+        assert_eq!(parse_row(&records_back[0], &test_record.topic), test_record);
     }
 
     #[tokio::test]
@@ -322,7 +320,7 @@ mod tests {
                 .unwrap();
             // assert
             assert_eq!(records_back.len(), 1);
-            assert_eq!(ParsedKafkaRecord::try_from(records_back[0]).unwrap(), test_record1);
+            assert_eq!(parse_row(&records_back[0], &test_record1.topic), test_record1);
         }
         // non compacted table should persist all the data
         {
@@ -336,7 +334,7 @@ mod tests {
                 .unwrap();
             // assert
             assert_eq!(records_back.len(), 2);
-            assert_eq!(ParsedKafkaRecord::try_from(records_back[1]).unwrap(), test_record2);
+            assert_eq!(parse_row(&records_back[1], &test_record2.topic), test_record2);
         }
     }
 
@@ -510,6 +508,37 @@ mod tests {
             timestamp: Some(321123321),
             partition: 2,
             offset,
+        }
+    }
+
+    fn parse_row(row: &QueryRow, topic_name: &str) -> ParsedKafkaRecord {
+        ParsedKafkaRecord {
+            payload: match row.get("payload") {
+                None => None,
+                Some(crate::core::record_store::QueryRowValue::Text(v)) => Some(v.to_string()),
+                _ => panic!("invalid type"),
+            },
+            key: match row.get("key") {
+                None => None,
+                Some(crate::core::record_store::QueryRowValue::Text(v)) => Some(v.to_string()),
+                _ => panic!("invalid type"),
+            },
+            // the topic name is not part of the table since can be retrieved
+            // by the table name
+            topic: topic_name.into(),
+            timestamp: match row.get("timestamp") {
+                None => None,
+                Some(crate::core::record_store::QueryRowValue::Integer(v)) => Some((*v).try_into().unwrap()),
+                _ => panic!("invalid type"),
+            },
+            partition: match row.get("partition") {
+                Some(crate::core::record_store::QueryRowValue::Integer(v)) => (*v).try_into().unwrap(),
+                _ => panic!("invalid type"),
+            },
+            offset: match row.get("offset") {
+                Some(crate::core::record_store::QueryRowValue::Integer(v)) => *v,
+                _ => panic!("invalid type"),
+            },
         }
     }
 }

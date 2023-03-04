@@ -40,14 +40,14 @@ pub enum QueryRowValue {
     Blob(Vec<u8>),
 }
 
-impl QueryRowValue {
-    fn try_get_string(&self) -> StoreResult<String> {
-        if let QueryRowValue::Text(res) = self {
-            Ok(res.to_owned())
-        } else {
-            Err(StoreError::RecordParse(format!(
-                "Expected string value but got {self:?}"
-            )))
+impl ToString for QueryRowValue {
+    fn to_string(&self) -> String {
+        match self {
+            QueryRowValue::Null => "null".to_string(),
+            QueryRowValue::Integer(v) => v.to_string(),
+            QueryRowValue::Real(v) => v.to_string(),
+            QueryRowValue::Text(v) => v.to_string(),
+            QueryRowValue::Blob(_) => "byte array".to_string(), //todo: support
         }
     }
 }
@@ -64,27 +64,5 @@ impl Serialize for QueryRowValue {
             QueryRowValue::Blob(v) => serializer.serialize_bytes(v),
             QueryRowValue::Null => serializer.serialize_none(),
         }
-    }
-}
-
-impl TryFrom<QueryRow> for ParsedKafkaRecord {
-    type Error = StoreError;
-
-    fn try_from(value: QueryRow) -> Result<Self, Self::Error> {
-        //todo: parsing and error handling
-        Ok(ParsedKafkaRecord {
-            payload: match value.get("payload") {
-                Some(r) => Some(r.try_get_string()?),
-                None => None,
-            },
-            key: match value.get("key") {
-                Some(r) => Some(r.try_get_string()?),
-                None => None,
-            },
-            topic: value.get("topic").unwrap().try_get_string()?.clone(),
-            timestamp: Some(1), // value.get("timestamp").cloned(),
-            partition: 2,       //value.get("partition").cloned(),
-            offset: 3,          //value.get("offset").cloned(),
-        })
     }
 }
