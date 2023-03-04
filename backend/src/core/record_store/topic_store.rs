@@ -110,30 +110,11 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
         let query_result = self.get_records(query.as_deref(), 0, query_limit, Some(Duration::from_secs(3 * 60)))?;
         trace!("Write records to the out file");
         // assumption: all rows in the query_result have the same keys
-        let columns = query_result.get(0).map(|r| r.keys().collect::<Vec<_>>());
+        let columns = query_result
+            .get(0)
+            .map(|r| r.keys().map(|s| s.as_str()).collect::<Vec<_>>());
         if let Some(columns) = columns {
-            let columns = {
-                let mut columns = columns.iter().map(|v| v.to_string()).collect::<Vec<_>>();
-                // custom sort:
-                // - if the timestamp is available, it has to be the first
-                // - if the payload is available, it has to be the last
-                // - if the key is available, it has to be right before the payload
-                // todo: extract and test the black magic below
-                columns.sort_by(|a, b| {
-                    if a == Query::KEY && b == Query::PAYLOAD {
-                        Ordering::Less
-                    } else if a == Query::PAYLOAD && b == Query::KEY {
-                        Ordering::Greater
-                    } else if a == Query::TIMESTAMP || b == Query::PAYLOAD || b == Query::KEY {
-                        Ordering::Less
-                    } else if b == Query::TIMESTAMP || a == Query::PAYLOAD || a == Query::KEY {
-                        Ordering::Greater
-                    } else {
-                        a.cmp(b)
-                    }
-                });
-                columns
-            };
+            let columns = sort_columns(&columns[..]);
             let header = columns.join(SEPARATOR);
 
             // write the csv header
@@ -157,6 +138,28 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
     }
 }
 
+pub(super) fn sort_columns(columns: &[&str]) -> Vec<String> {
+    // custom sort:
+    // - if the timestamp is available, it has to be the first
+    // - if the payload is available, it has to be the last
+    // - if the key is available, it has to be right before the payload
+    let mut res: Vec<_> = Vec::from(columns).iter().map(|&s| s.to_owned()).collect();
+    res.sort_by(|a, b| {
+        if a == Query::KEY && b == Query::PAYLOAD {
+            Ordering::Less
+        } else if a == Query::PAYLOAD && b == Query::KEY {
+            Ordering::Greater
+        } else if a == Query::TIMESTAMP || b == Query::PAYLOAD || b == Query::KEY {
+            Ordering::Less
+        } else if b == Query::TIMESTAMP || a == Query::PAYLOAD || a == Query::KEY {
+            Ordering::Greater
+        } else {
+            a.cmp(b)
+        }
+    });
+    res
+}
+
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
@@ -172,6 +175,7 @@ mod test {
     use crate::core::record_store::query::{Query, QueryRow};
     use crate::core::record_store::record_parser::KafkaRecordParser;
     use crate::core::record_store::sqlite_store::RecordStore;
+    use crate::core::record_store::topic_store::sort_columns;
     use crate::core::record_store::types::ExportOptions;
     use crate::core::record_store::QueryRowValue;
     use crate::core::types::{ParsedKafkaRecord, RawKafkaRecord};
@@ -191,6 +195,40 @@ mod test {
             fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> StoreResult<()>;
             fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> StoreResult<()>;
             fn destroy(&self, cluster_id: &str, topic_name: &str) -> StoreResult<()>;
+        }
+    }
+
+    #[test]
+    fn test_sort_columns() {
+        // sort alphabetical if there are no keys
+        {
+            let columns = vec!["1", "3", "0", "2"];
+            let res = sort_columns(&columns[..]);
+            assert_eq!(res, vec!["0", "1", "2", "3"]);
+        }
+        // - if the timestamp is available, it has to be the first
+        {
+            let columns = vec!["1", "3", Query::TIMESTAMP, "2"];
+            let res = sort_columns(&columns[..]);
+            assert_eq!(res, vec![Query::TIMESTAMP, "1", "2", "3"]);
+        }
+        // - if the payload is available, it has to be the last
+        {
+            let columns = vec!["1", "3", Query::PAYLOAD, "2"];
+            let res = sort_columns(&columns[..]);
+            assert_eq!(res, vec!["1", "2", "3", Query::PAYLOAD]);
+        }
+        // - if the key is available, it has to be right before the payload
+        {
+            let columns = vec!["1", "3", Query::KEY, "2"];
+            let res = sort_columns(&columns[..]);
+            assert_eq!(res, vec!["1", "2", "3", Query::KEY]);
+        }
+        // - if the key is available, it has to be right before the payload
+        {
+            let columns = vec![Query::PAYLOAD, "1", "3", Query::KEY, "2"];
+            let res = sort_columns(&columns[..]);
+            assert_eq!(res, vec!["1", "2", "3", Query::KEY, Query::PAYLOAD]);
         }
     }
 
