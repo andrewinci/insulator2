@@ -14,7 +14,12 @@ pub struct KafkaRecord<T> {
     pub timestamp: Option<u64>,
     pub partition: i32,
     pub offset: i64,
-    //todo: headers
+    /*
+     * todo: add
+     * - header
+     * - record size
+     * - schema-id
+     */
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]

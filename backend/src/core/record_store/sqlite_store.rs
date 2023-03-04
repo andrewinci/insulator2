@@ -62,12 +62,12 @@ impl RecordStore for SqliteStore {
             .execute(
                 format!(
                     "CREATE TABLE {} (
+                        payload     TEXT,
+                        key         TEXT {},
+                        timestamp   NUMBER,
                         partition   NUMBER,
                         offset      NUMBER,
-                        timestamp   NUMBER,
-                        key         TEXT {},
-                        payload     TEXT,
-                        PRIMARY KEY (partition, offset))",
+                    PRIMARY KEY (partition, offset))",
                     Self::get_table_name(cluster_id, topic_name),
                     match compacted {
                         true => "UNIQUE",
@@ -85,17 +85,17 @@ impl RecordStore for SqliteStore {
         let connection = self.pool.get().unwrap();
         connection.execute(
             format!(
-                "INSERT OR REPLACE INTO {} (partition, offset, timestamp, key, payload) 
-                VALUES (:partition, :offset, :timestamp, :key, :payload)",
+                "INSERT OR REPLACE INTO {} (payload, key, timestamp, partition, offset) 
+                VALUES (:payload, :key, :timestamp, :partition, :offset)",
                 Self::get_table_name(cluster_id, topic_name)
             )
             .as_str(),
             named_params! {
+                ":payload": &record.payload,
+                ":key": &record.key,
+                ":timestamp": &record.timestamp,
                 ":partition": &record.partition,
                 ":offset": &record.offset,
-                ":timestamp": &record.timestamp,
-                ":key": &record.key,
-                ":payload": &record.payload,
             },
         )?;
         Ok(())
