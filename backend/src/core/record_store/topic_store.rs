@@ -6,6 +6,7 @@ use crate::core::{
     types::{ParsedKafkaRecord, RawKafkaRecord},
 };
 use std::{
+    cmp::Ordering,
     fs::OpenOptions,
     io::{LineWriter, Write},
     sync::{Arc, RwLock},
@@ -113,14 +114,38 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
         // assumption: all rows in the query_result have the same keys
         let columns = query_result.get(0).map(|r| r.keys().collect::<Vec<_>>());
         if let Some(columns) = columns {
-            let header = columns.iter().map(|v| v.to_string()).collect::<Vec<_>>().join(";");
+            let columns = {
+                let mut columns = columns.iter().map(|v| v.to_string()).collect::<Vec<_>>();
+                // custom sort:
+                // - if the timestamp is available, it has to be the first
+                // - if the payload is available, it has to be the last
+                // - if the key is available, it has to be right before the payload
+                // todo: extract and test the black magic below
+                // todo: too many magic words
+                columns.sort_by(|a, b| {
+                    if a == "key" && b == "payload" {
+                        Ordering::Less
+                    } else if a == "payload" && b == "key" {
+                        Ordering::Greater
+                    } else if a == "timestamp" || b == "payload" || b == "key" {
+                        Ordering::Less
+                    } else if b == "timestamp" || a == "payload" || a == "key" {
+                        Ordering::Greater
+                    } else {
+                        a.cmp(b)
+                    }
+                });
+                columns
+            };
+            let header = columns.join(";");
+
             // write the csv header
             writer.write_all(header.to_bytes())?;
             for record in query_result.iter() {
                 writer.write_all(b"\n")?;
                 let row: Vec<_> = columns
                     .iter()
-                    .map(|&c| record.get(c).map(|v| v.to_string()).unwrap_or_default())
+                    .map(|c| record.get(c).map(|v| v.to_string()).unwrap_or_default())
                     .collect();
                 // todo: support parse timestamp
                 writer.write_all(row.join(";").to_bytes())?;
@@ -206,7 +231,7 @@ mod test {
         assert!(res.is_ok());
         assert_eq!(
             exported_data,
-            "timestamp;partition;offset;key;payload\n123123;0;0;key;payload\n123123;1;0;key;payload"
+            "timestamp;offset;partition;key;payload\n123123;0;0;key;payload\n123123;0;1;key;payload"
         );
     }
 
