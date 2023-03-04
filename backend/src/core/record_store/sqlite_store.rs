@@ -320,7 +320,7 @@ mod tests {
                 .unwrap();
             // assert
             assert_eq!(records_back.len(), 1);
-            assert_eq!(parse_row(&records_back[0], &test_record1.topic), test_record1);
+            assert_eq!(parse_row(&records_back[0], &test_record2.topic), test_record2);
         }
         // non compacted table should persist all the data
         {
