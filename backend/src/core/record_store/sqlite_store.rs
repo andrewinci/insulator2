@@ -513,12 +513,12 @@ mod tests {
 
     fn parse_row(row: &QueryRow, topic_name: &str) -> ParsedKafkaRecord {
         ParsedKafkaRecord {
-            payload: match row.get("payload") {
+            payload: match row.get(Query::PAYLOAD) {
                 None => None,
                 Some(crate::core::record_store::QueryRowValue::Text(v)) => Some(v.to_string()),
                 _ => panic!("invalid type"),
             },
-            key: match row.get("key") {
+            key: match row.get(Query::KEY) {
                 None => None,
                 Some(crate::core::record_store::QueryRowValue::Text(v)) => Some(v.to_string()),
                 _ => panic!("invalid type"),
@@ -526,16 +526,16 @@ mod tests {
             // the topic name is not part of the table since can be retrieved
             // by the table name
             topic: topic_name.into(),
-            timestamp: match row.get("timestamp") {
+            timestamp: match row.get(Query::TIMESTAMP) {
                 None => None,
                 Some(crate::core::record_store::QueryRowValue::Integer(v)) => Some((*v).try_into().unwrap()),
                 _ => panic!("invalid type"),
             },
-            partition: match row.get("partition") {
+            partition: match row.get(Query::PARTITION) {
                 Some(crate::core::record_store::QueryRowValue::Integer(v)) => (*v).try_into().unwrap(),
                 _ => panic!("invalid type"),
             },
-            offset: match row.get("offset") {
+            offset: match row.get(Query::OFFSET) {
                 Some(crate::core::record_store::QueryRowValue::Integer(v)) => *v,
                 _ => panic!("invalid type"),
             },

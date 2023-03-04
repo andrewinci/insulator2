@@ -1,10 +1,7 @@
 use log::{debug, trace};
 use rdkafka::message::ToBytes;
 
-use crate::core::{
-    parser::Parser,
-    types::{ParsedKafkaRecord, RawKafkaRecord},
-};
+use crate::core::{parser::Parser, types::RawKafkaRecord};
 use std::{
     cmp::Ordering,
     fs::OpenOptions,
@@ -64,7 +61,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
                 limit,
                 query_template: match query {
                     Some(query) => query,
-                    None => Query::SELECT_WITH_OFFSET_LIMIT_QUERY,
+                    None => Query::SELECT_ALL_WITH_OFFSET_LIMIT_QUERY,
                 }
                 .into(),
             },
@@ -92,6 +89,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
             parse_timestamp,
         } = options;
         debug!("Exporting records to {}", output_path);
+        const SEPARATOR: &str = ";";
         let query_limit = limit.unwrap_or(-1); // export all the results if no limit is specified
         let out_file = {
             if *overwrite {
@@ -121,15 +119,14 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
                 // - if the payload is available, it has to be the last
                 // - if the key is available, it has to be right before the payload
                 // todo: extract and test the black magic below
-                // todo: too many magic words
                 columns.sort_by(|a, b| {
-                    if a == "key" && b == "payload" {
+                    if a == Query::KEY && b == Query::PAYLOAD {
                         Ordering::Less
-                    } else if a == "payload" && b == "key" {
+                    } else if a == Query::PAYLOAD && b == Query::KEY {
                         Ordering::Greater
-                    } else if a == "timestamp" || b == "payload" || b == "key" {
+                    } else if a == Query::TIMESTAMP || b == Query::PAYLOAD || b == Query::KEY {
                         Ordering::Less
-                    } else if b == "timestamp" || a == "payload" || a == "key" {
+                    } else if b == Query::TIMESTAMP || a == Query::PAYLOAD || a == Query::KEY {
                         Ordering::Greater
                     } else {
                         a.cmp(b)
@@ -137,7 +134,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
                 });
                 columns
             };
-            let header = columns.join(";");
+            let header = columns.join(SEPARATOR);
 
             // write the csv header
             writer.write_all(header.to_bytes())?;
@@ -148,7 +145,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
                     .map(|c| record.get(c).map(|v| v.to_string()).unwrap_or_default())
                     .collect();
                 // todo: support parse timestamp
-                writer.write_all(row.join(";").to_bytes())?;
+                writer.write_all(row.join(SEPARATOR).to_bytes())?;
             }
         } else {
             writer.write_all("The query didn't return any result".to_bytes())?;
@@ -217,7 +214,7 @@ mod test {
 
         let test_file = format!("{}/{}", temp_dir().to_str().unwrap(), rand::random::<usize>());
         println!("{}", test_file);
-        let select_all_query = "SELECT timestamp, partition, offset, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+        let select_all_query = "SELECT * FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
         // act
         let options = ExportOptions {
             query: Some(select_all_query.to_string()),
@@ -252,7 +249,7 @@ mod test {
         );
 
         let test_file = format!("{}/{}", temp_dir().to_str().unwrap(), rand::random::<usize>());
-        let select_all_query = "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+        let select_all_query = "SELECT * FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
         // act
         let options = ExportOptions {
             query: Some(select_all_query.to_string()),
@@ -281,7 +278,7 @@ mod test {
             "cluster_id",
             "topic_name",
         );
-        let select_all_query = "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+        let select_all_query = "SELECT * FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
         let options = ExportOptions {
             query: Some(select_all_query.to_string()),
             output_path: format!("{}/test{}", temp_dir().to_str().unwrap(), rand::random::<usize>()),
@@ -307,11 +304,11 @@ mod test {
 
     fn create_test_record(i: i32) -> QueryRow {
         HashMap::from([
-            ("payload".into(), QueryRowValue::Text("payload".into())),
-            ("key".into(), QueryRowValue::Text("key".into())),
-            ("timestamp".into(), QueryRowValue::Integer(123123)),
-            ("partition".into(), QueryRowValue::Integer(i.into())),
-            ("offset".into(), QueryRowValue::Integer(0)),
+            (Query::PAYLOAD.into(), QueryRowValue::Text("payload".into())),
+            (Query::KEY.into(), QueryRowValue::Text("key".into())),
+            (Query::TIMESTAMP.into(), QueryRowValue::Integer(123123)),
+            (Query::PARTITION.into(), QueryRowValue::Integer(i.into())),
+            (Query::OFFSET.into(), QueryRowValue::Integer(0)),
         ])
     }
 }
