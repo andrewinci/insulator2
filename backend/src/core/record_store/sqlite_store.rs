@@ -1,5 +1,8 @@
 use core::time;
-use std::time::{Duration, Instant};
+use std::{
+    collections::HashMap,
+    time::{Duration, Instant},
+};
 
 use crate::core::types::ParsedKafkaRecord;
 use log::debug;
@@ -7,11 +10,15 @@ use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{backup::Backup, named_params, Connection, OpenFlags};
 
-use super::{error::StoreResult, query::Query};
+use super::{
+    error::StoreResult,
+    query::{Query, QueryResultRow},
+    QueryResultRowItem,
+};
 
 pub trait RecordStore {
     fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> StoreResult<()>;
-    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<ParsedKafkaRecord>>;
+    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryResultRow>>;
     fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> StoreResult<()>;
     fn destroy(&self, cluster_id: &str, topic_name: &str) -> StoreResult<()>;
 }
@@ -22,20 +29,34 @@ pub struct SqliteStore {
 }
 
 impl RecordStore for SqliteStore {
-    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<ParsedKafkaRecord>> {
+    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryResultRow>> {
         let parsed_query = Self::parse_query(query);
         // closure that actually execute the query
         let _get_records = move |connection: &r2d2::PooledConnection<SqliteConnectionManager>| {
             let mut stmt = connection.prepare(&parsed_query)?;
+            let columns: Vec<_> = stmt
+                .column_names()
+                .iter()
+                .enumerate()
+                .map(|(i, &c)| (i, c.to_owned()))
+                .collect();
             let records_iter = stmt.query_map([], |row| {
-                Ok(ParsedKafkaRecord {
-                    topic: query.topic_name.clone(),
-                    partition: row.get(0)?,
-                    offset: row.get(1)?,
-                    timestamp: row.get(2)?,
-                    key: row.get(3)?,
-                    payload: row.get(4)?,
-                })
+                let res = {
+                    let mut tmp = HashMap::new();
+                    for (i, c) in columns.iter() {
+                        let value = row.get_ref(i.to_owned())?;
+                        let value = match value {
+                            rusqlite::types::ValueRef::Null => QueryResultRowItem::Null,
+                            rusqlite::types::ValueRef::Integer(v) => QueryResultRowItem::Integer(v),
+                            rusqlite::types::ValueRef::Real(v) => QueryResultRowItem::Real(v),
+                            rusqlite::types::ValueRef::Text(_) => QueryResultRowItem::Text(value.as_str()?.into()),
+                            rusqlite::types::ValueRef::Blob(v) => QueryResultRowItem::Blob(v.into()),
+                        };
+                        tmp.insert(c.to_owned(), value);
+                    }
+                    tmp
+                };
+                Ok(res)
             })?;
             let mut records = Vec::new();
             for r in records_iter {
@@ -62,12 +83,12 @@ impl RecordStore for SqliteStore {
             .execute(
                 format!(
                     "CREATE TABLE {} (
+                        payload     TEXT,
+                        key         TEXT {},
+                        timestamp   NUMBER,
                         partition   NUMBER,
                         offset      NUMBER,
-                        timestamp   NUMBER,
-                        key         TEXT {},
-                        payload     TEXT,
-                        PRIMARY KEY (partition, offset))",
+                    PRIMARY KEY (partition, offset))",
                     Self::get_table_name(cluster_id, topic_name),
                     match compacted {
                         true => "UNIQUE",
@@ -85,17 +106,17 @@ impl RecordStore for SqliteStore {
         let connection = self.pool.get().unwrap();
         connection.execute(
             format!(
-                "INSERT OR REPLACE INTO {} (partition, offset, timestamp, key, payload) 
-                VALUES (:partition, :offset, :timestamp, :key, :payload)",
+                "INSERT OR REPLACE INTO {} (payload, key, timestamp, partition, offset) 
+                VALUES (:payload, :key, :timestamp, :partition, :offset)",
                 Self::get_table_name(cluster_id, topic_name)
             )
             .as_str(),
             named_params! {
+                ":payload": &record.payload,
+                ":key": &record.key,
+                ":timestamp": &record.timestamp,
                 ":partition": &record.partition,
                 ":offset": &record.offset,
-                ":timestamp": &record.timestamp,
-                ":key": &record.key,
-                ":payload": &record.payload,
             },
         )?;
         Ok(())
@@ -153,9 +174,10 @@ impl SqliteStore {
         let src = self.pool.get().unwrap();
         let mut dst = Connection::open(output_path)?;
         let backup = Backup::new(&src, &mut dst)?;
+        // update the completion percentage in debug
         backup.run_to_completion(
-            1000,
-            time::Duration::from_millis(100),
+            1000,                             // number of pages per step
+            time::Duration::from_millis(100), // pause between steps
             Some(|p| {
                 debug!(
                     "Export in progress: {}%",
@@ -196,7 +218,7 @@ impl SqliteStore {
 #[cfg(test)]
 mod tests {
     use crate::core::{
-        record_store::{error::StoreError, sqlite_store::Query},
+        record_store::{error::StoreError, sqlite_store::Query, QueryResultRow},
         types::ParsedKafkaRecord,
     };
     use std::{
@@ -252,7 +274,7 @@ mod tests {
             .unwrap();
         // assert
         assert_eq!(records_back.len(), 1);
-        assert_eq!(records_back[0], test_record);
+        assert_eq!(parse_row(&records_back[0], &test_record.topic), test_record);
     }
 
     #[tokio::test]
@@ -298,7 +320,7 @@ mod tests {
                 .unwrap();
             // assert
             assert_eq!(records_back.len(), 1);
-            assert_eq!(records_back[0], test_record2);
+            assert_eq!(parse_row(&records_back[0], &test_record2.topic), test_record2);
         }
         // non compacted table should persist all the data
         {
@@ -312,7 +334,7 @@ mod tests {
                 .unwrap();
             // assert
             assert_eq!(records_back.len(), 2);
-            assert_eq!(records_back[1], test_record2);
+            assert_eq!(parse_row(&records_back[1], &test_record2.topic), test_record2);
         }
     }
 
@@ -486,6 +508,37 @@ mod tests {
             timestamp: Some(321123321),
             partition: 2,
             offset,
+        }
+    }
+
+    fn parse_row(row: &QueryResultRow, topic_name: &str) -> ParsedKafkaRecord {
+        ParsedKafkaRecord {
+            payload: match row.get(Query::PAYLOAD) {
+                None => None,
+                Some(crate::core::record_store::QueryResultRowItem::Text(v)) => Some(v.to_string()),
+                _ => panic!("invalid type"),
+            },
+            key: match row.get(Query::KEY) {
+                None => None,
+                Some(crate::core::record_store::QueryResultRowItem::Text(v)) => Some(v.to_string()),
+                _ => panic!("invalid type"),
+            },
+            // the topic name is not part of the table since can be retrieved
+            // by the table name
+            topic: topic_name.into(),
+            timestamp: match row.get(Query::TIMESTAMP) {
+                None => None,
+                Some(crate::core::record_store::QueryResultRowItem::Integer(v)) => Some((*v).try_into().unwrap()),
+                _ => panic!("invalid type"),
+            },
+            partition: match row.get(Query::PARTITION) {
+                Some(crate::core::record_store::QueryResultRowItem::Integer(v)) => (*v).try_into().unwrap(),
+                _ => panic!("invalid type"),
+            },
+            offset: match row.get(Query::OFFSET) {
+                Some(crate::core::record_store::QueryResultRowItem::Integer(v)) => *v,
+                _ => panic!("invalid type"),
+            },
         }
     }
 }

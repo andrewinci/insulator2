@@ -65,7 +65,10 @@ impl KafkaAdmin {
     ) -> AdminResult<ConsumerGroupInfo> {
         // create a consumer with the defined consumer_group_name.
         // NOTE: the consumer shouldn't join the consumer group, otherwise it'll cause a re-balance
-        debug!("Build the consumer for tsumer group {}", consumer_group_name);
+        debug!(
+            "Build the consumer client for the specified consumer group {}",
+            consumer_group_name
+        );
         let consumer: BaseConsumer = build_kafka_client_config(&self.config, Some(consumer_group_name)).create()?;
 
         debug!("Build the topic/partition list");

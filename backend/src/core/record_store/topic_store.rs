@@ -1,11 +1,9 @@
 use log::{debug, trace};
 use rdkafka::message::ToBytes;
 
-use crate::core::{
-    parser::Parser,
-    types::{ParsedKafkaRecord, RawKafkaRecord},
-};
+use crate::core::{parser::Parser, types::RawKafkaRecord};
 use std::{
+    cmp::Ordering,
     fs::OpenOptions,
     io::{LineWriter, Write},
     sync::{Arc, RwLock},
@@ -14,7 +12,7 @@ use std::{
 
 use super::{
     error::StoreResult,
-    query::Query,
+    query::{Query, QueryResultRow},
     record_parser::KafkaRecordParser,
     sqlite_store::{RecordStore, SqliteStore},
     types::ExportOptions,
@@ -54,7 +52,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
         offset: i64,
         limit: i64,
         timeout: Option<Duration>,
-    ) -> StoreResult<Vec<ParsedKafkaRecord>> {
+    ) -> StoreResult<Vec<QueryResultRow>> {
         self.store.query_records(
             &Query {
                 cluster_id: self.cluster_id.clone(),
@@ -63,7 +61,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
                 limit,
                 query_template: match query {
                     Some(query) => query,
-                    None => Query::SELECT_WITH_OFFSET_LIMIT_QUERY,
+                    None => Query::SELECT_ALL_WITH_OFFSET_LIMIT_QUERY,
                 }
                 .into(),
             },
@@ -91,6 +89,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
             parse_timestamp,
         } = options;
         debug!("Exporting records to {}", output_path);
+        const SEPARATOR: &str = ";";
         let query_limit = limit.unwrap_or(-1); // export all the results if no limit is specified
         let out_file = {
             if *overwrite {
@@ -108,13 +107,38 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
             }
         }?;
         let mut writer = LineWriter::new(out_file);
-        let query_result: Vec<ParsedKafkaRecord> =
-            self.get_records(query.as_deref(), 0, query_limit, Some(Duration::from_secs(3 * 60)))?;
+        let query_result = self.get_records(query.as_deref(), 0, query_limit, Some(Duration::from_secs(3 * 60)))?;
         trace!("Write records to the out file");
-        writer.write_all(ParsedKafkaRecord::to_string_header().to_bytes())?;
-        for record in query_result {
-            writer.write_all(b"\n")?;
-            writer.write_all(record.to_csv_line(*parse_timestamp).to_bytes())?;
+        // assumption: all rows in the query_result have the same keys
+        let columns = query_result
+            .get(0)
+            .map(|r| r.keys().map(|s| s.as_str()).collect::<Vec<_>>());
+        if let Some(columns) = columns {
+            let columns = sort_columns(&columns[..]);
+            let header = columns.join(SEPARATOR);
+
+            // write the csv header
+            writer.write_all(header.to_bytes())?;
+            for record in query_result.iter() {
+                writer.write_all(b"\n")?;
+                let row: Vec<_> = columns
+                    .iter()
+                    .map(|c| {
+                        record
+                            .get(c)
+                            .map(|v| match c.as_str() {
+                                Query::TIMESTAMP => v.extract_timestamp(*parse_timestamp),
+                                _ => v.to_string(),
+                            })
+                            .unwrap_or_default()
+                    })
+                    .collect();
+                // todo: support parse timestamp
+                writer.write_all(row.join(SEPARATOR).to_bytes())?;
+            }
+        } else {
+            writer.write_all("The query didn't return any result".to_bytes())?;
+            debug!("The query didn't return any result");
         }
         writer.flush()?;
         debug!("Export completed");
@@ -122,8 +146,31 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
     }
 }
 
+pub(super) fn sort_columns(columns: &[&str]) -> Vec<String> {
+    // custom sort:
+    // - if the timestamp is available, it has to be the first
+    // - if the payload is available, it has to be the last
+    // - if the key is available, it has to be right before the payload
+    let mut res: Vec<_> = Vec::from(columns).iter().map(|&s| s.to_owned()).collect();
+    res.sort_by(|a, b| {
+        if a == Query::KEY && b == Query::PAYLOAD {
+            Ordering::Less
+        } else if a == Query::PAYLOAD && b == Query::KEY {
+            Ordering::Greater
+        } else if a == Query::TIMESTAMP || b == Query::PAYLOAD || b == Query::KEY {
+            Ordering::Less
+        } else if b == Query::TIMESTAMP || a == Query::PAYLOAD || a == Query::KEY {
+            Ordering::Greater
+        } else {
+            a.cmp(b)
+        }
+    });
+    res
+}
+
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
     use std::env::temp_dir;
     use std::fs;
     use std::sync::Arc;
@@ -133,10 +180,12 @@ mod test {
 
     use super::TopicStore;
     use crate::core::record_store::error::StoreResult;
-    use crate::core::record_store::query::Query;
+    use crate::core::record_store::query::{Query, QueryResultRow};
     use crate::core::record_store::record_parser::KafkaRecordParser;
     use crate::core::record_store::sqlite_store::RecordStore;
+    use crate::core::record_store::topic_store::sort_columns;
     use crate::core::record_store::types::ExportOptions;
+    use crate::core::record_store::QueryResultRowItem;
     use crate::core::types::{ParsedKafkaRecord, RawKafkaRecord};
     use async_trait::async_trait;
 
@@ -150,10 +199,44 @@ mod test {
     mock! {
         Store {}
         impl RecordStore for Store {
-            fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<ParsedKafkaRecord>>;
+            fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryResultRow>>;
             fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> StoreResult<()>;
             fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> StoreResult<()>;
             fn destroy(&self, cluster_id: &str, topic_name: &str) -> StoreResult<()>;
+        }
+    }
+
+    #[test]
+    fn test_sort_columns() {
+        // sort alphabetical if there are no keys
+        {
+            let columns = vec!["1", "3", "0", "2"];
+            let res = sort_columns(&columns[..]);
+            assert_eq!(res, vec!["0", "1", "2", "3"]);
+        }
+        // - if the timestamp is available, it has to be the first
+        {
+            let columns = vec!["1", "3", Query::TIMESTAMP, "2"];
+            let res = sort_columns(&columns[..]);
+            assert_eq!(res, vec![Query::TIMESTAMP, "1", "2", "3"]);
+        }
+        // - if the payload is available, it has to be the last
+        {
+            let columns = vec!["1", "3", Query::PAYLOAD, "2"];
+            let res = sort_columns(&columns[..]);
+            assert_eq!(res, vec!["1", "2", "3", Query::PAYLOAD]);
+        }
+        // - if the key is available, it has to be right before the payload
+        {
+            let columns = vec!["1", "3", Query::KEY, "2"];
+            let res = sort_columns(&columns[..]);
+            assert_eq!(res, vec!["1", "2", "3", Query::KEY]);
+        }
+        // - if the key is available, it has to be right before the payload
+        {
+            let columns = vec![Query::PAYLOAD, "1", "3", Query::KEY, "2"];
+            let res = sort_columns(&columns[..]);
+            assert_eq!(res, vec!["1", "2", "3", Query::KEY, Query::PAYLOAD]);
         }
     }
 
@@ -177,7 +260,7 @@ mod test {
 
         let test_file = format!("{}/{}", temp_dir().to_str().unwrap(), rand::random::<usize>());
         println!("{}", test_file);
-        let select_all_query = "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+        let select_all_query = "SELECT * FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
         // act
         let options = ExportOptions {
             query: Some(select_all_query.to_string()),
@@ -191,7 +274,7 @@ mod test {
         assert!(res.is_ok());
         assert_eq!(
             exported_data,
-            "timestamp;partition;offset;key;payload\n123123;0;0;key;payload\n123123;1;0;key;payload"
+            "timestamp;offset;partition;key;payload\n123123;0;0;key;payload\n123123;0;1;key;payload"
         );
     }
 
@@ -212,7 +295,7 @@ mod test {
         );
 
         let test_file = format!("{}/{}", temp_dir().to_str().unwrap(), rand::random::<usize>());
-        let select_all_query = "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+        let select_all_query = "SELECT * FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
         // act
         let options = ExportOptions {
             query: Some(select_all_query.to_string()),
@@ -224,7 +307,7 @@ mod test {
         // assert
         let exported_data = fs::read_to_string(test_file).unwrap();
         assert!(res.is_ok());
-        assert_eq!(exported_data, "timestamp;partition;offset;key;payload");
+        assert_eq!(exported_data, "The query didn't return any result");
     }
 
     #[test]
@@ -241,7 +324,7 @@ mod test {
             "cluster_id",
             "topic_name",
         );
-        let select_all_query = "SELECT partition, offset, timestamp, key, payload FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
+        let select_all_query = "SELECT * FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
         let options = ExportOptions {
             query: Some(select_all_query.to_string()),
             output_path: format!("{}/test{}", temp_dir().to_str().unwrap(), rand::random::<usize>()),
@@ -265,14 +348,13 @@ mod test {
         }
     }
 
-    fn create_test_record(i: i32) -> ParsedKafkaRecord {
-        ParsedKafkaRecord {
-            payload: Some("payload".into()),
-            key: Some("key".into()),
-            topic: "topic".into(),
-            timestamp: Some(123123),
-            partition: i,
-            offset: 0,
-        }
+    fn create_test_record(i: i32) -> QueryResultRow {
+        HashMap::from([
+            (Query::PAYLOAD.into(), QueryResultRowItem::Text("payload".into())),
+            (Query::KEY.into(), QueryResultRowItem::Text("key".into())),
+            (Query::TIMESTAMP.into(), QueryResultRowItem::Integer(123123)),
+            (Query::PARTITION.into(), QueryResultRowItem::Integer(i.into())),
+            (Query::OFFSET.into(), QueryResultRowItem::Integer(0)),
+        ])
     }
 }
