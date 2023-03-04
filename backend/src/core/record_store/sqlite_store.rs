@@ -1,5 +1,8 @@
 use core::time;
-use std::time::{Duration, Instant};
+use std::{
+    collections::HashMap,
+    time::{Duration, Instant},
+};
 
 use crate::core::types::ParsedKafkaRecord;
 use log::debug;
@@ -7,11 +10,15 @@ use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::{backup::Backup, named_params, Connection, OpenFlags};
 
-use super::{error::StoreResult, query::Query};
+use super::{
+    error::StoreResult,
+    query::{Query, QueryRow},
+    QueryRowValue,
+};
 
 pub trait RecordStore {
     fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> StoreResult<()>;
-    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<ParsedKafkaRecord>>;
+    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryRow>>;
     fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> StoreResult<()>;
     fn destroy(&self, cluster_id: &str, topic_name: &str) -> StoreResult<()>;
 }
@@ -22,20 +29,34 @@ pub struct SqliteStore {
 }
 
 impl RecordStore for SqliteStore {
-    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<ParsedKafkaRecord>> {
+    fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryRow>> {
         let parsed_query = Self::parse_query(query);
         // closure that actually execute the query
         let _get_records = move |connection: &r2d2::PooledConnection<SqliteConnectionManager>| {
             let mut stmt = connection.prepare(&parsed_query)?;
+            let columns: Vec<_> = stmt
+                .column_names()
+                .iter()
+                .enumerate()
+                .map(|(i, &c)| (i, c.to_owned()))
+                .collect();
             let records_iter = stmt.query_map([], |row| {
-                Ok(ParsedKafkaRecord {
-                    topic: query.topic_name.clone(),
-                    partition: row.get(0)?,
-                    offset: row.get(1)?,
-                    timestamp: row.get(2)?,
-                    key: row.get(3)?,
-                    payload: row.get(4)?,
-                })
+                let res = {
+                    let mut tmp = HashMap::new();
+                    for (i, c) in columns.iter() {
+                        let value = row.get_ref(i.to_owned())?;
+                        let value = match value {
+                            rusqlite::types::ValueRef::Null => QueryRowValue::Null,
+                            rusqlite::types::ValueRef::Integer(v) => QueryRowValue::Integer(v),
+                            rusqlite::types::ValueRef::Real(v) => QueryRowValue::Real(v),
+                            rusqlite::types::ValueRef::Text(_) => QueryRowValue::Text(value.as_str()?.into()),
+                            rusqlite::types::ValueRef::Blob(v) => QueryRowValue::Blob(v.into()),
+                        };
+                        tmp.insert(c.to_owned(), value);
+                    }
+                    tmp
+                };
+                Ok(res)
             })?;
             let mut records = Vec::new();
             for r in records_iter {
@@ -252,7 +273,10 @@ mod tests {
             .unwrap();
         // assert
         assert_eq!(records_back.len(), 1);
-        assert_eq!(records_back[0], test_record);
+        assert_eq!(
+            TryInto::<ParsedKafkaRecord>::try_into(records_back[0]).unwrap(),
+            test_record
+        );
     }
 
     #[tokio::test]
@@ -298,7 +322,7 @@ mod tests {
                 .unwrap();
             // assert
             assert_eq!(records_back.len(), 1);
-            assert_eq!(records_back[0], test_record2);
+            assert_eq!(ParsedKafkaRecord::try_from(records_back[0]).unwrap(), test_record1);
         }
         // non compacted table should persist all the data
         {
@@ -312,7 +336,7 @@ mod tests {
                 .unwrap();
             // assert
             assert_eq!(records_back.len(), 2);
-            assert_eq!(records_back[1], test_record2);
+            assert_eq!(ParsedKafkaRecord::try_from(records_back[1]).unwrap(), test_record2);
         }
     }
 

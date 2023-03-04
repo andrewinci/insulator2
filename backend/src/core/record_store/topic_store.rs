@@ -14,7 +14,7 @@ use std::{
 
 use super::{
     error::StoreResult,
-    query::Query,
+    query::{Query, QueryRow},
     record_parser::KafkaRecordParser,
     sqlite_store::{RecordStore, SqliteStore},
     types::ExportOptions,
@@ -54,7 +54,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
         offset: i64,
         limit: i64,
         timeout: Option<Duration>,
-    ) -> StoreResult<Vec<ParsedKafkaRecord>> {
+    ) -> StoreResult<Vec<QueryRow>> {
         self.store.query_records(
             &Query {
                 cluster_id: self.cluster_id.clone(),
@@ -108,13 +108,13 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
             }
         }?;
         let mut writer = LineWriter::new(out_file);
-        let query_result: Vec<ParsedKafkaRecord> =
-            self.get_records(query.as_deref(), 0, query_limit, Some(Duration::from_secs(3 * 60)))?;
+        let query_result = self.get_records(query.as_deref(), 0, query_limit, Some(Duration::from_secs(3 * 60)))?;
         trace!("Write records to the out file");
         writer.write_all(ParsedKafkaRecord::to_string_header().to_bytes())?;
         for record in query_result {
             writer.write_all(b"\n")?;
-            writer.write_all(record.to_csv_line(*parse_timestamp).to_bytes())?;
+            //todo: fix to csv
+            //writer.write_all(record.to_csv_line(*parse_timestamp).to_bytes())?;
         }
         writer.flush()?;
         debug!("Export completed");
@@ -124,6 +124,7 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
 
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
     use std::env::temp_dir;
     use std::fs;
     use std::sync::Arc;
@@ -133,10 +134,11 @@ mod test {
 
     use super::TopicStore;
     use crate::core::record_store::error::StoreResult;
-    use crate::core::record_store::query::Query;
+    use crate::core::record_store::query::{Query, QueryRow};
     use crate::core::record_store::record_parser::KafkaRecordParser;
     use crate::core::record_store::sqlite_store::RecordStore;
     use crate::core::record_store::types::ExportOptions;
+    use crate::core::record_store::QueryRowValue;
     use crate::core::types::{ParsedKafkaRecord, RawKafkaRecord};
     use async_trait::async_trait;
 
@@ -150,7 +152,7 @@ mod test {
     mock! {
         Store {}
         impl RecordStore for Store {
-            fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<ParsedKafkaRecord>>;
+            fn query_records(&self, query: &Query, timeout: Option<Duration>) -> StoreResult<Vec<QueryRow>>;
             fn create_or_replace_topic_table(&self, cluster_id: &str, topic_name: &str, compacted: bool) -> StoreResult<()>;
             fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> StoreResult<()>;
             fn destroy(&self, cluster_id: &str, topic_name: &str) -> StoreResult<()>;
@@ -265,14 +267,14 @@ mod test {
         }
     }
 
-    fn create_test_record(i: i32) -> ParsedKafkaRecord {
-        ParsedKafkaRecord {
-            payload: Some("payload".into()),
-            key: Some("key".into()),
-            topic: "topic".into(),
-            timestamp: Some(123123),
-            partition: i,
-            offset: 0,
-        }
+    fn create_test_record(i: i32) -> QueryRow {
+        HashMap::from([
+            ("payload".into(), QueryRowValue::Text("payload".into())),
+            ("key".into(), QueryRowValue::Text("key".into())),
+            ("topic".into(), QueryRowValue::Text("topic".into())),
+            ("timestamp".into(), QueryRowValue::Integer(123123)),
+            ("partition".into(), QueryRowValue::Integer(i.into())),
+            ("offset".into(), QueryRowValue::Integer(0)),
+        ])
     }
 }
