@@ -1,7 +1,4 @@
-use std::time::{Duration, UNIX_EPOCH};
-
 use serde::{Deserialize, Serialize};
-use time::format_description::well_known;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct KafkaRecord<T> {

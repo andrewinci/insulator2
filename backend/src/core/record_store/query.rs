@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
+use rust_decimal::prelude::ToPrimitive;
 use serde::Serialize;
+use std::time::{Duration, UNIX_EPOCH};
+use time::format_description::well_known;
 
 #[derive(Debug)]
 pub struct Query {
@@ -40,6 +43,23 @@ pub enum QueryRowValue {
     Real(f64),
     Text(String),
     Blob(Vec<u8>),
+}
+
+impl QueryRowValue {
+    pub fn extract_timestamp(&self, parse_timestamp: bool) -> String {
+        if let QueryRowValue::Integer(unix_timestamp) = self {
+            if parse_timestamp {
+                // Creates a new SystemTime from the specified number of whole seconds
+                let d = UNIX_EPOCH + Duration::from_millis(unix_timestamp.to_u64().unwrap());
+                // Create DateTime from SystemTime
+                time::OffsetDateTime::from(d).format(&well_known::Rfc3339).unwrap()
+            } else {
+                unix_timestamp.to_string()
+            }
+        } else {
+            self.to_string()
+        }
+    }
 }
 
 impl ToString for QueryRowValue {

@@ -123,7 +123,15 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
                 writer.write_all(b"\n")?;
                 let row: Vec<_> = columns
                     .iter()
-                    .map(|c| record.get(c).map(|v| v.to_string()).unwrap_or_default())
+                    .map(|c| {
+                        record
+                            .get(c)
+                            .map(|v| match c.as_str() {
+                                Query::TIMESTAMP => v.extract_timestamp(*parse_timestamp),
+                                _ => v.to_string(),
+                            })
+                            .unwrap_or_default()
+                    })
                     .collect();
                 // todo: support parse timestamp
                 writer.write_all(row.join(SEPARATOR).to_bytes())?;
