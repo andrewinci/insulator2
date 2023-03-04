@@ -40,8 +40,7 @@ export const TopicPageMenu = (props: TopicPageMenuProps) => {
   const onSimpleSearchTextChange = (text: string) => {
     setSimpleSearchText(text);
     text = text.trim();
-    onQueryChange(`SELECT partition, offset, timestamp, key, payload 
-FROM {:topic}
+    onQueryChange(`SELECT * FROM {:topic}
 -- query by json fields with the json_extract function
 -- WHERE json_extract(payload, "$.fieldName") = "something"
 WHERE key like '%${text}%' OR payload like '%${text}%'

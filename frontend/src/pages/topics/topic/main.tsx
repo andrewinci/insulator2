@@ -27,8 +27,7 @@ export const Topic = (props: TopicProps & JSX.IntrinsicAttributes) => {
     {
       key: `topic-page-${clusterId}-${topicName}`,
       initialValue: {
-        query: `SELECT partition, offset, timestamp, key, payload
-FROM {:topic}
+        query: `SELECT * FROM {:topic}
 -- query by json fields with the json_extract function
 -- WHERE json_extract(payload, "$.fieldName") = "something"
 ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
