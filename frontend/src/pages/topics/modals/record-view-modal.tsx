@@ -44,7 +44,7 @@ const RecordDetailsForm = (props: RecordDetailsModalProps & { heightOffset: numb
             />
             {record.schema_id && (
               <NewWindowButton
-                url={`/modal/cluster/${clusterId}/schema/${topic}-value`} //todo: show the right schema id
+                url={`/modal/cluster/${clusterId}/schema/${topic}-value/${record.schema_id}`}
                 windowTitle={`Schema ${topic}-value`}
                 tooltipLabel="Open schema in a new window"
                 style={{ flexGrow: 0 }}

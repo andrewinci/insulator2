@@ -62,7 +62,7 @@ const InsulatorRoutes = () => {
       <Route path="/modal" element={<ModalContainer />}>
         <Route path="cluster/:clusterId/topic/:topicName" element={<SingleTopicPage />} />
         <Route path="cluster/:clusterId/topic/:topicName/record/:id" element={<SingleRecordPage />} />
-        <Route path="cluster/:clusterId/schema/:schemaName" element={<SingleSchemaPage />} />
+        <Route path="cluster/:clusterId/schema/:schemaName/:schemaId?" element={<SingleSchemaPage />} />
       </Route>
       <Route path="/" element={<AppContainer />}>
         {/* Clusters */}
