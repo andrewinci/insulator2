@@ -29,7 +29,11 @@
 </a>
 
 <a href="https://github.com/andrewinci/insulator2/releases/latest/" > 
- <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/andrewinci/insulator2?style=plastic">
+ <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/andrewinci/insulator2?style=flat">
+</a>
+ 
+ <a href="https://github.com/andrewinci/insulator2/releases/latest/" > 
+  <img alt="Github All Releases" src="https://img.shields.io/github/downloads/andrewinci/insulator2/total.svg">
  </a>
 
 </p>
@@ -151,11 +155,3 @@ Once happy with the latest main branch artifact, release running `yarn release`.
 - [Tauri](https://tauri.app/)
 - [Mantine](https://mantine.dev/)
 - [rust-rdkafka](https://github.com/fede1024/rust-rdkafka)
-
-## Todo
-
-- [x] Use semantic release version in the artifact
-- [x] Windows build
-- [x] Use a single file for all the configurations
-- [ ] Make font size configurable in record list
-- [ ] Encrypt config file
