@@ -15,7 +15,7 @@ describe("addNotification", () => {
     });
 
     expect(showNotification).toHaveBeenCalledWith({
-      id: "description",
+      id: "titledescription",
       autoClose: 3000,
       title: "title",
       message: "description",
@@ -34,7 +34,7 @@ describe("addNotification", () => {
     });
 
     expect(showNotification).toHaveBeenCalledWith({
-      id: "description",
+      id: "titledescription",
       autoClose: false,
       title: "title",
       message: "description",
