@@ -83,11 +83,14 @@ impl RecordStore for SqliteStore {
             .execute(
                 format!(
                     "CREATE TABLE {} (
-                        payload     TEXT,
-                        key         TEXT {},
-                        timestamp   NUMBER,
-                        partition   NUMBER,
-                        offset      NUMBER,
+                        payload      TEXT,
+                        key          TEXT {},
+                        timestamp    NUMBER,
+                        partition    NUMBER NON NULL,
+                        offset       NUMBER NON NULL,
+                        schema_id    NUMBER,
+                        record_bytes NUMBER,
+                        header       TEXT,
                     PRIMARY KEY (partition, offset))",
                     Self::get_table_name(cluster_id, topic_name),
                     match compacted {
@@ -106,8 +109,8 @@ impl RecordStore for SqliteStore {
         let connection = self.pool.get().unwrap();
         connection.execute(
             format!(
-                "INSERT OR REPLACE INTO {} (payload, key, timestamp, partition, offset) 
-                VALUES (:payload, :key, :timestamp, :partition, :offset)",
+                "INSERT OR REPLACE INTO {} (payload, key, timestamp, partition, offset, schema_id, record_bytes, header) 
+                VALUES (:payload, :key, :timestamp, :partition, :offset, :schema_id, :record_bytes, :header)",
                 Self::get_table_name(cluster_id, topic_name)
             )
             .as_str(),
@@ -117,6 +120,9 @@ impl RecordStore for SqliteStore {
                 ":timestamp": &record.timestamp,
                 ":partition": &record.partition,
                 ":offset": &record.offset,
+                ":schema_id": &record.schema_id,
+                ":record_bytes": 0, //&record.record_bytes,
+                ":header": "{}", //&record.header,
             },
         )?;
         Ok(())
@@ -508,6 +514,7 @@ mod tests {
             timestamp: Some(321123321),
             partition: 2,
             offset,
+            schema_id: None,
         }
     }
 
@@ -539,6 +546,7 @@ mod tests {
                 Some(crate::core::record_store::QueryResultRowItem::Integer(v)) => *v,
                 _ => panic!("invalid type"),
             },
+            schema_id: None,
         }
     }
 }

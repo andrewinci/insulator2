@@ -11,6 +11,9 @@ export type KafkaRecord = {
   partition: number;
   offset: number;
   timestamp?: number;
+  schema_id?: number;
+  record_bytes: number;
+  header?: string;
 };
 
 export type ConsumerState = {
