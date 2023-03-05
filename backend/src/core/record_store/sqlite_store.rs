@@ -121,7 +121,7 @@ impl RecordStore for SqliteStore {
                 ":partition": &record.partition,
                 ":offset": &record.offset,
                 ":schema_id": &record.schema_id,
-                ":record_bytes": 0, //&record.record_bytes,
+                ":record_bytes": &record.record_bytes,
                 ":header": "{}", //&record.header,
             },
         )?;
@@ -515,6 +515,7 @@ mod tests {
             partition: 2,
             offset,
             schema_id: None,
+            record_bytes: 123,
         }
     }
 
@@ -547,6 +548,7 @@ mod tests {
                 _ => panic!("invalid type"),
             },
             schema_id: None,
+            record_bytes: 123,
         }
     }
 }

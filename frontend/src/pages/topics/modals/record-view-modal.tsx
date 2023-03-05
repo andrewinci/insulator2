@@ -3,6 +3,7 @@ import { IconEraser } from "@tabler/icons";
 
 import dayjs from "dayjs";
 import { CodeEditor, NewWindowButton, ResizableModal } from "../../../components";
+import { parseBytesToHumanReadable } from "../../../helpers/human-readable";
 import { pretty } from "../../../helpers/json";
 import { KafkaRecord } from "../../../models";
 
@@ -33,7 +34,7 @@ const RecordDetailsForm = (props: RecordDetailsModalProps & { heightOffset: numb
           <TextInput
             readOnly
             label="Raw record size"
-            value={"WIP"} //todo: record.record_bytes
+            value={`${record.record_bytes} B ${parseBytesToHumanReadable(record.record_bytes)}`}
           />
           <Group grow spacing={10}>
             <TextInput

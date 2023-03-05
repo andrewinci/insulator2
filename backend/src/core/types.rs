@@ -11,10 +11,13 @@ pub struct RawKafkaRecord {
     pub timestamp: Option<u64>,
     pub partition: i32,
     pub offset: i64,
+    /**
+     * Raw record size in bytes
+     */
+    pub record_bytes: usize,
     /*
      * todo: add
      * - header
-     * - record size
      */
 }
 
@@ -30,10 +33,13 @@ pub struct ParsedKafkaRecord {
     pub partition: i32,
     pub offset: i64,
     pub schema_id: Option<i32>,
+    /**
+     * Raw record size in bytes
+     */
+    pub record_bytes: usize,
     /*
      * todo: add
      * - header
-     * - record size
      */
 }
 
