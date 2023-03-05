@@ -90,7 +90,6 @@ impl RecordStore for SqliteStore {
                         offset       NUMBER NON NULL,
                         schema_id    NUMBER,
                         record_bytes NUMBER,
-                        header       TEXT,
                     PRIMARY KEY (partition, offset))",
                     Self::get_table_name(cluster_id, topic_name),
                     match compacted {
@@ -109,8 +108,8 @@ impl RecordStore for SqliteStore {
         let connection = self.pool.get().unwrap();
         connection.execute(
             format!(
-                "INSERT OR REPLACE INTO {} (payload, key, timestamp, partition, offset, schema_id, record_bytes, header) 
-                VALUES (:payload, :key, :timestamp, :partition, :offset, :schema_id, :record_bytes, :header)",
+                "INSERT OR REPLACE INTO {} (payload, key, timestamp, partition, offset, schema_id, record_bytes) 
+                VALUES (:payload, :key, :timestamp, :partition, :offset, :schema_id, :record_bytes)",
                 Self::get_table_name(cluster_id, topic_name)
             )
             .as_str(),
@@ -121,8 +120,7 @@ impl RecordStore for SqliteStore {
                 ":partition": &record.partition,
                 ":offset": &record.offset,
                 ":schema_id": &record.schema_id,
-                ":record_bytes": 0, //&record.record_bytes,
-                ":header": "{}", //&record.header,
+                ":record_bytes": &record.record_bytes,
             },
         )?;
         Ok(())
@@ -515,6 +513,7 @@ mod tests {
             partition: 2,
             offset,
             schema_id: None,
+            record_bytes: 123,
         }
     }
 
@@ -547,6 +546,7 @@ mod tests {
                 _ => panic!("invalid type"),
             },
             schema_id: None,
+            record_bytes: 123,
         }
     }
 }

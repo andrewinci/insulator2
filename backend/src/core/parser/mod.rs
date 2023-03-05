@@ -39,6 +39,7 @@ impl<C: SchemaProvider> Parser<C> {
             timestamp,
             partition,
             offset,
+            record_bytes,
         } = record.clone();
         let (key, payload, schema_id) = match mode {
             ParserMode::String => (key.map(|v| parse_string(&v)), payload.map(|v| parse_string(&v)), None),
@@ -63,6 +64,7 @@ impl<C: SchemaProvider> Parser<C> {
             partition,
             offset,
             schema_id,
+            record_bytes,
         })
     }
 
