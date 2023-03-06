@@ -102,8 +102,8 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}`);
             onChange={(v) => onSimpleSearchTextChange(v.target.value)}></TextInput>
         </div>
       )}
-      <Group my={5} position="apart">
-        <Group>
+      <Group spacing={5} my={5} position="apart">
+        <Group spacing={5}>
           {isConsumerRunning && <StopButton />}
           {!isConsumerRunning && (
             <Menu position="bottom-start">
@@ -142,7 +142,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}`);
             leftIcon={<IconSwitchVertical size={16} />}
             size="xs"
             onClick={() => setQueryMode((s) => !s)}>
-            {queryMode ? "Simple Search" : "SQL Search"}
+            {queryMode ? "Simple" : "SQL"}
           </Button>
         </Group>
         <Button
