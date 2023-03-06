@@ -12,8 +12,9 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
-    "@emotion/react": "^11.10.5",
-    "@emotion/styled": "^11.10.5",
+    "@emotion/css": "^11.10.6",
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
     "@mantine/core": "^5.10.5",
     "@mantine/dates": "^5.10.0",
     "@mantine/form": "^5.9.0",
