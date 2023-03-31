@@ -1,7 +1,6 @@
 import { IconCheck, IconX } from "@tabler/icons";
 import { showNotification } from "@mantine/notifications";
 import { isRunningInModal } from "../hooks";
-import { getConfiguration } from "../tauri/configuration";
 
 export type Notification = {
   type: "ok" | "error";
@@ -10,12 +9,10 @@ export type Notification = {
   showInModal?: boolean;
 };
 
-export const addNotification = async (n: Notification) => {
+export const addNotification = (n: Notification) => {
   // Don't show notifications in modal if they are not explicitly allowed
   // or if they are not errors
   if (isRunningInModal(window.location.pathname) && !n.showInModal && n.type !== "error") return;
-  // do not show ok notifications if the user disabled them
-  if (n.type !== "error" && !(await getConfiguration()).showNotifications) return;
   showNotification({
     id: `${n.title}${n.description}`,
     autoClose: n.type === "ok" ? 3000 : false,
