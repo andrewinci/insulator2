@@ -1,11 +1,11 @@
 {
-  "version": "v2.12.0",
-  "notes": "# [2.12.0](https://github.com/andrewinci/insulator2/compare/v2.11.2...v2.12.0) (2023-03-05)\n\n\n### Bug Fixes\n\n* de-duplicate notifications ([40fadf0](https://github.com/andrewinci/insulator2/commit/40fadf0b0eec6f3679614b95748a8e0645160d20))\n\n\n### Features\n\n* show avro schema id ([#405](https://github.com/andrewinci/insulator2/issues/405)) ([605861f](https://github.com/andrewinci/insulator2/commit/605861f5bc597b459a76f70fcbe84bbde6540c90))\n* show raw record size ([#406](https://github.com/andrewinci/insulator2/issues/406)) ([feebfdd](https://github.com/andrewinci/insulator2/commit/feebfdd932bd84f81eef8d6f5f695f2bb1a3eb24))\n\n\n\n",
-  "pub_date": "2023-03-05T10:56:30Z",
+  "version": "v2.12.1",
+  "notes": "## [2.12.1](https://github.com/andrewinci/insulator2/compare/v2.12.0...v2.12.1) (2023-04-01)\n\n\n### Bug Fixes\n\n* part of the topic menu hidden by the bottom allotment ([2444d27](https://github.com/andrewinci/insulator2/commit/2444d2739507c1a32e6a8745a6e801f35f312491))\n* producer button disappear during record consumption ([d9d9d7e](https://github.com/andrewinci/insulator2/commit/d9d9d7e20ade0bd5038ebfced288a1a3fb91c66f))\n* wrong namespace for nested avro refs ([c783765](https://github.com/andrewinci/insulator2/commit/c783765a1870abf0f0cff43dd77c940df2937c0d))\n\n\n\n",
+  "pub_date": "2023-04-01T16:01:03Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.12.0/insulator-2_2.12.0_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.12.1/insulator-2_2.12.1_amd64.AppImage.tar.gz"
     }
   }
 }

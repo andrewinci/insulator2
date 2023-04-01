@@ -1,3 +1,11 @@
+## [2.12.1](https://github.com/andrewinci/insulator2/compare/v2.12.0...v2.12.1) (2023-04-01)
+
+### Bug Fixes
+
+- part of the topic menu hidden by the bottom allotment ([2444d27](https://github.com/andrewinci/insulator2/commit/2444d2739507c1a32e6a8745a6e801f35f312491))
+- producer button disappear during record consumption ([d9d9d7e](https://github.com/andrewinci/insulator2/commit/d9d9d7e20ade0bd5038ebfced288a1a3fb91c66f))
+- wrong namespace for nested avro refs ([c783765](https://github.com/andrewinci/insulator2/commit/c783765a1870abf0f0cff43dd77c940df2937c0d))
+
 # [2.12.0](https://github.com/andrewinci/insulator2/compare/v2.11.2...v2.12.0) (2023-03-05)
 
 ### Bug Fixes
