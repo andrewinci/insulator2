@@ -1,0 +1,144 @@
+{
+  "fields": [
+    {
+      "name": "data",
+      "type": {
+        "fields": [
+          {
+            "name": "nd",
+            "type": [
+              "null",
+              {
+                "fields": [
+                  {
+                    "name": "field1",
+                    "type": [
+                      "null",
+                      {
+                        "fields": [
+                          {
+                            "name": "field2",
+                            "type": {
+                              "items": {
+                                "fields": [
+                                  {
+                                    "name": "field3",
+                                    "type": [
+                                      "null",
+                                      {
+                                        "name": "EnumStatus",
+                                        "symbols": ["v1", "v2", "v3", "v4"],
+                                        "type": "enum"
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "name": "field4",
+                                "type": "record"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        ],
+                        "name": "Top",
+                        "namespace": "ns.base",
+                        "type": "record"
+                      },
+                      {
+                        "fields": [
+                          {
+                            "name": "field2",
+                            "type": [
+                              "null",
+                              {
+                                "fields": [
+                                  {
+                                    "name": "field3",
+                                    "type": ["null", "EnumStatus"]
+                                  }
+                                ],
+                                "name": "Top2",
+                                "type": "record"
+                              }
+                            ]
+                          }
+                        ],
+                        "name": "Test",
+                        "namespace": "ns.base",
+                        "type": "record"
+                      }
+                    ]
+                  }
+                ],
+                "name": "ASASA",
+                "type": "record"
+              },
+              {
+                "fields": [
+                  {
+                    "name": "nd",
+                    "type": [
+                      {
+                        "fields": [
+                          {
+                            "name": "field2",
+                            "type": [
+                              "null",
+                              {
+                                "fields": [
+                                  {
+                                    "name": "test",
+                                    "type": "ns.base.Top2"
+                                  }
+                                ],
+                                "name": "Asdsds",
+                                "type": "record"
+                              }
+                            ]
+                          }
+                        ],
+                        "name": "ServiceOrderGasCompletionData",
+                        "type": "record"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "codes",
+                    "type": [
+                      "null",
+                      {
+                        "fields": [
+                          {
+                            "name": "code1",
+                            "type": "string"
+                          },
+                          {
+                            "name": "code2",
+                            "type": "string"
+                          },
+                          {
+                            "name": "code3",
+                            "type": ["null", "string"]
+                          }
+                        ],
+                        "name": "Codes",
+                        "type": "record"
+                      }
+                    ]
+                  }
+                ],
+                "name": "Data",
+                "type": "record"
+              }
+            ]
+          }
+        ],
+        "name": "Data2",
+        "type": "record"
+      }
+    }
+  ],
+  "name": "Response",
+  "namespace": "ns.top",
+  "type": "record"
+}

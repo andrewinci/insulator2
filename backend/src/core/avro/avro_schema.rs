@@ -1,6 +1,9 @@
 use std::collections::{BTreeMap, HashMap};
 
-use apache_avro::{schema::Name, Schema};
+use apache_avro::{
+    schema::{Name, ResolvedSchema},
+    Schema,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordField {
@@ -92,9 +95,10 @@ pub struct ResolvedAvroSchema {
 
 impl ResolvedAvroSchema {
     pub fn from(id: i32, schema: &Schema) -> Self {
-        let references = extract_all_refs(schema);
+        let resolved_schema = ResolvedSchema::try_from(schema).unwrap();
+        let references = resolved_schema.get_names();
 
-        fn map(s: &Schema, parent_ns: &Option<String>, references: &HashMap<Name, Schema>) -> AvroSchema {
+        fn map(s: &Schema, parent_ns: &Option<String>, references: &HashMap<Name, &Schema>) -> AvroSchema {
             match s {
                 Schema::Null => AvroSchema::Null,
                 Schema::Boolean => AvroSchema::Boolean,
@@ -145,10 +149,13 @@ impl ResolvedAvroSchema {
                     precision: *precision,
                     scale: *scale,
                 },
-                Schema::Ref { name } => references
-                    .get(&name.fully_qualified_name(parent_ns))
-                    .map(|s| map(s, parent_ns, references))
-                    .unwrap(),
+                Schema::Ref { name } => {
+                    let fqn = name.fully_qualified_name(parent_ns);
+                    let schema = references
+                        .get(&fqn)
+                        .expect(format!("Unable to resolve {fqn:?}.").as_str());
+                    map(schema, &fqn.namespace, references)
+                }
             }
         }
 
@@ -160,46 +167,21 @@ impl ResolvedAvroSchema {
     }
 }
 
-fn extract_all_refs(s: &Schema) -> HashMap<Name, Schema> {
-    // set the namespace of the parent if it's not specified
-    fn ns_name(name: &Name, parent_ns: &Option<String>) -> Name {
-        Name {
-            namespace: name.namespace.clone().or_else(|| parent_ns.to_owned()),
-            name: name.name.clone(),
-        }
-    }
-    fn _extract(s: &Schema, parent_ns: &Option<String>, cache: &mut HashMap<Name, Schema>) {
-        match s {
-            Schema::Array(s) => _extract(s, parent_ns, cache),
-            Schema::Map(s) => _extract(s, parent_ns, cache),
-            Schema::Union(s) => s.variants().iter().for_each(|s| _extract(s, parent_ns, cache)),
-            Schema::Record { name, fields, .. } => {
-                let parent = name.namespace.clone().or_else(|| parent_ns.to_owned());
-                fields.iter().for_each(|f| _extract(&f.schema, &parent, cache));
-                cache.insert(ns_name(name, parent_ns), s.clone());
-            }
-            Schema::Enum { name, .. } => {
-                cache.insert(ns_name(name, parent_ns), s.clone());
-            }
-            Schema::Fixed { name, .. } => {
-                cache.insert(ns_name(name, parent_ns), s.clone());
-            }
-            _ => (),
-        }
-    }
-    let mut cache = HashMap::new();
-    _extract(s, &None, &mut cache);
-    cache
-}
 #[cfg(test)]
 mod tests {
 
     use super::ResolvedAvroSchema;
-    use std::{collections::HashSet, fs};
+    use std::fs;
 
-    use apache_avro::{schema::Name, Schema};
+    use apache_avro::Schema;
 
-    use super::extract_all_refs;
+    #[test]
+    fn test_parse_schema_with_enum() {
+        let test_schema = fs::read_to_string("src/core/avro/test_schemas/nested_refs.json").unwrap();
+        let schema = Schema::parse_str(&test_schema).unwrap();
+        // should not panic
+        ResolvedAvroSchema::from(123, &schema);
+    }
 
     #[test]
     fn test_parse_schema_with_references() {
@@ -207,44 +189,5 @@ mod tests {
         let schema = Schema::parse_str(&test_schema).unwrap();
         // should not panic
         ResolvedAvroSchema::from(123, &schema);
-    }
-
-    #[test]
-    fn test_extract_all_refs_different_ns() {
-        let test_schema = fs::read_to_string("src/core/avro/test_schemas/ref_to_another_ns.json").unwrap();
-        let schema = Schema::parse_str(&test_schema).unwrap();
-        let res = extract_all_refs(&schema);
-        // assert
-        let names: HashSet<_> = res.keys().map(|n| n.to_owned()).collect();
-        assert!(names.contains(&name("testTarget", Some("nested.ns"))));
-    }
-
-    #[test]
-    fn test_extract_all_refs() {
-        let test_schema = fs::read_to_string("src/core/avro/test_schemas/schema.json").unwrap();
-        let schema = Schema::parse_str(&test_schema).unwrap();
-        let res = extract_all_refs(&schema);
-        // assert
-        let names: HashSet<_> = res.keys().map(|n| n.to_owned()).collect();
-        assert_eq!(
-            names,
-            HashSet::from_iter(vec![
-                name("userInfo1", Some("my.example")),
-                name("userInfo2", Some("my.example")),
-                name("userInfo3", Some("my.nested")),
-                name("userInfo4", Some("my.nested")),
-                name("Suit", Some("my.nested")),
-                name("userInfo5", Some("my.example")),
-                name("userInfo6", Some("my.example")),
-                name("Suit", Some("my.example"))
-            ])
-        );
-    }
-
-    fn name(n: &str, ns: Option<&str>) -> Name {
-        Name {
-            name: n.into(),
-            namespace: ns.map(|s| s.to_string()),
-        }
     }
 }
