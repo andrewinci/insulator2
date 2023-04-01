@@ -20,7 +20,7 @@ reqwest = { version = "0.11", features = ["json", "blocking"] }
 url = { version = "2", features = ["serde"] }
 tokio = { version = "1", features = ["full"] }
 futures = { version = "0.3" }
-apache-avro = { git = "https://github.com/apache/avro", rev = "68a20b7ac12de210cfcc17eaa65f72cab08a4981" }
+apache-avro = { git = "https://github.com/apache/avro", rev = "b8b83b72f7184cf1b388fc20331d11eabbd93e06" }
 log = { version = "0.4" }
 env_logger = { version = "0.10.0" }
 async-trait = "0.1.64"

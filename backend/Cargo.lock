@@ -78,7 +78,7 @@ checksum = "224afbd727c3d6e4b90103ece64b8d1b67fbb1973b1046c2281eed3f3803f800"
 [[package]]
 name = "apache-avro"
 version = "0.15.0"
-source = "git+https://github.com/apache/avro?rev=68a20b7ac12de210cfcc17eaa65f72cab08a4981#68a20b7ac12de210cfcc17eaa65f72cab08a4981"
+source = "git+https://github.com/apache/avro?rev=b8b83b72f7184cf1b388fc20331d11eabbd93e06#b8b83b72f7184cf1b388fc20331d11eabbd93e06"
 dependencies = [
  "byteorder",
  "digest",
