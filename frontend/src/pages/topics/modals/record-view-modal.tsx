@@ -2,7 +2,8 @@ import { Input, Group, Stack, TextInput, Container, Title, Text } from "@mantine
 import { IconEraser } from "@tabler/icons";
 
 import dayjs from "dayjs";
-import { CodeEditor, ResizableModal } from "../../../components";
+import { CodeEditor, NewWindowButton, ResizableModal } from "../../../components";
+import { parseBytesToHumanReadable } from "../../../helpers/human-readable";
 import { pretty } from "../../../helpers/json";
 import { KafkaRecord } from "../../../models";
 
@@ -15,7 +16,8 @@ type RecordDetailsModalProps = {
 };
 
 const RecordDetailsForm = (props: RecordDetailsModalProps & { heightOffset: number }) => {
-  const { record, topic, heightOffset } = props;
+  const { record, topic, heightOffset, clusterId } = props;
+  console.log(record);
   const timestamp = record?.timestamp ? dayjs(record.timestamp).toISOString() : "N/A";
   return (
     <>
@@ -27,6 +29,32 @@ const RecordDetailsForm = (props: RecordDetailsModalProps & { heightOffset: numb
         <Group grow position="apart">
           <TextInput readOnly label="Partition" value={record.partition} />
           <TextInput readOnly label="Offset" value={record.offset} />
+        </Group>
+        <Group grow position="apart">
+          <TextInput
+            readOnly
+            label="Raw record size"
+            value={`${record.record_bytes} B ${parseBytesToHumanReadable(record.record_bytes)}`}
+          />
+          <Group grow spacing={10}>
+            <TextInput
+              readOnly
+              style={{ maxWidth: "100%" }}
+              label="Avro schema id"
+              value={record.schema_id ?? "Not an avro record"}
+            />
+            {record.schema_id && (
+              <NewWindowButton
+                url={`/modal/cluster/${clusterId}/schema/${topic}-value/${record.schema_id}`}
+                windowTitle={`Schema ${topic}-value`}
+                tooltipLabel="Open schema in a new window"
+                style={{ flexGrow: 0 }}
+                mt={20}
+                mah={10}
+                maw={10}
+              />
+            )}
+          </Group>
         </Group>
         <TextInput readOnly label="Key" value={record.key} />
       </Stack>
@@ -60,7 +88,7 @@ export const RecordDetailsModal = (props: RecordDetailsModalProps) => {
         windowTitle: `Record ${topic} ${record.key}`,
         beforeOpen: () => storeProps(id, props),
       }}>
-      <RecordDetailsForm {...props} heightOffset={200} />
+      <RecordDetailsForm {...props} heightOffset={260} />
     </ResizableModal>
   );
 };

@@ -40,8 +40,7 @@ export const TopicPageMenu = (props: TopicPageMenuProps) => {
   const onSimpleSearchTextChange = (text: string) => {
     setSimpleSearchText(text);
     text = text.trim();
-    onQueryChange(`SELECT partition, offset, timestamp, key, payload 
-FROM {:topic}
+    onQueryChange(`SELECT * FROM {:topic}
 -- query by json fields with the json_extract function
 -- WHERE json_extract(payload, "$.fieldName") = "something"
 WHERE key like '%${text}%' OR payload like '%${text}%'
@@ -103,8 +102,8 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}`);
             onChange={(v) => onSimpleSearchTextChange(v.target.value)}></TextInput>
         </div>
       )}
-      <Group my={5} position="apart">
-        <Group>
+      <Group spacing={5} my={5} position="apart">
+        <Group spacing={5}>
           {isConsumerRunning && <StopButton />}
           {!isConsumerRunning && (
             <Menu position="bottom-start">
@@ -143,7 +142,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}`);
             leftIcon={<IconSwitchVertical size={16} />}
             size="xs"
             onClick={() => setQueryMode((s) => !s)}>
-            {queryMode ? "Simple Search" : "SQL Search"}
+            {queryMode ? "Simple" : "SQL"}
           </Button>
         </Group>
         <Button

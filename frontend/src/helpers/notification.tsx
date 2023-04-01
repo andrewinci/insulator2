@@ -14,7 +14,7 @@ export const addNotification = (n: Notification) => {
   // or if they are not errors
   if (isRunningInModal(window.location.pathname) && !n.showInModal && n.type !== "error") return;
   showNotification({
-    id: n.description,
+    id: `${n.title}${n.description}`,
     autoClose: n.type === "ok" ? 3000 : false,
     title: n.title,
     message: n.description,

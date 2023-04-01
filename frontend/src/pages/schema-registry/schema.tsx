@@ -10,10 +10,16 @@ import { ToolsMenu } from "./tools-menu";
 type SchemaProps = {
   schemaName: string;
   clusterId: string;
+  schemaId?: number;
   onSubjectDeleted?: (schemaName: string) => void;
 };
 
-export const Schema = ({ schemaName, clusterId, onSubjectDeleted }: SchemaProps & JSX.IntrinsicAttributes) => {
+export const Schema = ({
+  schemaName,
+  clusterId,
+  schemaId,
+  onSubjectDeleted,
+}: SchemaProps & JSX.IntrinsicAttributes) => {
   const {
     data: subject,
     isLoading,
@@ -26,10 +32,12 @@ export const Schema = ({ schemaName, clusterId, onSubjectDeleted }: SchemaProps 
 
   useMemo(() => {
     if (subject) {
-      const lastSchemaVersion = Math.max(...subject.versions.map((s) => s.version));
+      // show the schema id from props if not null otherwise show the latest schema version
+      const propSchemaId = subject.versions.find((v) => v.id == schemaId)?.version;
+      const lastSchemaVersion = propSchemaId ?? Math.max(...subject.versions.map((s) => s.version));
       setState((s) => ({ ...s, version: lastSchemaVersion }));
     }
-  }, [subject]);
+  }, [subject, schemaId]);
 
   const currentSchema = pretty(subject?.versions?.find((s) => s.version == state?.version)?.schema ?? "");
 

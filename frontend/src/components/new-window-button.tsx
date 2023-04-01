@@ -1,4 +1,4 @@
-import { ActionIcon, Tooltip } from "@mantine/core";
+import { ActionIcon, ActionIconProps, Tooltip } from "@mantine/core";
 import { IconExternalLink } from "@tabler/icons";
 import { WebviewWindow } from "@tauri-apps/api/window";
 import { useParsedUrl } from "../hooks";
@@ -7,6 +7,7 @@ type OpenNewWindowParams = {
   url: string;
   windowTitle: string;
   iconSize?: number;
+  tooltipLabel?: string;
   beforeOpen?: () => void;
   afterOpen?: () => void;
 };
@@ -15,12 +16,12 @@ type NewWindowButtonProps = {
   iconSize?: number;
 } & OpenNewWindowParams;
 
-export const NewWindowButton = (props: NewWindowButtonProps) => {
-  const { iconSize } = props;
+export const NewWindowButton = (props: NewWindowButtonProps & ActionIconProps) => {
+  const { iconSize, tooltipLabel } = props;
   const { isModal, openNewWindow } = useWindowHandler();
   return (
-    <Tooltip hidden={isModal} label="Open in a new window">
-      <ActionIcon hidden={isModal} onClick={() => openNewWindow(props)}>
+    <Tooltip hidden={isModal} label={tooltipLabel ?? "Open in a new window"}>
+      <ActionIcon {...props} hidden={isModal} onClick={() => openNewWindow(props)}>
         <IconExternalLink size={iconSize ?? 22} />
       </ActionIcon>
     </Tooltip>

@@ -39,17 +39,20 @@ impl<C: SchemaProvider> Parser<C> {
             timestamp,
             partition,
             offset,
+            record_bytes,
         } = record.clone();
-        let (key, payload) = match mode {
-            ParserMode::String => (key.map(|v| parse_string(&v)), payload.map(|v| parse_string(&v))),
+        let (key, payload, schema_id) = match mode {
+            ParserMode::String => (key.map(|v| parse_string(&v)), payload.map(|v| parse_string(&v)), None),
             ParserMode::Avro => {
                 let avro_parser = self.avro_parser.as_ref().ok_or(ParserError::MissingAvroConfiguration)?;
+                let res = match payload {
+                    Some(v) => Some(avro_parser.avro_to_json(&v).await?),
+                    None => None,
+                };
                 (
                     key.map(|v| parse_string(&v)),
-                    match payload {
-                        Some(v) => Some(avro_parser.avro_to_json(&v).await?),
-                        None => None,
-                    },
+                    res.clone().map(|v| v.1),
+                    res.map(|v| v.0),
                 )
             }
         };
@@ -60,6 +63,8 @@ impl<C: SchemaProvider> Parser<C> {
             timestamp,
             partition,
             offset,
+            schema_id,
+            record_bytes,
         })
     }
 

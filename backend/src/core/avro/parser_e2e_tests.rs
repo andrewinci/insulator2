@@ -58,7 +58,7 @@ mod tests {
         assert!(avro_to_json_result.is_ok());
 
         assert_eq!(
-            JsonValue::from_str(&avro_to_json_result.unwrap()).unwrap(),
+            JsonValue::from_str(&avro_to_json_result.unwrap().1).unwrap(),
             JsonValue::from_str(&avro_json_in).unwrap()
         );
     }

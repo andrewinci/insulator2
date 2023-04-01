@@ -248,8 +248,10 @@ async fn _stop(loop_handle: Arc<Mutex<Option<JoinHandle<()>>>>) -> ConsumerResul
 }
 
 fn map_kafka_record(msg: &OwnedMessage) -> RawKafkaRecord {
+    let payload = msg.payload().map(|v| v.to_owned());
     RawKafkaRecord {
-        payload: msg.payload().map(|v| v.to_owned()),
+        record_bytes: payload.as_ref().map(|p| p.len()).unwrap_or_default(),
+        payload,
         key: msg.key().map(|v| v.to_owned()),
         topic: msg.topic().into(),
         partition: msg.partition(),

@@ -1,3 +1,14 @@
+# [2.12.0](https://github.com/andrewinci/insulator2/compare/v2.11.2...v2.12.0) (2023-03-05)
+
+### Bug Fixes
+
+- de-duplicate notifications ([40fadf0](https://github.com/andrewinci/insulator2/commit/40fadf0b0eec6f3679614b95748a8e0645160d20))
+
+### Features
+
+- show avro schema id ([#405](https://github.com/andrewinci/insulator2/issues/405)) ([605861f](https://github.com/andrewinci/insulator2/commit/605861f5bc597b459a76f70fcbe84bbde6540c90))
+- show raw record size ([#406](https://github.com/andrewinci/insulator2/issues/406)) ([feebfdd](https://github.com/andrewinci/insulator2/commit/feebfdd932bd84f81eef8d6f5f695f2bb1a3eb24))
+
 ## [2.11.2](https://github.com/andrewinci/insulator2/compare/v2.11.1...v2.11.2) (2023-02-24)
 
 ### Bug Fixes

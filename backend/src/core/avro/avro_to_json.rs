@@ -12,7 +12,7 @@ use serde_json::{json, Map, Value as JsonValue};
 use std::{collections::HashMap, io::Cursor};
 
 impl<S: SchemaProvider> AvroParser<S> {
-    pub async fn avro_to_json(&self, raw: &[u8]) -> AvroResult<String> {
+    pub async fn avro_to_json(&self, raw: &[u8]) -> AvroResult<(i32, String)> {
         // retrieve the schema from the id on the record header
         let id = get_schema_id_from_record_header(raw)?;
 
@@ -24,7 +24,7 @@ impl<S: SchemaProvider> AvroParser<S> {
             .map_err(|err| AvroError::ParseAvroValue(err.to_string()))?;
         let json = map(&record, &schema.schema)?;
         let res = serde_json::to_string(&json).map_err(|err| AvroError::ParseJsonValue(err.to_string()))?;
-        Ok(res)
+        Ok((id, res))
     }
 }
 
@@ -183,7 +183,7 @@ mod tests {
         let res = get_sut(raw_schema.to_string()).avro_to_json(&raw[..]).await.unwrap();
 
         assert_eq!(
-            res,
+            res.1,
             r#"{"boolean_field":true,"bytes_field":[1,2,170],"double_field":12.12,"float_field":123.12300109863281,"int_field":12,"long_field":12345667,"null_field":null,"string_field":"YO!! test"}"#
         )
     }

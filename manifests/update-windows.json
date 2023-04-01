@@ -1,11 +1,11 @@
 {
-  "version": "v2.11.2",
-  "notes": "## [2.11.2](https://github.com/andrewinci/insulator2/compare/v2.11.1...v2.11.2) (2023-02-24)\n\n\n### Bug Fixes\n\n* disable resize in simple search mode ([5a17baa](https://github.com/andrewinci/insulator2/commit/5a17baa57ecc56de82d3cbfedae754e9181303f9))\n* increase number of FD limit ([52352c6](https://github.com/andrewinci/insulator2/commit/52352c60463e4ca7c77d16af96c5ca3e3cf4e28b))\n* missing human readable time ([b46e846](https://github.com/andrewinci/insulator2/commit/b46e84614b1837513ef4401d8739610a8dc98c5e))\n* mitigate subtitle overload in the topic ([8c209fa](https://github.com/andrewinci/insulator2/commit/8c209fae1fa8cd77f26c308425ced337c82288a4))\n\n\n\n",
-  "pub_date": "2023-02-24T16:52:56Z",
+  "version": "v2.12.0",
+  "notes": "# [2.12.0](https://github.com/andrewinci/insulator2/compare/v2.11.2...v2.12.0) (2023-03-05)\n\n\n### Bug Fixes\n\n* de-duplicate notifications ([40fadf0](https://github.com/andrewinci/insulator2/commit/40fadf0b0eec6f3679614b95748a8e0645160d20))\n\n\n### Features\n\n* show avro schema id ([#405](https://github.com/andrewinci/insulator2/issues/405)) ([605861f](https://github.com/andrewinci/insulator2/commit/605861f5bc597b459a76f70fcbe84bbde6540c90))\n* show raw record size ([#406](https://github.com/andrewinci/insulator2/issues/406)) ([feebfdd](https://github.com/andrewinci/insulator2/commit/feebfdd932bd84f81eef8d6f5f695f2bb1a3eb24))\n\n\n\n",
+  "pub_date": "2023-03-05T10:56:30Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.11.2/Insulator.2_2.11.2_x64_en-US.msi.zip"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.12.0/Insulator.2_2.12.0_x64_en-US.msi.zip"
     }
   }
 }

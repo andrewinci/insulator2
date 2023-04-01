@@ -13,6 +13,7 @@ import { ExportRecordsModal } from "../modals/export-records-modal";
 import { ConsumerConfigurationModal } from "../modals/consumer-configuration-modal";
 import { ConsumerConfiguration } from "../../../models";
 import { parseNumberToHumanReadable } from "../../../helpers/human-readable";
+import { css } from "@emotion/css";
 
 type TopicProps = {
   clusterId: string;
@@ -27,8 +28,7 @@ export const Topic = (props: TopicProps & JSX.IntrinsicAttributes) => {
     {
       key: `topic-page-${clusterId}-${topicName}`,
       initialValue: {
-        query: `SELECT partition, offset, timestamp, key, payload
-FROM {:topic}
+        query: `SELECT * FROM {:topic}
 -- query by json fields with the json_extract function
 -- WHERE json_extract(payload, "$.fieldName") = "something"
 ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
@@ -69,6 +69,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
         vertical
         onChange={([s1, s2]) => setPaneHeights((s) => ({ ...s, headerHeight: s1, recordsHeight: s2 }))}>
         <Allotment.Pane
+          className={css({ overflow: "visible !important" })}
           preferredSize={230}
           minSize={canResizeTopAllotment ? 245 : 195}
           maxSize={canResizeTopAllotment ? 1000 : 195}>
@@ -117,7 +118,6 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
             )}
           </Container>
         </Allotment.Pane>
-
         <Allotment.Pane minSize={400}>
           <Container mt={10} style={{ maxWidth: "100%" }}>
             <RecordsList
