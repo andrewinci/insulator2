@@ -14,13 +14,13 @@ tauri-build = { version = "1.2", features = [] }
 [dependencies]
 serde_json = "1.0"
 dirs = "4.0.0"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0.159", features = ["derive"] }
 tauri = { version = "1.2", features = ["dialog-open", "dialog-save", "fs-write-file", "os-all", "updater", "window-create", "window-set-focus", "window-set-min-size", "window-set-title"] }
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 url = { version = "2", features = ["serde"] }
 tokio = { version = "1", features = ["full"] }
 futures = { version = "0.3" }
-apache-avro = { git = "https://github.com/apache/avro", rev = "05099c3263081e264eb95ee41609095d44a0acfd" }
+apache-avro = { git = "https://github.com/apache/avro", rev = "68a20b7ac12de210cfcc17eaa65f72cab08a4981" }
 log = { version = "0.4" }
 env_logger = { version = "0.10.0" }
 async-trait = "0.1.64"
