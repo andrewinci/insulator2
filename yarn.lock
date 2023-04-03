@@ -642,10 +642,10 @@
     fast-deep-equal "^3.1.3"
     klona "^2.0.5"
 
-"@mantine/hooks@^5.10.5":
-  version "5.10.5"
-  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-5.10.5.tgz#568586a0fa649be46f057ddc920bf98761017ffb"
-  integrity sha512-hFQp71QZDfivPzfIUOQZfMKLiOL/Cn2EnzacRlbUr55myteTfzYN8YMt+nzniE/6c4IRopFHEAdbKEtfyQc6kg==
+"@mantine/hooks@^6.0.5":
+  version "6.0.5"
+  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-6.0.5.tgz#36015c5047fe7608fa7b0977edc241098611267a"
+  integrity sha512-PZMGYK1lwKqpyLal6il2XnE19CRWTPPwjG5r5CbL5lGAVmbucd/XhK1abTuBYzid7usJ4pIxlp/gmdcRLg14TQ==
 
 "@mantine/modals@^6.0.5":
   version "6.0.5"
