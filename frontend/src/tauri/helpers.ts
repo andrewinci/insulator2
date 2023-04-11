@@ -4,7 +4,7 @@ import { platform } from "@tauri-apps/api/os";
 import { withNotifications } from "./error";
 import { appWindow, LogicalSize } from "@tauri-apps/api/window";
 import { getVersion } from "@tauri-apps/api/app";
-import { notifyFailure, notifySuccess } from "../helpers/notification";
+import { useNotification } from "../helpers/notification";
 import { fs } from "@tauri-apps/api";
 import { save } from "@tauri-apps/api/dialog";
 
@@ -63,18 +63,21 @@ export const exportDatastore = async (clusterId: string, outputPath: string): Pr
     showInModal: true,
   });
 
-export const useFs = () => ({
-  saveTextFile: async (fileName: string, content: string) => {
-    const path = await save({
-      defaultPath: fileName,
-    });
-    if (path) {
-      try {
-        await fs.writeTextFile(path, content);
-        notifySuccess(`Schema saved to ${path}`, undefined, true);
-      } catch (err) {
-        notifyFailure("Unable to save the schema locally", JSON.stringify(err));
+export const useFs = () => {
+  const { success, failure } = useNotification();
+  return {
+    saveTextFile: async (fileName: string, content: string) => {
+      const path = await save({
+        defaultPath: fileName,
+      });
+      if (path) {
+        try {
+          await fs.writeTextFile(path, content);
+          success(`Schema saved to ${path}`, undefined, true);
+        } catch (err) {
+          failure("Unable to save the schema locally", JSON.stringify(err));
+        }
       }
-    }
-  },
-});
+    },
+  };
+};
