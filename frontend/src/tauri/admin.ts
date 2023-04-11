@@ -6,6 +6,9 @@ import { useNotification } from "../hooks/use-notification";
 export const useAdmin = () => {
   const { withNotification } = useNotification();
   return {
+    /**
+     * Set the consumer group offsets
+     */
     setConsumerGroup: (
       clusterId: string,
       consumerGroupName: string,
@@ -16,20 +19,23 @@ export const useAdmin = () => {
         action: () => invoke<void>("set_consumer_group", { clusterId, consumerGroupName, topics, offsetConfig }),
         successTitle: `Consumer group ${consumerGroupName} updated`,
       }),
+    /**
+     * Get the consumer group state. i.e. stable, empty, unknown
+     */
+    getConsumerGroupState: (clusterId: string, consumerGroupName: string): Promise<string> =>
+      withNotification({ action: () => invoke<string>("get_consumer_group_state", { clusterId, consumerGroupName }) }),
+
+    describeConsumerGroup: (
+      clusterId: string,
+      consumerGroupName: string,
+      ignoreCache: boolean
+    ): Promise<ConsumerGroupInfo> =>
+      withNotification({
+        action: () =>
+          invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, ignoreCache }),
+      }),
   };
 };
-
-export const getConsumerGroupState = (clusterId: string, consumerGroupName: string): Promise<string> =>
-  withNotifications({ action: () => invoke<string>("get_consumer_group_state", { clusterId, consumerGroupName }) });
-
-export const describeConsumerGroup = (
-  clusterId: string,
-  consumerGroupName: string,
-  ignoreCache: boolean
-): Promise<ConsumerGroupInfo> =>
-  withNotifications({
-    action: () => invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, ignoreCache }),
-  });
 
 export const getConsumerGroups = (clusterId: string): Promise<string[]> =>
   withNotifications({
