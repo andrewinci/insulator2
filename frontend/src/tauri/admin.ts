@@ -14,10 +14,43 @@ export const useListTopics = (clusterId: string) => {
   );
 };
 
+export const useDescribeConsumerGroup = (clusterId: string, consumerGroupName: string, ignoreCache: boolean) => {
+  const { withNotification } = useNotification();
+  return useQuery(
+    ["describeConsumerGroup", clusterId, consumerGroupName],
+    async () => {
+      const consumerGroupInfo = withNotification({
+        action: () =>
+          invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, ignoreCache }),
+      });
+      /// Get the consumer group state. i.e. stable, empty, unknown
+      const consumerGroupState = withNotification({
+        action: () => invoke<string>("get_consumer_group_state", { clusterId, consumerGroupName }),
+      });
+      const result = await Promise.allSettled([consumerGroupInfo, consumerGroupState]);
+      return {
+        info: result[0].status === "fulfilled" ? result[0].value : undefined,
+        state: result[1].status === "fulfilled" ? result[1].value : undefined,
+      };
+    },
+    { refetchOnWindowFocus: false, refetchOnMount: false }
+  );
+};
+
+export const useGetConsumerGroups = (clusterId: string) => {
+  const { withNotification } = useNotification();
+  return useQuery(["getConsumerGroups", clusterId], () =>
+    withNotification({
+      action: () => invoke<string[]>("list_consumer_groups", { clusterId }),
+      successTitle: "List of consumer groups loaded",
+    })
+  );
+};
+
 export const useAdmin = () => {
   const { withNotification } = useNotification();
   return {
-    /// ßSet the consumer group offsets
+    /// Set the consumer group offsets
     setConsumerGroup: (
       clusterId: string,
       consumerGroupName: string,
@@ -27,25 +60,6 @@ export const useAdmin = () => {
       withNotification({
         action: () => invoke<void>("set_consumer_group", { clusterId, consumerGroupName, topics, offsetConfig }),
         successTitle: `Consumer group ${consumerGroupName} updated`,
-      }),
-    /// Get the consumer group state. i.e. stable, empty, unknown
-    getConsumerGroupState: (clusterId: string, consumerGroupName: string): Promise<string> =>
-      withNotification({ action: () => invoke<string>("get_consumer_group_state", { clusterId, consumerGroupName }) }),
-    ///
-    describeConsumerGroup: (
-      clusterId: string,
-      consumerGroupName: string,
-      ignoreCache: boolean
-    ): Promise<ConsumerGroupInfo> =>
-      withNotification({
-        action: () =>
-          invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, ignoreCache }),
-      }),
-    ///
-    getConsumerGroups: (clusterId: string): Promise<string[]> =>
-      withNotification({
-        action: () => invoke<string[]>("list_consumer_groups", { clusterId }),
-        successTitle: "List of consumer groups loaded",
       }),
     /// create topic
     createTopic: (

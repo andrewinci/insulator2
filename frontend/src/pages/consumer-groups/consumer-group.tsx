@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useMemo } from "react";
 import { PageHeader } from "../../components";
-import { useAdmin } from "../../tauri/admin";
+import { useAdmin, useDescribeConsumerGroup } from "../../tauri/admin";
 import { ToolsMenu } from "./tools-menu";
 
 type ConsumerGroupProps = {
@@ -14,19 +14,8 @@ type ConsumerGroupProps = {
 
 export const ConsumerGroup = (props: ConsumerGroupProps) => {
   const { name, clusterId, onDeleteConsumerGroup } = props;
-  const { getConsumerGroupState, describeConsumerGroup } = useAdmin();
-  const { data: consumerGroupState } = useQuery(["getConsumerGroupState", clusterId, name], () =>
-    getConsumerGroupState(clusterId, name)
-  );
-  const {
-    isLoading,
-    data: consumerGroupInfo,
-    refetch,
-    isRefetching,
-  } = useQuery(["describeConsumerGroup", clusterId, name], () => describeConsumerGroup(clusterId, name, true), {
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-  });
+  const { isLoading, data, refetch, isRefetching } = useDescribeConsumerGroup(clusterId, name, true);
+  const { info: consumerGroupInfo, state: consumerGroupState } = data ?? { info: undefined, state: undefined };
   const topicOffsetMap = useMemo(() => {
     if (!consumerGroupInfo) return;
     const map = consumerGroupInfo.offsets.reduce((prev, current) => {

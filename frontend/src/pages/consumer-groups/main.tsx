@@ -2,20 +2,16 @@ import { useSessionStorage } from "@mantine/hooks";
 import { useParams } from "react-router-dom";
 import { ConsumerGroup } from "./consumer-group";
 import { Modal, Title } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useFavorites } from "../../hooks/use-favorites";
 import { UpsertConsumerGroupModal } from "./upsert-consumer-group-modal";
 import { ItemList, TwoColumnPage } from "../../components";
-import { useAdmin } from "../../tauri/admin";
+import { useGetConsumerGroups } from "../../tauri/admin";
 
 export const ConsumerGroupsPage = () => {
   const { clusterId, activeConsumerGroupName, setActiveConsumerGroupName } = useConsumerGroup();
   const [addCGModalOpened, setAddCGModalOpened] = useState(false);
-  const { getConsumerGroups } = useAdmin();
-  const { isLoading, isFetching, data, refetch } = useQuery(["getConsumerGroups", clusterId], () =>
-    getConsumerGroups(clusterId)
-  );
+  const { isLoading, isFetching, data, refetch } = useGetConsumerGroups(clusterId);
   const { favorites, toggleFavorite } = useFavorites(clusterId, "consumers");
 
   const onDeleteConsumerGroup = (name: string) => {
