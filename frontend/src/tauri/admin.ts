@@ -1,6 +1,18 @@
 import { invoke } from "@tauri-apps/api";
 import { ConsumerGroupInfo, ConsumerOffsetConfiguration, PartitionOffset, TopicInfo } from "../models/kafka";
 import { useNotification } from "../hooks/use-notification";
+import { useQuery } from "@tanstack/react-query";
+
+export const useListTopics = (clusterId: string) => {
+  const { withNotification } = useNotification();
+  return useQuery(["listTopics", clusterId], () =>
+    withNotification({
+      action: () =>
+        invoke<{ name: string }[]>("list_topics", { clusterId }).then((topics) => topics.map((t) => t.name)),
+      successTitle: "List of topics loaded",
+    })
+  );
+};
 
 export const useAdmin = () => {
   const { withNotification } = useNotification();
@@ -47,14 +59,6 @@ export const useAdmin = () => {
         action: () => invoke<void>("create_topic", { clusterId, topicName, partitions, isr, compacted }),
         successTitle: `Topic ${topicName} created`,
       }),
-    // list topics
-    listTopics: (clusterId: string): Promise<string[]> =>
-      withNotification({
-        action: () =>
-          invoke<{ name: string }[]>("list_topics", { clusterId }).then((topics) => topics.map((t) => t.name)),
-        successTitle: "List of topics loaded",
-      }),
-
     /// get topic info
     getTopicInfo: (clusterId: string, topicName: string): Promise<TopicInfo> =>
       withNotification({ action: () => invoke<TopicInfo>("get_topic_info", { clusterId, topicName }) }),
