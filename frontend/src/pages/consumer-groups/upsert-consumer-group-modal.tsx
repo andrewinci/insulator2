@@ -7,7 +7,7 @@ import { useState } from "react";
 import { SingleLineTitle } from "../../components";
 import { dateTimeToUnixTimeMs } from "../../helpers/date-time";
 import { ConsumerOffsetConfiguration } from "../../models";
-import { listTopics, useAdmin } from "../../tauri/admin";
+import { useAdmin } from "../../tauri/admin";
 
 type ConsumerGroupModalState = {
   name: string;
@@ -35,6 +35,7 @@ export const UpsertConsumerGroupModal = ({
   showWarning,
   onClose,
 }: UpsertConsumerGroupModalProps) => {
+  const { setConsumerGroup, listTopics } = useAdmin();
   const { data } = useQuery(["listTopics", clusterId], () => listTopics(clusterId));
   const nowUTC = dayjs.utc().toDate();
   const zeroUTC = dayjs().set("h", 0).set("m", 0).set("s", 0).toDate();
@@ -49,7 +50,6 @@ export const UpsertConsumerGroupModal = ({
     date: nowUTC,
     time: zeroUTC,
   });
-  const { setConsumerGroup } = useAdmin();
 
   return (
     <Stack spacing={10}>

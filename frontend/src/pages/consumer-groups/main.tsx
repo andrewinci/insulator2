@@ -5,15 +5,14 @@ import { Modal, Title } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useFavorites } from "../../hooks/use-favorites";
-import { getConsumerGroups } from "../../tauri/admin";
 import { UpsertConsumerGroupModal } from "./upsert-consumer-group-modal";
 import { ItemList, TwoColumnPage } from "../../components";
+import { useAdmin } from "../../tauri/admin";
 
 export const ConsumerGroupsPage = () => {
   const { clusterId, activeConsumerGroupName, setActiveConsumerGroupName } = useConsumerGroup();
-
   const [addCGModalOpened, setAddCGModalOpened] = useState(false);
-
+  const { getConsumerGroups } = useAdmin();
   const { isLoading, isFetching, data, refetch } = useQuery(["getConsumerGroups", clusterId], () =>
     getConsumerGroups(clusterId)
   );

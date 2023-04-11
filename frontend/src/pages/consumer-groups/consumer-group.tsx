@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useMemo } from "react";
 import { PageHeader } from "../../components";
-import { useAdmin, getLastOffsets } from "../../tauri/admin";
+import { useAdmin } from "../../tauri/admin";
 import { ToolsMenu } from "./tools-menu";
 
 type ConsumerGroupProps = {
@@ -88,6 +88,7 @@ export const ConsumerGroupTopicDetails = ({
   topicName: string;
   offsets: { partition: number; offset: number }[];
 }) => {
+  const { getLastOffsets } = useAdmin();
   const { data } = useQuery(["getLastOffsets", clusterId, topicName, offsets], async () => {
     const lastOffsets = (await getLastOffsets(clusterId, [topicName]))[topicName];
     const sumLastOffsets = lastOffsets.map((po) => po.offset).reduce((a, b) => a + b, 0);

@@ -3,7 +3,6 @@ import { RecordsList, RecordsListRef } from "./record-list";
 import { getConsumerState, startConsumer, stopConsumer } from "../../../tauri/consumer";
 import { NewWindowButton, PageHeader } from "../../../components";
 import { useQuery } from "@tanstack/react-query";
-import { getLastOffsets, getTopicInfo } from "../../../tauri/admin";
 import { Allotment } from "allotment";
 import { ToolsMenu } from "./tools-menu";
 import { TopicPageMenu } from "./topic-page-menu";
@@ -14,6 +13,7 @@ import { ConsumerConfigurationModal } from "../modals/consumer-configuration-mod
 import { ConsumerConfiguration } from "../../../models";
 import { parseNumberToHumanReadable } from "../../../helpers/human-readable";
 import { css } from "@emotion/css";
+import { useAdmin } from "../../../tauri/admin";
 
 type TopicProps = {
   clusterId: string;
@@ -193,6 +193,7 @@ const useConsumer = (clusterId: string, topicName: string) => {
 };
 
 const useTopicInfo = (clusterId: string, topicName: string) => {
+  const { getLastOffsets, getTopicInfo } = useAdmin();
   const { data: estimatedRecords } = useQuery(["getLastOffsets", clusterId, topicName], () =>
     getLastOffsets(clusterId, [topicName])
       .then((res) => res[topicName].map((po) => po.offset))
