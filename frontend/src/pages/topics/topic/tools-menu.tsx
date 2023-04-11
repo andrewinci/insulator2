@@ -14,9 +14,10 @@ type ToolsMenuProps = {
 };
 
 export const ToolsMenu = (props: ToolsMenuProps) => {
-  const { deleteTopic, getTopicInfo } = useAdmin();
+  const { deleteTopic } = useAdmin();
   const { clusterId, topic, exportInProgress, onExportClick, onTopicDeleted } = props;
   const { openNewWindow } = useWindowHandler();
+
   const openDeleteTopicModal = () =>
     openConfirmModal({
       title: "Are you sure to delete this topic?",
@@ -35,14 +36,12 @@ export const ToolsMenu = (props: ToolsMenuProps) => {
       },
     });
 
-  const openInfoModal = async () => {
-    const topicInfo = await getTopicInfo(clusterId, topic);
-    return openModal({
+  const openInfoModal = () =>
+    openModal({
       title: <Title>Topic info</Title>,
       size: 700,
-      children: <TopicInfoModal topicInfo={topicInfo} />,
+      children: <TopicInfoModal clusterId={clusterId} topicName={topic} />,
     });
-  };
 
   const openSchema = async () => {
     const url = `/modal/cluster/${clusterId}/schema/${topic}-value`;

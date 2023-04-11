@@ -47,6 +47,22 @@ export const useGetConsumerGroups = (clusterId: string) => {
   );
 };
 
+export const useGetTopicInfo = (clusterId: string, topicName: string) => {
+  const { withNotification } = useNotification();
+  return useQuery(["getTopicInfo", clusterId, topicName], () =>
+    withNotification({ action: () => invoke<TopicInfo>("get_topic_info", { clusterId, topicName }) })
+  );
+};
+
+export const useGetLastOffsets = (clusterId: string, topicNames: [string]) => {
+  const { withNotification } = useNotification();
+  return useQuery(["getLastOffset", clusterId, topicNames], () =>
+    withNotification({
+      action: () => invoke<Record<string, [PartitionOffset]>>("get_last_offsets", { clusterId, topicNames }),
+    })
+  );
+};
+
 export const useAdmin = () => {
   const { withNotification } = useNotification();
   return {
@@ -72,15 +88,6 @@ export const useAdmin = () => {
       withNotification({
         action: () => invoke<void>("create_topic", { clusterId, topicName, partitions, isr, compacted }),
         successTitle: `Topic ${topicName} created`,
-      }),
-    /// get topic info
-    getTopicInfo: (clusterId: string, topicName: string): Promise<TopicInfo> =>
-      withNotification({ action: () => invoke<TopicInfo>("get_topic_info", { clusterId, topicName }) }),
-
-    /// get last topic offset
-    getLastOffsets: (clusterId: string, topicNames: [string]): Promise<Record<string, [PartitionOffset]>> =>
-      withNotification({
-        action: () => invoke<Record<string, [PartitionOffset]>>("get_last_offsets", { clusterId, topicNames }),
       }),
 
     /// delete a topic

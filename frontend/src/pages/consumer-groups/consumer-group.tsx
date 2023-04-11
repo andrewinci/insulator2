@@ -1,9 +1,8 @@
 import { Text, Container, Group, Stack, Grid, Center, Loader, Accordion } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useMemo } from "react";
 import { PageHeader } from "../../components";
-import { useAdmin, useDescribeConsumerGroup } from "../../tauri/admin";
+import { useDescribeConsumerGroup, useGetLastOffsets } from "../../tauri/admin";
 import { ToolsMenu } from "./tools-menu";
 
 type ConsumerGroupProps = {
@@ -77,16 +76,18 @@ export const ConsumerGroupTopicDetails = ({
   topicName: string;
   offsets: { partition: number; offset: number }[];
 }) => {
-  const { getLastOffsets } = useAdmin();
-  const { data } = useQuery(["getLastOffsets", clusterId, topicName, offsets], async () => {
-    const lastOffsets = (await getLastOffsets(clusterId, [topicName]))[topicName];
-    const sumLastOffsets = lastOffsets.map((po) => po.offset).reduce((a, b) => a + b, 0);
-    const sumOffsets = offsets.map((o) => o.offset).reduce((a, b) => a + b, 0);
-    return {
-      lastOffsets,
-      totalLag: sumLastOffsets - sumOffsets,
-    };
-  });
+  const { data: getLastOffsetsResult } = useGetLastOffsets(clusterId, [topicName]);
+  const lastOffsets = getLastOffsetsResult?.[topicName];
+  const sumLastOffsets = lastOffsets?.map((po) => po.offset).reduce((a, b) => a + b, 0);
+  const sumOffsets = offsets.map((o) => o.offset).reduce((a, b) => a + b, 0);
+  const data =
+    sumLastOffsets && lastOffsets
+      ? {
+          lastOffsets,
+          totalLag: sumLastOffsets - sumOffsets,
+        }
+      : undefined;
+
   return (
     <Accordion.Item key={topicName} value={topicName}>
       <Accordion.Control>

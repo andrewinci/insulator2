@@ -13,7 +13,7 @@ import { ConsumerConfigurationModal } from "../modals/consumer-configuration-mod
 import { ConsumerConfiguration } from "../../../models";
 import { parseNumberToHumanReadable } from "../../../helpers/human-readable";
 import { css } from "@emotion/css";
-import { useAdmin } from "../../../tauri/admin";
+import { useGetLastOffsets, useGetTopicInfo } from "../../../tauri/admin";
 
 type TopicProps = {
   clusterId: string;
@@ -193,21 +193,16 @@ const useConsumer = (clusterId: string, topicName: string) => {
 };
 
 const useTopicInfo = (clusterId: string, topicName: string) => {
-  const { getLastOffsets, getTopicInfo } = useAdmin();
-  const { data: estimatedRecords } = useQuery(["getLastOffsets", clusterId, topicName], () =>
-    getLastOffsets(clusterId, [topicName])
-      .then((res) => res[topicName].map((po) => po.offset))
-      .then((offsets) => offsets.reduce((a, b) => a + b, 0))
-  );
-
   // get topic information to populate the page header
-  const { data: topicInfo } = useQuery(["getTopicInfo", clusterId, topicName], async () => {
-    const topicInfo = await getTopicInfo(clusterId, topicName);
-    return {
-      partitionCount: topicInfo.partitions.length,
-      cleanupPolicy: topicInfo.configurations["cleanup.policy"] ?? "...",
-    };
-  });
+  const { data: lastOffsets } = useGetLastOffsets(clusterId, [topicName]);
+  const { data: topicInfoResult } = useGetTopicInfo(clusterId, topicName);
+
+  const estimatedRecords = lastOffsets?.[topicName].map((po) => po.offset).reduce((a, b) => a + b, 0);
+
+  const topicInfo = {
+    partitionCount: topicInfoResult?.partitions.length,
+    cleanupPolicy: topicInfoResult?.configurations["cleanup.policy"] ?? "...",
+  };
 
   return { estimatedRecords, topicInfo };
 };
