@@ -96,44 +96,44 @@ export const ConsumerGroupTopicDetails = ({
             {topicName}
           </Text>
           <Text italic size={"md"}>
-            Lag: {data?.totalLag ?? "..."}
+            Lag: {data?.totalLag ?? 0}
           </Text>
         </Group>
       </Accordion.Control>
       <Accordion.Panel>
         <Grid>
-          <Grid.Col span={6}>
-            <Text align="left" weight={"bold"}>
-              Topic
-            </Text>
-          </Grid.Col>
-          <Grid.Col span={2}>
+          <Grid.Col span={3}>
             <Text align="left" weight={"bold"}>
               Partition
             </Text>
           </Grid.Col>
-          <Grid.Col span={2}>
+          <Grid.Col span={3}>
             <Text align="left" weight={"bold"}>
-              Offset
+              Current Offset
             </Text>
           </Grid.Col>
-          <Grid.Col span={2}>
+          <Grid.Col span={3}>
+            <Text align="left" weight={"bold"}>
+              Last Offset
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={3}>
             <Text align="left" weight={"bold"}>
               Lag
             </Text>
           </Grid.Col>
           {offsets.map(({ offset, partition }) => (
             <React.Fragment key={`${topicName}-${partition}`}>
-              <Grid.Col span={6}>
-                <Text sx={{ overflowWrap: "break-word" }}>{topicName}</Text>
-              </Grid.Col>
-              <Grid.Col span={2}>
+              <Grid.Col span={3}>
                 <Text>{partition}</Text>
               </Grid.Col>
-              <Grid.Col span={2}>
+              <Grid.Col span={3}>
                 <Text>{offset}</Text>
               </Grid.Col>
-              <Grid.Col span={2}>
+              <Grid.Col span={3}>
+                <Text>{data?.lastOffsets.find((po) => po.partitionId === partition)?.offset ?? 0}</Text>
+              </Grid.Col>
+              <Grid.Col span={3}>
                 <Text>{(data?.lastOffsets.find((po) => po.partitionId === partition)?.offset ?? 0) - offset}</Text>
               </Grid.Col>
             </React.Fragment>
