@@ -101,10 +101,11 @@ yarn tauri dev
 yarn test
 ```
 
-### Spin up a local kafka (RedPanda) cluster for testing
+### Spin up a local kafka cluster (RedPanda) for testing
 
 ```bash
 docker run -d --name=redpanda-1 --rm \
+    -p 8081:8081 \
     -p 9092:9092 \
     -p 9644:9644 \
     docker.vectorized.io/vectorized/redpanda:latest \
@@ -116,6 +117,9 @@ docker run -d --name=redpanda-1 --rm \
     --node-id 0 \
     --check=false
 ```
+
+The cluster endpoint and the schema registry endpoint to configure in insulator are respectively:
+`127.0.0.1:9092` and `http://127.0.0.1:8081`.
 
 ### Serve documentation with Jekyll
 
