@@ -48,8 +48,3 @@ export const notifyFailure = (title: string, description?: string) => {
     description,
   });
 };
-
-export const useNotification = () => ({
-  success: notifySuccess,
-  failure: notifyFailure,
-});

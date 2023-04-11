@@ -21,7 +21,7 @@ import { Schema } from "./pages/schema-registry/schema";
 import { withPropsFromUrlParams } from "./helpers/with-props-from-url";
 import { useInitMonaco } from "./init-monaco";
 import { RecordDetailsWindow } from "./pages/topics/modals/record-view-modal";
-import { notifyFailure } from "./helpers/notification";
+import { useNotification } from "./hooks/use-notification";
 
 const AppContainer = () => {
   return (
@@ -89,9 +89,10 @@ const InsulatorRoutes = () => {
 const App = () => {
   const { userSettings: appState } = useUserSettings();
   const queryClient = new QueryClient();
+  const { failure } = useNotification();
   // listen for errors emitted by the backend
   listen<ApiError>("error", (event) => {
-    notifyFailure(event.payload.errorType, event.payload.message);
+    failure(event.payload.errorType, event.payload.message);
   });
   return (
     <MantineProvider

@@ -4,7 +4,7 @@ import { platform } from "@tauri-apps/api/os";
 import { withNotifications } from "./error";
 import { appWindow, LogicalSize } from "@tauri-apps/api/window";
 import { getVersion } from "@tauri-apps/api/app";
-import { useNotification } from "../helpers/notification";
+import { useNotification } from "../hooks/use-notification";
 import { fs } from "@tauri-apps/api";
 import { save } from "@tauri-apps/api/dialog";
 
