@@ -63,16 +63,18 @@ export const exportDatastore = async (clusterId: string, outputPath: string): Pr
     showInModal: true,
   });
 
-export const saveTextFile = async (subject: string, schema: string) => {
-  const path = await save({
-    defaultPath: `${subject}.json`,
-  });
-  if (path) {
-    try {
-      await fs.writeTextFile(path, schema);
-      notifySuccess(`Schema saved to ${path}`, undefined, true);
-    } catch (err) {
-      notifyFailure("Unable to save the schema locally", JSON.stringify(err));
+export const useFs = () => ({
+  saveTextFile: async (fileName: string, content: string) => {
+    const path = await save({
+      defaultPath: fileName,
+    });
+    if (path) {
+      try {
+        await fs.writeTextFile(path, content);
+        notifySuccess(`Schema saved to ${path}`, undefined, true);
+      } catch (err) {
+        notifyFailure("Unable to save the schema locally", JSON.stringify(err));
+      }
     }
-  }
-};
+  },
+});

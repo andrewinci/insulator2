@@ -3,7 +3,7 @@ import { openConfirmModal } from "@mantine/modals";
 import { IconFileExport, IconTool, IconTrash } from "@tabler/icons";
 
 import { deleteSubject, deleteSubjectVersion } from "../../tauri/schema-registry";
-import { saveTextFile } from "../../tauri/helpers";
+import { useFs } from "../../tauri/helpers";
 
 type ToolsMenuProps = {
   clusterId: string;
@@ -46,8 +46,8 @@ export const ToolsMenu = (props: ToolsMenuProps) => {
           onVersionDeleted();
         }),
     });
-
-  const onExport = () => saveTextFile(subject, currentSchema);
+  const { saveTextFile } = useFs();
+  const onExport = () => saveTextFile(`${subject}.json`, currentSchema);
 
   return (
     <Menu position="bottom-end" trigger="hover" openDelay={100} closeDelay={400}>

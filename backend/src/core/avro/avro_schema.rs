@@ -153,7 +153,7 @@ impl ResolvedAvroSchema {
                     let fqn = name.fully_qualified_name(parent_ns);
                     let schema = references
                         .get(&fqn)
-                        .expect(format!("Unable to resolve {fqn:?}.").as_str());
+                        .unwrap_or_else(|| panic!("Unable to resolve {fqn:?}."));
                     map(schema, &fqn.namespace, references)
                 }
             }
@@ -161,7 +161,7 @@ impl ResolvedAvroSchema {
 
         Self {
             id,
-            schema: map(schema, &None, &references),
+            schema: map(schema, &None, references),
             inner_schema: schema.clone(),
         }
     }
