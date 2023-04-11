@@ -1,17 +1,23 @@
 import { invoke } from "@tauri-apps/api";
 import { ConsumerGroupInfo, ConsumerOffsetConfiguration, PartitionOffset, TopicInfo } from "../models/kafka";
 import { withNotifications } from "./error";
+import { useNotification } from "../hooks/use-notification";
 
-export const setConsumerGroup = (
-  clusterId: string,
-  consumerGroupName: string,
-  topics: string[],
-  offsetConfig: ConsumerOffsetConfiguration
-): Promise<void> =>
-  withNotifications({
-    action: () => invoke<void>("set_consumer_group", { clusterId, consumerGroupName, topics, offsetConfig }),
-    successTitle: `Consumer group ${consumerGroupName} updated`,
-  });
+export const useAdmin = () => {
+  const { withNotification } = useNotification();
+  return {
+    setConsumerGroup: (
+      clusterId: string,
+      consumerGroupName: string,
+      topics: string[],
+      offsetConfig: ConsumerOffsetConfiguration
+    ): Promise<void> =>
+      withNotification({
+        action: () => invoke<void>("set_consumer_group", { clusterId, consumerGroupName, topics, offsetConfig }),
+        successTitle: `Consumer group ${consumerGroupName} updated`,
+      }),
+  };
+};
 
 export const getConsumerGroupState = (clusterId: string, consumerGroupName: string): Promise<string> =>
   withNotifications({ action: () => invoke<string>("get_consumer_group_state", { clusterId, consumerGroupName }) });

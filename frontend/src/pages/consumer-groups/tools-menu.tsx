@@ -3,7 +3,7 @@ import { openConfirmModal } from "@mantine/modals";
 import { IconAdjustments, IconFlag, IconPlayerPlay, IconRefresh, IconTool, IconTrash } from "@tabler/icons";
 import { useState } from "react";
 import { ConsumerOffsetConfiguration, ConsumerGroupInfo } from "../../models";
-import { deleteConsumerGroup, setConsumerGroup } from "../../tauri/admin";
+import { deleteConsumerGroup, useAdmin } from "../../tauri/admin";
 import { UpsertConsumerGroupModal } from "./upsert-consumer-group-modal";
 
 type ToolsMenuProps = {
@@ -17,6 +17,7 @@ type ToolsMenuProps = {
 
 export const ToolsMenu = (props: ToolsMenuProps) => {
   const { clusterId, loading, disabled, data, onRefresh, onDeleteConsumerGroup } = props;
+  const { setConsumerGroup } = useAdmin();
   const topics = [...new Set(data.offsets.map((o) => o.topic))];
 
   const [isResetting, setIsResetting] = useState(false);

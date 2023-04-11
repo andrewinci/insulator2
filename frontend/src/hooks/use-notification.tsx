@@ -10,6 +10,18 @@ type Notification = {
   showInModal?: boolean;
 };
 
+export type ApiError = {
+  errorType: string;
+  message: string;
+};
+
+type withNotificationsProps<T> = {
+  action: () => Promise<T>;
+  successTitle?: string;
+  successDescription?: string;
+  showInModal?: boolean;
+};
+
 export const useNotification = () => {
   const { userSettings } = useUserSettings();
 
@@ -28,30 +40,50 @@ export const useNotification = () => {
       icon: n.type === "ok" ? <IconCheck /> : <IconX />,
     });
   };
+
+  const notifySuccess = (title: string, description?: string, showInModal?: boolean) => {
+    addNotification({
+      type: "ok",
+      title,
+      description,
+      showInModal,
+    });
+  };
+
+  const notifyFailure = (title: string, description?: string) => {
+    addNotification({
+      type: "error",
+      title,
+      description,
+    });
+  };
+
+  async function withNotification<T>(props: withNotificationsProps<T>): Promise<T> {
+    const { action, successTitle, successDescription } = props;
+    try {
+      const res = await action();
+      if (successTitle) notifySuccess(successTitle, successDescription, props.showInModal);
+      return res;
+    } catch (err) {
+      console.error(err);
+      const { errorType, message } = err as ApiError;
+      notifyFailure(errorType, message);
+      return Promise.reject(err);
+    }
+  }
+
   return {
     /**
      * Notify the user of a success.
      * Only visible if the app is not running in a modal.
      * If the app is running in a modal, the notification is only visible if showInModal is true.
      */
-    success: (title: string, description?: string, showInModal?: boolean) => {
-      addNotification({
-        type: "ok",
-        title,
-        description,
-        showInModal,
-      });
-    },
+    success: notifySuccess,
     /**
      * Notify the user of a failure.
      * Always visible, even if the app is running in a modal.
      */
-    failure: (title: string, description?: string) => {
-      addNotification({
-        type: "error",
-        title,
-        description,
-      });
-    },
+    failure: notifyFailure,
+    withNotification,
   };
 };

@@ -7,7 +7,7 @@ import { useState } from "react";
 import { SingleLineTitle } from "../../components";
 import { dateTimeToUnixTimeMs } from "../../helpers/date-time";
 import { ConsumerOffsetConfiguration } from "../../models";
-import { setConsumerGroup, listTopics } from "../../tauri/admin";
+import { listTopics, useAdmin } from "../../tauri/admin";
 
 type ConsumerGroupModalState = {
   name: string;
@@ -49,6 +49,7 @@ export const UpsertConsumerGroupModal = ({
     date: nowUTC,
     time: zeroUTC,
   });
+  const { setConsumerGroup } = useAdmin();
 
   return (
     <Stack spacing={10}>
