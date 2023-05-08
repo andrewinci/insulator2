@@ -3475,14 +3475,14 @@ handlebars@^4.7.7:
   optionalDependencies:
     uglify-js "^3.1.4"
 
-happy-dom@^8.3.2:
-  version "8.3.2"
-  resolved "https://registry.yarnpkg.com/happy-dom/-/happy-dom-8.3.2.tgz#767fb6f0b607ee6776f13f47c621183ac197cff3"
-  integrity sha512-Z0RigOkogHBIkkG/G3WHh5mMVZEO5Q8zSNFKEJ/e19kq83dbrHjWJJKOIXsDLOu9KtqM8QKj9IinpZC/tRNIQA==
+happy-dom@^9.10.9:
+  version "9.10.9"
+  resolved "https://registry.yarnpkg.com/happy-dom/-/happy-dom-9.10.9.tgz#3a9360e18a8036014203b65e8426392dc762d171"
+  integrity sha512-3RnOyu6buPMpDAyOpp8yfR5Xi/k2p5MhrDwlG/dgpVHkptFN5IqubdbGOQU5luB7ANh6a08GOuiB+Bo9JCzCBw==
   dependencies:
     css.escape "^1.5.1"
     he "^1.2.0"
-    node-fetch "^2.x.x"
+    iconv-lite "^0.6.3"
     webidl-conversions "^7.0.0"
     whatwg-encoding "^2.0.0"
     whatwg-mimetype "^3.0.0"
@@ -3628,7 +3628,7 @@ husky@^8.0.3:
   resolved "https://registry.yarnpkg.com/husky/-/husky-8.0.3.tgz#4936d7212e46d1dea28fef29bb3a108872cd9184"
   integrity sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==
 
-iconv-lite@0.6.3, iconv-lite@^0.6.2:
+iconv-lite@0.6.3, iconv-lite@^0.6.2, iconv-lite@^0.6.3:
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.6.3.tgz#a52f80bf38da1952eb5c681790719871a1a72501"
   integrity sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==
@@ -4824,7 +4824,7 @@ node-emoji@^1.11.0:
   dependencies:
     lodash "^4.17.21"
 
-node-fetch@^2.6.7, node-fetch@^2.x.x:
+node-fetch@^2.6.7:
   version "2.6.7"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
   integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
