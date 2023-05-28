@@ -1,6 +1,6 @@
-import { createTopic } from "../../../tauri/admin";
 import { Button, Checkbox, Group, NumberInput, Stack, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useAdmin } from "../../../tauri/admin";
 
 type CreateTopicForm = {
   name: string;
@@ -15,6 +15,7 @@ type CreateTopicModalProps = {
 };
 
 export const CreateTopicModal = ({ clusterId, onClose }: CreateTopicModalProps) => {
+  const { createTopic } = useAdmin();
   const form = useForm<CreateTopicForm>({
     initialValues: {
       name: "",

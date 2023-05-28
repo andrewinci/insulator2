@@ -2,19 +2,20 @@ import { useUserSettings } from "../../providers";
 import { Cluster } from "../../models";
 import { ClusterForm, ClusterFormType } from "./cluster-form";
 import { mapClusterToForm, mapFormToCluster, upsertCluster } from "./helpers";
-import { notifyFailure } from "../../helpers/notification";
+import { useNotification } from "../../hooks/use-notification";
 
 export const EditCluster = ({ onSubmit, clusterId }: { onSubmit: () => void; clusterId: string }) => {
   const { userSettings, setUserSettings } = useUserSettings();
+  const { failure } = useNotification();
   const cluster = userSettings.clusters.find((c) => c.id == clusterId);
   if (!cluster) {
-    notifyFailure("Something went wrong", "Missing clusterId in navigation.");
+    failure("Something went wrong", "Missing clusterId in navigation.");
     return <></>;
   }
 
   const editCluster = (clusterId: string, cluster: Cluster) => {
     if (!userSettings.clusters.find((c) => c.id == clusterId)) {
-      notifyFailure("Cluster configuration not found", `Unable to update ${cluster.name}.`);
+      failure("Cluster configuration not found", `Unable to update ${cluster.name}.`);
       return Promise.reject();
     } else {
       return setUserSettings((s) => upsertCluster(s, { ...cluster, id: clusterId }));

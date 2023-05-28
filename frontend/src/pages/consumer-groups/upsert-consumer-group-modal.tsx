@@ -1,13 +1,12 @@
 import { ActionIcon, Button, Center, Chip, Group, Input, Select, Stack, Text, TextInput } from "@mantine/core";
 import { DatePicker, TimeInput } from "@mantine/dates";
 import { IconTrash } from "@tabler/icons";
-import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { SingleLineTitle } from "../../components";
 import { dateTimeToUnixTimeMs } from "../../helpers/date-time";
 import { ConsumerOffsetConfiguration } from "../../models";
-import { setConsumerGroup, listTopics } from "../../tauri/admin";
+import { useAdmin, useListTopics } from "../../tauri/admin";
 
 type ConsumerGroupModalState = {
   name: string;
@@ -35,7 +34,8 @@ export const UpsertConsumerGroupModal = ({
   showWarning,
   onClose,
 }: UpsertConsumerGroupModalProps) => {
-  const { data } = useQuery(["listTopics", clusterId], () => listTopics(clusterId));
+  const { setConsumerGroup } = useAdmin();
+  const { data } = useListTopics(clusterId);
   const nowUTC = dayjs.utc().toDate();
   const zeroUTC = dayjs().set("h", 0).set("m", 0).set("s", 0).toDate();
 

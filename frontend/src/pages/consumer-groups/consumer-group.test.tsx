@@ -3,19 +3,21 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ConsumerGroup, ConsumerGroupTopicDetails } from "./consumer-group";
-import * as admin from "../../tauri/admin";
 
-vi.spyOn(admin, "describeConsumerGroup");
+const describeConsumerGroupMock = vi.fn(() =>
+  Promise.resolve({
+    name: "test",
+    offsets: [],
+  })
+);
 
 vi.mock("../../tauri/admin", () => ({
-  describeConsumerGroup: () =>
-    Promise.resolve({
-      name: "test",
-      offsets: [],
-    }),
-  getConsumerGroupState: () => Promise.resolve("Stable"),
-  getLastOffsets: vi.fn(),
-  getConsumerGroups: () => Promise.resolve([]),
+  useAdmin: () => ({
+    describeConsumerGroup: describeConsumerGroupMock,
+    getConsumerGroupState: () => Promise.resolve("Stable"),
+    getLastOffsets: vi.fn(),
+    getConsumerGroups: () => Promise.resolve([]),
+  }),
 }));
 
 describe("ConsumerGroup", () => {
@@ -25,7 +27,7 @@ describe("ConsumerGroup", () => {
       wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
     });
     expect(container).toBeTruthy();
-    expect(admin.describeConsumerGroup).toBeCalled();
+    expect(describeConsumerGroupMock).toBeCalled();
   });
 });
 

@@ -1,17 +1,16 @@
 import { useSessionStorage } from "@mantine/hooks";
 import { useParams } from "react-router-dom";
 import { Topic } from "./topic/main";
-import { listTopics } from "../../tauri/admin";
 import { Modal, Title } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
 import { useFavorites } from "../../hooks/use-favorites";
 import { CreateTopicModal } from "./modals/create-topic-modal";
 import { useState } from "react";
 import { ItemList, TwoColumnPage } from "../../components";
+import { useListTopics } from "../../tauri/admin";
 
 export const TopicsPage = () => {
   const { clusterId, activeTopicName, setActiveTopicName } = useTopic();
-  const { isFetching, isLoading, data, refetch } = useQuery(["listTopics", clusterId], () => listTopics(clusterId));
+  const { isFetching, isLoading, data, refetch } = useListTopics(clusterId);
 
   const { favorites, toggleFavorite } = useFavorites(clusterId, "topics");
   const [addTopicModalOpened, setAddTopicModalOpened] = useState(false);

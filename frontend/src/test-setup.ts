@@ -11,5 +11,7 @@ vi.mock("./tauri/helpers", () => {
       console.log("setWindowTitle");
     },
     useAppVersion: () => "0.0.0",
+    useFs: () => vi.fn(),
+    useAdmin: () => vi.fn(),
   };
 });

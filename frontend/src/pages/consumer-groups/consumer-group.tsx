@@ -1,9 +1,8 @@
 import { Text, Container, Group, Stack, Grid, Center, Loader, Accordion } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { useMemo } from "react";
 import { PageHeader } from "../../components";
-import { describeConsumerGroup, getConsumerGroupState, getLastOffsets } from "../../tauri/admin";
+import { useDescribeConsumerGroup, useGetLastOffsets } from "../../tauri/admin";
 import { ToolsMenu } from "./tools-menu";
 
 type ConsumerGroupProps = {
@@ -14,18 +13,8 @@ type ConsumerGroupProps = {
 
 export const ConsumerGroup = (props: ConsumerGroupProps) => {
   const { name, clusterId, onDeleteConsumerGroup } = props;
-  const { data: consumerGroupState } = useQuery(["getConsumerGroupState", clusterId, name], () =>
-    getConsumerGroupState(clusterId, name)
-  );
-  const {
-    isLoading,
-    data: consumerGroupInfo,
-    refetch,
-    isRefetching,
-  } = useQuery(["describeConsumerGroup", clusterId, name], () => describeConsumerGroup(clusterId, name, true), {
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-  });
+  const { isLoading, data, refetch, isRefetching } = useDescribeConsumerGroup(clusterId, name, true);
+  const { info: consumerGroupInfo, state: consumerGroupState } = data ?? { info: undefined, state: undefined };
   const topicOffsetMap = useMemo(() => {
     if (!consumerGroupInfo) return;
     const map = consumerGroupInfo.offsets.reduce((prev, current) => {
@@ -87,15 +76,18 @@ export const ConsumerGroupTopicDetails = ({
   topicName: string;
   offsets: { partition: number; offset: number }[];
 }) => {
-  const { data } = useQuery(["getLastOffsets", clusterId, topicName, offsets], async () => {
-    const lastOffsets = (await getLastOffsets(clusterId, [topicName]))[topicName];
-    const sumLastOffsets = lastOffsets.map((po) => po.offset).reduce((a, b) => a + b, 0);
-    const sumOffsets = offsets.map((o) => o.offset).reduce((a, b) => a + b, 0);
-    return {
-      lastOffsets,
-      totalLag: sumLastOffsets - sumOffsets,
-    };
-  });
+  const { data: getLastOffsetsResult } = useGetLastOffsets(clusterId, [topicName]);
+  const lastOffsets = getLastOffsetsResult?.[topicName];
+  const sumLastOffsets = lastOffsets?.map((po) => po.offset).reduce((a, b) => a + b, 0);
+  const sumOffsets = offsets.map((o) => o.offset).reduce((a, b) => a + b, 0);
+  const data =
+    sumLastOffsets && lastOffsets
+      ? {
+          lastOffsets,
+          totalLag: sumLastOffsets - sumOffsets,
+        }
+      : undefined;
+
   return (
     <Accordion.Item key={topicName} value={topicName}>
       <Accordion.Control>
@@ -104,44 +96,44 @@ export const ConsumerGroupTopicDetails = ({
             {topicName}
           </Text>
           <Text italic size={"md"}>
-            Lag: {data?.totalLag ?? "..."}
+            Lag: {data?.totalLag ?? 0}
           </Text>
         </Group>
       </Accordion.Control>
       <Accordion.Panel>
         <Grid>
-          <Grid.Col span={6}>
-            <Text align="left" weight={"bold"}>
-              Topic
-            </Text>
-          </Grid.Col>
-          <Grid.Col span={2}>
+          <Grid.Col span={3}>
             <Text align="left" weight={"bold"}>
               Partition
             </Text>
           </Grid.Col>
-          <Grid.Col span={2}>
+          <Grid.Col span={3}>
             <Text align="left" weight={"bold"}>
-              Offset
+              Current Offset
             </Text>
           </Grid.Col>
-          <Grid.Col span={2}>
+          <Grid.Col span={3}>
+            <Text align="left" weight={"bold"}>
+              Last Offset
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={3}>
             <Text align="left" weight={"bold"}>
               Lag
             </Text>
           </Grid.Col>
           {offsets.map(({ offset, partition }) => (
             <React.Fragment key={`${topicName}-${partition}`}>
-              <Grid.Col span={6}>
-                <Text sx={{ overflowWrap: "break-word" }}>{topicName}</Text>
-              </Grid.Col>
-              <Grid.Col span={2}>
+              <Grid.Col span={3}>
                 <Text>{partition}</Text>
               </Grid.Col>
-              <Grid.Col span={2}>
+              <Grid.Col span={3}>
                 <Text>{offset}</Text>
               </Grid.Col>
-              <Grid.Col span={2}>
+              <Grid.Col span={3}>
+                <Text>{data?.lastOffsets.find((po) => po.partitionId === partition)?.offset ?? 0}</Text>
+              </Grid.Col>
+              <Grid.Col span={3}>
                 <Text>{(data?.lastOffsets.find((po) => po.partitionId === partition)?.offset ?? 0) - offset}</Text>
               </Grid.Col>
             </React.Fragment>

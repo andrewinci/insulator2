@@ -1,23 +1,17 @@
 import { Center, Text } from "@mantine/core";
 import { useSessionStorage } from "@mantine/hooks";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useFavorites } from "../../hooks/use-favorites";
 import { useUserSettings } from "../../providers";
-import { listSubjects } from "../../tauri/schema-registry";
+import { useListSubjects } from "../../tauri/schema-registry";
 import { Schema } from "./schema";
 import { AddSchemaModal } from "./add-schema-modal";
 import { ItemList, TwoColumnPage } from "../../components";
 
 export const SchemasPage = () => {
   const { clusterId, isSchemaRegistryConfigured, activeSchemaName, setActiveSchemaName } = useSchemaRegistry();
-  const {
-    data: subjects,
-    isLoading,
-    isFetching,
-    refetch,
-  } = useQuery(["getSchemaNamesList", clusterId], () => listSubjects(clusterId));
+  const { data: subjects, isLoading, isFetching, refetch } = useListSubjects(clusterId);
   const [addSchemaModalOpened, setAddSchemaModalOpened] = useState(false);
   const { favorites, toggleFavorite } = useFavorites(clusterId, "schemas");
   const onDeleteSubject = (name: string) => {

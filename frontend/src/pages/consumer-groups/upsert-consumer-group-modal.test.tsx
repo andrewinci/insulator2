@@ -11,7 +11,10 @@ describe("mapOffset", () => {
 });
 
 vi.mock("../../tauri/admin", () => ({
-  setConsumerGroup: vi.fn(),
+  useAdmin: () => ({
+    setConsumerGroup: vi.fn(),
+  }),
+
   listTopics: vi.fn().mockResolvedValue(["topic1", "topic2"]),
 }));
 

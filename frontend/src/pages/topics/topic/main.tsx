@@ -3,7 +3,6 @@ import { RecordsList, RecordsListRef } from "./record-list";
 import { getConsumerState, startConsumer, stopConsumer } from "../../../tauri/consumer";
 import { NewWindowButton, PageHeader } from "../../../components";
 import { useQuery } from "@tanstack/react-query";
-import { getLastOffsets, getTopicInfo } from "../../../tauri/admin";
 import { Allotment } from "allotment";
 import { ToolsMenu } from "./tools-menu";
 import { TopicPageMenu } from "./topic-page-menu";
@@ -14,6 +13,7 @@ import { ConsumerConfigurationModal } from "../modals/consumer-configuration-mod
 import { ConsumerConfiguration } from "../../../models";
 import { parseNumberToHumanReadable } from "../../../helpers/human-readable";
 import { css } from "@emotion/css";
+import { useGetLastOffsets, useGetTopicInfo } from "../../../tauri/admin";
 
 type TopicProps = {
   clusterId: string;
@@ -193,20 +193,16 @@ const useConsumer = (clusterId: string, topicName: string) => {
 };
 
 const useTopicInfo = (clusterId: string, topicName: string) => {
-  const { data: estimatedRecords } = useQuery(["getLastOffsets", clusterId, topicName], () =>
-    getLastOffsets(clusterId, [topicName])
-      .then((res) => res[topicName].map((po) => po.offset))
-      .then((offsets) => offsets.reduce((a, b) => a + b, 0))
-  );
-
   // get topic information to populate the page header
-  const { data: topicInfo } = useQuery(["getTopicInfo", clusterId, topicName], async () => {
-    const topicInfo = await getTopicInfo(clusterId, topicName);
-    return {
-      partitionCount: topicInfo.partitions.length,
-      cleanupPolicy: topicInfo.configurations["cleanup.policy"] ?? "...",
-    };
-  });
+  const { data: lastOffsets } = useGetLastOffsets(clusterId, [topicName]);
+  const { data: topicInfoResult } = useGetTopicInfo(clusterId, topicName);
+
+  const estimatedRecords = lastOffsets?.[topicName].map((po) => po.offset).reduce((a, b) => a + b, 0);
+
+  const topicInfo = {
+    partitionCount: topicInfoResult?.partitions.length,
+    cleanupPolicy: topicInfoResult?.configurations["cleanup.policy"] ?? "...",
+  };
 
   return { estimatedRecords, topicInfo };
 };
