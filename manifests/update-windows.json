@@ -1,11 +1,11 @@
 {
-  "version": "v2.12.1",
-  "notes": "## [2.12.1](https://github.com/andrewinci/insulator2/compare/v2.12.0...v2.12.1) (2023-04-01)\n\n\n### Bug Fixes\n\n* part of the topic menu hidden by the bottom allotment ([2444d27](https://github.com/andrewinci/insulator2/commit/2444d2739507c1a32e6a8745a6e801f35f312491))\n* producer button disappear during record consumption ([d9d9d7e](https://github.com/andrewinci/insulator2/commit/d9d9d7e20ade0bd5038ebfced288a1a3fb91c66f))\n* wrong namespace for nested avro refs ([c783765](https://github.com/andrewinci/insulator2/commit/c783765a1870abf0f0cff43dd77c940df2937c0d))\n\n\n\n",
-  "pub_date": "2023-04-01T16:01:03Z",
+  "version": "v2.12.2",
+  "notes": "## [2.12.2](https://github.com/andrewinci/insulator2/compare/v2.12.1...v2.12.2) (2023-05-28)\n\n\n### Bug Fixes\n\n* navigation to resources that contains a full stop ([#488](https://github.com/andrewinci/insulator2/issues/488)) ([d02d3f5](https://github.com/andrewinci/insulator2/commit/d02d3f5de8f538543900869ba4e1b410f8996243))\n\n\n\n",
+  "pub_date": "2023-05-28T19:40:11Z",
   "platforms": {
     "windows-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.12.1/Insulator.2_2.12.1_x64_en-US.msi.zip"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.12.2/Insulator.2_2.12.2_x64_en-US.msi.zip"
     }
   }
 }

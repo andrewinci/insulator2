@@ -1,3 +1,9 @@
+## [2.12.2](https://github.com/andrewinci/insulator2/compare/v2.12.1...v2.12.2) (2023-05-28)
+
+### Bug Fixes
+
+- navigation to resources that contains a full stop ([#488](https://github.com/andrewinci/insulator2/issues/488)) ([d02d3f5](https://github.com/andrewinci/insulator2/commit/d02d3f5de8f538543900869ba4e1b410f8996243))
+
 ## [2.12.1](https://github.com/andrewinci/insulator2/compare/v2.12.0...v2.12.1) (2023-04-01)
 
 ### Bug Fixes
