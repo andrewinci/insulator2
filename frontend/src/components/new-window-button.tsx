@@ -33,16 +33,19 @@ export const useWindowHandler = () => {
   return {
     isModal,
     openNewWindow: (params: OpenNewWindowParams) => {
-      const { url, windowTitle, beforeOpen, afterOpen } = params;
+      const { url: rawUrl, windowTitle, beforeOpen, afterOpen } = params;
+      //make sure there is trailing slash to the url
+      const url = rawUrl.replace(/\/?$/, "/");
+      const label = url.replace(/\./g, "_");
       // check if the window is already open
-      const currentWebView = WebviewWindow.getByLabel(url);
+      const currentWebView = WebviewWindow.getByLabel(label);
       if (currentWebView) {
         // just focus the already open window
         currentWebView.setFocus();
         return;
       }
       if (beforeOpen) beforeOpen();
-      const webview = new WebviewWindow(url, {
+      const webview = new WebviewWindow(label, {
         url,
         title: `${clusterName} - ${windowTitle}`,
         width: 650,
