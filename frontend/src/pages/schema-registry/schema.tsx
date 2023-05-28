@@ -1,10 +1,9 @@
 import { Center, Container, Group, Loader, Select, Tooltip } from "@mantine/core";
 import { IconVersions } from "@tabler/icons";
-import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { CodeEditor, NewWindowButton, PageHeader } from "../../components";
 import { pretty } from "../../helpers/json";
-import { getSubject } from "../../tauri/schema-registry";
+import { useGetSubject } from "../../tauri/schema-registry";
 import { ToolsMenu } from "./tools-menu";
 
 type SchemaProps = {
@@ -20,12 +19,7 @@ export const Schema = ({
   schemaId,
   onSubjectDeleted,
 }: SchemaProps & JSX.IntrinsicAttributes) => {
-  const {
-    data: subject,
-    isLoading,
-    refetch,
-  } = useQuery(["getSchemaVersions", clusterId, schemaName], () => getSubject(clusterId, schemaName));
-
+  const { data: subject, isLoading, refetch } = useGetSubject(clusterId, schemaName);
   const [state, setState] = useState({
     version: undefined as number | undefined,
   });

@@ -1,9 +1,8 @@
 import { ActionIcon, Menu, Text } from "@mantine/core";
 import { openConfirmModal } from "@mantine/modals";
 import { IconFileExport, IconTool, IconTrash } from "@tabler/icons";
-
-import { deleteSubject, deleteSubjectVersion } from "../../tauri/schema-registry";
 import { useFs } from "../../tauri/helpers";
+import { useSchemaRegistry } from "../../tauri/schema-registry";
 
 type ToolsMenuProps = {
   clusterId: string;
@@ -16,6 +15,7 @@ type ToolsMenuProps = {
 
 export const ToolsMenu = (props: ToolsMenuProps) => {
   const { clusterId, subject, version, currentSchema } = props;
+  const { deleteSubject, deleteSubjectVersion } = useSchemaRegistry();
   const { onSubjectDeleted, onVersionDeleted } = props;
   const openDeleteSubjectModal = () =>
     openConfirmModal({

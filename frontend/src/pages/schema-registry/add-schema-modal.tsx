@@ -2,7 +2,7 @@ import { Autocomplete, Button, Group, Input, Stack, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { CodeEditor, ResizableModal } from "../../components";
-import { postSchema } from "../../tauri/schema-registry";
+import { useSchemaRegistry } from "../../tauri/schema-registry";
 
 type FormType = { subjectName: string; avroSchema: string };
 
@@ -15,6 +15,7 @@ type AddSchemaModalProps = {
 
 export const AddSchemaModal = ({ subjects, clusterId, opened, onClose }: AddSchemaModalProps) => {
   const [state, setState] = useState<{ isUploading: boolean }>({ isUploading: false });
+  const { postSchema } = useSchemaRegistry();
   const schemaNameRegex = /^[a-zA-Z][a-zA-Z0-9_-]*$/g;
   const form = useForm<FormType>({
     initialValues: {
