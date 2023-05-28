@@ -20,7 +20,7 @@ vi.mock("@tauri-apps/api/window", () => {
     // eslint-disable-next-line @typescript-eslint/no-useless-constructor, @typescript-eslint/no-empty-function
     constructor(_0: string, _1: unknown) {}
     static getByLabel = (label: string) => {
-      if (label === "existing_window") {
+      if (label === "existing_window/") {
         return new WebviewWindow(label, {});
       }
       return null;

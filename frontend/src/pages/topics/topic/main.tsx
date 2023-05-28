@@ -23,6 +23,7 @@ type TopicProps = {
 
 export const Topic = (props: TopicProps & JSX.IntrinsicAttributes) => {
   const { clusterId, topicName, onTopicDeleted } = props;
+  console.log("Topic page", clusterId, topicName);
   // cached query across navigation
   const [queryState, setQueryState] = useCache(
     {
