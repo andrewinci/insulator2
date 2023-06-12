@@ -2085,7 +2085,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "testcontainers",
- "time 0.3.21",
+ "time 0.3.22",
  "tokio",
  "toml 0.7.3",
  "url",
@@ -3070,7 +3070,7 @@ dependencies = [
  "line-wrap",
  "quick-xml",
  "serde",
- "time 0.3.21",
+ "time 0.3.22",
 ]
 
 [[package]]
@@ -3872,7 +3872,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with_macros 2.3.2",
- "time 0.3.21",
+ "time 0.3.22",
 ]
 
 [[package]]
@@ -4006,7 +4006,7 @@ dependencies = [
  "num-bigint",
  "num-traits",
  "thiserror",
- "time 0.3.21",
+ "time 0.3.22",
 ]
 
 [[package]]
@@ -4308,7 +4308,7 @@ dependencies = [
  "tauri-utils",
  "tempfile",
  "thiserror",
- "time 0.3.21",
+ "time 0.3.22",
  "tokio",
  "url",
  "uuid",
@@ -4356,7 +4356,7 @@ dependencies = [
  "sha2",
  "tauri-utils",
  "thiserror",
- "time 0.3.21",
+ "time 0.3.22",
  "uuid",
  "walkdir",
 ]
@@ -4572,9 +4572,9 @@ dependencies = [
 
 [[package]]
 name = "time"
-version = "0.3.21"
+version = "0.3.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f3403384eaacbca9923fa06940178ac13e4edb725486d70e8e15881d0c836cc"
+checksum = "ea9e1b3cf1243ae005d9e74085d4d542f3125458f3a81af210d901dcd7411efd"
 dependencies = [
  "itoa 1.0.5",
  "serde",
