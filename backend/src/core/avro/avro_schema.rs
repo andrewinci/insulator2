@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use apache_avro::{
-    schema::{Name, ResolvedSchema},
+    schema::{DecimalSchema, EnumSchema, FixedSchema, Name, RecordSchema, ResolvedSchema},
     Schema,
 };
 
@@ -120,9 +120,9 @@ impl ResolvedAvroSchema {
                 Schema::Union(s) => {
                     AvroSchema::Union(s.variants().iter().map(|s| map(s, parent_ns, references)).collect())
                 }
-                Schema::Record {
+                Schema::Record(RecordSchema {
                     name, fields, lookup, ..
-                } => AvroSchema::Record {
+                }) => AvroSchema::Record {
                     name: name.clone(),
                     lookup: lookup.clone(),
                     fields: fields
@@ -137,15 +137,15 @@ impl ResolvedAvroSchema {
                         })
                         .collect(),
                 },
-                Schema::Enum { name, symbols, .. } => AvroSchema::Enum {
+                Schema::Enum(EnumSchema { name, symbols, .. }) => AvroSchema::Enum {
                     name: name.clone(),
                     symbols: symbols.clone(),
                 },
-                Schema::Fixed { name, size, .. } => AvroSchema::Fixed {
+                Schema::Fixed(FixedSchema { name, size, .. }) => AvroSchema::Fixed {
                     name: name.clone(),
                     size: *size,
                 },
-                Schema::Decimal { precision, scale, .. } => AvroSchema::Decimal {
+                Schema::Decimal(DecimalSchema { precision, scale, .. }) => AvroSchema::Decimal {
                     precision: *precision,
                     scale: *scale,
                 },
@@ -153,7 +153,7 @@ impl ResolvedAvroSchema {
                     let fqn = name.fully_qualified_name(parent_ns);
                     let schema = references
                         .get(&fqn)
-                        .expect(format!("Unable to resolve {fqn:?}.").as_str());
+                        .unwrap_or_else(|| panic!("Unable to resolve {fqn:?}."));
                     map(schema, &fqn.namespace, references)
                 }
             }
@@ -161,7 +161,7 @@ impl ResolvedAvroSchema {
 
         Self {
             id,
-            schema: map(schema, &None, &references),
+            schema: map(schema, &None, references),
             inner_schema: schema.clone(),
         }
     }

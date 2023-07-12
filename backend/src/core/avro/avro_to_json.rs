@@ -55,7 +55,7 @@ fn map(value: &AvroValue, schema: &Schema) -> AvroResult<JsonValue> {
         //     v.millis()
         // ))),
         (AvroValue::Union(i, v), Schema::Union(s)) => {
-            if *v == Box::new(AvroValue::Null) {
+            if **v == AvroValue::Null {
                 Ok(JsonValue::Null)
             } else {
                 let schema = s.get(*i as usize).ok_or_else(|| {
