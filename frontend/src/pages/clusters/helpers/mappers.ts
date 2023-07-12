@@ -6,7 +6,6 @@ import { parseKeystore, parseTruststore } from "../../../tauri/helpers";
 export function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined {
   if (!cluster) return undefined;
   const { name, endpoint, authentication } = cluster;
-  const schemaRegistry = cluster.schemaRegistry ?? { endpoint: "", password: "", username: "" };
   let type: AuthenticationFormType = "None";
   let sasl: SaslFormType = { username: "", password: "", scram: false };
   let ssl: SslFormType = { ca: "", certificate: "", key: "", keyPassword: undefined };
@@ -20,7 +19,16 @@ export function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined
     ssl = authentication.Ssl;
   }
 
-  return { name, endpoint, authentication: { type, sasl, ssl }, schemaRegistry };
+  return {
+    name,
+    endpoint,
+    authentication: { type, sasl, ssl },
+    schemaRegistry: {
+      endpoint: cluster.schemaRegistry?.endpoint ?? "",
+      password: cluster.schemaRegistry?.password ?? "",
+      username: cluster.schemaRegistry?.username ?? "",
+    },
+  };
 }
 
 export async function mapFormToCluster(c: ClusterFormType): Promise<Cluster> {

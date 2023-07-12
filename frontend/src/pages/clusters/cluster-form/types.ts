@@ -1,9 +1,9 @@
 export type AuthenticationFormType = "None" | "SSL" | "SASL" | "JKS";
 
 export type JksFormType = {
-  truststoreLocation?: string;
+  truststoreLocation: string;
   truststorePassword?: string;
-  keystoreLocation?: string;
+  keystoreLocation: string;
   keystorePassword?: string;
 };
 
@@ -23,7 +23,7 @@ export type SslFormType = {
 export type SchemaRegistryFormType = {
   endpoint: string;
   username?: string;
-  password?: string;
+  password: string;
 };
 
 export type ClusterFormType = {
