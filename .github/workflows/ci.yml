@@ -31,7 +31,7 @@ jobs:
       - name: Install npm dependencies
         run: |
           npm install -g yarn
-          yarn install
+          yarn install --network-timeout 100000
 
       - name: Install Ubuntu dependencies
         if: ${{ matrix.os == 'ubuntu-latest' }}
