@@ -84,13 +84,7 @@ export const Schema = ({
         <Center hidden={!isLoading} mt={10}>
           <Loader />
         </Center>
-        <CodeEditor
-          path={schemaName}
-          height="calc(100vh - 155px)"
-          language="json"
-          value={currentSchema}
-          readOnly={true}
-        />
+        <CodeEditor height="calc(100vh - 155px)" language="json" value={currentSchema} readOnly={true} />
       </Container>
     </Container>
   );
