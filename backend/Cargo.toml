@@ -50,8 +50,9 @@ rdkafka = { version = "0.33.2", features = [
     "gssapi",
 ] }
 
-# [patch.crates-io]
-# openssl-src = { git = "https://github.com/andrewinci/openssl-src-rs.git", branch = "release/111" }
+# this is required to allow rdkafka to compile in windows
+[patch.crates-io]
+openssl-src = { git = "https://github.com/andrewinci/openssl-src-rs.git", branch = "release/111" }
 
 [dev-dependencies]
 mockall = "0.11.4"

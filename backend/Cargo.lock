@@ -5661,3 +5661,8 @@ dependencies = [
  "crc32fast",
  "crossbeam-utils",
 ]
+
+[[patch.unused]]
+name = "openssl-src"
+version = "111.25.0+1.1.1t"
+source = "git+https://github.com/andrewinci/openssl-src-rs.git?branch=release/111#7c965abbe8d9375334a2e32b357a792a04283471"
