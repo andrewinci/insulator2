@@ -222,11 +222,41 @@ mod tests {
     use super::parse_decimal;
     use crate::core::avro::avro_schema::AvroSchema;
     use crate::core::avro::avro_schema::RecordField;
+    use crate::core::avro::error::AvroResult;
     use crate::core::avro::AvroError;
+    use crate::core::avro::AvroParser;
+    use crate::core::avro::ResolvedAvroSchema;
+    use crate::core::avro::SchemaProvider;
+    use apache_avro::Schema;
 
     use apache_avro::types::Value as AvroValue;
+    use async_trait::async_trait;
     use serde_json::json;
     use serde_json::Value as JsonValue;
+
+    struct MockSchemaProvider {}
+    #[async_trait]
+    impl SchemaProvider for MockSchemaProvider {
+        async fn get_schema_by_id(&self, id: i32) -> AvroResult<ResolvedAvroSchema> {
+            let json_schema = &get_test_avro_schema();
+            let schema = Schema::parse_str(json_schema).expect("invalid test schema");
+            Ok(ResolvedAvroSchema::from(id, &schema))
+        }
+        async fn get_schema_by_name(&self, _: &str) -> AvroResult<ResolvedAvroSchema> {
+            let json_schema = &get_test_avro_schema();
+            let schema = Schema::parse_str(json_schema).expect("invalid test schema");
+            Ok(ResolvedAvroSchema::from(123, &schema))
+        }
+    }
+
+    #[tokio::test]
+    async fn test_e2e() {
+        let mock_provider = MockSchemaProvider {};
+        let sut = AvroParser::new(mock_provider.into());
+        let sample_json = &get_test_avro_message();
+        let res = sut.json_to_avro(sample_json, "sample").await;
+        assert!(res.is_ok())
+    }
 
     #[test]
     fn test_decimal() {
@@ -310,5 +340,115 @@ mod tests {
             name: name.into(),
             schema: schema,
         }
+    }
+
+    fn get_test_avro_message() -> String {
+        r#"{
+            "body": {
+              "TopLevel": {
+                "status": {
+                  "current": {
+                    "StatusHistoryDetail": {
+                      "statusDetails": {
+                        "StatusDetails": {
+                          "newStatus": null
+                        }
+                      },
+                      "statusOfGroup": "Live"
+                    }
+                  },
+                  "fullHistory": [{
+                    "statusDetails": {
+                      "StatusDetails": {
+                        "newStatus": null,
+                      }
+                    },
+                    "statusOfGroup": "Live"
+                  }]
+                }
+              }
+            }
+          }"#
+        .to_string()
+    }
+    fn get_test_avro_schema() -> String {
+        r#"{
+            "fields": [
+              {
+                "name": "body",
+                "type": [
+                  {
+                    "fields": [
+                      {
+                        "name": "id",
+                        "type": "string"
+                      }
+                    ],
+                    "name": "Deleted",
+                    "type": "record"
+                  },
+                  {
+                    "fields": [
+                      {
+                        "name": "status",
+                        "type": {
+                          "fields": [
+                            {
+                              "name": "current",
+                              "type": [
+                                "null",
+                                {
+                                  "fields": [
+                                    {
+                                      "name": "statusOfGroup",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "name": "statusDetails",
+                                      "type": [
+                                        "null",
+                                        {
+                                          "fields": [
+                                            {
+                                              "name": "newStatus",
+                                              "type": ["null", "string"]
+                                            }
+                                          ],
+                                          "name": "StatusDetails",
+                                          "type": "record"
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "name": "StatusHistoryDetail",
+                                  "type": "record"
+                                }
+                              ]
+                            },
+                            {
+                              "name": "fullHistory",
+                              "type": {
+                                "items": "StatusHistoryDetail",
+                                "type": "array"
+                              }
+                            }
+                          ],
+                          "name": "StatusSnapshot",
+                          "namespace": "com.test.status",
+                          "type": "record"
+                        }
+                      }
+                    ],
+                    "name": "TopLevel",
+                    "type": "record"
+                  }
+                ]
+              }
+            ],
+            "name": "Sample",
+            "namespace": "com.test",
+            "type": "record"
+          }"#
+        .to_string()
     }
 }
