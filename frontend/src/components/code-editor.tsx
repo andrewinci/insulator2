@@ -2,7 +2,6 @@ import Editor from "@monaco-editor/react";
 
 type CodeEditorProps = {
   height?: number | string;
-  path: string;
   language?: string;
   value?: string;
   readOnly?: boolean;

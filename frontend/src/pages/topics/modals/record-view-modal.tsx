@@ -60,7 +60,7 @@ const RecordDetailsForm = (props: RecordDetailsModalProps & { heightOffset: numb
       </Stack>
       {record.payload && (
         <Input.Wrapper mt={3} style={{ height: `calc(100% - ${heightOffset}px)` }} label="Value">
-          <CodeEditor path={topic} language="json" height={"100%"} value={pretty(record.payload)} readOnly />
+          <CodeEditor language="json" height={"100%"} value={pretty(record.payload)} readOnly />
         </Input.Wrapper>
       )}
       {!record.payload && (

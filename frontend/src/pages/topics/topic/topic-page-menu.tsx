@@ -81,7 +81,6 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}`);
             </Anchor>
           </Text>
           <CodeEditor
-            path={topicName}
             hideLineNumbers={true}
             height={height ?? 20}
             language="sql"

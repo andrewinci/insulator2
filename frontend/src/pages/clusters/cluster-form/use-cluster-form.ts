@@ -19,7 +19,7 @@ export const useClusterForm = (initialValues?: ClusterFormType) => {
         type: "None",
         sasl: { username: "", password: "", scram: false },
         ssl: { certificate: "", ca: "", key: "", keyPassword: "" },
-        jks: {},
+        jks: { keystoreLocation: "", truststoreLocation: "" },
       },
       schemaRegistry: { endpoint: "", username: "", password: "" },
     },
