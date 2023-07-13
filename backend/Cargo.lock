@@ -2097,6 +2097,7 @@ dependencies = [
  "mockall",
  "num-bigint",
  "once_cell",
+ "openssl-src",
  "r2d2",
  "r2d2_sqlite",
  "rand 0.8.5",
