@@ -13,3 +13,7 @@ vi.mock("./tauri/helpers", () => {
     useAppVersion: () => "0.0.0",
   };
 });
+
+vi.mock("uuid", () => ({
+  v4: vi.fn(() => "mocked-uuid"),
+}));

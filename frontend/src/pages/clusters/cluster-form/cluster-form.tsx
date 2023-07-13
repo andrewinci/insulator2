@@ -114,7 +114,8 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
                       })) as string | null;
                       if (truststoreLocation) {
                         form.setValues((s) => {
-                          const jks = { ...s.authentication?.jks, truststoreLocation };
+                          const keystoreLocation = s.authentication?.jks?.keystoreLocation ?? "";
+                          const jks = { ...s.authentication?.jks, truststoreLocation, keystoreLocation };
                           return { ...s, authentication: { ...s.authentication, type: "JKS", jks } };
                         });
                       }
@@ -147,7 +148,8 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
                       })) as string | null;
                       if (keystoreLocation) {
                         form.setValues((s) => {
-                          const jks = { ...s.authentication?.jks, keystoreLocation };
+                          const truststoreLocation = s.authentication?.jks?.truststoreLocation ?? "";
+                          const jks = { ...s.authentication?.jks, keystoreLocation, truststoreLocation };
                           return { ...s, authentication: { ...s.authentication, type: "JKS", jks } };
                         });
                       }

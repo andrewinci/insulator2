@@ -5,7 +5,7 @@ const setUserSettingsMock = vi.fn();
 
 vi.doMock("../providers", () => {
   return {
-    useUserSettings: vi.fn().mockReturnValue({
+    useUserSettings: () => ({
       userSettings: {
         clusters: [
           {
@@ -24,16 +24,16 @@ vi.doMock("../providers", () => {
   };
 });
 
-import { useFavorites } from "./use-favorites";
-
 describe("useFavorites", () => {
-  it("should return the favorites and toggleFavorite", () => {
+  it("should return the favorites and toggleFavorite", async () => {
+    const { useFavorites } = await import("./use-favorites");
     const { result } = renderHook(() => useFavorites("cluster-1", "topics"));
     expect(result.current.favorites).toEqual(["query-1"]);
     expect(result.current.toggleFavorite).toBeDefined();
   });
 
-  it("should add item to favorites when toggleFavorite is called", () => {
+  it("should add item to favorites when toggleFavorite is called", async () => {
+    const { useFavorites } = await import("./use-favorites");
     setUserSettingsMock.mockReset();
     const { result } = renderHook(() => useFavorites("cluster-1", "consumers"));
     result.current.toggleFavorite("query-1");

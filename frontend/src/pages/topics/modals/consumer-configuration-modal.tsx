@@ -73,7 +73,7 @@ export const ConsumerConfigurationModal = ({ topicName, opened, onClose, onSubmi
               />
             </Stack>
             <Stack hidden={!form.values.onlyBeginning}>
-              <DatePicker allowSingleDateInRange label="From date" {...form.getInputProps("dateFrom")} />
+              <DatePicker label="From date" {...form.getInputProps("dateFrom")} />
               <TimeInput withSeconds label="From time (UTC)" {...form.getInputProps("timeFrom")} />
             </Stack>
           </Stack>
