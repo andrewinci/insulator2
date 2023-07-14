@@ -21,12 +21,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: volta-cli/action@v3
-
-      - name: Use node cache
-        uses: actions/cache@v3
+      
+      - name: Restore npm cache
+        uses: actions/cache/restore@v3
+        id: restore-npm-cache
         with:
           path: "**/node_modules"
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}-v1
 
       - name: Install npm dependencies
         run: |
@@ -40,8 +41,9 @@ jobs:
           sudo apt install libwebkit2gtk-4.0-dev libdbus-1-dev pkg-config libgtk-3-dev libsoup2.4-dev \
               build-essential curl wget libsasl2-dev libayatana-appindicator3-dev librsvg2-dev
 
-      - name: Cargo Cache
-        uses: actions/cache@v3
+      - name: Restore cargo cache
+        uses: actions/cache/restore@v3
+        id: restore-cargo-cache
         with:
           path: |
             ~/.cargo/bin/
@@ -49,39 +51,50 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             backend/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
 
-      - name: (MacOS) Test and build
+      - name: (MacOS) Test
         if: matrix.os == 'macos-12' && !startsWith(github.ref, 'refs/tags/v')
         run: |
           # clean up cached bundle
           yarn rimraf backend/target/release/bundle/
           mkdir frontend/dist
-          yarn test && yarn tauri build -b dmg
+          yarn test
+      
+      - name: (MacOS) Bundle
+        if: matrix.os == 'macos-12' && !startsWith(github.ref, 'refs/tags/v')
+        run: yarn tauri build -b dmg
 
-      - name: (Windows) Test and build
+      - name: (Windows) Test
         if: matrix.os == 'windows-latest' && !startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir frontend/dist
-          yarn test && yarn tauri build -b msi
+          yarn test
+      
+      - name: (Windows) Bundle
+        if: matrix.os == 'windows-latest' && !startsWith(github.ref, 'refs/tags/v')
+        run: yarn tauri build -b msi
 
       - name: (Linux) Install tarpaulin 
         if: matrix.os == 'ubuntu-latest' && !startsWith(github.ref, 'refs/tags/v')
         run: |
           cargo install cargo-tarpaulin || true          
 
-      - name: (Linux) Coverage and build
+      - name: (Linux) Tests and coverage
         if: matrix.os == 'ubuntu-latest' && !startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir frontend/dist
           yarn lint:check
           # run unit and integration tests
           yarn coverage
-          yarn tauri build -b deb appimage
           # upload coverage
           bash <(curl -s https://codecov.io/bash)
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      
+      - name: (Linux) Bundle
+        if: matrix.os == 'ubuntu-latest' && !startsWith(github.ref, 'refs/tags/v')
+        run: yarn tauri build -b deb appimage
 
       - name: Build release artifact
         if: startsWith(github.ref, 'refs/tags/v')
@@ -139,3 +152,22 @@ jobs:
             backend/target/release/Insulator*.exe
             backend/target/release/bundle/msi/Insulator*.msi
             backend/target/release/bundle/msi/Insulator*.msi.zip
+      
+      - name: Save npm cache
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: "**/node_modules"
+          key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
+
+      - name: Save cargo cache
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            backend/target/
+          key: ${{ steps.restore-cargo-cache.outputs.cache-primary-key }}
