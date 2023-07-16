@@ -13,15 +13,196 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-12, ubuntu-latest, windows-latest]
+  windows-build:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
       - uses: volta-cli/action@v3
-      
+
+      - name: Restore npm cache
+        uses: actions/cache/restore@v3
+        id: restore-npm-cache
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}-v1
+
+      - name: Install npm dependencies
+        run: |
+          npm install -g yarn
+          yarn install --network-timeout 100000
+
+      - name: Restore cargo cache
+        uses: actions/cache/restore@v3
+        id: restore-cargo-cache
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            backend/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
+
+      - name: Test
+        run: |
+          mkdir frontend/dist
+          yarn test
+
+      - name: Bundle
+        run: yarn tauri build -b msi
+
+      - name: Build release artifact
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          # clean up cached bundle
+          yarn rimraf backend/target/release/bundle/
+          # build
+          yarn tauri build
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: windows-artifacts
+          path: backend/target/release/bundle/*
+          retention-days: 1
+
+      - name: Update manifest
+        run: |
+          python ./scripts/update-manifest.py --target windows
+          # remove unused manifests
+          rm manifests/update-linux.json 
+          rm manifests/update-darwin.json
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            manifests/update-windows.json
+            backend/target/release/Insulator*.exe
+            backend/target/release/bundle/msi/Insulator*.msi
+            backend/target/release/bundle/msi/Insulator*.msi.zip
+
+      - name: Save npm cache
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: "**/node_modules"
+          key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
+
+      - name: Save cargo cache
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            backend/target/
+          key: ${{ steps.restore-cargo-cache.outputs.cache-primary-key }}
+
+  macos-build:
+    runs-on: macos-12
+    steps:
+      - uses: actions/checkout@v3
+      - uses: volta-cli/action@v3
+
+      - name: Restore npm cache
+        uses: actions/cache/restore@v3
+        id: restore-npm-cache
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}-v1
+
+      - name: Install npm dependencies
+        run: |
+          npm install -g yarn
+          yarn install --network-timeout 100000
+
+      - name: Restore cargo cache
+        uses: actions/cache/restore@v3
+        id: restore-cargo-cache
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            backend/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
+
+      - name: Test
+        run: |
+          # clean up cached bundle
+          yarn rimraf backend/target/release/bundle/
+          mkdir frontend/dist
+          yarn test
+
+      - name: (MacOS) Bundle
+        run: yarn tauri build -b dmg
+
+      - name: Build release artifact
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          # clean up cached bundle
+          yarn rimraf backend/target/release/bundle/
+          # build
+          yarn tauri build
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: mac-os-artifacts
+          path: backend/target/release/bundle/*
+          retention-days: 1
+
+      - name: (MacOS) Update manifest
+        run: |
+          python3 ./scripts/update-manifest.py --target darwin
+          # remove unused manifests
+          rm manifests/update-linux.json manifests/update-windows.json
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            manifests/update-darwin.json
+            backend/target/release/bundle/dmg/*.dmg
+            backend/target/release/bundle/macos/Insulator*.app.tar.gz
+
+      - name: Save npm cache
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: "**/node_modules"
+          key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
+
+      - name: Save cargo cache
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            backend/target/
+          key: ${{ steps.restore-cargo-cache.outputs.cache-primary-key }}
+
+  ubuntu-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: volta-cli/action@v3
+
       - name: Restore npm cache
         uses: actions/cache/restore@v3
         id: restore-npm-cache
@@ -35,7 +216,6 @@ jobs:
           yarn install --network-timeout 100000
 
       - name: Install Ubuntu dependencies
-        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt update -y
           sudo apt install libwebkit2gtk-4.0-dev libdbus-1-dev pkg-config libgtk-3-dev libsoup2.4-dev \
@@ -53,35 +233,10 @@ jobs:
             backend/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
 
-      - name: (MacOS) Test
-        if: matrix.os == 'macos-12' && !startsWith(github.ref, 'refs/tags/v')
-        run: |
-          # clean up cached bundle
-          yarn rimraf backend/target/release/bundle/
-          mkdir frontend/dist
-          yarn test
-      
-      - name: (MacOS) Bundle
-        if: matrix.os == 'macos-12' && !startsWith(github.ref, 'refs/tags/v')
-        run: yarn tauri build -b dmg
+      - name: Install tarpaulin
+        run: cargo install cargo-tarpaulin || true
 
-      - name: (Windows) Test
-        if: matrix.os == 'windows-latest' && !startsWith(github.ref, 'refs/tags/v')
-        run: |
-          mkdir frontend/dist
-          yarn test
-      
-      - name: (Windows) Bundle
-        if: matrix.os == 'windows-latest' && !startsWith(github.ref, 'refs/tags/v')
-        run: yarn tauri build -b msi
-
-      - name: (Linux) Install tarpaulin 
-        if: matrix.os == 'ubuntu-latest' && !startsWith(github.ref, 'refs/tags/v')
-        run: |
-          cargo install cargo-tarpaulin || true          
-
-      - name: (Linux) Tests and coverage
-        if: matrix.os == 'ubuntu-latest' && !startsWith(github.ref, 'refs/tags/v')
+      - name: Tests and coverage
         run: |
           mkdir frontend/dist
           yarn lint:check
@@ -91,9 +246,8 @@ jobs:
           bash <(curl -s https://codecov.io/bash)
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      
-      - name: (Linux) Bundle
-        if: matrix.os == 'ubuntu-latest' && !startsWith(github.ref, 'refs/tags/v')
+
+      - name: Bundle
         run: yarn tauri build -b deb appimage
 
       - name: Build release artifact
@@ -110,31 +264,9 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.os }}-artifacts
+          name: ubuntu-artifacts
           path: backend/target/release/bundle/*
           retention-days: 1
-
-      - name: (MacOS) Update manifest
-        if: matrix.os == 'macOS-12' && startsWith(github.ref, 'refs/tags/v')
-        run: |
-          python3 ./scripts/update-manifest.py --target darwin
-          # remove unused manifests
-          rm manifests/update-linux.json manifests/update-windows.json
-
-      - name: (Windows) Update manifest
-        if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/v')
-        run: |
-          python ./scripts/update-manifest.py --target windows
-          # remove unused manifests
-          rm manifests/update-linux.json 
-          rm manifests/update-darwin.json
-
-      - name: (Linux) Update manifest
-        if: matrix.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/v')
-        run: |
-          python ./scripts/update-manifest.py --target linux
-          # remove unused manifests
-          rm manifests/update-darwin.json manifests/update-windows.json
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -145,14 +277,7 @@ jobs:
             backend/target/release/bundle/deb/insulator-*_amd64.deb
             backend/target/release/bundle/appimage/insulator-*_amd64.AppImage
             backend/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz
-            manifests/update-darwin.json
-            backend/target/release/bundle/dmg/*.dmg
-            backend/target/release/bundle/macos/Insulator*.app.tar.gz
-            manifests/update-windows.json
-            backend/target/release/Insulator*.exe
-            backend/target/release/bundle/msi/Insulator*.msi
-            backend/target/release/bundle/msi/Insulator*.msi.zip
-      
+
       - name: Save npm cache
         uses: actions/cache/save@v3
         if: always()
