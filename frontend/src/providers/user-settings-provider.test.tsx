@@ -10,7 +10,7 @@ vi.mock("../tauri/configuration", () => {
       Promise.resolve({
         theme: "light",
         language: "en",
-      })
+      }),
     ),
     setConfiguration: vi.fn((_) => Promise.resolve()),
   };
@@ -21,7 +21,7 @@ describe("UserSettingsProvider", () => {
     const { findByText } = render(
       <UserSettingsProvider>
         <div>Hello</div>
-      </UserSettingsProvider>
+      </UserSettingsProvider>,
     );
 
     await findByText("Hello");
@@ -41,7 +41,7 @@ describe("UserSettingsProvider", () => {
     render(
       <UserSettingsProvider>
         <Test />
-      </UserSettingsProvider>
+      </UserSettingsProvider>,
     );
 
     expect(setConfiguration).toHaveBeenCalledOnce();

@@ -6,7 +6,7 @@ export const setConsumerGroup = (
   clusterId: string,
   consumerGroupName: string,
   topics: string[],
-  offsetConfig: ConsumerOffsetConfiguration
+  offsetConfig: ConsumerOffsetConfiguration,
 ): Promise<void> =>
   withNotifications({
     action: () => invoke<void>("set_consumer_group", { clusterId, consumerGroupName, topics, offsetConfig }),
@@ -19,7 +19,7 @@ export const getConsumerGroupState = (clusterId: string, consumerGroupName: stri
 export const describeConsumerGroup = (
   clusterId: string,
   consumerGroupName: string,
-  ignoreCache: boolean
+  ignoreCache: boolean,
 ): Promise<ConsumerGroupInfo> =>
   withNotifications({
     action: () => invoke<ConsumerGroupInfo>("describe_consumer_group", { clusterId, consumerGroupName, ignoreCache }),
@@ -36,7 +36,7 @@ export const createTopic = (
   topicName: string,
   partitions: number,
   isr: number,
-  compacted: boolean
+  compacted: boolean,
 ): Promise<void> =>
   withNotifications({
     action: () => invoke<void>("create_topic", { clusterId, topicName, partitions, isr, compacted }),

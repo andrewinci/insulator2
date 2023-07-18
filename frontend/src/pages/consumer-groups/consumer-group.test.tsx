@@ -47,7 +47,7 @@ describe("ConsumerGroupTopicDetails", () => {
             <Accordion>{children}</Accordion>
           </QueryClientProvider>
         ),
-      }
+      },
     );
     expect(container).toBeTruthy();
   });

@@ -19,7 +19,7 @@ type KafkaRecordCardProps = {
 export const KafkaRecordCard = ({ record, index, style, height, onOpenDetails }: KafkaRecordCardProps) => {
   const timestamp = useMemo(
     () => (record?.timestamp ? dayjs(record.timestamp).toISOString() : "N/A"),
-    [record.timestamp]
+    [record.timestamp],
   );
   const clipboard = useClipboard();
 

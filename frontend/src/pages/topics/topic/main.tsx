@@ -36,7 +36,7 @@ ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}
           `,
       },
     },
-    [clusterId, topicName]
+    [clusterId, topicName],
   );
 
   // topic info to populate the topic menu
@@ -197,7 +197,7 @@ const useTopicInfo = (clusterId: string, topicName: string) => {
   const { data: estimatedRecords } = useQuery(["getLastOffsets", clusterId, topicName], () =>
     getLastOffsets(clusterId, [topicName])
       .then((res) => res[topicName].map((po) => po.offset))
-      .then((offsets) => offsets.reduce((a, b) => a + b, 0))
+      .then((offsets) => offsets.reduce((a, b) => a + b, 0)),
   );
 
   // get topic information to populate the page header

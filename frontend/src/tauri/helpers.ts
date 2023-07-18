@@ -23,7 +23,7 @@ export const usePlatform = (): Platform | undefined => {
         default:
           return "linux";
       }
-    })
+    }),
   );
   return data;
 };

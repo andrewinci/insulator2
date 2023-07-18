@@ -56,7 +56,7 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>((props, 
       getNextPageParam: (lastPage, _) => lastPage.nextPage,
       getPreviousPageParam: (firstPage, _) => firstPage.prevPage,
       refetchOnWindowFocus: false,
-    }
+    },
   );
 
   const allRecords = data ? data.pages.flatMap((d) => d.records) : [];

@@ -14,7 +14,7 @@ vi.mock("react-router-dom", () => {
 describe("SidebarItem", () => {
   it("should render", () => {
     const { container } = render(
-      <SidebarItem icon={<IconClock />} color="red" label="label" url="url" active={false} minimized={false} />
+      <SidebarItem icon={<IconClock />} color="red" label="label" url="url" active={false} minimized={false} />,
     );
     expect(container).toBeTruthy();
   });

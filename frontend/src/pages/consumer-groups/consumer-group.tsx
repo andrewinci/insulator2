@@ -15,7 +15,7 @@ type ConsumerGroupProps = {
 export const ConsumerGroup = (props: ConsumerGroupProps) => {
   const { name, clusterId, onDeleteConsumerGroup } = props;
   const { data: consumerGroupState } = useQuery(["getConsumerGroupState", clusterId, name], () =>
-    getConsumerGroupState(clusterId, name)
+    getConsumerGroupState(clusterId, name),
   );
   const {
     isLoading,
@@ -28,13 +28,16 @@ export const ConsumerGroup = (props: ConsumerGroupProps) => {
   });
   const topicOffsetMap = useMemo(() => {
     if (!consumerGroupInfo) return;
-    const map = consumerGroupInfo.offsets.reduce((prev, current) => {
-      if (!prev[current.topic]) {
-        prev[current.topic] = [];
-      }
-      prev[current.topic].push({ offset: current.offset, partition: current.partition_id });
-      return prev;
-    }, {} as Record<string, { partition: number; offset: number }[]>);
+    const map = consumerGroupInfo.offsets.reduce(
+      (prev, current) => {
+        if (!prev[current.topic]) {
+          prev[current.topic] = [];
+        }
+        prev[current.topic].push({ offset: current.offset, partition: current.partition_id });
+        return prev;
+      },
+      {} as Record<string, { partition: number; offset: number }[]>,
+    );
     return Object.entries(map).sort();
   }, [consumerGroupInfo]);
 

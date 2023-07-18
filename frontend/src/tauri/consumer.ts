@@ -31,7 +31,7 @@ export const getRecordsPage = (
   clusterId: string,
   topic: string,
   pageNumber: number,
-  query?: string
+  query?: string,
 ): Promise<GetRecordsPageResponse> =>
   withNotifications({
     action: () => invoke<GetRecordsPageResponse>("get_records_page", { clusterId, topic, query, pageNumber }),
