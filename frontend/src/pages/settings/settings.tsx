@@ -14,7 +14,7 @@ export const Settings = () => {
   const { userSettings, setUserSettings } = useUserSettings();
   const clusterName = useMemo(
     () => userSettings.clusters.find((c) => c.id == clusterId)?.name,
-    [userSettings, clusterId]
+    [userSettings, clusterId],
   );
   const [exportStatus, setExportStatus] = useSessionStorage({
     key: `export-database-${clusterName}`,

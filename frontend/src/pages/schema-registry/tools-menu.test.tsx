@@ -12,7 +12,7 @@ describe("ToolsMenu", () => {
         currentSchema={""}
         onSubjectDeleted={vi.fn()}
         onVersionDeleted={vi.fn()}
-      />
+      />,
     );
     expect(container).toBeTruthy();
   });
