@@ -142,7 +142,7 @@ jobs:
           mkdir frontend/dist
           yarn test
 
-      - name: (MacOS) Bundle
+      - name: Bundle
         run: yarn tauri build -b dmg
 
       - name: Build release artifact
@@ -163,7 +163,7 @@ jobs:
           path: backend/target/release/bundle/*
           retention-days: 1
 
-      - name: (MacOS) Update manifest
+      - name: Update manifest
         run: |
           python3 ./scripts/update-manifest.py --target darwin
           # remove unused manifests
