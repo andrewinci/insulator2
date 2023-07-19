@@ -6,7 +6,7 @@ export const produceRecord = (
   topic: string,
   key: string,
   value: string | null,
-  mode: "Avro" | "String"
+  mode: "Avro" | "String",
 ): Promise<void> =>
   withNotifications({
     action: () => invoke<void>("produce_record", { clusterId, topic, key, value, mode }),

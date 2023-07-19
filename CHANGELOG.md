@@ -1,3 +1,9 @@
+## [2.12.3](https://github.com/andrewinci/insulator2/compare/v2.12.2...v2.12.3) (2023-07-19)
+
+### Bug Fixes
+
+- ingore set windows min size when in full screen ([#542](https://github.com/andrewinci/insulator2/issues/542)) ([5d81a6b](https://github.com/andrewinci/insulator2/commit/5d81a6b077590d34613a40a3d655291ab3e12046))
+
 ## [2.12.2](https://github.com/andrewinci/insulator2/compare/v2.12.1...v2.12.2) (2023-05-28)
 
 ### Bug Fixes

@@ -15,7 +15,7 @@ describe("ToolsMenu", () => {
         }}
         onRefresh={vi.fn()}
         onDeleteConsumerGroup={vi.fn()}
-      />
+      />,
     );
     expect(container).toBeTruthy();
   });

@@ -23,13 +23,13 @@ export const usePlatform = (): Platform | undefined => {
         default:
           return "linux";
       }
-    })
+    }),
   );
   return data;
 };
 
 export const setWindowMinSize = (width: number, height: number): void => {
-  appWindow.setMinSize(new LogicalSize(width, height));
+  if (!appWindow.isFullscreen()) appWindow.setMinSize(new LogicalSize(width, height));
 };
 
 export const setWindowTitle = (title: string): void => {

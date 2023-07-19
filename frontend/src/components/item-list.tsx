@@ -85,7 +85,7 @@ export const ItemList = (props: ItemListProps) => {
       recent: state.recent,
       favorites: favorites,
     },
-    userSettings.useRegex ?? true
+    userSettings.useRegex ?? true,
   );
 
   const onItemSelectedOnTab = (selectedItem: string) => {

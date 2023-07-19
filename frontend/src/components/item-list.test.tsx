@@ -51,7 +51,7 @@ describe("ItemList", () => {
       />,
       {
         wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
-      }
+      },
     );
 
     expect(container).toBeTruthy();

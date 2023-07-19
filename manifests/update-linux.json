@@ -1,11 +1,11 @@
 {
-  "version": "v2.12.2",
-  "notes": "## [2.12.2](https://github.com/andrewinci/insulator2/compare/v2.12.1...v2.12.2) (2023-05-28)\n\n\n### Bug Fixes\n\n* navigation to resources that contains a full stop ([#488](https://github.com/andrewinci/insulator2/issues/488)) ([d02d3f5](https://github.com/andrewinci/insulator2/commit/d02d3f5de8f538543900869ba4e1b410f8996243))\n\n\n\n",
-  "pub_date": "2023-05-28T19:40:11Z",
+  "version": "v2.12.3",
+  "notes": "## [2.12.3](https://github.com/andrewinci/insulator2/compare/v2.12.2...v2.12.3) (2023-07-19)\n\n\n### Bug Fixes\n\n* ingore set windows min size when in full screen ([#542](https://github.com/andrewinci/insulator2/issues/542)) ([5d81a6b](https://github.com/andrewinci/insulator2/commit/5d81a6b077590d34613a40a3d655291ab3e12046))\n\n\n\n",
+  "pub_date": "2023-07-19T08:29:30Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.12.2/insulator-2_2.12.2_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.12.3/insulator-2_2.12.3_amd64.AppImage.tar.gz"
     }
   }
 }

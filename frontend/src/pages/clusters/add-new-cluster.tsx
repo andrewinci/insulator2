@@ -10,7 +10,7 @@ export const AddNewCluster = ({ onSubmit }: { onSubmit: () => void }) => {
     if (userSettings.clusters.find((c) => c.name == cluster.name)) {
       notifyFailure(
         "Cluster configuration already exists",
-        `A cluster with the name "${cluster.name}" already exists. Try with another name.`
+        `A cluster with the name "${cluster.name}" already exists. Try with another name.`,
       );
       return Promise.reject();
     } else {

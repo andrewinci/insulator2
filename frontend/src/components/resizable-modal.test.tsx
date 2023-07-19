@@ -7,7 +7,7 @@ describe("ResizableModal", () => {
     render(
       <ResizableModal title="Test" onClose={vi.fn()} opened={false}>
         <p>Content</p>
-      </ResizableModal>
+      </ResizableModal>,
     );
   });
 });

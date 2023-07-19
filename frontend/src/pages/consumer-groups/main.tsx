@@ -15,7 +15,7 @@ export const ConsumerGroupsPage = () => {
   const [addCGModalOpened, setAddCGModalOpened] = useState(false);
 
   const { isLoading, isFetching, data, refetch } = useQuery(["getConsumerGroups", clusterId], () =>
-    getConsumerGroups(clusterId)
+    getConsumerGroups(clusterId),
   );
   const { favorites, toggleFavorite } = useFavorites(clusterId, "consumers");
 

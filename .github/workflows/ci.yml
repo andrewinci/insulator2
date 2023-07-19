@@ -19,6 +19,15 @@ jobs:
       - uses: actions/checkout@v3
       - uses: volta-cli/action@v3
 
+      # This is required cause the endpoint tauri is using to download MicrosoftEdgeWebView2RuntimeInstallerX64.exe
+      # is not working.
+      - name: Install dependencies
+        run: |
+          $URL="https://static-website20200704084657677400000001.s3.eu-west-1.amazonaws.com/MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
+          $Path="$env:LOCALAPPDATA\tauri\Webview2OfflineInstaller\aa5fd9b3-dc11-4cbc-8343-a50f57b311e1\x64\MicrosoftEdgeWebView2RuntimeInstaller.exe"
+          New-Item -Path "$env:LOCALAPPDATA\tauri\Webview2OfflineInstaller\aa5fd9b3-dc11-4cbc-8343-a50f57b311e1\x64\" -ItemType Directory
+          Invoke-WebRequest -URI $URL -OutFile $Path
+
       - name: Restore npm cache
         uses: actions/cache/restore@v3
         id: restore-npm-cache
@@ -142,7 +151,7 @@ jobs:
           mkdir frontend/dist
           yarn test
 
-      - name: (MacOS) Bundle
+      - name: Bundle
         run: yarn tauri build -b dmg
 
       - name: Build release artifact
@@ -163,7 +172,7 @@ jobs:
           path: backend/target/release/bundle/*
           retention-days: 1
 
-      - name: (MacOS) Update manifest
+      - name: Update manifest
         run: |
           python3 ./scripts/update-manifest.py --target darwin
           # remove unused manifests
