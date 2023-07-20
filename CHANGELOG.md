@@ -1,3 +1,9 @@
+# [2.13.0](https://github.com/andrewinci/insulator2/compare/v2.12.4...v2.13.0) (2023-07-20)
+
+### Features
+
+- update schema compatibility mode from the tool menu ([#547](https://github.com/andrewinci/insulator2/issues/547)) ([9d1259e](https://github.com/andrewinci/insulator2/commit/9d1259ed8336ae4a9afc14cd86aad5c8fe6124f2))
+
 ## [2.12.3](https://github.com/andrewinci/insulator2/compare/v2.12.2...v2.12.3) (2023-07-19)
 
 ### Bug Fixes
