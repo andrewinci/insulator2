@@ -16,7 +16,9 @@ use crate::api::{
     configuration::{get_configuration, write_configuration},
     consumer::{export_records, get_consumer_state, get_records_page, start_consumer, stop_consumer},
     producer::produce_record,
-    schema_registry::{delete_subject, delete_subject_version, get_subject, list_subjects, post_schema},
+    schema_registry::{
+        delete_subject, delete_subject_version, get_subject, list_subjects, post_schema, set_compatibility_level,
+    },
     utils::{export_datastore, parse_keystore, parse_truststore},
 };
 use api::AppState;
@@ -48,6 +50,7 @@ fn main() {
             delete_subject,
             delete_subject_version,
             post_schema,
+            set_compatibility_level,
             // config
             get_configuration,
             write_configuration,

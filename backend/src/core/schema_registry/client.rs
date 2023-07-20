@@ -128,6 +128,34 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         }
     }
 
+    pub async fn set_compatibility_level(&self, subject_name: &str, compatibility: &str) -> SchemaRegistryResult<String> {
+        #[derive(Deserialize, Serialize)]
+        struct CompatibilityRequestResponse {
+            compatibility: String,
+        }
+        let accepted_values = vec![
+            "BACKWARD",
+            "BACKWARD_TRANSITIVE",
+            "FORWARD",
+            "FORWARD_TRANSITIVE",
+            "FULL",
+            "FULL_TRANSITIVE",
+            "NONE",
+        ];
+        if accepted_values.contains(&compatibility) {
+            let request = CompatibilityRequestResponse {
+                compatibility: compatibility.to_string(),
+            };
+            let url = Url::parse(&self.endpoint)?.join(format!("/config/{subject_name}").as_str())?;
+            let response: CompatibilityRequestResponse = self.http_client.put(url.as_ref(), request).await?;
+            Ok(response.compatibility)
+        } else {
+            Err(SchemaRegistryError::GenericError(format!(
+                "Unsupported schema compatibility mode {compatibility}"
+            )))
+        }
+    }
+
     async fn get_compatibility_level(&self, subject_name: &str) -> SchemaRegistryResult<String> {
         #[derive(Deserialize)]
         struct CompatibilityResponse {
