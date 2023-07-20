@@ -222,11 +222,41 @@ mod tests {
     use super::parse_decimal;
     use crate::core::avro::avro_schema::AvroSchema;
     use crate::core::avro::avro_schema::RecordField;
+    use crate::core::avro::error::AvroResult;
     use crate::core::avro::AvroError;
+    use crate::core::avro::AvroParser;
+    use crate::core::avro::ResolvedAvroSchema;
+    use crate::core::avro::SchemaProvider;
+    use apache_avro::Schema;
 
     use apache_avro::types::Value as AvroValue;
+    use async_trait::async_trait;
     use serde_json::json;
     use serde_json::Value as JsonValue;
+
+    struct MockSchemaProvider {}
+    #[async_trait]
+    impl SchemaProvider for MockSchemaProvider {
+        async fn get_schema_by_id(&self, id: i32) -> AvroResult<ResolvedAvroSchema> {
+            let json_schema = &get_test_avro_schema();
+            let schema = Schema::parse_str(json_schema).expect("invalid test schema");
+            Ok(ResolvedAvroSchema::from(id, &schema))
+        }
+        async fn get_schema_by_name(&self, _: &str) -> AvroResult<ResolvedAvroSchema> {
+            let json_schema = &get_test_avro_schema();
+            let schema = Schema::parse_str(json_schema).expect("invalid test schema");
+            Ok(ResolvedAvroSchema::from(123, &schema))
+        }
+    }
+
+    #[tokio::test]
+    async fn test_parse_nested_records_with_implicit_namespace() {
+        let mock_provider = MockSchemaProvider {};
+        let sut = AvroParser::new(mock_provider.into());
+        let sample_json = &get_test_avro_message();
+        let res = sut.json_to_avro(sample_json, "sample").await;
+        assert!(res.is_ok())
+    }
 
     #[test]
     fn test_decimal() {
@@ -310,5 +340,50 @@ mod tests {
             name: name.into(),
             schema: schema,
         }
+    }
+
+    fn get_test_avro_message() -> String {
+        r#"{
+            "outer_field_1": {
+                "middle_field_1": {
+                    "inner_field_1": 1.7
+                },
+                "middle_field_2": {
+                    "inner_field_1": 1.8
+                }
+            }
+          }"#
+        .to_string()
+    }
+    fn get_test_avro_schema() -> String {
+        r#"{
+            "name": "record_name",
+            "namespace": "space",
+            "type": "record",
+            "fields": [
+              {
+                "name": "outer_field_1",
+                "type": {
+                  "type": "record",
+                  "name": "middle_record_name",
+                  "namespace": "middle_namespace",
+                  "fields": [
+                    {
+                      "name": "middle_field_1",
+                      "type": {
+                        "type": "record",
+                        "name": "inner_record_name",
+                        "fields": [
+                          { "name": "inner_field_1", "type": "double" }
+                        ]
+                      }
+                    },
+                    { "name": "middle_field_2", "type": "inner_record_name" }
+                  ]
+                }
+              }
+            ]
+          }"#
+        .to_string()
     }
 }
