@@ -50,14 +50,10 @@ export const Schema = ({
               clusterId={clusterId}
               subject={schemaName}
               version={state.version}
+              compatibility={subject?.compatibility ?? "NONE"}
               currentSchema={currentSchema}
-              onSubjectDeleted={
-                onSubjectDeleted ??
-                ((v) => {
-                  console.log(v);
-                })
-              }
-              onVersionDeleted={() => refetch()}
+              onSubjectDeleted={(subject) => onSubjectDeleted?.(subject)}
+              onSubjectUpdated={(_) => refetch()}
             />
           )}
           <NewWindowButton

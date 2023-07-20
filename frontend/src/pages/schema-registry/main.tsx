@@ -20,7 +20,7 @@ export const SchemasPage = () => {
   } = useQuery(["getSchemaNamesList", clusterId], () => listSubjects(clusterId));
   const [addSchemaModalOpened, setAddSchemaModalOpened] = useState(false);
   const { favorites, toggleFavorite } = useFavorites(clusterId, "schemas");
-  const onDeleteSubject = (name: string) => {
+  const onSubjectDeleted = (name: string) => {
     if (activeSchemaName == name) {
       setActiveSchemaName(undefined);
     }
@@ -55,7 +55,7 @@ export const SchemasPage = () => {
         }
         right={
           activeSchemaName && (
-            <Schema clusterId={clusterId} schemaName={activeSchemaName} onSubjectDeleted={onDeleteSubject} />
+            <Schema clusterId={clusterId} schemaName={activeSchemaName} onSubjectDeleted={onSubjectDeleted} />
           )
         }
       />

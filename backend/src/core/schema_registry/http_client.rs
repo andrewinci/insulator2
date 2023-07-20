@@ -22,6 +22,7 @@ pub trait HttpClient: Sync + Send {
     async fn get<T: 'static + DeserializeOwned>(&self, url: &str) -> Result<T>;
     async fn delete(&self, url: &str) -> Result<()>;
     async fn post<T: Serialize + Send + Sync>(&self, url: &str, data: T) -> Result<()>;
+    async fn put<T: Serialize + Send + Sync, R: 'static + DeserializeOwned>(&self, url: &str, data: T) -> Result<R>;
 }
 
 pub struct ReqwestClient {
@@ -52,6 +53,29 @@ impl HttpClient for ReqwestClient {
             Err(HttpClientError::Code(error_code))
         }
     }
+
+    async fn put<T: Serialize + Send + Sync, R: 'static + DeserializeOwned>(&self, url: &str, data: T) -> Result<R> {
+        let request = self
+            .client
+            .put(url.to_string())
+            .body(serde_json::to_string(&data).unwrap())
+            .headers({
+                let mut h = HeaderMap::new();
+                h.insert(CONTENT_TYPE, "application/json".parse().unwrap());
+                h
+            });
+        let response = self.send_request(request).await?;
+        if response.status().is_success() {
+            let res = response.json().await?;
+            Ok(res)
+        } else {
+            let error_code = response.status().as_u16();
+            let text = response.text().await.unwrap();
+            warn!("Unable to create a schema {:?}", text);
+            Err(HttpClientError::Code(error_code))
+        }
+    }
+
     async fn get<T: 'static + DeserializeOwned>(&self, url: &str) -> Result<T> {
         let request = self.client.get(url.to_string());
         let response = self.send_request(request).await?;

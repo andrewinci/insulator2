@@ -1,4 +1,4 @@
-import { Autocomplete, Button, Group, Input, Stack, Text } from "@mantine/core";
+import { Autocomplete, Button, Group, Input, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { CodeEditor, ResizableModal } from "../../components";
@@ -70,8 +70,7 @@ export const AddSchemaModal = ({ subjects, clusterId, opened, onClose }: AddSche
             error={form.getInputProps("avroSchema").error}>
             <CodeEditor {...form.getInputProps("avroSchema")} language="json" height="calc(100% - 30px)" />
           </Input.Wrapper>
-          <Group position="apart">
-            <Text color={"red"}></Text>
+          <Group mt={"1em"} position="right">
             <Button loading={state.isUploading} type="submit" size="sm">
               Validate and submit
             </Button>

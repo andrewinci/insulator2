@@ -30,3 +30,10 @@ export const postSchema = (clusterId: string, subjectName: string, schema: strin
     action: () => invoke<void>("post_schema", { clusterId, subjectName, schema }),
     successTitle: `New version for ${subjectName} created`,
   });
+
+export const setCompatibilityLevel = (clusterId: string, subjectName: string, compatibility: string): Promise<void> =>
+  withNotifications({
+    action: () => invoke<void>("set_compatibility_level", { clusterId, subjectName, compatibility }),
+    successTitle: `Compatibility update to ${compatibility} for subject ${subjectName}`,
+    showInModal: true,
+  });

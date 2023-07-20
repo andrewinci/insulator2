@@ -11,7 +11,8 @@ describe("ToolsMenu", () => {
         version={0}
         currentSchema={""}
         onSubjectDeleted={vi.fn()}
-        onVersionDeleted={vi.fn()}
+        compatibility="FULL"
+        onSubjectUpdated={vi.fn()}
       />,
     );
     expect(container).toBeTruthy();

@@ -65,3 +65,18 @@ pub async fn post_schema(
     })?;
     Ok(client.post_schema(subject_name, schema).await?)
 }
+
+#[tauri::command]
+pub async fn set_compatibility_level(
+    subject_name: &str,
+    compatibility: &str,
+    cluster_id: &str,
+    state: tauri::State<'_, AppState>,
+) -> ApiResult<String> {
+    debug!("Set compatibility level for subject {subject_name} to {compatibility}");
+    let client = state.get_schema_reg_client(cluster_id).await?.ok_or(ApiError {
+        error_type: "Configuration error".into(),
+        message: "Missing schema registry configuration".into(),
+    })?;
+    Ok(client.set_compatibility_level(subject_name, compatibility).await?)
+}
