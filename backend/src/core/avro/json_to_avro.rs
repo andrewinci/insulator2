@@ -250,7 +250,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_e2e() {
+    async fn test_parse_nested_records_with_implicit_namespace() {
         let mock_provider = MockSchemaProvider {};
         let sut = AvroParser::new(mock_provider.into());
         let sample_json = &get_test_avro_message();
@@ -344,110 +344,45 @@ mod tests {
 
     fn get_test_avro_message() -> String {
         r#"{
-            "body": {
-              "TopLevel": {
-                "status": {
-                  "current": {
-                    "StatusHistoryDetail": {
-                      "statusDetails": {
-                        "StatusDetails": {
-                          "newStatus": null
-                        }
-                      },
-                      "statusOfGroup": "Live"
-                    }
-                  },
-                  "fullHistory": [{
-                    "statusDetails": {
-                      "StatusDetails": {
-                        "newStatus": null,
-                      }
-                    },
-                    "statusOfGroup": "Live"
-                  }]
+            "outer_field_1": {
+                "middle_field_1": {
+                    "inner_field_1": 1.7
+                },
+                "middle_field_2": {
+                    "inner_field_1": 1.8
                 }
-              }
             }
           }"#
         .to_string()
     }
     fn get_test_avro_schema() -> String {
         r#"{
+            "name": "record_name",
+            "namespace": "space",
+            "type": "record",
             "fields": [
               {
-                "name": "body",
-                "type": [
-                  {
-                    "fields": [
-                      {
-                        "name": "id",
-                        "type": "string"
+                "name": "outer_field_1",
+                "type": {
+                  "type": "record",
+                  "name": "middle_record_name",
+                  "namespace": "middle_namespace",
+                  "fields": [
+                    {
+                      "name": "middle_field_1",
+                      "type": {
+                        "type": "record",
+                        "name": "inner_record_name",
+                        "fields": [
+                          { "name": "inner_field_1", "type": "double" }
+                        ]
                       }
-                    ],
-                    "name": "Deleted",
-                    "type": "record"
-                  },
-                  {
-                    "fields": [
-                      {
-                        "name": "status",
-                        "type": {
-                          "fields": [
-                            {
-                              "name": "current",
-                              "type": [
-                                "null",
-                                {
-                                  "fields": [
-                                    {
-                                      "name": "statusOfGroup",
-                                      "type": "string"
-                                    },
-                                    {
-                                      "name": "statusDetails",
-                                      "type": [
-                                        "null",
-                                        {
-                                          "fields": [
-                                            {
-                                              "name": "newStatus",
-                                              "type": ["null", "string"]
-                                            }
-                                          ],
-                                          "name": "StatusDetails",
-                                          "type": "record"
-                                        }
-                                      ]
-                                    }
-                                  ],
-                                  "name": "StatusHistoryDetail",
-                                  "type": "record"
-                                }
-                              ]
-                            },
-                            {
-                              "name": "fullHistory",
-                              "type": {
-                                "items": "StatusHistoryDetail",
-                                "type": "array"
-                              }
-                            }
-                          ],
-                          "name": "StatusSnapshot",
-                          "namespace": "com.test.status",
-                          "type": "record"
-                        }
-                      }
-                    ],
-                    "name": "TopLevel",
-                    "type": "record"
-                  }
-                ]
+                    },
+                    { "name": "middle_field_2", "type": "inner_record_name" }
+                  ]
+                }
               }
-            ],
-            "name": "Sample",
-            "namespace": "com.test",
-            "type": "record"
+            ]
           }"#
         .to_string()
     }
