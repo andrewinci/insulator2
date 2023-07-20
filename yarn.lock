@@ -645,12 +645,12 @@
   dependencies:
     "@mantine/utils" "5.10.5"
 
-"@mantine/notifications@^5.10.5":
-  version "5.10.5"
-  resolved "https://registry.yarnpkg.com/@mantine/notifications/-/notifications-5.10.5.tgz#2f3f2d013ce4637e64e935aa5dd8c1df1a7acec0"
-  integrity sha512-IzTAXA7Zb9DcI94Mv5O2OinhLmI7fvs/VutDw9uCpp6OHtLuF/XN1d262jrsGhMZT0c4nuUsotSLFZF3GWZwXg==
+"@mantine/notifications@^6.0.17":
+  version "6.0.17"
+  resolved "https://registry.yarnpkg.com/@mantine/notifications/-/notifications-6.0.17.tgz#719b89583b9350baa6502e8428e10c8491e553f9"
+  integrity sha512-iY8hdRG4RcrsA7U06AOWLbKrQJAzEhKi2mESOnGE4s7RBWJjLTXJf+gTKi+QtVa3XNIF0I/adpEh8MEFD5zGWw==
   dependencies:
-    "@mantine/utils" "5.10.5"
+    "@mantine/utils" "6.0.17"
     react-transition-group "4.4.2"
 
 "@mantine/prism@^5.10.5":
@@ -673,6 +673,11 @@
   version "5.10.5"
   resolved "https://registry.yarnpkg.com/@mantine/utils/-/utils-5.10.5.tgz#ad620d714e545c6efb7f69d94ce46e3fd2fe01fb"
   integrity sha512-FGMq4dGs5HhDAtI0z46uzxzKKPmZ3h5uKUyKg1ZHoFR1mBtcUMbB6FylFmHqKFRWlJ5IXqX9dwmiVrLYUOfTmA==
+
+"@mantine/utils@6.0.17":
+  version "6.0.17"
+  resolved "https://registry.yarnpkg.com/@mantine/utils/-/utils-6.0.17.tgz#7d4a6c7686a3ee19a0ac248ef14780f00730837b"
+  integrity sha512-U6SWV/asYE6NhiHx4ltmVZdQR3HwGVqJxVulhOylMcV1tX/P1LMQUCbGV2Oe4O9jbX4/YW5B/CBb4BbEhENQFQ==
 
 "@monaco-editor/loader@^1.3.3":
   version "1.3.3"
