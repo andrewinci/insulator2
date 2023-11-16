@@ -15,7 +15,7 @@ type AddSchemaModalProps = {
 
 export const AddSchemaModal = ({ subjects, clusterId, opened, onClose }: AddSchemaModalProps) => {
   const [state, setState] = useState<{ isUploading: boolean }>({ isUploading: false });
-  const schemaNameRegex = /^[a-zA-Z][a-zA-Z0-9_-]*$/g;
+  const schemaNameRegex = /^[a-zA-Z0-9._-]+$/g;
   const form = useForm<FormType>({
     initialValues: {
       subjectName: "",
