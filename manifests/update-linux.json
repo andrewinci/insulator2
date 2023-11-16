@@ -1,11 +1,11 @@
 {
-  "version": "v2.13.0",
-  "notes": "# [2.13.0](https://github.com/andrewinci/insulator2/compare/v2.12.4...v2.13.0) (2023-07-20)\n\n\n### Features\n\n* update schema compatibility mode from the tool menu ([#547](https://github.com/andrewinci/insulator2/issues/547)) ([9d1259e](https://github.com/andrewinci/insulator2/commit/9d1259ed8336ae4a9afc14cd86aad5c8fe6124f2))\n\n\n\n",
-  "pub_date": "2023-07-20T22:49:52Z",
+  "version": "v2.13.1",
+  "notes": "## [2.13.1](https://github.com/andrewinci/insulator2/compare/v2.13.0...v2.13.1) (2023-11-16)\n\n\n### Bug Fixes\n\n* Support dot in schema names ([0c6e228](https://github.com/andrewinci/insulator2/commit/0c6e2280db9381b715bc9d376ebc29afc4e0e0be))\n\n\n\n",
+  "pub_date": "2023-11-16T11:09:54Z",
   "platforms": {
     "linux-x86_64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.13.0/insulator-2_2.13.0_amd64.AppImage.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.13.1/insulator-2_2.13.1_amd64.AppImage.tar.gz"
     }
   }
 }
