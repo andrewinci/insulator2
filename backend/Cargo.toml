@@ -37,7 +37,7 @@ futures = { version = "0.3" }
 apache-avro = { git = "https://github.com/andrewinci/avro" }
 log = { version = "0.4" }
 env_logger = { version = "0.10.0" }
-async-trait = "0.1.71"
+async-trait = "0.1.75"
 num-bigint = "0.4"
 rust_decimal = "1.30"
 rusqlite = { version = "0.28.0", features = ["bundled", "backup", "hooks"] }
