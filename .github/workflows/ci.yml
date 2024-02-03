@@ -144,12 +144,32 @@ jobs:
             backend/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
 
-      - name: Test
+      - name: Setup docker (missing on MacOS)
         run: |
-          # clean up cached bundle
-          yarn rimraf backend/target/release/bundle/
+          brew install docker
+          colima start
+          # For testcontainers to find the Colima socket
+          # https://github.com/abiosoft/colima/blob/main/docs/FAQ.md#cannot-connect-to-the-docker-daemon-at-unixvarrundockersock-is-the-docker-daemon-running
+          sudo ln -sf $HOME/.colima/default/docker.sock /var/run/docker.sock
+
+      - name: Install tarpaulin
+        run: cargo install cargo-tarpaulin || true
+
+      - name: Tests and coverage
+        run: |
           mkdir frontend/dist
-          yarn test
+          yarn lint:check
+          # run unit and integration tests
+          yarn coverage
+          # upload coverage
+          bash <(curl -s https://codecov.io/bash)
+
+      # - name: Test
+      #   run: |
+      #     # clean up cached bundle
+      #     yarn rimraf backend/target/release/bundle/
+      #     mkdir frontend/dist
+      #     yarn test
 
       - name: Bundle
         run: yarn tauri build -b dmg

@@ -21,7 +21,7 @@ struct KafkaTest<'a> {
 
 impl<'a> KafkaTest<'a> {
     fn new() -> Self {
-        let tmo = Duration::from_secs(30);
+        let tmo = Duration::from_secs(60);
         let kafka_node = DOCKER.run(kafka::Kafka::default());
 
         let bootstrap_servers = format!("127.0.0.1:{}", kafka_node.get_host_port_ipv4(kafka::KAFKA_PORT));
