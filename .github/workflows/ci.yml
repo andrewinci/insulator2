@@ -16,8 +16,8 @@ jobs:
   windows-build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: volta-cli/action@v3
+      - uses: actions/checkout@v4
+      - uses: volta-cli/action@v4
 
       # This is required cause the endpoint tauri is using to download MicrosoftEdgeWebView2RuntimeInstallerX64.exe
       # is not working.
@@ -29,7 +29,7 @@ jobs:
           Invoke-WebRequest -URI $URL -OutFile $Path
 
       - name: Restore npm cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-npm-cache
         with:
           path: "**/node_modules"
@@ -41,7 +41,7 @@ jobs:
           yarn install --network-timeout 100000
 
       - name: Restore cargo cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-cargo-cache
         with:
           path: |
@@ -72,7 +72,7 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: windows-artifacts
           path: backend/target/release/bundle/*
@@ -96,14 +96,14 @@ jobs:
             backend/target/release/bundle/msi/Insulator*.msi.zip
 
       - name: Save npm cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: "**/node_modules"
           key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
 
       - name: Save cargo cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: |
@@ -117,11 +117,11 @@ jobs:
   macos-build:
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
-      - uses: volta-cli/action@v3
+      - uses: actions/checkout@v4
+      - uses: volta-cli/action@v4
 
       - name: Restore npm cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-npm-cache
         with:
           path: "**/node_modules"
@@ -133,7 +133,7 @@ jobs:
           yarn install --network-timeout 100000
 
       - name: Restore cargo cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-cargo-cache
         with:
           path: |
@@ -186,7 +186,7 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: mac-os-artifacts
           path: backend/target/release/bundle/*
@@ -208,14 +208,14 @@ jobs:
             backend/target/release/bundle/macos/Insulator*.app.tar.gz
 
       - name: Save npm cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: "**/node_modules"
           key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
 
       - name: Save cargo cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: |
@@ -229,11 +229,11 @@ jobs:
   ubuntu-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: volta-cli/action@v3
+      - uses: actions/checkout@v4
+      - uses: volta-cli/action@v4
 
       - name: Restore npm cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-npm-cache
         with:
           path: "**/node_modules"
@@ -251,7 +251,7 @@ jobs:
               build-essential curl wget libsasl2-dev libayatana-appindicator3-dev librsvg2-dev
 
       - name: Restore cargo cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-cargo-cache
         with:
           path: |
@@ -291,7 +291,7 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ubuntu-artifacts
           path: backend/target/release/bundle/*
@@ -308,14 +308,14 @@ jobs:
             backend/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz
 
       - name: Save npm cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: "**/node_modules"
           key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
 
       - name: Save cargo cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: |
