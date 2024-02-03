@@ -16,13 +16,13 @@ pub struct Query {
 
 impl Query {
     #[cfg(test)]
-    pub const PARTITION: &str = "partition";
+    pub const PARTITION: &'static str = "partition";
     #[cfg(test)]
-    pub const OFFSET: &str = "offset";
-    pub const TIMESTAMP: &str = "timestamp";
-    pub const KEY: &str = "key";
-    pub const PAYLOAD: &str = "payload";
-    pub const SELECT_ALL_WITH_OFFSET_LIMIT_QUERY: &str =
+    pub const OFFSET: &'static str = "offset";
+    pub const TIMESTAMP: &'static str = "timestamp";
+    pub const KEY: &'static str = "key";
+    pub const PAYLOAD: &'static str = "payload";
+    pub const SELECT_ALL_WITH_OFFSET_LIMIT_QUERY: &'static str =
         "SELECT * FROM {:topic} ORDER BY timestamp desc LIMIT {:limit} OFFSET {:offset}";
 
     #[cfg(test)]
