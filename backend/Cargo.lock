@@ -43,7 +43,7 @@ dependencies = [
  "cfg-if",
  "once_cell",
  "version_check",
- "zerocopy",
+ "zerocopy 0.7.32",
 ]
 
 [[package]]
@@ -100,9 +100,9 @@ checksum = "080e9890a082662b09c1ad45f567faeeb47f22b5fb23895fbe1e651e718e25ca"
 [[package]]
 name = "apache-avro"
 version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ceb7c683b2f8f40970b70e39ff8be514c95b96fcb9c4af87e1ed2cb2e10801a0"
+source = "git+https://github.com/andrewinci/avro#81a44a1b2df4a117a0a27d164cd2a0638f31ffc3"
 dependencies = [
+ "byteorder",
  "digest",
  "lazy_static",
  "libflate",
@@ -110,7 +110,7 @@ dependencies = [
  "num-bigint",
  "quad-rand",
  "rand 0.8.5",
- "regex-lite",
+ "regex",
  "serde",
  "serde_json",
  "strum",
@@ -118,6 +118,7 @@ dependencies = [
  "thiserror",
  "typed-builder",
  "uuid",
+ "zerocopy 0.6.6",
 ]
 
 [[package]]
@@ -3643,12 +3644,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "regex-lite"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30b661b2f27137bdbc16f00eda72866a92bb28af1753ffbd56744fb6e2e9cd8e"
-
-[[package]]
 name = "regex-syntax"
 version = "0.6.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5150,18 +5145,18 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 
 [[package]]
 name = "typed-builder"
-version = "0.16.2"
+version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34085c17941e36627a879208083e25d357243812c30e7d7387c3b954f30ade16"
+checksum = "7fe83c85a85875e8c4cb9ce4a890f05b23d38cd0d47647db7895d3d2a79566d2"
 dependencies = [
  "typed-builder-macro",
 ]
 
 [[package]]
 name = "typed-builder-macro"
-version = "0.16.2"
+version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f03ca4cb38206e2bef0700092660bb74d696f808514dae47fa1467cbfe26e96e"
+checksum = "29a3151c41d0b13e3d011f98adc24434560ef06673a155a6c7f66b9879eecce2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5987,11 +5982,32 @@ dependencies = [
 
 [[package]]
 name = "zerocopy"
+version = "0.6.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "854e949ac82d619ee9a14c66a1b674ac730422372ccb759ce0c39cabcf2bf8e6"
+dependencies = [
+ "byteorder",
+ "zerocopy-derive 0.6.6",
+]
+
+[[package]]
+name = "zerocopy"
 version = "0.7.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74d4d3961e53fa4c9a25a8637fc2bfaf2595b3d3ae34875568a5cf64787716be"
 dependencies = [
- "zerocopy-derive",
+ "zerocopy-derive 0.7.32",
+]
+
+[[package]]
+name = "zerocopy-derive"
+version = "0.6.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "125139de3f6b9d625c39e2efdd73d41bdac468ccd556556440e322be0e1bbd91"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
 ]
 
 [[package]]
