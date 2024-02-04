@@ -1,3 +1,9 @@
+## [2.13.1](https://github.com/andrewinci/insulator2/compare/v2.13.0...v2.13.1) (2023-11-16)
+
+### Bug Fixes
+
+- Support dot in schema names ([0c6e228](https://github.com/andrewinci/insulator2/commit/0c6e2280db9381b715bc9d376ebc29afc4e0e0be))
+
 # [2.13.0](https://github.com/andrewinci/insulator2/compare/v2.12.4...v2.13.0) (2023-07-20)
 
 ### Features
