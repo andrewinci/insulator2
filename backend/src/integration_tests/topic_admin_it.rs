@@ -11,7 +11,7 @@ use crate::{core::admin::KafkaAdmin, integration_tests::KafkaTest};
 #[tokio::test]
 async fn test_topic_admin_client() {
     // arrange
-    let test_fixture = KafkaTest::new();
+    let test_fixture = KafkaTest::default();
 
     let consumer: StreamConsumer = test_fixture.build_kafka_client();
     let cluster_config = test_fixture.build_cluster_config();
@@ -20,7 +20,7 @@ async fn test_topic_admin_client() {
 
     // test create a topic
     {
-        let test_topic_name = "test_topic_name";
+        let test_topic_name = &KafkaTest::get_random_name();
         let partition_count = 7_usize;
         // act
         sut.create_topic(test_topic_name, partition_count as i32, 1, false)
@@ -42,7 +42,8 @@ async fn test_topic_admin_client() {
 
     // test retrieve the list of topics
     {
-        sut.create_topic("another_test_topic", 1, 1, true)
+        let test_topic_name = &KafkaTest::get_random_name();
+        sut.create_topic(test_topic_name, 1, 1, true)
             .await
             .expect("Unable to create a test topic");
         // act
@@ -65,7 +66,7 @@ async fn test_topic_admin_client() {
     // test get topic
     {
         // arrange
-        let test_topic_name = "test_get_topic";
+        let test_topic_name = &KafkaTest::get_random_name();
         let partition_count = 3_usize;
         sut.create_topic(test_topic_name, partition_count as i32, 1, true)
             .await
@@ -80,7 +81,7 @@ async fn test_topic_admin_client() {
     // test get topic info
     {
         // arrange
-        let test_topic_name = "test_get_topic_info";
+        let test_topic_name = &KafkaTest::get_random_name();
         let partition_count = 3_usize;
         sut.create_topic(test_topic_name, partition_count as i32, 1, true)
             .await
@@ -99,7 +100,7 @@ async fn test_topic_admin_client() {
     // delete topic test
     {
         // arrange
-        let test_topic_name = "test_delete_topic";
+        let test_topic_name = &KafkaTest::get_random_name();
         sut.create_topic(test_topic_name, 1, 1, true)
             .await
             .expect("Unable to create a test topic");
@@ -113,7 +114,7 @@ async fn test_topic_admin_client() {
     {
         // arrange
         let expected_offset = 13;
-        let test_topic_name = "test_get_last_offset";
+        let test_topic_name = &KafkaTest::get_random_name();
         let producer: FutureProducer = test_fixture.build_kafka_client();
         sut.create_topic(test_topic_name, 1, 1, true)
             .await

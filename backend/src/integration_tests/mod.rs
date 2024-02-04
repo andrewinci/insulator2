@@ -1,40 +1,31 @@
 #![cfg(test)]
 
-use once_cell::sync::Lazy;
 use rdkafka::{config::FromClientConfig, ClientConfig};
 use std::time::Duration;
-use testcontainers::{clients, images::kafka};
+use uuid::Uuid;
 
 use crate::core::configuration::{ClusterConfig, Favorites};
 
 mod consumer_group_admin_it;
 mod topic_admin_it;
 
-static DOCKER: Lazy<clients::Cli> = Lazy::new(clients::Cli::default);
-
-struct KafkaTest<'a> {
+struct KafkaTest {
     pub tmo: Duration,
     pub default_consumer_group: String,
     pub bootstrap_servers: String,
-    _kafka_node: testcontainers::Container<'a, kafka::Kafka>,
 }
 
-impl<'a> KafkaTest<'a> {
-    fn new() -> Self {
-        let tmo = Duration::from_secs(30);
-        let kafka_node = DOCKER.run(kafka::Kafka::default());
-
-        let bootstrap_servers = format!("127.0.0.1:{}", kafka_node.get_host_port_ipv4(kafka::KAFKA_PORT));
-        kafka_node.start();
-
+impl Default for KafkaTest {
+    fn default() -> Self {
         Self {
-            tmo,
-            default_consumer_group: "testcontainer-rs".into(),
-            bootstrap_servers,
-            _kafka_node: kafka_node,
+            tmo: Duration::from_secs(60),
+            default_consumer_group: KafkaTest::get_random_name(),
+            bootstrap_servers: "127.0.0.1:9092".into(),
         }
     }
+}
 
+impl KafkaTest {
     fn build_kafka_client<T: FromClientConfig>(&self) -> T {
         ClientConfig::new()
             .set("group.id", self.default_consumer_group.to_string())
@@ -55,5 +46,9 @@ impl<'a> KafkaTest<'a> {
             schema_registry: None,
             favorites: Favorites::default(),
         }
+    }
+
+    fn get_random_name() -> String {
+        format!("test_{}", Uuid::new_v4())
     }
 }
