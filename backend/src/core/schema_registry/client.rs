@@ -133,7 +133,7 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
         struct CompatibilityRequestResponse {
             compatibility: String,
         }
-        let accepted_values = vec![
+        let accepted_values = [
             "BACKWARD",
             "BACKWARD_TRANSITIVE",
             "FORWARD",
