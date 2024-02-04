@@ -16,8 +16,8 @@ jobs:
   windows-build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: volta-cli/action@v3
+      - uses: actions/checkout@v4
+      - uses: volta-cli/action@v4
 
       # This is required cause the endpoint tauri is using to download MicrosoftEdgeWebView2RuntimeInstallerX64.exe
       # is not working.
@@ -29,7 +29,7 @@ jobs:
           Invoke-WebRequest -URI $URL -OutFile $Path
 
       - name: Restore npm cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-npm-cache
         with:
           path: "**/node_modules"
@@ -41,7 +41,7 @@ jobs:
           yarn install --network-timeout 100000
 
       - name: Restore cargo cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-cargo-cache
         with:
           path: |
@@ -72,7 +72,7 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: windows-artifacts
           path: backend/target/release/bundle/*
@@ -96,14 +96,14 @@ jobs:
             backend/target/release/bundle/msi/Insulator*.msi.zip
 
       - name: Save npm cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: "**/node_modules"
           key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
 
       - name: Save cargo cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: |
@@ -117,11 +117,11 @@ jobs:
   macos-build:
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
-      - uses: volta-cli/action@v3
+      - uses: actions/checkout@v4
+      - uses: volta-cli/action@v4
 
       - name: Restore npm cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-npm-cache
         with:
           path: "**/node_modules"
@@ -133,7 +133,7 @@ jobs:
           yarn install --network-timeout 100000
 
       - name: Restore cargo cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-cargo-cache
         with:
           path: |
@@ -144,12 +144,47 @@ jobs:
             backend/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
 
-      - name: Test
+      - name: Setup docker (missing on MacOS)
         run: |
-          # clean up cached bundle
-          yarn rimraf backend/target/release/bundle/
+          brew install docker
+          colima start
+          # For testcontainers to find the Colima socket
+          # https://github.com/abiosoft/colima/blob/main/docs/FAQ.md#cannot-connect-to-the-docker-daemon-at-unixvarrundockersock-is-the-docker-daemon-running
+          sudo ln -sf $HOME/.colima/default/docker.sock /var/run/docker.sock
+
+      - name: Install tarpaulin
+        run: cargo install cargo-tarpaulin || true
+
+      - name: Run test Kafka cluster
+        run: |
+          docker run -d --name=redpanda-1 --rm \
+            -p 8081:8081 \
+            -p 9092:9092 \
+            -p 9644:9644 \
+            docker.vectorized.io/vectorized/redpanda:latest \
+            redpanda start \
+            --overprovisioned \
+            --smp 1  \
+            --memory 1G \
+            --reserve-memory 0M \
+            --node-id 0 \
+            --check=false
+
+      - name: Tests and coverage
+        run: |
           mkdir frontend/dist
-          yarn test
+          yarn lint:check
+          # run unit and integration tests
+          yarn coverage
+          # upload coverage
+          bash <(curl -s https://codecov.io/bash)
+
+      # - name: Test
+      #   run: |
+      #     # clean up cached bundle
+      #     yarn rimraf backend/target/release/bundle/
+      #     mkdir frontend/dist
+      #     yarn test
 
       - name: Bundle
         run: yarn tauri build -b dmg
@@ -166,7 +201,7 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: mac-os-artifacts
           path: backend/target/release/bundle/*
@@ -188,14 +223,14 @@ jobs:
             backend/target/release/bundle/macos/Insulator*.app.tar.gz
 
       - name: Save npm cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: "**/node_modules"
           key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
 
       - name: Save cargo cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: |
@@ -209,11 +244,11 @@ jobs:
   ubuntu-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: volta-cli/action@v3
+      - uses: actions/checkout@v4
+      - uses: volta-cli/action@v4
 
       - name: Restore npm cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-npm-cache
         with:
           path: "**/node_modules"
@@ -227,11 +262,11 @@ jobs:
       - name: Install Ubuntu dependencies
         run: |
           sudo apt update -y
-          sudo apt install libwebkit2gtk-4.0-dev libdbus-1-dev pkg-config libgtk-3-dev libsoup2.4-dev \
+          sudo apt install -y libwebkit2gtk-4.0-dev libdbus-1-dev pkg-config libgtk-3-dev libsoup2.4-dev \
               build-essential curl wget libsasl2-dev libayatana-appindicator3-dev librsvg2-dev
 
       - name: Restore cargo cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore-cargo-cache
         with:
           path: |
@@ -244,6 +279,21 @@ jobs:
 
       - name: Install tarpaulin
         run: cargo install cargo-tarpaulin || true
+
+      - name: Run test Kafka cluster
+        run: |
+          docker run -d --name=redpanda-1 --rm \
+            -p 8081:8081 \
+            -p 9092:9092 \
+            -p 9644:9644 \
+            docker.vectorized.io/vectorized/redpanda:latest \
+            redpanda start \
+            --overprovisioned \
+            --smp 1  \
+            --memory 1G \
+            --reserve-memory 0M \
+            --node-id 0 \
+            --check=false
 
       - name: Tests and coverage
         run: |
@@ -271,7 +321,7 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ubuntu-artifacts
           path: backend/target/release/bundle/*
@@ -288,14 +338,14 @@ jobs:
             backend/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz
 
       - name: Save npm cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: "**/node_modules"
           key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
 
       - name: Save cargo cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: |
