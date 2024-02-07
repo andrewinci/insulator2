@@ -2169,7 +2169,7 @@ dependencies = [
  "tauri-build",
  "time",
  "tokio",
- "toml 0.7.8",
+ "toml 0.8.9",
  "url",
  "uuid",
 ]
