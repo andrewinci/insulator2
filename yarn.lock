@@ -705,13 +705,13 @@
   dependencies:
     "@mantine/utils" "5.10.5"
 
-"@mantine/notifications@^5.10.5":
-  version "5.10.5"
-  resolved "https://registry.yarnpkg.com/@mantine/notifications/-/notifications-5.10.5.tgz#2f3f2d013ce4637e64e935aa5dd8c1df1a7acec0"
-  integrity sha512-IzTAXA7Zb9DcI94Mv5O2OinhLmI7fvs/VutDw9uCpp6OHtLuF/XN1d262jrsGhMZT0c4nuUsotSLFZF3GWZwXg==
+"@mantine/notifications@^7.5.2":
+  version "7.5.2"
+  resolved "https://registry.yarnpkg.com/@mantine/notifications/-/notifications-7.5.2.tgz#f6260576ae6da580b7ed6b3578c2072969e46870"
+  integrity sha512-wGRDeOG2NGng202k/vZPfkRJMHtflvIORYe4cJaQAd9EhP646xr/ji8zzdXeXvUO5PrKlBpu+K+HSF1bQQY4og==
   dependencies:
-    "@mantine/utils" "5.10.5"
-    react-transition-group "4.4.2"
+    "@mantine/store" "7.5.2"
+    react-transition-group "4.4.5"
 
 "@mantine/prism@^5.10.5":
   version "5.10.5"
@@ -720,6 +720,11 @@
   dependencies:
     "@mantine/utils" "5.10.5"
     prism-react-renderer "^1.2.1"
+
+"@mantine/store@7.5.2":
+  version "7.5.2"
+  resolved "https://registry.yarnpkg.com/@mantine/store/-/store-7.5.2.tgz#adfea0d01d2ca572fe5fe1e43363cbccc18f97ef"
+  integrity sha512-au53HLLH/LfHLOR2Zb00TgG11xAXZNJb4jqsEhAr90axCIw6mlBDIAhbb+Yu6OwDaV7TscE/sonkUstmRjLh/w==
 
 "@mantine/styles@5.10.5":
   version "5.10.5"
@@ -5712,10 +5717,10 @@ react-textarea-autosize@8.3.4:
     use-composed-ref "^1.3.0"
     use-latest "^1.2.1"
 
-react-transition-group@4.4.2:
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-4.4.2.tgz#8b59a56f09ced7b55cbd53c36768b922890d5470"
-  integrity sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg==
+react-transition-group@4.4.5:
+  version "4.4.5"
+  resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-4.4.5.tgz#e53d4e3f3344da8521489fbef8f2581d42becdd1"
+  integrity sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==
   dependencies:
     "@babel/runtime" "^7.5.5"
     dom-helpers "^5.0.1"
