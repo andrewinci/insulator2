@@ -242,7 +242,7 @@ jobs:
           key: ${{ steps.restore-cargo-cache.outputs.cache-primary-key }}
 
   ubuntu-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
       - uses: volta-cli/action@v4
