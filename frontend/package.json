@@ -20,7 +20,7 @@
     "@mantine/form": "^5.10.5",
     "@mantine/hooks": "^5.10.5",
     "@mantine/modals": "^5.10.5",
-    "@mantine/notifications": "^5.10.5",
+    "@mantine/notifications": "^7.5.3",
     "@mantine/prism": "^5.10.5",
     "@monaco-editor/react": "^4.5.1",
     "@tabler/icons": "^1.119.0",
