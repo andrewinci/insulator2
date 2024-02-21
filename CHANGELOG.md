@@ -1,3 +1,9 @@
+## [2.13.2](https://github.com/andrewinci/insulator2/compare/v2.13.1...v2.13.2) (2024-02-21)
+
+### Bug Fixes
+
+- ubuntu build ([7586a5d](https://github.com/andrewinci/insulator2/commit/7586a5dd13918e27a34e6a50ae72e5d997722b23))
+
 ## [2.13.1](https://github.com/andrewinci/insulator2/compare/v2.13.0...v2.13.1) (2023-11-16)
 
 ### Bug Fixes

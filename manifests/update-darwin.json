@@ -1,15 +1,15 @@
 {
-  "version": "v2.13.1",
-  "notes": "## [2.13.1](https://github.com/andrewinci/insulator2/compare/v2.13.0...v2.13.1) (2023-11-16)\n\n\n### Bug Fixes\n\n* Support dot in schema names ([0c6e228](https://github.com/andrewinci/insulator2/commit/0c6e2280db9381b715bc9d376ebc29afc4e0e0be))\n\n\n\n",
-  "pub_date": "2023-11-16T11:09:54Z",
+  "version": "v2.13.2",
+  "notes": "## [2.13.2](https://github.com/andrewinci/insulator2/compare/v2.13.1...v2.13.2) (2024-02-21)\n\n\n### Bug Fixes\n\n* ubuntu build ([7586a5d](https://github.com/andrewinci/insulator2/commit/7586a5dd13918e27a34e6a50ae72e5d997722b23))\n\n\n\n",
+  "pub_date": "2024-02-21T07:58:51Z",
   "platforms": {
     "darwin-x86_64": {
       "signature": "----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.13.1/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.13.2/Insulator.2.app.tar.gz"
     },
     "darwin-aarch64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.13.1/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.13.2/Insulator.2.app.tar.gz"
     }
   }
 }
