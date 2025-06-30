@@ -108,7 +108,7 @@ docker run -d --name=redpanda-1 --rm \
     -p 8081:8081 \
     -p 9092:9092 \
     -p 9644:9644 \
-    docker.vectorized.io/vectorized/redpanda:latest \
+    redpandadata/redpanda:latest \
     redpanda start \
     --overprovisioned \
     --smp 1  \

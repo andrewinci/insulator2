@@ -49,8 +49,9 @@ mod tests {
 
         assert!(
             json_to_avro_result.is_ok(),
-            "Expected Ok, received: {:?}",
-            json_to_avro_result
+            "Expected Ok, received: {:?} - File {:?}",
+            json_to_avro_result,
+            schema_file_name,
         );
 
         let avro_to_json_result = sut.avro_to_json(&json_to_avro_result.unwrap()).await;
@@ -59,7 +60,7 @@ mod tests {
 
         assert_eq!(
             JsonValue::from_str(&avro_to_json_result.unwrap().1).unwrap(),
-            JsonValue::from_str(&avro_json_in).unwrap()
+            JsonValue::from_str(&avro_json_in).unwrap(),
         );
     }
 }

@@ -242,7 +242,7 @@ jobs:
           key: ${{ steps.restore-cargo-cache.outputs.cache-primary-key }}
 
   ubuntu-build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: volta-cli/action@v4
@@ -286,7 +286,7 @@ jobs:
             -p 8081:8081 \
             -p 9092:9092 \
             -p 9644:9644 \
-            docker.vectorized.io/vectorized/redpanda:latest \
+            redpandadata/redpanda:latest \
             redpanda start \
             --overprovisioned \
             --smp 1  \
