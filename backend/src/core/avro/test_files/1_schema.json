@@ -26,8 +26,12 @@
     { "name": "TimestampMicrosField", "type": { "type": "long", "logicalType": "timestamp-micros" } },
     { "name": "UuidField", "type": { "type": "string", "logicalType": "uuid" } },
     {
-      "name": "UnionLong",
+      "name": "UnionLongDecimal",
       "type": ["long", { "type": "bytes", "logicalType": "decimal", "precision": 4, "scale": 2 }]
+    },
+    {
+      "name": "OptionalDecimal",
+      "type": ["null", { "type": "bytes", "logicalType": "decimal", "precision": 4, "scale": 2 }]
     }
   ]
 }

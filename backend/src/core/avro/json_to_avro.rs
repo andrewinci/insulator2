@@ -173,10 +173,9 @@ fn map_union(obj: &serde_json::Map<String, JsonValue>, union_schemas: &Vec<Schem
         )))
     } else {
         let (union_branch_name, value) = *fields_vec.first().unwrap();
-        let index_schema = union_schemas
-            .iter()
-            .enumerate()
-            .find(|(_, schema)| schema.fqn().eq(union_branch_name));
+        let index_schema = union_schemas.iter().enumerate().find(|(_, schema)| {
+            schema.fqn().eq(union_branch_name) || schema.fqn().split('.').last().eq(&Some(union_branch_name))
+        });
         if let Some((index, current_schema)) = index_schema {
             let value = json_to_avro_map(value, current_schema)?;
             Ok(AvroValue::Union(index as u32, value.into()))
