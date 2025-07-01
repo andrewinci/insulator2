@@ -115,7 +115,7 @@ jobs:
           key: ${{ steps.restore-cargo-cache.outputs.cache-primary-key }}
 
   macos-build:
-    runs-on: macos-12
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: volta-cli/action@v4
@@ -242,7 +242,7 @@ jobs:
           key: ${{ steps.restore-cargo-cache.outputs.cache-primary-key }}
 
   ubuntu-build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: volta-cli/action@v4
