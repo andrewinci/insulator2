@@ -47,7 +47,7 @@ rust-keystore = { git = "https://github.com/andrewinci/rust-keystore", features 
 ], tag = "v0.1.2" }
 r2d2 = "0.8.10"
 r2d2_sqlite = "0.21.0"
-toml = "0.7"
+toml = "0.8"
 rand = "0.8.5"
 time = "0.3.34"
 sys-locale = "0.3.0"
