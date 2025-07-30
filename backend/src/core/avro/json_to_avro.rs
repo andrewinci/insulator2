@@ -98,8 +98,8 @@ fn json_to_avro_map(json_value: &JsonValue, schema: &Schema) -> AvroResult<AvroV
                 .ok_or_else(|| AvroError::InvalidNumber(format!("Unable to convert {n} to Double")))?;
             Ok(AvroValue::Double(n))
         }
-        (Schema::Decimal { scale, .. }, JsonValue::Number(n)) => {
-            Ok(AvroValue::Decimal(parse_decimal(&n.to_string(), *scale as u32)?))
+        (Schema::Decimal { scale, .. }, JsonValue::String(n)) => {
+            Ok(AvroValue::Decimal(parse_decimal(&n, *scale as u32)?))
         }
         // time
         (Schema::Date, JsonValue::Number(n)) => {

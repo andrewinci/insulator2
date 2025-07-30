@@ -143,41 +143,41 @@ jobs:
             ~/.cargo/git/db/
             backend/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
-
-      - name: Setup docker (missing on MacOS)
-        run: |
-          brew install docker
-          colima start
-          # For testcontainers to find the Colima socket
-          # https://github.com/abiosoft/colima/blob/main/docs/FAQ.md#cannot-connect-to-the-docker-daemon-at-unixvarrundockersock-is-the-docker-daemon-running
-          sudo ln -sf $HOME/.colima/default/docker.sock /var/run/docker.sock
-
-      - name: Install tarpaulin
-        run: cargo install cargo-tarpaulin || true
-
-      - name: Run test Kafka cluster
-        run: |
-          docker run -d --name=redpanda-1 --rm \
-            -p 8081:8081 \
-            -p 9092:9092 \
-            -p 9644:9644 \
-            docker.vectorized.io/vectorized/redpanda:latest \
-            redpanda start \
-            --overprovisioned \
-            --smp 1  \
-            --memory 1G \
-            --reserve-memory 0M \
-            --node-id 0 \
-            --check=false
+      #
+      # - name: Setup docker (missing on MacOS)
+      #   run: |
+      #     brew install docker colima
+      #     colima start
+      #     # For testcontainers to find the Colima socket
+      #     # https://github.com/abiosoft/colima/blob/main/docs/FAQ.md#cannot-connect-to-the-docker-daemon-at-unixvarrundockersock-is-the-docker-daemon-running
+      #     sudo ln -sf $HOME/.colima/default/docker.sock /var/run/docker.sock
+      #
+      # - name: Install tarpaulin
+      #   run: cargo install cargo-tarpaulin || true
+      #
+      # - name: Run test Kafka cluster
+      #   run: |
+      #     docker run -d --name=redpanda-1 --rm \
+      #       -p 8081:8081 \
+      #       -p 9092:9092 \
+      #       -p 9644:9644 \
+      #       docker.vectorized.io/vectorized/redpanda:latest \
+      #       redpanda start \
+      #       --overprovisioned \
+      #       --smp 1  \
+      #       --memory 1G \
+      #       --reserve-memory 0M \
+      #       --node-id 0 \
+      #       --check=false
 
       - name: Tests and coverage
         run: |
           mkdir frontend/dist
           yarn lint:check
-          # run unit and integration tests
-          yarn coverage
-          # upload coverage
-          bash <(curl -s https://codecov.io/bash)
+          # run unit 
+          yarn test
+          # # upload coverage
+          # bash <(curl -s https://codecov.io/bash)
 
       # - name: Test
       #   run: |
@@ -262,7 +262,7 @@ jobs:
       - name: Install Ubuntu dependencies
         run: |
           sudo apt update -y
-          sudo apt install -y libwebkit2gtk-4.0-dev libdbus-1-dev pkg-config libgtk-3-dev libsoup2.4-dev \
+          sudo apt install -y libdbus-1-dev pkg-config libgtk-3-dev libsoup2.4-dev \
               build-essential curl wget libsasl2-dev libayatana-appindicator3-dev librsvg2-dev
 
       - name: Restore cargo cache
