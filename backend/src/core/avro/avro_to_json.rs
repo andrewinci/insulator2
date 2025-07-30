@@ -83,8 +83,8 @@ fn parse_decimal(v: &apache_avro::Decimal, scale: &usize) -> AvroResult<JsonValu
     let value = BigInt::from_signed_bytes_be(&arr);
     let num = i64::try_from(value).map_err(|err| AvroError::InvalidNumber(err.to_string()))?;
     let decimal = Decimal::new(num, scale.to_owned() as u32);
-    let float: f64 = decimal.to_string().parse().unwrap();
-    Ok(json!(float))
+    //let float: String = decimal.to_string().parse().unwrap();
+    Ok(json!(decimal.to_string()))
 }
 
 fn parse_record(
