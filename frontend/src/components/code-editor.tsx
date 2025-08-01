@@ -18,18 +18,11 @@ export const CodeEditor = ({
   hideLineNumbers,
   onChange,
 }: CodeEditorProps) => {
-  const editorRef = useRef<null>(null);
+  const editorRef = useRef<{ setValue: (_: string) => void } | null>(null);
 
   useEffect(() => {
-    console.log("Effect");
     editorRef.current?.setValue(value ?? "");
   }, [editorRef.current]);
-
-  function handleEditorDidMount(editor, monaco) {
-    console.log("mounted");
-    editorRef.current = editor;
-    monaco.editor.setTheme("custom");
-  }
 
   return (
     <Editor
@@ -58,7 +51,10 @@ export const CodeEditor = ({
       }}
       saveViewState={false}
       beforeMount={(monaco) => monaco.editor.setTheme("custom")}
-      onMount={handleEditorDidMount}
+      onMount={(editor, monaco) => {
+        editorRef.current = editor;
+        monaco.editor.setTheme("custom");
+      }}
     />
   );
 };
