@@ -15,7 +15,7 @@ import {
 import { IconInfoCircle, IconLock, IconUpload } from "@tabler/icons";
 import { ClusterFormType } from "./types";
 import { useClusterForm } from "./use-cluster-form";
-import { open } from "@tauri-apps/api/dialog";
+import { open } from "@tauri-apps/plugin-dialog";
 
 type ClusterFormProps = {
   initialValues?: ClusterFormType;

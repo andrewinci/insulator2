@@ -15,7 +15,7 @@ vi.mock("../hooks", () => {
   };
 });
 
-vi.mock("@tauri-apps/api/window", () => {
+vi.mock("@tauri-apps/api/webviewWindow", () => {
   class WebviewWindow {
     // eslint-disable-next-line @typescript-eslint/no-useless-constructor, @typescript-eslint/no-empty-function
     constructor(_0: string, _1: unknown) {}

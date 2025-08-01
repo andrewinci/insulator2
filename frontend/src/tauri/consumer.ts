@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { ConsumerConfiguration, ConsumerState, KafkaRecord } from "../models/kafka";
 import { withNotifications } from "./error";
 

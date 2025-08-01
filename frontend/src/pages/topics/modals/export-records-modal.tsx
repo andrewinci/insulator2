@@ -1,5 +1,5 @@
 import { Text, Checkbox, Modal, Title, NumberInput, Stack, Group, Button } from "@mantine/core";
-import { save } from "@tauri-apps/api/dialog";
+import { save } from "@tauri-apps/plugin-dialog";
 import { useState } from "react";
 import { exportRecords } from "../../../tauri/consumer";
 

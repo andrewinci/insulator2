@@ -1,7 +1,7 @@
 import { Checkbox, Container, Select, Stack, Center, Button, NumberInput, Text, Group } from "@mantine/core";
 import { useSessionStorage } from "@mantine/hooks";
 import { IconAlertTriangle, IconDatabaseExport } from "@tabler/icons";
-import { save } from "@tauri-apps/api/dialog";
+import { save } from "@tauri-apps/plugin-dialog";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { PageHeader } from "../../components";

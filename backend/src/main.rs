@@ -68,7 +68,7 @@ fn main() {
             delete_consumer_group,
         ])
         .setup(|app| {
-            app.manage(AppState::new(app.app_handle()));
+            app.manage(AppState::new(app.app_handle().clone()));
             Ok(())
         })
         .run(tauri::generate_context!())
