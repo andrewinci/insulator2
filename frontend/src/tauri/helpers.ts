@@ -1,31 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
-import { invoke } from "@tauri-apps/api";
-import { platform } from "@tauri-apps/api/os";
+import { invoke } from "@tauri-apps/api/core";
+import { platform } from "@tauri-apps/plugin-os";
 import { withNotifications } from "./error";
-import { appWindow, LogicalSize } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { getVersion } from "@tauri-apps/api/app";
 import { notifyFailure, notifySuccess } from "../helpers/notification";
-import { fs } from "@tauri-apps/api";
-import { save } from "@tauri-apps/api/dialog";
+import { save } from "@tauri-apps/plugin-dialog";
+import * as fs from "@tauri-apps/plugin-fs";
+import { LogicalSize } from "@tauri-apps/api/dpi";
+const appWindow = getCurrentWebviewWindow();
 
 type Platform = "linux" | "darwin" | "win";
 
 export const usePlatform = (): Platform | undefined => {
-  const { data } = useQuery(["currentPlatform"], () =>
-    platform().then((os) => {
-      switch (os) {
-        case "darwin":
-          return "darwin";
-        case "ios":
-          return "darwin";
-        case "win32":
-          return "win";
-        default:
-          return "linux";
-      }
-    }),
-  );
-  return data;
+  switch (platform()) {
+    case "macos":
+      return "darwin";
+    case "ios":
+      return "darwin";
+    case "windows":
+      return "win";
+    default:
+      return "linux";
+  }
 };
 
 export const setWindowMinSize = (width: number, height: number): void => {

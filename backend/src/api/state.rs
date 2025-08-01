@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use log::debug;
-use tauri::Manager;
+use tauri::Emitter;
 use tokio::sync::RwLock;
 
 use crate::core::{
@@ -27,7 +27,7 @@ impl AppState {
             clusters: Default::default(),
             configuration_provider: Arc::new(ConfigurationProvider::new()),
             error_callback: Arc::new(move |err| {
-                app_handle.emit_all("error", err).ok();
+                app_handle.emit("error", err).ok();
             }),
         }
     }
