@@ -44,7 +44,7 @@ export const useWindowHandler = () => {
         currentWebView.setFocus();
         return;
       }
-      if (beforeOpen) beforeOpen();
+      beforeOpen?.();
       const webview = new WebviewWindow(label, {
         url,
         title: `${clusterName} - ${windowTitle}`,
@@ -56,9 +56,7 @@ export const useWindowHandler = () => {
 
       // since the webview window is created asynchronously,
       // Tauri emits the `tauri://created` and `tauri://error` to notify you of the creation response
-      await webview.once("tauri://created", () => {
-        if (afterOpen) afterOpen();
-      });
+      await webview.once("tauri://created", () => afterOpen?.());
       await webview.once("tauri://error", (e) => {
         console.error(`Unable to open the new window`);
         console.error(e);

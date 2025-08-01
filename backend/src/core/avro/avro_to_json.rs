@@ -184,7 +184,7 @@ mod tests {
 
         assert_eq!(
             res.1,
-            r#"{"null_field":null,"boolean_field":true,"int_field":12,"long_field":12345667,"float_field":123.123,"double_field":12.12,"bytes_field":[1,2,170],"string_field":"YO!! test"}"#
+            r#"{"boolean_field":true,"bytes_field":[1,2,170],"double_field":12.12,"float_field":123.123,"int_field":12,"long_field":12345667,"null_field":null,"string_field":"YO!! test"}"#
         )
     }
 }
