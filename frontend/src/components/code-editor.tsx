@@ -1,4 +1,5 @@
 import Editor from "@monaco-editor/react";
+import { useEffect, useRef } from "react";
 
 type CodeEditorProps = {
   height?: number | string;
@@ -17,6 +18,19 @@ export const CodeEditor = ({
   hideLineNumbers,
   onChange,
 }: CodeEditorProps) => {
+  const editorRef = useRef<null>(null);
+
+  useEffect(() => {
+    console.log("Effect");
+    editorRef.current?.setValue(value ?? "");
+  }, [editorRef.current]);
+
+  function handleEditorDidMount(editor, monaco) {
+    console.log("mounted");
+    editorRef.current = editor;
+    monaco.editor.setTheme("custom");
+  }
+
   return (
     <Editor
       height={height || 0}
@@ -42,11 +56,9 @@ export const CodeEditor = ({
         folding: hideLineNumbers ? false : true,
         lineDecorationsWidth: hideLineNumbers ? 0 : 10,
       }}
+      saveViewState={false}
       beforeMount={(monaco) => monaco.editor.setTheme("custom")}
-      onMount={(editor, monaco) => {
-        monaco.editor.setTheme("custom");
-        editor.setValue(value ?? "");
-      }}
+      onMount={handleEditorDidMount}
     />
   );
 };
