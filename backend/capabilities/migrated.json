@@ -1,7 +1,13 @@
 {
   "identifier": "migrated",
   "description": "permissions that were migrated from v1",
-  "local": true,
-  "windows": ["main"],
-  "permissions": ["core:default", "core:window:allow-set-title"]
+  "windows": ["*"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-title",
+    "core:window:allow-set-focus",
+    "dialog:allow-save",
+    "dialog:default",
+    "core:webview:allow-create-webview-window"
+  ]
 }
