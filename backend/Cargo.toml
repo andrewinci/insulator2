@@ -34,7 +34,7 @@ tokio = { version = "1", features = ["full"] }
 futures = { version = "0.3" }
 # todo: replace the fork with the apache repo when https://github.com/apache/avro/pull/2374 is merged
 # apache-avro = { git = "https://github.com/apache/avro", rev = "<todo>" }
-apache-avro = "0.19.0"
+apache-avro = "0.20.0"
 # apache-avro = { git = "https://github.com/andrewinci/avro" }
 log = { version = "0.4" }
 env_logger = { version = "0.10.0" }
