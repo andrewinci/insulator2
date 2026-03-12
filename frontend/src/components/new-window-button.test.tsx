@@ -15,15 +15,15 @@ vi.mock("../hooks", () => {
   };
 });
 
-vi.mock("@tauri-apps/api/window", () => {
+vi.mock("@tauri-apps/api/webviewWindow", () => {
   class WebviewWindow {
     // eslint-disable-next-line @typescript-eslint/no-useless-constructor, @typescript-eslint/no-empty-function
     constructor(_0: string, _1: unknown) {}
     static getByLabel = (label: string) => {
       if (label === "existing_window/") {
-        return new WebviewWindow(label, {});
+        return Promise.resolve(new WebviewWindow(label, {}));
       }
-      return null;
+      return Promise.resolve(null);
     };
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     setFocus = () => {};
@@ -48,11 +48,11 @@ describe("useWindowHandler", () => {
     expect(result.current.openNewWindow).toBeDefined();
   });
 
-  it("should call the beforeOpen, open a new window and call the afterOpen", () => {
+  it("should call the beforeOpen, open a new window and call the afterOpen", async () => {
     const beforeOpen = vi.fn();
     const afterOpen = vi.fn();
     const { result } = renderHook(() => useWindowHandler());
-    result.current.openNewWindow({
+    await result.current.openNewWindow({
       url: "https://google.com",
       windowTitle: "Google",
       beforeOpen,
@@ -63,11 +63,11 @@ describe("useWindowHandler", () => {
     expect(afterOpen).toHaveBeenCalled();
   });
 
-  it("should not call the beforeOpen and afterOpen if the window is already open", () => {
+  it("should not call the beforeOpen and afterOpen if the window is already open", async () => {
     const beforeOpen = vi.fn();
     const afterOpen = vi.fn();
     const { result } = renderHook(() => useWindowHandler());
-    result.current.openNewWindow({
+    await result.current.openNewWindow({
       url: "existing_window",
       windowTitle: "Google",
       beforeOpen,

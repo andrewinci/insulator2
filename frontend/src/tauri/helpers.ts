@@ -1,39 +1,39 @@
 import { useQuery } from "@tanstack/react-query";
-import { invoke } from "@tauri-apps/api";
-import { platform } from "@tauri-apps/api/os";
+import { invoke } from "@tauri-apps/api/core";
+import { platform } from "@tauri-apps/plugin-os";
 import { withNotifications } from "./error";
-import { appWindow, LogicalSize } from "@tauri-apps/api/window";
+import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { getVersion } from "@tauri-apps/api/app";
 import { notifyFailure, notifySuccess } from "../helpers/notification";
-import { fs } from "@tauri-apps/api";
-import { save } from "@tauri-apps/api/dialog";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
+import { save } from "@tauri-apps/plugin-dialog";
 
 type Platform = "linux" | "darwin" | "win";
 
 export const usePlatform = (): Platform | undefined => {
-  const { data } = useQuery(["currentPlatform"], () =>
-    platform().then((os) => {
-      switch (os) {
-        case "darwin":
-          return "darwin";
-        case "ios":
-          return "darwin";
-        case "win32":
-          return "win";
-        default:
-          return "linux";
-      }
-    }),
-  );
+  const { data } = useQuery(["currentPlatform"], () => {
+    const os = platform();
+    switch (os) {
+      case "macos":
+        return "darwin";
+      case "ios":
+        return "darwin";
+      case "windows":
+        return "win";
+      default:
+        return "linux";
+    }
+  });
   return data;
 };
 
 export const setWindowMinSize = (width: number, height: number): void => {
-  if (!appWindow.isFullscreen()) appWindow.setMinSize(new LogicalSize(width, height));
+  const win = getCurrentWindow();
+  if (!win.isFullscreen()) win.setMinSize(new LogicalSize(width, height));
 };
 
 export const setWindowTitle = (title: string): void => {
-  appWindow.setTitle(title);
+  getCurrentWindow().setTitle(title);
 };
 
 export const useAppVersion = (): string | undefined => {
@@ -69,7 +69,7 @@ export const saveTextFile = async (subject: string, schema: string) => {
   });
   if (path) {
     try {
-      await fs.writeTextFile(path, schema);
+      await writeTextFile(path, schema);
       notifySuccess(`Schema saved to ${path}`, undefined, true);
     } catch (err) {
       notifyFailure("Unable to save the schema locally", JSON.stringify(err));

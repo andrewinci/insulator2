@@ -1,6 +1,6 @@
 import { ActionIcon, ActionIconProps, Tooltip } from "@mantine/core";
 import { IconExternalLink } from "@tabler/icons";
-import { WebviewWindow } from "@tauri-apps/api/window";
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useParsedUrl } from "../hooks";
 
 type OpenNewWindowParams = {
@@ -32,13 +32,13 @@ export const useWindowHandler = () => {
   const { isModal, clusterName } = useParsedUrl();
   return {
     isModal,
-    openNewWindow: (params: OpenNewWindowParams) => {
+    openNewWindow: async (params: OpenNewWindowParams) => {
       const { url: rawUrl, windowTitle, beforeOpen, afterOpen } = params;
       //make sure there is trailing slash to the url
       const url = rawUrl.replace(/\/?$/, "/");
       const label = url.replace(/\./g, "_");
       // check if the window is already open
-      const currentWebView = WebviewWindow.getByLabel(label);
+      const currentWebView = await WebviewWindow.getByLabel(label);
       if (currentWebView) {
         // just focus the already open window
         currentWebView.setFocus();

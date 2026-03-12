@@ -31,6 +31,11 @@ fn main() {
     assert!(rlimit::increase_nofile_limit(10240).is_ok());
     log_active_user();
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             // utils
             export_datastore,
@@ -68,7 +73,7 @@ fn main() {
             delete_consumer_group,
         ])
         .setup(|app| {
-            app.manage(AppState::new(app.app_handle()));
+            app.manage(AppState::new(app.app_handle().clone()));
             Ok(())
         })
         .run(tauri::generate_context!())

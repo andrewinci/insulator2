@@ -1,79 +1,58 @@
 {
+  "productName": "Insulator 2",
+  "version": "2.13.2",
+  "identifier": "com.insulator",
   "build": {
     "beforeDevCommand": "yarn workspace frontend dev",
     "beforeBuildCommand": "yarn workspace frontend build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../frontend/dist"
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../frontend/dist"
   },
-  "package": {
-    "productName": "Insulator 2",
-    "version": "2.13.2"
-  },
-  "tauri": {
-    "allowlist": {
-      "app": {},
-      "os": {
-        "all": true
-      },
-      "window": {
-        "create": true,
-        "setTitle": true,
-        "setMinSize": true,
-        "setFocus": true
-      },
-      "dialog": {
-        "save": true,
-        "open": true
-      },
-      "fs": {
-        "writeFile": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "",
+    "publisher": "Insulator",
+    "longDescription": "A client UI to inspect Kafka topics, consume, produce and much more.",
+    "shortDescription": "",
+    "externalBin": [],
+    "icon": [
+      "../icons/32x32.png",
+      "../icons/128x128.png",
+      "../icons/128x128@2x.png",
+      "../icons/icon.icns",
+      "../icons/icon.ico"
+    ],
+    "resources": [],
+    "targets": "all",
+    "linux": {
       "deb": {
         "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "../icons/32x32.png",
-        "../icons/128x128.png",
-        "../icons/128x128@2x.png",
-        "../icons/icon.icns",
-        "../icons/icon.ico"
-      ],
-      "identifier": "com.insulator",
-      "publisher": "Insulator",
-      "longDescription": "A client UI to inspect Kafka topics, consume, produce and much more.",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": "",
-        "webviewInstallMode": {
-          "type": "offlineInstaller"
-        }
       }
     },
-    "security": {
-      "csp": null
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
     },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "webviewInstallMode": {
+        "type": "offlineInstaller"
+      }
+    }
+  },
+  "plugins": {
     "updater": {
-      "active": true,
       "endpoints": ["https://github.com/andrewinci/insulator2/releases/latest/download/update-{{target}}.json"],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyOURCOTAxOUExRDcwQTUKUldTbGNCMmFBYm1kY2lvd3Rvc0Z2ZitiVTZSWkZGMWJHZ2FoUkxVOVJHL3hTVFlaeUJKNU92bTEK"
-    },
+    }
+  },
+  "app": {
     "windows": [
       {
         "fullscreen": false,
@@ -82,6 +61,9 @@
         "minWidth": 1200,
         "minHeight": 800
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
   }
 }

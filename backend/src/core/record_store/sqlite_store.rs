@@ -106,6 +106,9 @@ impl RecordStore for SqliteStore {
 
     fn insert_record(&self, cluster_id: &str, topic_name: &str, record: &ParsedKafkaRecord) -> StoreResult<()> {
         let connection = self.pool.get().unwrap();
+        // rusqlite v0.38+ dropped ToSql for usize and u64; cast to i64
+        let timestamp: Option<i64> = record.timestamp.map(|t| t as i64);
+        let record_bytes: i64 = record.record_bytes as i64;
         connection.execute(
             format!(
                 "INSERT OR REPLACE INTO {} (payload, key, timestamp, partition, offset, schema_id, record_bytes) 
@@ -116,11 +119,11 @@ impl RecordStore for SqliteStore {
             named_params! {
                 ":payload": &record.payload,
                 ":key": &record.key,
-                ":timestamp": &record.timestamp,
+                ":timestamp": &timestamp,
                 ":partition": &record.partition,
                 ":offset": &record.offset,
                 ":schema_id": &record.schema_id,
-                ":record_bytes": &record.record_bytes,
+                ":record_bytes": &record_bytes,
             },
         )?;
         Ok(())
