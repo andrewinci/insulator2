@@ -1,4 +1,3 @@
-/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -24,15 +23,5 @@ export default defineConfig({
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
-  },
-  test: {
-    environment: "happy-dom",
-    setupFiles: ["./src/test-setup.ts"],
-    globals: true,
-    coverage: {
-      provider: "v8",
-      all: true,
-      include: ["src/**/*.ts*"],
-    },
   },
 });
