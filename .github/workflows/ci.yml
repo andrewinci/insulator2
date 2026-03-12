@@ -37,7 +37,7 @@ jobs:
 
       - name: Install npm dependencies
         run: |
-          npm install -g yarn
+          corepack enable
           yarn install --network-timeout 100000
 
       - name: Restore cargo cache
@@ -129,7 +129,7 @@ jobs:
 
       - name: Install npm dependencies
         run: |
-          npm install -g yarn
+          corepack enable
           yarn install --network-timeout 100000
 
       - name: Restore cargo cache
@@ -256,7 +256,7 @@ jobs:
 
       - name: Install npm dependencies
         run: |
-          npm install -g yarn
+          corepack enable
           yarn install --network-timeout 100000
 
       - name: Install Ubuntu dependencies
