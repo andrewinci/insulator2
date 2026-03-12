@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 describe("clusterList", () => {
   it("should render", () => {
     const queryClient = new QueryClient();
-    const { container } = render(<ClusterList clusters={[]} onClusterDelete={vi.fn} onClusterSelected={vi.fn} />, {
+    const { container } = render(<ClusterList clusters={[]} onClusterDelete={vi.fn()} onClusterSelected={vi.fn()} />, {
       wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
     });
     expect(container).toBeTruthy();

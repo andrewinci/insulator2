@@ -28,8 +28,8 @@ export const SidebarItem = ({ icon, color, label, url, active, minimized }: Side
           backgroundColor: !active
             ? "unset"
             : theme.colorScheme === "dark"
-            ? theme.colors.dark[6]
-            : theme.colors.gray[0],
+              ? theme.colors.dark[6]
+              : theme.colors.gray[0],
           "&:hover": {
             backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.colors.gray[0],
           },

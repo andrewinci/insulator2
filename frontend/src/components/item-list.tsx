@@ -191,9 +191,12 @@ const TabPanel = ({
         </Center>
       )}
       {!isLoading && items.length > 0 ? (
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore react-window types incompatible with @types/react 18
         <FixedSizeList height={windowSize.innerHeight - 150} itemCount={items.length} itemSize={38} width={"100%"}>
           {({ index, style }) => (
-            <Grid style={style} grow gutter={0} justify={"flex-start"} align="center">
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            <Grid style={style as any} grow gutter={0} justify={"flex-start"} align="center">
               <Grid.Col span="auto" sx={{ maxWidth: "30px" }}>
                 <ActionIcon color="orange" radius="xl" onClick={() => onFavToggled(items[index])}>
                   <IconStar
