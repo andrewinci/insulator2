@@ -17,7 +17,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: volta-cli/action@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       # This is required cause the endpoint tauri is using to download MicrosoftEdgeWebView2RuntimeInstallerX64.exe
       # is not working.
@@ -118,7 +120,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: volta-cli/action@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Restore npm cache
         uses: actions/cache/restore@v4
@@ -245,7 +249,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: volta-cli/action@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Restore npm cache
         uses: actions/cache/restore@v4
