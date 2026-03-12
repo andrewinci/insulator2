@@ -61,6 +61,8 @@ jobs:
 
       - name: Bundle
         run: yarn tauri build -b msi
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Build release artifact
         if: startsWith(github.ref, 'refs/tags/v')
@@ -70,6 +72,7 @@ jobs:
           # build
           yarn tauri build
         env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
@@ -192,6 +195,8 @@ jobs:
 
       - name: Bundle
         run: yarn tauri build -b dmg
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Build release artifact
         if: startsWith(github.ref, 'refs/tags/v')
@@ -201,6 +206,7 @@ jobs:
           # build
           yarn tauri build
         env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
@@ -315,6 +321,8 @@ jobs:
 
       - name: Bundle
         run: yarn tauri build -b deb appimage
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Build release artifact
         if: startsWith(github.ref, 'refs/tags/v')
@@ -324,6 +332,7 @@ jobs:
           # build
           yarn tauri build
         env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GRAPHITE_TOKEN: ${{ secrets.GRAPHITE_TOKEN }}
