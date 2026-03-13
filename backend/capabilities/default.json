@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/capabilities.json",
+  "identifier": "default",
+  "description": "Default capabilities for Insulator 2",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:app:default",
+    "dialog:default",
+    "fs:default",
+    "os:default",
+    "shell:allow-open",
+    "updater:default"
+  ]
+}
