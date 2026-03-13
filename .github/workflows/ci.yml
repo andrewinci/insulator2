@@ -221,11 +221,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cargo/bin/cargo-tarpaulin
-          key: ${{ runner.os }}-tarpaulin-0.31
+          key: ${{ runner.os }}-tarpaulin-0.35.2
 
       - name: Install tarpaulin
         if: steps.cache-tarpaulin.outputs.cache-hit != 'true'
-        run: cargo install cargo-tarpaulin --version 0.31 --locked
+        run: cargo install cargo-tarpaulin --version 0.35.2 --locked
 
       - name: Run test Kafka cluster
         run: |
