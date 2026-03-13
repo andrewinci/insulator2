@@ -135,14 +135,14 @@ impl From<reqwest::Error> for HttpClientError {
 #[cfg(test)]
 mod tests {
     use httpmock::{
-        Method::{GET, POST},
+        Method::{DELETE, GET, POST},
         MockServer,
     };
     use serde::Deserialize;
 
     use crate::core::schema_registry::http_client::HttpClientError;
 
-    use super::{HttpClient, ReqwestClient};
+    use super::{BasicAuth, HttpClient, ReqwestClient};
 
     #[tokio::test]
     async fn test_post_request() {
@@ -214,5 +214,78 @@ mod tests {
             assert_eq!(res.err().unwrap(), HttpClientError::Code(404));
             server_mock.assert();
         }
+    }
+
+    #[tokio::test]
+    async fn test_delete_request() {
+        let server = MockServer::start();
+        let sut = ReqwestClient::new(None, false);
+        // return Ok when the request is successful
+        {
+            let server_mock = server.mock(|when, then| {
+                when.method(DELETE).path("/happy_path");
+                then.status(200);
+            });
+            let res = sut.delete(server.url("/happy_path").as_str()).await;
+            assert!(res.is_ok(), "Received {:?}", res);
+            server_mock.assert();
+        }
+        // return the error code if any
+        {
+            let server_mock = server.mock(|when, then| {
+                when.method(DELETE).path("/not_found");
+                then.status(404);
+            });
+            let res = sut.delete(server.url("/not_found").as_str()).await;
+            assert_eq!(res.err().unwrap(), HttpClientError::Code(404));
+            server_mock.assert();
+        }
+    }
+
+    #[tokio::test]
+    async fn test_basic_auth_is_sent() {
+        let server = MockServer::start();
+        let auth = BasicAuth {
+            username: "user".to_string(),
+            password: Some("pass".to_string()),
+        };
+        let sut = ReqwestClient::new(Some(auth), false);
+        let server_mock = server.mock(|when, then| {
+            when.method(GET)
+                .path("/auth")
+                .header("Authorization", "Basic dXNlcjpwYXNz");
+            then.status(200)
+                .header("content-type", "text/json")
+                .body("{\"id\":\"1\"}");
+        });
+        #[derive(Deserialize, Debug)]
+        struct R {
+            id: String,
+        }
+        let res = sut.get::<R>(server.url("/auth").as_str()).await;
+        assert!(res.is_ok(), "Received {:?}", res);
+        server_mock.assert();
+    }
+
+    #[tokio::test]
+    async fn test_disable_certificate_verification_flag_does_not_break_http_requests() {
+        // Verifies that a client built with disable_certificate_verification=true
+        // can still perform plain HTTP requests (TLS skip only affects HTTPS cert checks).
+        let server = MockServer::start();
+        let sut = ReqwestClient::new(None, true);
+        let server_mock = server.mock(|when, then| {
+            when.method(GET).path("/ping");
+            then.status(200)
+                .header("content-type", "text/json")
+                .body("{\"id\":\"ok\"}");
+        });
+        #[derive(Deserialize, Debug)]
+        struct R {
+            #[allow(dead_code)]
+            id: String,
+        }
+        let res = sut.get::<R>(server.url("/ping").as_str()).await;
+        assert!(res.is_ok(), "Received {:?}", res);
+        server_mock.assert();
     }
 }

@@ -123,6 +123,7 @@ mod test {
                     endpoint: "endpoint".into(),
                     username: Some("username".into()),
                     password: Some("password".into()),
+                    disable_certificate_verification: false,
                 }),
                 ..Default::default()
             });
@@ -138,5 +139,68 @@ mod test {
             let res = sut.write_configuration(&InsulatorConfig::default());
             assert!(res.is_ok())
         }
+    }
+
+    #[test]
+    fn test_schema_registry_disable_cert_verification_round_trip() {
+        let config_path = {
+            let mut dir = temp_dir();
+            dir.push("test_config_cert_verify");
+            dir.to_str().unwrap().to_string()
+        };
+        let sut = ConfigurationProvider::from_config_path(&config_path);
+
+        let mut config = InsulatorConfig::default();
+        config.clusters.push(crate::core::configuration::ClusterConfig {
+            id: "aaaaaaaa-0000-0000-0000-000000000001".into(),
+            name: "cert_verify_disabled".into(),
+            endpoint: "localhost:9092".into(),
+            authentication: crate::core::configuration::AuthenticationConfig::None,
+            schema_registry: Some(crate::core::configuration::SchemaRegistryConfig {
+                endpoint: "https://schema-registry:8081".into(),
+                username: None,
+                password: None,
+                disable_certificate_verification: true,
+            }),
+            ..Default::default()
+        });
+        config.clusters.push(crate::core::configuration::ClusterConfig {
+            id: "aaaaaaaa-0000-0000-0000-000000000002".into(),
+            name: "cert_verify_enabled".into(),
+            endpoint: "localhost:9092".into(),
+            authentication: crate::core::configuration::AuthenticationConfig::None,
+            schema_registry: Some(crate::core::configuration::SchemaRegistryConfig {
+                endpoint: "https://schema-registry:8081".into(),
+                username: None,
+                password: None,
+                disable_certificate_verification: false,
+            }),
+            ..Default::default()
+        });
+
+        sut.write_configuration(&config).expect("write should succeed");
+        let loaded = sut.get_configuration().expect("read should succeed");
+
+        let disabled = loaded
+            .clusters
+            .iter()
+            .find(|c| c.id == "aaaaaaaa-0000-0000-0000-000000000001")
+            .and_then(|c| c.schema_registry.as_ref())
+            .expect("cluster with cert verify disabled not found");
+        assert!(
+            disabled.disable_certificate_verification,
+            "disable_certificate_verification should be true after round-trip"
+        );
+
+        let enabled = loaded
+            .clusters
+            .iter()
+            .find(|c| c.id == "aaaaaaaa-0000-0000-0000-000000000002")
+            .and_then(|c| c.schema_registry.as_ref())
+            .expect("cluster with cert verify enabled not found");
+        assert!(
+            !enabled.disable_certificate_verification,
+            "disable_certificate_verification should be false after round-trip"
+        );
     }
 }

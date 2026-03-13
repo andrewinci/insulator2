@@ -43,6 +43,7 @@ describe("mapClusterToForm", () => {
         endpoint: "localhost:8081",
         username: "admin",
         password: "admin",
+        disableCertificateVerification: false,
       },
     };
 
@@ -88,6 +89,7 @@ describe("mapClusterToForm", () => {
         endpoint: "localhost:8081",
         username: "admin",
         password: "admin",
+        disableCertificateVerification: false,
       },
     };
     expect(mapClusterToForm(cluster)).toEqual(expectedForm);
@@ -133,10 +135,42 @@ describe("mapClusterToForm", () => {
         endpoint: "localhost:8081",
         username: "admin",
         password: "admin",
+        disableCertificateVerification: false,
       },
     };
 
     expect(mapClusterToForm(cluster)).toEqual(expectedForm);
+  });
+
+  it("should map disableCertificateVerification=true from cluster to form", () => {
+    const cluster = {
+      name: "cluster-1",
+      endpoint: "localhost:9092",
+      authentication: "None",
+      schemaRegistry: {
+        endpoint: "localhost:8081",
+        username: "admin",
+        password: "admin",
+        disableCertificateVerification: true,
+      },
+    } as unknown as Cluster;
+
+    const result = mapClusterToForm(cluster);
+    expect(result?.schemaRegistry?.disableCertificateVerification).toBe(true);
+  });
+
+  it("should default disableCertificateVerification to false when absent from cluster", () => {
+    const cluster = {
+      name: "cluster-1",
+      endpoint: "localhost:9092",
+      authentication: "None",
+      schemaRegistry: {
+        endpoint: "localhost:8081",
+      },
+    } as unknown as Cluster;
+
+    const result = mapClusterToForm(cluster);
+    expect(result?.schemaRegistry?.disableCertificateVerification).toBe(false);
   });
 });
 
@@ -323,6 +357,69 @@ describe("mapFormToCluster", () => {
       },
     } as unknown as ClusterFormType;
     await expect(mapFormToCluster(form)).rejects.toThrow("Not supported");
+  });
+
+  it("should preserve disableCertificateVerification=true when mapping form to cluster", async () => {
+    const form = {
+      name: "cluster-1",
+      endpoint: "localhost:9092",
+      authentication: {
+        type: "None",
+        sasl: { username: "", password: "", scram: false },
+        ssl: { ca: "", certificate: "", key: "" },
+      },
+      schemaRegistry: {
+        endpoint: "localhost:8081",
+        username: "",
+        password: "",
+        disableCertificateVerification: true,
+      },
+    } as unknown as ClusterFormType;
+
+    const result = await mapFormToCluster(form);
+    expect(result.schemaRegistry?.disableCertificateVerification).toBe(true);
+  });
+
+  it("should preserve disableCertificateVerification=false when mapping form to cluster", async () => {
+    const form = {
+      name: "cluster-1",
+      endpoint: "localhost:9092",
+      authentication: {
+        type: "None",
+        sasl: { username: "", password: "", scram: false },
+        ssl: { ca: "", certificate: "", key: "" },
+      },
+      schemaRegistry: {
+        endpoint: "localhost:8081",
+        username: "",
+        password: "",
+        disableCertificateVerification: false,
+      },
+    } as unknown as ClusterFormType;
+
+    const result = await mapFormToCluster(form);
+    expect(result.schemaRegistry?.disableCertificateVerification).toBe(false);
+  });
+
+  it("should set schemaRegistry to null when endpoint is empty", async () => {
+    const form = {
+      name: "cluster-1",
+      endpoint: "localhost:9092",
+      authentication: {
+        type: "None",
+        sasl: { username: "", password: "", scram: false },
+        ssl: { ca: "", certificate: "", key: "" },
+      },
+      schemaRegistry: {
+        endpoint: "",
+        username: "",
+        password: "",
+        disableCertificateVerification: true,
+      },
+    } as unknown as ClusterFormType;
+
+    const result = await mapFormToCluster(form);
+    expect(result.schemaRegistry).toBeNull();
   });
 });
 
