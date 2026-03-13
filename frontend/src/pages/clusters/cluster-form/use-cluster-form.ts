@@ -21,7 +21,7 @@ export const useClusterForm = (initialValues?: ClusterFormType) => {
         ssl: { certificate: "", ca: "", key: "", keyPassword: "" },
         jks: { keystoreLocation: "", truststoreLocation: "" },
       },
-      schemaRegistry: { endpoint: "", username: "", password: "" },
+      schemaRegistry: { endpoint: "", username: "", password: "", disableCertificateVerification: false },
     },
     validate: {
       name: (v) => nonEmptyValidation("Cluster")(v ?? ""),

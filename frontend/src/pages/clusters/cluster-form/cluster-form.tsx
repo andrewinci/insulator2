@@ -171,6 +171,10 @@ export const ClusterForm = ({ onSubmit, initialValues }: ClusterFormProps) => {
           <TextInput label="Endpoint" placeholder="localhost:9091" {...form.getInputProps("schemaRegistry.endpoint")} />
           <TextInput label="Username" placeholder="username" {...form.getInputProps("schemaRegistry.username")} />
           <PasswordInput label="Password" placeholder="password" {...form.getInputProps("schemaRegistry.password")} />
+          <Checkbox
+            label="Disable certificate verification"
+            {...form.getInputProps("schemaRegistry.disableCertificateVerification", { type: "checkbox" })}
+          />
         </Stack>
       </ScrollArea>
       <Group my={20} position="right">

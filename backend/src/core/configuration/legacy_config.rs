@@ -149,6 +149,7 @@ fn map_schema_registry(legacy: SchemaRegistryConfigurationLegacy) -> Option<Sche
             endpoint,
             username: legacy.username.filter(|s| !s.is_empty()),
             password: legacy.password.filter(|s| !s.is_empty()),
+            disable_certificate_verification: false,
         })
     } else {
         None

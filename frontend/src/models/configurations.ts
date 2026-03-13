@@ -34,6 +34,7 @@ export type SchemaRegistry = {
   endpoint: string;
   username?: string;
   password?: string;
+  disableCertificateVerification?: boolean;
 };
 
 export type Favorites = {

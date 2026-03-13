@@ -99,9 +99,13 @@ impl HttpClient for ReqwestClient {
 }
 
 impl ReqwestClient {
-    pub fn new(auth: Option<BasicAuth>) -> Self {
+    pub fn new(auth: Option<BasicAuth>, disable_certificate_verification: bool) -> Self {
+        let client = reqwest::Client::builder()
+            .danger_accept_invalid_certs(disable_certificate_verification)
+            .build()
+            .expect("Failed to build HTTP client");
         Self {
-            client: Default::default(),
+            client,
             timeout_seconds: 10,
             auth,
         }
@@ -143,7 +147,7 @@ mod tests {
     #[tokio::test]
     async fn test_post_request() {
         let server = MockServer::start();
-        let sut = ReqwestClient::new(None);
+        let sut = ReqwestClient::new(None, false);
         // return Ok when the request is successful
         {
             let server_mock = server.mock(|when, then| {
@@ -169,7 +173,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_request() {
         let server = MockServer::start();
-        let sut = ReqwestClient::new(None);
+        let sut = ReqwestClient::new(None, false);
         #[derive(Deserialize, Debug)]
         struct MockResponse {
             id: String,

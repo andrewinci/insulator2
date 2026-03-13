@@ -39,6 +39,7 @@ impl Cluster {
                     s_config.endpoint.as_str(),
                     s_config.username.as_deref(),
                     s_config.password.as_deref(),
+                    s_config.disable_certificate_verification,
                 ));
                 (Some(ptr.clone()), Arc::new(Parser::new(Some(ptr))))
             } else {

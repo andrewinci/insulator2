@@ -88,6 +88,8 @@ pub struct SchemaRegistryConfig {
     pub endpoint: String,
     pub username: Option<String>,
     pub password: Option<String>,
+    #[serde(rename = "disableCertificateVerification", default)]
+    pub disable_certificate_verification: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq, Eq)]

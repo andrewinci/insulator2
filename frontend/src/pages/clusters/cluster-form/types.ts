@@ -24,6 +24,7 @@ export type SchemaRegistryFormType = {
   endpoint: string;
   username?: string;
   password: string;
+  disableCertificateVerification: boolean;
 };
 
 export type ClusterFormType = {

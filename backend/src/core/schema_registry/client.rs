@@ -27,7 +27,12 @@ pub struct CachedSchemaRegistry<C: HttpClient = ReqwestClient> {
 }
 
 impl CachedSchemaRegistry<ReqwestClient> {
-    pub fn new(endpoint: &str, username: Option<&str>, password: Option<&str>) -> Self {
+    pub fn new(
+        endpoint: &str,
+        username: Option<&str>,
+        password: Option<&str>,
+        disable_certificate_verification: bool,
+    ) -> Self {
         assert!(!endpoint.is_empty());
         let auth = if let Some(username) = username {
             assert!(!username.is_empty());
@@ -39,7 +44,7 @@ impl CachedSchemaRegistry<ReqwestClient> {
         } else {
             None
         };
-        let http_client = ReqwestClient::new(auth);
+        let http_client = ReqwestClient::new(auth, disable_certificate_verification);
         CachedSchemaRegistry::new_with_client(endpoint, http_client)
     }
 }

@@ -27,6 +27,7 @@ export function mapClusterToForm(cluster?: Cluster): ClusterFormType | undefined
       endpoint: cluster.schemaRegistry?.endpoint ?? "",
       password: cluster.schemaRegistry?.password ?? "",
       username: cluster.schemaRegistry?.username ?? "",
+      disableCertificateVerification: cluster.schemaRegistry?.disableCertificateVerification ?? false,
     },
   };
 }
