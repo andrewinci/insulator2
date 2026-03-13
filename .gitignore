@@ -32,3 +32,8 @@ cobertura.xml
 *.njsproj
 *.sln
 *.sw?
+
+# Tauri build artifacts
+backend/gen/
+frontend/tsconfig.tsbuildinfo
+frontend/tsconfig.node.tsbuildinfo
