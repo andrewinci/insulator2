@@ -1,15 +1,15 @@
 {
-  "version": "v2.13.2",
-  "notes": "## [2.13.2](https://github.com/andrewinci/insulator2/compare/v2.13.1...v2.13.2) (2024-02-21)\n\n\n### Bug Fixes\n\n* ubuntu build ([7586a5d](https://github.com/andrewinci/insulator2/commit/7586a5dd13918e27a34e6a50ae72e5d997722b23))\n\n\n\n",
-  "pub_date": "2024-02-21T07:58:51Z",
+  "version": "v2.14.0",
+  "notes": "# [2.14.0](https://github.com/andrewinci/insulator2/compare/v2.13.4...v2.14.0) (2026-03-13)\n\n\n### Bug Fixes\n\n* **release:** update tauri.conf.json version path for Tauri v2 ([37a2bac](https://github.com/andrewinci/insulator2/commit/37a2bacaa1a711c021bc0120fa466eaf57f92e5e))\n\n\n### Features\n\n* allow disabling certificate verification for schema registry ([9ddbaa0](https://github.com/andrewinci/insulator2/commit/9ddbaa08903c50294dbe533e4ee1500212c467a1))\n",
+  "pub_date": "2026-03-13T07:51:27Z",
   "platforms": {
     "darwin-x86_64": {
       "signature": "----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.13.2/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.14.0/Insulator.2.app.tar.gz"
     },
     "darwin-aarch64": {
       "signature": "-----",
-      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.13.2/Insulator.2.app.tar.gz"
+      "url": "https://github.com/andrewinci/insulator2/releases/download/v2.14.0/Insulator.2.app.tar.gz"
     }
   }
 }

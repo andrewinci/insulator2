@@ -1,3 +1,13 @@
+# [2.14.0](https://github.com/andrewinci/insulator2/compare/v2.13.4...v2.14.0) (2026-03-13)
+
+### Bug Fixes
+
+- **release:** update tauri.conf.json version path for Tauri v2 ([37a2bac](https://github.com/andrewinci/insulator2/commit/37a2bacaa1a711c021bc0120fa466eaf57f92e5e))
+
+### Features
+
+- allow disabling certificate verification for schema registry ([9ddbaa0](https://github.com/andrewinci/insulator2/commit/9ddbaa08903c50294dbe533e4ee1500212c467a1))
+
 ## [2.13.2](https://github.com/andrewinci/insulator2/compare/v2.13.1...v2.13.2) (2024-02-21)
 
 ### Bug Fixes
