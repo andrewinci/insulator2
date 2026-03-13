@@ -31,21 +31,20 @@ jobs:
           New-Item -Path "$env:LOCALAPPDATA\tauri\Webview2OfflineInstaller\aa5fd9b3-dc11-4cbc-8343-a50f57b311e1\x64\" -ItemType Directory
           Invoke-WebRequest -URI $URL -OutFile $Path
 
-      - name: Restore npm cache
-        uses: actions/cache/restore@v4
-        id: restore-npm-cache
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
         with:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}-v2
+          restore-keys: ${{ runner.os }}-modules-
 
       - name: Install npm dependencies
         run: |
           corepack enable
           yarn install --network-timeout 100000
 
-      - name: Restore cargo cache
-        uses: actions/cache/restore@v4
-        id: restore-cargo-cache
+      - name: Cache cargo artifacts
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -54,6 +53,7 @@ jobs:
             ~/.cargo/git/db/
             backend/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v2
+          restore-keys: ${{ runner.os }}-cargo-
 
       - name: Test
         run: |
@@ -101,25 +101,6 @@ jobs:
             backend/target/release/bundle/msi/Insulator*.msi
             backend/target/release/bundle/msi/Insulator*.msi.zip
 
-      - name: Save npm cache
-        uses: actions/cache/save@v4
-        if: always()
-        with:
-          path: "**/node_modules"
-          key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
-
-      - name: Save cargo cache
-        uses: actions/cache/save@v4
-        if: always()
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            backend/target/
-          key: ${{ steps.restore-cargo-cache.outputs.cache-primary-key }}
-
   macos-build:
     runs-on: macos-latest
     steps:
@@ -128,55 +109,28 @@ jobs:
         with:
           node-version: 20
 
-      - name: Restore npm cache
-        uses: actions/cache/restore@v4
-        id: restore-npm-cache
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
         with:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}-v2
+          restore-keys: ${{ runner.os }}-modules-
 
       - name: Install npm dependencies
         run: |
           corepack enable
           yarn install --network-timeout 100000
 
-      - name: Restore cargo cache
-        uses: actions/cache/restore@v4
-        id: restore-cargo-cache
+      - name: Cache cargo artifacts
+        uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             backend/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v2
-      #
-      # - name: Setup docker (missing on MacOS)
-      #   run: |
-      #     brew install docker colima
-      #     colima start
-      #     # For testcontainers to find the Colima socket
-      #     # https://github.com/abiosoft/colima/blob/main/docs/FAQ.md#cannot-connect-to-the-docker-daemon-at-unixvarrundockersock-is-the-docker-daemon-running
-      #     sudo ln -sf $HOME/.colima/default/docker.sock /var/run/docker.sock
-      #
-      # - name: Install tarpaulin
-      #   run: cargo install cargo-tarpaulin || true
-      #
-      # - name: Run test Kafka cluster
-      #   run: |
-      #     docker run -d --name=redpanda-1 --rm \
-      #       -p 8081:8081 \
-      #       -p 9092:9092 \
-      #       -p 9644:9644 \
-      #       docker.vectorized.io/vectorized/redpanda:latest \
-      #       redpanda start \
-      #       --overprovisioned \
-      #       --smp 1  \
-      #       --memory 1G \
-      #       --reserve-memory 0M \
-      #       --node-id 0 \
-      #       --check=false
+          restore-keys: ${{ runner.os }}-cargo-
 
       - name: Tests and coverage
         run: |
@@ -184,15 +138,6 @@ jobs:
           yarn lint:check
           # run unit 
           yarn test
-          # # upload coverage
-          # bash <(curl -s https://codecov.io/bash)
-
-      # - name: Test
-      #   run: |
-      #     # clean up cached bundle
-      #     yarn rimraf backend/target/release/bundle/
-      #     mkdir frontend/dist
-      #     yarn test
 
       - name: Bundle
         run: yarn tauri build -b dmg
@@ -233,25 +178,6 @@ jobs:
             backend/target/release/bundle/dmg/*.dmg
             backend/target/release/bundle/macos/Insulator*.app.tar.gz
 
-      - name: Save npm cache
-        uses: actions/cache/save@v4
-        if: always()
-        with:
-          path: "**/node_modules"
-          key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
-
-      - name: Save cargo cache
-        uses: actions/cache/save@v4
-        if: always()
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            backend/target/
-          key: ${{ steps.restore-cargo-cache.outputs.cache-primary-key }}
-
   ubuntu-build:
     runs-on: ubuntu-latest
     steps:
@@ -260,12 +186,12 @@ jobs:
         with:
           node-version: 20
 
-      - name: Restore npm cache
-        uses: actions/cache/restore@v4
-        id: restore-npm-cache
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
         with:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}-v2
+          restore-keys: ${{ runner.os }}-modules-
 
       - name: Install npm dependencies
         run: |
@@ -279,20 +205,27 @@ jobs:
               build-essential curl wget libsasl2-dev libayatana-appindicator3-dev librsvg2-dev \
               libjavascriptcoregtk-4.1-dev libwebkit2gtk-4.1-dev libcurl4-openssl-dev
 
-      - name: Restore cargo cache
-        uses: actions/cache/restore@v4
-        id: restore-cargo-cache
+      - name: Cache cargo artifacts
+        uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             backend/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v2
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Cache cargo-tarpaulin binary
+        id: cache-tarpaulin
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cargo-tarpaulin
+          key: ${{ runner.os }}-tarpaulin-0.31
 
       - name: Install tarpaulin
-        run: cargo install cargo-tarpaulin || true
+        if: steps.cache-tarpaulin.outputs.cache-hit != 'true'
+        run: cargo install cargo-tarpaulin --version 0.31 --locked
 
       - name: Run test Kafka cluster
         run: |
@@ -313,7 +246,7 @@ jobs:
         run: |
           mkdir frontend/dist
           yarn lint:check
-          # run unit and integration tests
+          # run unit and integration tests with coverage
           yarn coverage
           # upload coverage
           bash <(curl -s https://codecov.io/bash)
@@ -353,22 +286,3 @@ jobs:
             backend/target/release/bundle/deb/insulator-*_amd64.deb
             backend/target/release/bundle/appimage/insulator-*_amd64.AppImage
             backend/target/release/bundle/appimage/insulator-*_amd64.AppImage.tar.gz
-
-      - name: Save npm cache
-        uses: actions/cache/save@v4
-        if: always()
-        with:
-          path: "**/node_modules"
-          key: ${{ steps.restore-npm-cache.outputs.cache-primary-key }}
-
-      - name: Save cargo cache
-        uses: actions/cache/save@v4
-        if: always()
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            backend/target/
-          key: ${{ steps.restore-cargo-cache.outputs.cache-primary-key }}

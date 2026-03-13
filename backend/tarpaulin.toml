@@ -1,0 +1,8 @@
+[default]
+# Run integration tests so they compile and execute under coverage,
+# but exclude their source files from the coverage report — they test
+# infra wiring against a live broker, not business logic line coverage.
+features = ["integration_tests"]
+exclude-files = ["src/integration_tests/*"]
+out = ["Xml"]
+timeout = "120s"

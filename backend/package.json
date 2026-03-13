@@ -8,6 +8,6 @@
     "lint:check": "cargo fmt --check && cargo clippy",
     "test": "cargo test",
     "test:all": "cargo test --features integration_tests",
-    "coverage": "cargo tarpaulin --all-features --out Xml"
+    "coverage": "cargo tarpaulin --config tarpaulin.toml"
   }
 }
