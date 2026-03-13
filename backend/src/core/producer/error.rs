@@ -2,6 +2,7 @@ use rdkafka::error::KafkaError;
 
 use crate::core::parser::ParserError;
 
+#[derive(Debug)]
 pub enum ProducerError {
     MissingAvroConfiguration,
     RDKafka(String),

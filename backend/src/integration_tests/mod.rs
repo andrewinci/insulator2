@@ -6,7 +6,10 @@ use uuid::Uuid;
 
 use crate::core::configuration::{ClusterConfig, Favorites};
 
+mod admin_extra_it;
 mod consumer_group_admin_it;
+mod consumer_it;
+mod producer_it;
 mod topic_admin_it;
 
 struct KafkaTest {
