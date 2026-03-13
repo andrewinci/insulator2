@@ -54,7 +54,7 @@ def update_target(target):
     signature_file = glob(manifest_config[target]["sig"])
     if len(signature_file) == 1:
         signature = Path(signature_file[0]).read_text()
-    
+
     # set specific fields
     for p in manifest_config[target]["platforms"]:
         if signature:
@@ -93,7 +93,7 @@ if version:
 
     # update tauri.conf.json
     package_json = json.loads(Path("./backend/tauri.conf.json").read_text())
-    package_json["package"]["version"] = version
+    package_json["version"] = version
     Path("./backend/tauri.conf.json").write_text(json.dumps(package_json, indent=2))
 
     # update toml
