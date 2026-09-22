@@ -115,7 +115,11 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
             .map(|r| r.keys().map(|s| s.as_str()).collect::<Vec<_>>());
         if let Some(columns) = columns {
             let columns = sort_columns(&columns[..]);
-            let header = columns.join(SEPARATOR);
+            let header = columns
+                .iter()
+                .map(|c| csv_escape(c, SEPARATOR))
+                .collect::<Vec<_>>()
+                .join(SEPARATOR);
 
             // write the csv header
             writer.write_all(header.to_bytes())?;
@@ -124,16 +128,16 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
                 let row: Vec<_> = columns
                     .iter()
                     .map(|c| {
-                        record
+                        let raw = record
                             .get(c)
                             .map(|v| match c.as_str() {
                                 Query::TIMESTAMP => v.extract_timestamp(*parse_timestamp),
                                 _ => v.to_string(),
                             })
-                            .unwrap_or_default()
+                            .unwrap_or_default();
+                        csv_escape(&raw, SEPARATOR)
                     })
                     .collect();
-                // todo: support parse timestamp
                 writer.write_all(row.join(SEPARATOR).to_bytes())?;
             }
         } else {
@@ -143,6 +147,17 @@ impl<S: RecordStore, P: KafkaRecordParser> TopicStore<S, P> {
         writer.flush()?;
         debug!("Export completed");
         Ok(())
+    }
+}
+
+/// Escape a CSV field per RFC 4180: if the value contains the separator,
+/// a double quote, or a line break, wrap it in double quotes and double any
+/// embedded double quote. Otherwise return the value unchanged.
+fn csv_escape(value: &str, separator: &str) -> String {
+    if value.contains(separator) || value.contains('"') || value.contains('\n') || value.contains('\r') {
+        format!("\"{}\"", value.replace('"', "\"\""))
+    } else {
+        value.to_string()
     }
 }
 
@@ -238,6 +253,50 @@ mod test {
             let res = sort_columns(&columns[..]);
             assert_eq!(res, vec!["1", "2", "3", Query::KEY, Query::PAYLOAD]);
         }
+    }
+
+    #[test]
+    fn test_export_records_with_separator_in_payload_is_properly_escaped() {
+        // arrange: a payload that contains the CSV separator, a double quote, and
+        // a newline. Per RFC 4180 all three must be handled or the CSV is corrupt.
+        let mut mock_record_store = MockStore::new();
+        let parser_mock = MockParser::new();
+        mock_record_store
+            .expect_create_or_replace_topic_table()
+            .returning(|_, _, _| Ok(()));
+        mock_record_store.expect_query_records().returning(|_, _| {
+            Ok(vec![HashMap::from([
+                (Query::PAYLOAD.into(), QueryResultRowItem::Text("a;b\n\"c\"".into())),
+                (Query::KEY.into(), QueryResultRowItem::Text("k;1".into())),
+                (Query::TIMESTAMP.into(), QueryResultRowItem::Integer(123123)),
+                (Query::PARTITION.into(), QueryResultRowItem::Integer(0)),
+                (Query::OFFSET.into(), QueryResultRowItem::Integer(0)),
+            ])])
+        });
+        let sut = TopicStore::from_record_store(
+            Arc::new(mock_record_store),
+            Arc::new(parser_mock),
+            "cluster_id",
+            "topic_name",
+        );
+
+        let test_file = format!("{}/{}", temp_dir().to_str().unwrap(), rand::random::<usize>());
+        let options = ExportOptions {
+            query: Some("SELECT * FROM {:topic} LIMIT {:limit} OFFSET {:offset}".to_string()),
+            output_path: test_file.clone(),
+            overwrite: true,
+            ..Default::default()
+        };
+
+        // act
+        assert!(sut.export_records(&options).is_ok());
+        let exported = fs::read_to_string(&test_file).unwrap();
+
+        // assert: fields with the separator, quotes, and newlines must be escaped
+        // per RFC 4180 (wrap in double quotes, double any inner double quote).
+        let expected = "timestamp;offset;partition;key;payload\n\
+                        123123;0;0;\"k;1\";\"a;b\n\"\"c\"\"\"";
+        assert_eq!(exported, expected, "CSV escaping is broken. Got:\n{}", exported);
     }
 
     #[test]
