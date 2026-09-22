@@ -179,6 +179,15 @@ impl SqliteStore {
 
     pub fn export_db(&self, output_path: &str) -> StoreResult<()> {
         let src = self.pool.get().unwrap();
+        // Remove any existing file at the destination. rusqlite's Backup API fails
+        // with "file is not a database" when the destination file exists but does
+        // not contain a valid SQLite header (e.g. an empty/pre-created file, or
+        // any leftover content from a previous export attempt). Since export
+        // semantics are "write the current store to this path", overwriting is
+        // the expected behaviour.
+        if std::path::Path::new(output_path).exists() {
+            std::fs::remove_file(output_path)?;
+        }
         let mut dst = Connection::open(output_path)?;
         let backup = Backup::new(&src, &mut dst)?;
         // update the completion percentage in debug
@@ -239,7 +248,7 @@ mod tests {
 
     fn get_test_db_path() -> String {
         let mut dir = temp_dir();
-        dir.push("test.db");
+        dir.push(format!("test_export_{}.db", rand::random::<u64>()));
         dir.to_str().unwrap().into()
     }
 
@@ -247,16 +256,99 @@ mod tests {
     async fn test_export_database() {
         // arrange
         let test_db_path = get_test_db_path();
+        // ensure clean slate
+        let _ = std::fs::remove_file(&test_db_path);
         let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
         let db = SqliteStore::new(Duration::from_secs(10));
         db.create_or_replace_topic_table(cluster_id, topic_name, false).unwrap();
         let test_record = get_test_record(topic_name, 0);
         db.insert_record(cluster_id, topic_name, &test_record).unwrap();
+        let test_record2 = get_test_record(topic_name, 1);
+        db.insert_record(cluster_id, topic_name, &test_record2).unwrap();
         // act
         let res = db.export_db(&test_db_path);
         // assert
-        assert!(res.is_ok());
-        //todo: validate DB content
+        assert!(res.is_ok(), "export_db failed: {:?}", res.err());
+        assert!(
+            std::path::Path::new(&test_db_path).exists(),
+            "exported DB file does not exist at {}",
+            test_db_path
+        );
+        let size = std::fs::metadata(&test_db_path).unwrap().len();
+        assert!(size > 0, "exported DB file is empty");
+
+        // open the exported DB and validate the records were exported
+        let exported = rusqlite::Connection::open(&test_db_path).expect("open exported db");
+        let table_name = super::SqliteStore::get_table_name(cluster_id, topic_name);
+        // check that the table exists
+        let tables: Vec<String> = exported
+            .prepare("SELECT name FROM sqlite_master WHERE type='table'")
+            .unwrap()
+            .query_map([], |r| r.get::<_, String>(0))
+            .unwrap()
+            .map(|r| r.unwrap())
+            .collect();
+        assert!(
+            !tables.is_empty(),
+            "exported DB contains no tables (backup produced empty db). tables={:?}",
+            tables
+        );
+        // count rows
+        let count: i64 = exported
+            .query_row(format!("SELECT count(*) FROM {}", table_name).as_str(), [], |r| {
+                r.get(0)
+            })
+            .unwrap_or_else(|e| panic!("querying exported table {} failed: {:?}", table_name, e));
+        assert_eq!(count, 2, "exported db should contain 2 records, got {}", count);
+
+        // cleanup
+        let _ = std::fs::remove_file(&test_db_path);
+    }
+
+    #[tokio::test]
+    async fn test_export_database_overwrites_existing_file() {
+        // arrange: pre-create the target file (mimics user choosing an existing file
+        // via the save dialog, which may create/truncate it before passing path back)
+        let test_db_path = get_test_db_path();
+        std::fs::write(&test_db_path, b"junk data that is not a sqlite db").unwrap();
+        let (cluster_id, topic_name) = ("cluster_id_example", "topic_name_example");
+        let db = SqliteStore::new(Duration::from_secs(10));
+        db.create_or_replace_topic_table(cluster_id, topic_name, false).unwrap();
+        db.insert_record(cluster_id, topic_name, &get_test_record(topic_name, 0))
+            .unwrap();
+
+        // act
+        let res = db.export_db(&test_db_path);
+
+        // assert
+        assert!(
+            res.is_ok(),
+            "export_db failed when target file already existed: {:?}",
+            res.err()
+        );
+        let exported = rusqlite::Connection::open(&test_db_path).expect("open exported db");
+        let table_name = super::SqliteStore::get_table_name(cluster_id, topic_name);
+        let count: i64 = exported
+            .query_row(format!("SELECT count(*) FROM {}", table_name).as_str(), [], |r| {
+                r.get(0)
+            })
+            .unwrap_or_else(|e| panic!("querying exported table failed: {:?}", e));
+        assert_eq!(count, 1);
+
+        let _ = std::fs::remove_file(&test_db_path);
+    }
+
+    #[tokio::test]
+    async fn test_export_database_empty_store() {
+        // arrange: export without ever creating a table
+        let test_db_path = get_test_db_path();
+        let _ = std::fs::remove_file(&test_db_path);
+        let db = SqliteStore::new(Duration::from_secs(10));
+        // act
+        let res = db.export_db(&test_db_path);
+        // assert
+        assert!(res.is_ok(), "export_db of empty store failed: {:?}", res.err());
+        let _ = std::fs::remove_file(&test_db_path);
     }
 
     #[tokio::test]
