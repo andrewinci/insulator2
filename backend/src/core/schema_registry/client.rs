@@ -164,7 +164,9 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
     async fn get_compatibility_level(&self, subject_name: &str) -> SchemaRegistryResult<String> {
         #[derive(Deserialize)]
         struct CompatibilityResponse {
-            #[serde(alias = "compatibilityLevel")]
+            // Confluent returns "compatibilityLevel" for global config fallback;
+            // subject-specific overrides (and Karapace) return "compatibility".
+            #[serde(alias = "compatibilityLevel", alias = "compatibility")]
             compatibility_level: String,
         }
         let url = Url::parse(&self.endpoint)?.join(format!("/config/{subject_name}?defaultToGlobal=true").as_str())?;
@@ -198,5 +200,60 @@ impl<C: HttpClient> CachedSchemaRegistry<C> {
                 "Schema {subject_name} not found"
             )))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use httpmock::{Method::GET, MockServer};
+
+    use super::super::http_client::ReqwestClient;
+    use super::CachedSchemaRegistry;
+
+    fn mock_versions(server: &MockServer, subject: &str) {
+        server.mock(|when, then| {
+            when.method(GET)
+                .path(format!("/subjects/{subject}/versions/"));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body("[]");
+        });
+    }
+
+    // Confluent Schema Registry returns "compatibilityLevel" when falling back to the global config.
+    #[tokio::test]
+    async fn test_get_subject_compatibility_level_field() {
+        let server = MockServer::start();
+        let sut = CachedSchemaRegistry::new_with_client(&server.url(""), ReqwestClient::new(None, false));
+        mock_versions(&server, "test-subject");
+        server.mock(|when, then| {
+            when.method(GET).path("/config/test-subject");
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(r#"{"compatibilityLevel":"FORWARD"}"#);
+        });
+
+        let result = sut.get_subject("test-subject").await;
+        assert!(result.is_ok(), "unexpected error: {:?}", result.err());
+        assert_eq!(result.unwrap().compatibility, "FORWARD");
+    }
+
+    // Confluent returns "compatibility" (no "Level") for subjects with a subject-specific override;
+    // Karapace always uses this shape. Without the alias this would fail to deserialize.
+    #[tokio::test]
+    async fn test_get_subject_compatibility_field() {
+        let server = MockServer::start();
+        let sut = CachedSchemaRegistry::new_with_client(&server.url(""), ReqwestClient::new(None, false));
+        mock_versions(&server, "test-subject");
+        server.mock(|when, then| {
+            when.method(GET).path("/config/test-subject");
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(r#"{"compatibility":"FORWARD"}"#);
+        });
+
+        let result = sut.get_subject("test-subject").await;
+        assert!(result.is_ok(), "unexpected error: {:?}", result.err());
+        assert_eq!(result.unwrap().compatibility, "FORWARD");
     }
 }
